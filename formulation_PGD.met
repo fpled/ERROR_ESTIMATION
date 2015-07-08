@@ -1,0 +1,366 @@
+import "LMT/LmtppFormulation.met"
+import "GEOMETRY/Geometry.met"
+import "Material_properties.met"
+import "EESPT/EESPT.met"
+import "SPET/SPET.met"
+import "EET/EET.met"
+import "DISCRETIZATION_ERROR/Discretization_error.met"
+import "ECRE/ECRE.met"
+import "ENHANCEMENT/Enhancement_EET_EESPT.met"
+import "VERIFICATION/Verification.met"
+import "Handbook_functions.met"
+import "INTEREST_QUANTITY/Interest_quantity.met"
+import "PGD/PGD.met"
+
+# Choix de la methode de construction de champs admissibles pour le calcul d'un estimateur de l'erreur globale : want_EET, want_SPET, want_EESPT := true
+# Calcul de l'erreur de discretisation : want_discretization_error := true
+# Choix de la version amelioree pour les methodes de construction de champs admissibles EET et/ou EESPT: want_enhancement := true
+# Calcul d'un estimateur de l'erreur locale sur une quantite d'interet : want_local_estimation := true
+# Calcul d'un estimateur ameliore de l'erreur locale sur une quantite d'interet : want_local_improvement_steklov, want_local_improvement_rayleigh := true
+# Calcul du probleme aux valeurs propres generalisees pour le calcul des constantes impliquees dans l'amelioration d'erreur locale : want_compute_eig := true
+# Calcul avec fonctions d'enrichissement (handbook) d'un estimateur de l'erreur locale sur une quantite d'interet : want_local_enrichment := true
+#------------------------------------------------------------------------------------------------------------------------------------------------------------
+want_discretization_error := false
+want_method_EET := true
+want_method_SPET := false
+want_method_EESPT := false
+want_enhancement := false
+want_local_estimation := false
+want_local_improvement_steklov := false
+want_local_improvement_rayleigh := false
+want_compute_eig := false
+want_local_enrichment := false
+want_PGD := true
+
+if not ( want_method_EET or want_method_EESPT )
+    want_enhancement = false
+if not want_local_estimation
+    want_local_improvement_steklov = false
+    want_local_improvement_rayleigh = false
+    want_compute_eig = false
+    want_local_enrichment = false
+
+# Choix du type d'hypothese en 2D : plane stress, plane strain
+#-------------------------------------------------------------
+type_stress_2D := "plane stress"
+
+# Choix de la methode de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalisation
+#-------------------------------------------------------------------------------------------------------------------------------------------
+boundary_condition := "penalisation"
+
+# Choix de la base d'approximation : lagrange, hierarchical
+#----------------------------------------------------------
+FE_base := "lagrange"
+
+# Choix de la base pour construire les densites d'effort : lagrange, hierarchical
+#--------------------------------------------------------------------------------
+force_fluxes_base := "lagrange"
+
+# Choix de la base pour projeter les densites d'effort dans la methode EESPT : canonical, lagrange, hierarchical
+#---------------------------------------------------------------------------------------------------------------
+projection_base_EESPT := "lagrange"
+
+# Choix de la base d'approximation pour construire le champ de contrainte admissible : lagrange, hierarchical
+#------------------------------------------------------------------------------------------------------------
+recovery_base := "lagrange"
+
+# Enrichissement du degre de l'analyse elements finis p -> p+k pour la resolution des problemes locaux elementaires/par patch
+#----------------------------------------------------------------------------------------------------------------------------
+deg_k := 3
+
+# Choix de la technique d'integration : formal, gauss_num
+#--------------------------------------------------------
+integration_type := "gauss_num"
+
+# Pour la technique d'integration gauss_num, choix du langage pour l'integration des fonctions de degres eleves (p+k) : metil, cpp
+#---------------------------------------------------------------------------------------------------------------------------------
+integration_lang := "cpp"
+
+# Choix du degre polynomial pour integration des fonctions d'enrichissement (handbook)
+#-------------------------------------------------------------------------------------
+degre_poly_handbook := 10
+
+# Hyptothese sur le jacobien : false, true
+#-----------------------------------------
+hyp_const_jac := true
+if integration_type == "gauss_num"
+    hyp_const_jac = false
+
+# Formulation elastique lineaire
+#-------------------------------
+class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
+    dep     := Variable[[dim]]( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="m", unknown=true, tex_name = "U" )
+    dep_tot := Variable[[dim]]( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="m", tex_name = "U_{\\text{tot}}" )
+    f_surf  := Variable[[dim]]( interpolation="skin_elementary", default_value=0, unit="N/m^2", tex_name = "F_s" )
+    f_vol   := Variable[[dim]]( interpolation="global", default_value=0, unit="N/m^3", tex_name = "F_v" )
+    density := Variable( interpolation="global", default_value=1, unit="kg/m^3", tex_name = "\\rho" )
+    epsilon := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="1", tex_name = "\\epsilon" )
+    epsilon_tot := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="1", tex_name = "\\epsilon_{\\text{tot}}" )
+    sigma   := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma" )
+    sigma_tot   := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma_{\\text{tot}}" )
+    sigma_von_mises   := Variable( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma_{\\text{Von Mises}}" )
+    #young   := Variable( interpolation="global", default_value=1, unit="N/m^2", tex_name = "E" )
+    #poisson := Variable( interpolation="global", default_value=0.3, unit="1", tex_name = "\\nu" )
+    #la      := Variable( interpolation="global", default_value=lame_coeff_lambda( young.default_value, poisson.default_value, dim, type_stress_2D ), unit="N/m^2", tex_name = "\\lambda" )
+    #mu      := Variable( interpolation="global", default_value=lame_coeff_mu( young.default_value, poisson.default_value ), unit="N/m^2", tex_name = "\\mu" )    
+    young   := Variable( interpolation="elementary", default_value=1, unit="N/m^2", tex_name = "E" )
+    young_eff   := Variable( interpolation="elementary", default_value = 1, unit="N/m^2", tex_name = "E_{\\text{eff}}" )
+    poisson := Variable( interpolation="elementary", default_value=0.3, unit="1", tex_name = "\\nu" )
+    la      := Variable( interpolation="elementary", default_value=lame_coeff_lambda( young.default_value, poisson.default_value, dim, type_stress_2D ), unit="N/m^2", tex_name = "\\lambda" )
+    mu      := Variable( interpolation="elementary", default_value=lame_coeff_mu( young.default_value, poisson.default_value ), unit="N/m^2", tex_name = "\\mu" )
+    sigma_hat_EET   := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "{\hat{\\sigma}}_{\\text{EET}}" )
+    sigma_hat_SPET  := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "{\\hat{\\sigma}}_{\\text{SPET}}" )
+    sigma_hat_EESPT := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "{\\hat{\\sigma}}_{\\text{EESPT}}" )
+    sigma_hat_tot_EET   := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "{\\hat{\\sigma}}^{\\text{tot}}_{\\text{EET}}" )
+    sigma_hat_tot_SPET  := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "{\\hat{\\sigma}}^{\\text{tot}}_{\\text{SPET}}" )
+    sigma_hat_tot_EESPT := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "{\\hat{\\sigma}}^{\\text{tot}}_{\\text{EESPT}}" )
+    ecre_EET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "{e_{\\text{cre}}}_{\\text{EET}}" )
+    ecre_elem_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{{e_{\\text{cre}}}^{\\text{elem}}_{\\text{EET}}}^2" )
+    ecre_EESPT := Variable( interpolation="global", default_value=0, unit="1", tex_name = "{e_{\\text{cre}}}_{\\text{EESPT}}" )
+    ecre_elem_EESPT := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{{e_{\\text{cre}}}^{\\text{elem}}_{\\text{EESPT}}}^2" )
+    theta_EET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\theta_{\\text{EET}}" )
+    theta_elem_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}_{\\text{EET}}}^2" )
+    theta_elem_rel_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\tilde{\\theta}^{\\text{elem}_{\\text{EET}}}^2" )
+    theta_SPET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\theta_{\\text{SPET}}" )
+    theta_elem_SPET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}_{\\text{SPET}}}^2" )
+    theta_elem_rel_SPET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\tilde{\\theta}^{\\text{elem}}_{\\text{SPET}}}^2" )
+    theta_EESPT := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\theta_{\\text{EESPT}}" )
+    theta_elem_EESPT := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}_{EESPT}}^2" )
+    theta_elem_rel_EESPT := Variable( interpolation="elementary", default_value=0,unit="1", tex_name = "{\\tilde{\\theta}^{\\text{elem}}_{\\text{EESPT}}}^2" )
+    discretization_error := Variable( interpolation="global", default_value=0, unit="1", tex_name = "e_{\\text{discr}}" )
+    discretization_error_elem := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{e^{\\text{elem}}_{\\text{discr}}}^2" )
+    discretization_error_elem_rel := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\tilde{e}^{\\text{elem}}_{\\text{discr}}}^2" )
+    eff_index_EET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\eta_{\\text{EET}}" )
+    eff_index_elem_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "\\eta^{\\text{elem}}_{\\text{EET}}" )
+    eff_index_SPET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\eta_{\\text{SPET}}" )
+    eff_index_elem_SPET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "\\eta^{\\text{elem}}_{\\text{SPET}}" )
+    eff_index_EESPT := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\eta_{\\text{EESPT}}" )
+    eff_index_elem_EESPT := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "\\eta^{\\text{elem}}_{\\text{EESPT}}" )
+    enhancement_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "enhancement_{\\text{EET}}" )
+    enhancement_EESPT := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "enhancement_{\\text{EESPT}}" )
+
+    pre_sigma := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\tilde{\\sigma}" )
+    pre_epsilon := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\tilde{\\epsilon}" )
+    pre_f_vol := Variable[[dim]]( interpolation="elementary", default_value=0, unit="N/m^3", tex_name = "\tilde{F}_v" )
+    pre_f_nodal := Variable[[dim]]( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="N/m", tex_name = "\tilde{F}_n" )
+    tag_refinement := Variable[[dim]]( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="", tex_name = "tag refinement" )
+    phi_cut := Variable( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="", tex_name = "\\phi_{\\text{cut}}" )
+    phi_SIF_crown_1 := Variable( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="", tex_name = "\\phi_{\\text{crown 1}}^{\\text{SIF}}" )
+    phi_SIF_crown_2 := Variable( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="", tex_name = "\\phi_{\\text{crown 2}}^{\\text{SIF}}" )
+
+    phi_local_improvement_steklov := Variable( interpolation="global", default_value=0, unit="", tex_name = "\\phi_{\\text{local improvement}}^{\\text{steklov}}" )
+    phi_local_improvement_rayleigh := Variable( interpolation="global", default_value=0, unit="", tex_name = "\\phi_{\\text{local improvement}}^{\\text{rayleigh}}" )
+
+    phi_handbook_for_pointwise_force_in_infinite_domain := Variable[[dim]]( interpolation="global", default_value=0, unit="", tex_name = "\\phi_{\\text{local enrichment}}^{\\text{handbook} F}" )
+    phi_handbook_for_pointwise_pre_sigma_in_infinite_domain := Variable[[dim,dim],sym=true]( interpolation="global", default_value=0, unit="", tex_name = "\\phi_{\\text{local enrichment}}^{\\text{handbook} \tilde{\\sigma}}" )
+    phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain := Variable[[dim,dim],sym=true]( interpolation="global", default_value=0, unit="", tex_name = "\\phi_{\\text{local enrichment}}^{\\text{handbook} \tilde{\\epsilon}}" )
+    pos_handbook := Variable[[dim]]( interpolation="global", default_value=0, unit="m", tex_name = "pos_{\\text{handbook}}" )
+    dep_handbook := Variable[[dim]]( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="m", tex_name = "U_{\\text{handbook}}" )
+    dep_handbook_PUM := Variable[[dim]]( interpolation="elementary", unit="m", tex_name = "U_{\\text{handbook}}^{\\text{PUM}}" )
+    epsilon_handbook := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="1", tex_name = "\\epsilon_{\\text{handbook}}" )
+    epsilon_handbook_PUM := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="1", tex_name = "\\epsilon_{\\text{handbook}}^{\\text{PUM}}" )
+    sigma_handbook := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma_{\\text{handbook}}" )
+    sigma_handbook_PUM := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma_{handbook}^{PUM}" )
+    sigma_handbook_PUM_zone_2 := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma_{\\text{handbook zone 2}}^{\\text{PUM}}" )
+    phi_nodal_handbook := Variable( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="", tex_name = "\\phi_{nodal}^{handbook}" )
+    phi_elem_handbook_zone_1 := Variable( interpolation="elementary", default_value=0, unit="", tex_name = "\\phi_{\\text{elem}}^{\\text{handbook zone 1}}" )
+    phi_elem_handbook_zone_2 := Variable( interpolation="elementary", default_value=0, unit="", tex_name = "\\phi_{\\text{xelem}}^{\\text{handbook zone 2}}" )
+    phi_surf_handbook_zone_12 := Variable( interpolation="skin_elementary", default_value=0, unit="", tex_name = "\\phi_{\\text{surf}}^{\\text{handbook zone 12}}" )
+
+    is_on_skin := Variable( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="", tex_name = "is on skin" )
+    normal := Variable[[dim]]( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="1", tex_name = "normal" )
+
+    phi_elem_PGD_unknown_parameter := Variable( interpolation="elementary", default_value=1, unit="", tex_name = "\\phi_{elem}^{unknown parameter}" )
+
+    # Definition de la formulation
+    # ----------------------------
+    def formulation( e )
+
+        if boundary_condition == "lagrange"
+            assumed_symmetric_matrix = false
+
+        young_eff = young.expr * phi_elem_PGD_unknown_parameter.expr
+
+        pos := e.pos
+        epsilon = grad_sym( dep.expr )
+        sigma = hooke_iso( young_eff.expr, poisson.expr, dim, type_stress_2D ) : epsilon.expr
+        sigma_von_mises = von_mises( sigma.expr )
+
+        epsilon_eig_expr := Mat[ Op, Sym[dim] ]()
+        epsilon_eig_test := Mat[ Op, Sym[dim] ]()
+        pos_dot_normal := Op()
+        residual_eig_eq := Vec[ Op, dim*(dim+1)/2 ]()
+        if want_compute_eig and ( want_local_improvement_steklov or want_local_improvement_rayleigh )
+            pe = &e
+            for pc_, num_child in pe->children( 1 ), 0...
+                pc := child_cast( pc_ )
+                id := symbol( "(f.m->get_children_of( elem, Number<1>())[ $num_child ] == &skin_elem ? 1 : 0)" )
+                if want_local_improvement_steklov
+                    epsilon_eig_expr += sym_part( dep.expr (*) pc->normal ) * id
+                    epsilon_eig_test += sym_part( dep.test (*) pc->normal ) * id
+                if want_local_improvement_rayleigh
+                    pos_dot_normal += dot( pos, pc->normal ) * id
+                f_surf_eq := Vec[ Op, dim ]( sigma.test * pc->normal ) * id
+                for d in 0 .. dim
+                    residual_eig_eq[ d ] += f_surf_eq[ d ]
+                f_surf_eq_torque := vect_prod( pos, f_surf_eq )
+                if dim == 2
+                    residual_eig_eq[ dim ] += f_surf_eq_torque
+                else if dim == 3
+                    for d in 0 .. dim
+                        residual_eig_eq[ dim + d ] += f_surf_eq_torque[ d ]
+
+        f_surf_handbook := Vec[ Op, dim ]()
+        if want_local_enrichment
+            pos_handbook := Vec[ Op, dim ]()
+            for d in 0 .. dim
+                pos_handbook[ d ] = symbol( "f.m->pos_handbook[ $d ]" )
+            OM := pos - pos_handbook
+            Galerkin_vector := Galerkin_vector_function( dim, OM, mu.expr, phi_handbook_for_pointwise_force_in_infinite_domain.expr, phi_handbook_for_pointwise_pre_sigma_in_infinite_domain.expr, phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain.expr )
+            dep_handbook_ := dep_handbook_function( e, Galerkin_vector, la.expr, mu.expr )
+            epsilon_handbook = grad_sym( dep_handbook_ )
+            sigma_handbook = hooke_iso( young_eff.expr, poisson.expr, dim, type_stress_2D ) : epsilon_handbook.expr
+
+            dep_handbook_PUM = dep_handbook_PUM_function( e, dep_handbook_, phi_nodal_handbook.expr, force_fluxes_base )
+            epsilon_handbook_PUM = grad_sym( dep_handbook_PUM.expr )
+            sigma_handbook_PUM = hooke_iso( young_eff.expr, poisson.expr, dim, type_stress_2D ) : epsilon_handbook_PUM.expr
+            sigma_handbook_PUM_zone_2 = sigma_handbook_PUM.expr * phi_elem_handbook_zone_2.expr
+
+            pe = &e
+            for pc_, num_child in pe->children( 1 ), 0...
+                pc := child_cast( pc_ )
+                id := symbol( "(f.m->get_children_of( elem, Number<1>())[ $num_child ] == &skin_elem ? 1 : 0)" )
+                f_surf_handbook += sigma_handbook.expr * pc->normal * id
+
+        epsilon_tot = epsilon.expr + epsilon_handbook_PUM.expr
+        sigma_tot = sigma.expr + sigma_handbook_PUM.expr
+
+        residual := sigma.expr : epsilon.test * dV - dot( f_vol.expr, dep.test ) * dV - dot( f_surf.expr, dep.test ) * dS
+
+        residual_extractor := - ( pre_sigma.expr + sigma_hooke_iso( pre_epsilon.expr, young_eff.expr, poisson.expr, type_stress_2D ) ) : epsilon.test * dV - dot( pre_f_vol.expr, dep.test ) * dV - dot( pre_f_nodal.expr, dep.test ) * dN
+
+        residual_enrichment := sigma_handbook_PUM_zone_2.expr : epsilon.test * dV_handbook + dot( f_surf_handbook, dep.test ) * phi_elem_handbook_zone_1.expr * phi_surf_handbook_zone_12.expr * diF_handbook
+
+        residual_eig := sigma.expr : epsilon.test * dV_eig_B + ( sigma_hooke_iso( epsilon_eig_expr, young_eff.expr, poisson.expr, type_stress_2D ) : epsilon_eig_test ) * phi_local_improvement_steklov.expr * dS_eig_A + sigma.expr : epsilon.test * pos_dot_normal * phi_local_improvement_rayleigh.expr * dS_eig_A
+        for n in 0 .. dim*(dim+1)/2
+            residual_eig += residual_eig_eq[ n ] * dS_eig_C[ n ]
+        
+        return residual + residual_extractor + residual_enrichment + residual_eig
+
+# Formulation associee a l'espace des parametres inconnus
+#--------------------------------------------------------
+class FormulationUnknownParam[ dim ] inherits LmtppFormulation[ dim ]
+    dep     := Variable[[dim]]( interpolation="nodal", interpolation_base=FE_base, default_value=0.0, unit="m", unknown=true, tex_name = "U" )
+    
+    # Definition de la formulation
+    # ----------------------------
+    def formulation( e )
+
+        if boundary_condition == "lagrange"
+            assumed_symmetric_matrix = false
+
+        pos := e.pos
+        function_parameter := 1 + parameter_function( pos[0] )
+
+        residual := function_parameter * dot( dep.expr, dep.test ) * dV - dep.test[0] * dV
+        
+        return residual
+
+# Formulation associee a l'espace des parametres connus
+#------------------------------------------------------
+class FormulationKnownParam[ dim ] inherits LmtppFormulation[ dim ]
+    dep     := Variable[[dim]]( interpolation="nodal", interpolation_base=FE_base, default_value=0.0, unit="m", unknown=true, tex_name = "U" )
+    
+    # Definition de la formulation
+    # ----------------------------
+    def formulation( e )
+
+        if boundary_condition == "lagrange"
+            assumed_symmetric_matrix = false
+
+        residual := dot( dep.expr, dep.test ) * dV - dep.test[0] * dV
+        
+        return residual
+
+# Nom du probleme
+#----------------
+pb_name_space := "space"
+pb_name_parameter := "parameter"
+
+# Liste de formulations
+#----------------------
+formListSpace := [ FormulationElasticity ]
+formListParam := [ FormulationUnknownParam, FormulationKnownParam ]
+
+# Liste d'elements
+#-----------------
+elemListSpace := [ Triangle ]
+elemListParam := [ Bar ]
+
+# Liste de types
+#---------------
+typeList := [ "double" ]
+
+# Liste de fonctions
+#-------------------
+funcList_material_properties := [ calc_material_coefficients ]
+
+funcList_discretization_error := [ add_elem_norm_dep, calc_elem_discretization_error ]
+
+funcList_force_fluxes_standard_EET := [ construct_correspondance_node_to_vertex_node, calc_face_ind_EET, calc_elem_ind_EET, calc_nodal_matrix_B, calc_nodal_vector_r, calc_nodal_matrix_C, calc_nodal_vector_q, calc_nodal_matrix_M, calc_nodal_vector_b, calc_skin_elem_vector_b_face, calc_skin_elem_matrix_K_face, check_elem_eq_force_fluxes ]
+
+funcList_force_fluxes_enhancement_EET := [ reset_nodal_vector_b_hat, calc_elem_vector_F_hat_enh, calc_elem_matrix_A_enh, calc_elem_vector_d_enh, calc_elem_matrix_L_enh, calc_elem_vector_b_enh, calc_glob_matrix_A_enh, calc_glob_vector_d_enh, calc_glob_matrix_L_enh, calc_glob_vector_b_enh, calc_glob_matrix_C_enh, calc_glob_vector_q_enh, calc_glob_matrix_P_enh ]
+
+funcList_SPET := [ construct_correspondance_node_to_vertex_node, calc_nb_points_elem, calc_nb_points_face, calc_pos_elem, calc_pos_face, calc_vertex_nodal_matrix_K, calc_vertex_nodal_vector_F, calc_elem_vector_E, calc_elem_error_estimate_SPET ]
+
+funcList_force_fluxes_standard_EESPT := [ construct_correspondance_node_to_vertex_node, calc_face_ind_EESPT, calc_vertex_nodal_ind_EESPT, calc_vertex_nodal_matrix_A, calc_vertex_nodal_vector_R, remove_kernel, calc_degre_p, calc_skin_elem_matrix_B_p_1, calc_skin_elem_vector_Q_p_1, calc_vertex_nodal_vector_lambda_F_p_1, calc_vertex_nodal_vector_lambda_F_p_2, calc_vertex_nodal_matrix_M, calc_skin_elem_force_fluxes, check_elem_eq_force_fluxes ]
+
+funcList_force_fluxes_enhancement_EESPT := [ reset_vertex_nodal_vector_lambda_F_hat, calc_elem_vector_F_hat_enh, calc_elem_matrix_A_enh, calc_elem_vector_d_enh, calc_elem_matrix_L_enh, calc_elem_vector_b_enh, calc_glob_matrix_A_enh, calc_glob_vector_d_enh, calc_glob_matrix_L_enh, calc_glob_vector_b_enh, calc_glob_matrix_C_enh, calc_glob_vector_q_enh, calc_glob_matrix_P_enh ]
+
+funcList_ECRE := [ calc_elem_matrix_K_hat, calc_elem_vector_F_hat, calc_elem_error_estimate_EET_EESPT ]
+
+funcList_interest_quantity := [ calc_interest_quantity_mean_sigma_epsilon, calc_interest_quantity_pointwise_dep_sigma_epsilon, calc_interest_quantity_SIF, calc_elem_correction_interest_quantity_wo_sigma_hat_m, calc_elem_correction_interest_quantity_w_sigma_hat_m, calc_elem_error_estimate_proj_on_adjoint ]
+
+funcList_local_improvement_steklov := [ calc_elem_error_estimate_lambda, calc_elem_correction_interest_quantity_lambda, calc_elem_weighted_error_estimate_lambda ]
+
+funcList_local_improvement_rayleigh := [ calc_elem_error_estimate_lambda, calc_skin_elem_error_estimate_lambda_boundary ]
+
+funcList_local_enrichment := [ calc_dep_handbook_in_infinite_domain ]
+
+funcList_PGD := [ ]
+
+funcList := Vec[Def]()
+funcList.append( funcList_material_properties )
+if want_discretization_error
+    funcList.append( funcList_discretization_error )
+if want_method_EET
+    funcList.append( funcList_force_fluxes_standard_EET )
+    if want_enhancement
+        funcList.append( funcList_force_fluxes_enhancement_EET )
+if want_method_SPET
+    funcList.append( funcList_SPET )
+if want_method_EESPT
+    funcList.append( funcList_force_fluxes_standard_EESPT )
+    if want_enhancement
+        funcList.append( funcList_force_fluxes_enhancement_EESPT )
+if want_method_EESPT or want_method_EET
+    funcList.append( funcList_ECRE )
+if want_local_estimation
+    funcList.append( funcList_interest_quantity )
+    if want_local_improvement_steklov
+        funcList.append( funcList_local_improvement_steklov )
+    if want_local_improvement_rayleigh
+        funcList.append( funcList_local_improvement_rayleigh )
+    if want_local_enrichment
+        funcList.append( funcList_local_enrichment )
+if want_PGD
+    funcList.append( funcList_PGD )
+
+funcList_all_in_one := Vec[Def]()
+for func_name in funcList
+    if not ( func_name in funcList_all_in_one )
+        funcList_all_in_one.push_back( func_name )
+
+#write_legacy_lmtpp_code( pb_name_parameter, formListParam, elemListParam, typeList = typeList, assume_const_jac_in_elems = true, integration_type = integration_type )
+
+#write_legacy_lmtpp_code( pb_name_space, formListSpace, elemListSpace, typeList = typeList, assume_const_jac_in_elems = hyp_const_jac, funcList = funcList_all_in_one, want_eig = want_compute_eig, integration_type = integration_type, degre_poly_handbook = degre_poly_handbook )

@@ -1,0 +1,3 @@
+import "formulation.met"
+
+write_legacy_lmtpp_code( pb_name_space, formListSpace, elemListSpace, typeList = typeList, assume_const_jac_in_elems = hyp_const_jac, funcList = funcList_all_in_one, want_eig = want_compute_eig, integration_type = integration_type, degre_poly_handbook = degre_poly_handbook )

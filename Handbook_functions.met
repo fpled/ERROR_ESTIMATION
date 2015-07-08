@@ -1,0 +1,122 @@
+#
+# Metil Interface: handbok_functions_met
+#
+# Description: definition des fonctions d'enrichissement (handbook)
+#
+#
+# Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2011
+#
+# Copyright: See COPYING file that comes with this distribution
+#
+#
+
+# Methode qui permet de calculer le vecteur de Galerkin B pour une force ponctuelle dans un domaine infini
+#---------------------------------------------------------------------------------------------------------
+def Galerkin_vector_for_pointwise_force_in_infinite_domain( dim, pos, mu )
+    B := Vec[ Vec[ Op, dim ], dim ]()
+    r := norm_2( pos )
+    if dim == 2
+        for i in 0 .. dim
+            for j in 0 .. dim
+                if j == i
+                    B[ i ][ j ] = - pow( r, 2 ) * log( r ) / ( 8 * Pi * mu )
+                else
+                    B[ i ][ j ] = 0
+    else if dim == 3
+        for i in 0 .. dim
+            for j in 0 .. dim
+                if j == i
+                    B[ i ][ j ] = r / ( 8 * Pi * mu )
+                else
+                    B[ i ][ j ] = 0
+    return B
+
+# Methode qui permet de calculer le vecteur de Galerkin B pour une pre-contrainte ponctuelle dans un domaine infini
+#------------------------------------------------------------------------------------------------------------------
+def Galerkin_vector_for_pointwise_pre_sigma_in_infinite_domain( dim, pos, mu )
+    B := Mat[ Vec[ Op, dim ], Sym[dim] ]()
+    r := norm_2( pos )
+    if dim == 2
+        for i in 0 .. dim
+            for j in 0 .. dim
+                if j == i
+                    B[ i, i ][ j ] = - pos[ i ] * ( 2 * log( r ) + 1 ) / ( 8 * Pi * mu )
+                else
+                    B[ i, i ][ j ] = 0
+        B[ 0, 1 ] = B[ 0, 0 ] * cos( Pi/4 ) + B[ 1, 1 ] * sin( Pi/4 )
+    else if dim == 3
+        for i in 0 .. dim
+            for j in 0 .. dim
+                if j == i
+                    B[ i, i ][ j ] = pos[ i ] / ( 8 * Pi * mu * r )
+                else
+                    B[ i, i ][ j ] = 0
+        B[ 0, 1 ] = B[ 0, 0 ] * cos( Pi/4 ) + B[ 1, 1 ] * sin( Pi/4 )
+        B[ 0, 2 ] = B[ 0, 0 ] * cos( Pi/4 ) + B[ 2, 2 ] * sin( Pi/4 )
+        B[ 1, 2 ] = B[ 1, 1 ] * cos( Pi/4 ) + B[ 2, 2 ] * sin( Pi/4 )
+    return B
+
+# Methode qui permet de calculer le vecteur de Galerkin B generalise
+#-------------------------------------------------------------------
+def Galerkin_vector_function( dim, pos, mu, phi_handbook_for_pointwise_force_in_infinite_domain, phi_handbook_for_pointwise_pre_sigma_in_infinite_domain, phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain )
+    B_for_pointwise_force_in_infinite_domain := Galerkin_vector_for_pointwise_force_in_infinite_domain( dim, pos, mu )
+    B_for_pointwise_pre_sigma_in_infinite_domain := Galerkin_vector_for_pointwise_pre_sigma_in_infinite_domain( dim, pos, mu )
+    B := Vec[ Op, dim ]()
+    for i in 0 .. dim
+        B += B_for_pointwise_force_in_infinite_domain[ i ] * phi_handbook_for_pointwise_force_in_infinite_domain[ i ]
+        for j in 0 .. i+1
+            B += B_for_pointwise_pre_sigma_in_infinite_domain[ i, j ] * phi_handbook_for_pointwise_pre_sigma_in_infinite_domain[ i, j ]
+    return B
+
+# Methode qui permet de calculer la fonction d'enrichissement (Green) dep_handbook a partir du vecteur de Galerkin B
+#-------------------------------------------------------------------------------------------------------------------
+def dep_handbook_function( e, B, la, mu )
+    u_handbook := e.div( e.grad( B ) ) - ( la + mu ) / ( la + 2 * mu ) * e.grad( e.div( B ) )
+    return u_handbook
+
+# Methode qui permet de calculer la fonction d'enrichissement (Green) dep_handbook_PUM a partir du vecteur dep_handbook
+#----------------------------------------------------------------------------------------------------------------------
+def dep_handbook_PUM_function( e, u_handbook, phi_nodal_handbook, force_fluxes_base )
+    u_handbook_PUM := Vec[ Op, e.dim ]()
+    for n in 0 .. e.nb_nodes
+        phi_n := e.get_shape_functions( force_fluxes_base )[ n ]
+        u_handbook_PUM += ( phi_nodal_handbook ).subs( e.var_inter, e.points[ n ] ) * phi_n * u_handbook
+    return u_handbook_PUM
+
+# Methode qui permet de calculer les fonctions d'enrichissement (Green) dep_handbook pour une force ponctuelle selon x en 2D et selon z en 3D dans un domaine infini
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def dep_handbook_for_pointwise_force_in_infinite_domain( dim, pos, poisson, mu, type_stress_2D )
+    u_handbook := Vec[ Op, dim ]()
+    r := norm_2( pos )
+    if dim == 2
+        theta := atan2( pos[ 1 ], pos[ 0 ] )
+        if type_stress_2D == "plane stress"
+            u_handbook[ 0 ] = ( - ( 3 - poisson ) * log( r ) + ( 1 + poisson ) * pow( cos( theta ), 2 ) - ( 7 - poisson ) / 2 ) / ( 8 * Pi * mu )
+            u_handbook[ 1 ] = ( 1 + poisson ) * cos( theta ) * sin( theta ) / ( 8 * Pi * mu )
+        else if type_stress_2D == "plane strain"
+            u_handbook[ 0 ] = ( - ( 3 - 4 * poisson ) * log( r ) + pow( cos( theta ), 2 ) - ( 7 - 8 * poisson ) / 2 ) / ( 8 * Pi * mu *  ( 1 - poisson ) )
+            u_handbook[ 1 ] = cos( theta ) * sin( theta ) / ( 8 * Pi * mu *  ( 1 - poisson ) )
+    else if dim == 3
+        u_handbook[ 0 ] = ( pos[ 0 ] * pos[ 2 ] ) / ( 16 * Pi * mu * ( 1 - poisson ) * pow( r, 3 ) )
+        u_handbook[ 1 ] = ( pos[ 1 ] * pos[ 2 ] ) / ( 16 * Pi * mu * ( 1 - poisson ) * pow( r, 3 ) )
+        u_handbook[ 2 ] = ( ( 3 - 4 * poisson ) + pow( pos[ 2 ] / r, 2 ) ) / ( 16 * Pi * mu * ( 1 - poisson ) * r )
+    return u_handbook
+
+# Methode qui permet de calculer les fonctions d'enrichissement (Green) dep_handbook pour une pre-contrainte ponctuelle selon xx en 2D et selon zz en 3D dans un domaine infini
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def dep_handbook_for_pointwise_pre_sigma_in_infinite_domain( dim, pos, poisson, mu, type_stress_2D )
+    u_handbook := Vec[ Op, dim ]()
+    r := norm_2( pos )
+    if dim == 2
+        theta := atan2( pos[ 1 ], pos[ 0 ] )
+        if type_stress_2D == "plane stress"
+            u_handbook[ 0 ] = - cos( theta ) / ( 8 * Pi * mu * r ) * ( ( 3 - poisson ) * pow( cos( theta ), 2 ) + ( 1 - 3 * poisson ) * pow( sin( theta ), 2 ) )
+            u_handbook[ 1 ] = - sin( theta ) / ( 8 * Pi * mu * r ) * ( 1 + poisson ) * ( pow( cos( theta ), 2 ) - pow( sin( theta ), 2 ) )
+        else if type_stress_2D == "plane strain"
+            u_handbook[ 0 ] = - cos( theta ) / ( 8 * Pi * mu * r * ( 1 - poisson ) ) * ( ( 3 - 4 * poisson ) * pow( cos( theta ), 2 ) + ( 1 - 4 * poisson ) * pow( sin( theta ), 2 ) )
+            u_handbook[ 1 ] = - sin( theta ) / ( 8 * Pi * mu * r * ( 1 - poisson ) ) * ( pow( cos( theta ), 2 ) - pow( sin( theta ), 2 ) )
+    else if dim == 3
+        u_handbook[ 0 ] = pos[ 0 ] * ( 1 - 3 * pow( pos[ 2 ] / r, 2 ) ) / ( 16 * Pi * mu * ( 1 - poisson ) * pow( r, 3 ) )
+        u_handbook[ 1 ] = pos[ 1 ] * ( 1 - 3 * pow( pos[ 2 ] / r, 2 ) ) / ( 16 * Pi * mu * ( 1 - poisson ) * pow( r, 3 ) )
+        u_handbook[ 2 ] = pos[ 2 ] * ( ( 1 - 4 * poisson ) + 3 * pow( pos[ 2 ] / r, 2 ) ) / ( 16 * Pi * mu * ( 1 - poisson ) * pow( r, 3 ) )
+    return u_handbook

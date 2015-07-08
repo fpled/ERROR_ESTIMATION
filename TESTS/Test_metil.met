@@ -1,0 +1,1359 @@
+import "EF/std_elements.met"
+import "../Handbook_functions.met"
+
+dim := 2
+e := SymbolicElement[ Triangle, dim ]()
+face := SymbolicElement[ Bar, dim ]()
+# infon e.get_name()
+# infon e.get_order_interpolation()
+# infon max( e.order_interpolation )
+# e.assume_const_jac = false
+# infon e.assume_const_jac
+# mes_symboles := Vec[Op]()
+# dep := e.new_variable( "dep", nb_dim = [e.dim], sym = mes_symboles, interpolation_type = "nodal" )
+# infon dep[ 0 ].poly_deg( e.var_inter )
+# dep.display_tex()
+# infon ( e.grad_sym(dep)[0] ).poly_deg( e.var_inter )
+# e.grad_sym(dep).display_tex()
+# e_bar := SymbolicElement[ Bar ]()
+
+# Test de l'ensemble des méthodes de SymbolicElement
+#---------------------------------------------------
+
+# infon e.jac
+
+# infon log( Float64(10) ) # = ln(10) = 2.303
+
+# e.pos_nodes[0] = [0 0]
+# e.pos_nodes[1] = [1 0]
+# e.pos_nodes[2] = [0 1]
+# cpt := 0
+# cpt_1 := 0
+# infon Pi/3
+# infon tan(Pi/3)
+# infon Pi/3*Float64(-2)
+# infon tan( -2*Pi/3 )
+# infon atan( tan(Pi/3) )
+# infon atan( tan(Pi/3) ) - Pi
+# infon atan2( sin(Pi/3), cos(Pi/3) )
+# infon atan2( sin(-2*Pi/3), cos(-2*Pi/3) )
+
+# infon e.name_for_gauss_point
+# infon ( (1 .. (n+1)).map(factorial) ).reversed
+# infon sum(0..n+1)
+# infon (1 .. (n+2)).map( sum(0 .. _0) )
+# infon n + sum(0..n+1) - ( (1 .. n+2).map( sum(0 .. _0) ) ).reversed
+# infon sum(0 .. n+2) - ( (2 .. n+3).map( sum(0 .. _0) ) ).reversed
+# infon ( (1 .. (n+2)).map(factorial) ).reversed
+# infon factorial(n+1) - ( (1 .. (n+2)).map(factorial) ).reversed
+
+# e.pos_nodes[0] = [0 0 0]
+# e.pos_nodes[1] = [1 0 0]
+# e.pos_nodes[2] = [0 1 0]
+# e.pos_nodes[3] = [0 0 1]
+
+# e.pos_nodes[0] = [1 1]
+# e.pos_nodes[1] = [0.62315 0.65463]
+# e.pos_nodes[2] = [1 0.5]
+e.pos_nodes[0] = [0 0]
+e.pos_nodes[1] = [1 0]
+e.pos_nodes[2] = [0 1]
+#~
+e.pos_nodes[0] = [106 19] # 32
+e.pos_nodes[1] = [115 11] # 18
+e.pos_nodes[2] = [115 18] # 172
+e.pos_nodes[3] = [110 22] # 33
+~#
+
+#e.pos_nodes = e.points
+# for n in 0 .. e.nb_nodes
+    # infon e.pos_nodes[ n ]
+
+# infon e.var_inter_for_pos( e.pos, 1 )
+# infon e.var_inter_for_pos( e.pos, 2 )
+# infon e.var_inter_for_pos( e.pos, 3 )
+# infon e.var_inter_for_pos( e.pos, 4 )
+
+# base := Vec[ Op ]()
+# nb_var := 20
+# v := Vec[Op,nb_var]( function = x => symbol("v_{$x}") )
+# for order in 0 .. 20
+    # infon order
+    # for comb in ConstantSumList( sum = order, list_size = nb_var )
+        # base.push_back( product( v ^ comb ) )
+        # infon comb
+    # infon base
+    # base.display_tex( "base" + order )
+    # if base.size >= e.nb_nodes
+        # if construct_lagrange_shape_function_using_current_base_( e.nb_nodes, TE::points, e.var_inter, lagrange_shape_functions, base ) and construct_hierarchical_shape_function_using_current_base_( e.nb_nodes, TE::points, e.var_inter, hierarchical_shape_functions, base )
+            # break
+
+# young := 1
+# poisson := 0.3
+# type_stress_2D := "plane stress"
+
+# pos_handbook := Vec[ Op, dim ]()
+# for d in 0 .. dim
+    # pos_handbook[ d ] = 0.2
+# OM := e.pos - pos_handbook
+# mu := lame_coeff_lambda( young, poisson, dim, type_stress_2D )
+# la := lame_coeff_lambda( young, poisson, dim, type_stress_2D )
+# sym_phi := Vec[Op]()
+# phi_nodal_handbook := e.new_variable( "\\phi", nb_dim = [1], sym = sym_phi, interpolation_type = "nodal" )
+# force_fluxes_base := "lagrange"
+# degre_poly_handbook := 2
+# integration_type := "gauss_num"
+# integration_lang := "cpp"
+
+# phi_handbook_for_pointwise_force_in_infinite_domain := Vec[ Op, dim ]()
+# phi_handbook_for_pointwise_pre_sigma_in_infinite_domain := Mat[ Op, Sym[dim] ]()
+# phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain := Mat[ Op, Sym[dim] ]()
+# for i in 0 .. dim
+    # phi_handbook_for_pointwise_force_in_infinite_domain[ i ] = 1
+    # for j in 0 .. i+1
+        # phi_handbook_for_pointwise_pre_sigma_in_infinite_domain[ i, j ] = 1
+        # phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain[ i, j ] = 1
+
+
+# Galerkin_vector := Galerkin_vector_function( dim, OM, mu,phi_handbook_for_pointwise_force_in_infinite_domain, phi_handbook_for_pointwise_pre_sigma_in_infinite_domain, phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain )
+# dep_handbook_ := dep_handbook_function( e, Galerkin_vector, la, mu )
+# epsilon_handbook := e.grad_sym( dep_handbook_ )
+# # sigma_handbook := sigma_hooke_iso( epsilon_handbook, young, poisson, type_stress_2D )
+# sigma_handbook := hooke_iso( young, poisson, dim, type_stress_2D ) : epsilon_handbook
+
+# dep_handbook_PUM := dep_handbook_PUM_function( e, dep_handbook_, phi_nodal_handbook, force_fluxes_base )
+# epsilon_handbook_PUM := e.grad_sym( dep_handbook_PUM )
+# # sigma_handbook_PUM := sigma_hooke_iso( epsilon_handbook_PUM, young, poisson, type_stress_2D )
+# sigma_handbook_PUM := hooke_iso( young, poisson, dim, type_stress_2D ) : epsilon_handbook_PUM
+
+# GM := e.pos - e.barycenter
+# for face_ in e.children( 1 )
+    # face := child_cast( face_ )
+    # infon face->num_child
+    # res_force_handbook := Vec[ Op, e.dim ]()
+    # res_torque_handbook_dim_2 := Op( 0 )
+    # res_torque_handbook_dim_3 := Vec[ Op, e.dim ]()
+    # force_surf_handbook := e.projection_on_child_elem( sigma_handbook, face ) * ( - face->normal )
+    # infon force_surf_handbook
+    # force_surf_handbook_linear_part := e.projection_on_shape_functions_with_equilibrium( dep_handbook_, degre_poly_handbook, face, force_fluxes_base )
+    # infon force_surf_handbook_linear_part
+    # # GM_vect_prod_force_surf_handbook := vect_prod( GM, force_surf_handbook )
+    # GM_vect_prod_force_surf_handbook_linear_part := vect_prod( GM, force_surf_handbook_linear_part )
+    # infon GM_vect_prod_force_surf_handbook_linear_part
+    # degre_poly_handbook_linear_part := Op( 0 )
+    # for d in 0 .. e.dim
+        # degre_poly_handbook_linear_part = ( force_surf_handbook_linear_part[ d ] ).poly_deg( face->var_inter )
+        # if integration_type == "gauss_num"
+            # if integration_lang == "metil"
+                # res_force_handbook[ d ] = face->gauss_num_integration( force_surf_handbook_linear_part[ d ], order_diff = degre_poly_handbook_linear_part )
+                # # res_force_handbook[ d ] = face->gauss_num_integration( force_surf_handbook[ d ], order_diff = degre_poly_handbook )
+            # else if integration_lang == "cpp"
+                # res_force_handbook[ d ] = force_surf_handbook_linear_part[ d ] * face->jac
+                # # res_force_handbook[ d ] = force_surf_handbook[ d ] * face->jac
+        # else if integration_type == "formal"
+            # res_force_handbook[ d ] = face->integration( force_surf_handbook_linear_part[ d ], order_diff = degre_poly_handbook_linear_part )
+            # # res_force_handbook[ d ] = face->integration( force_surf_handbook[ d ], order_diff = degre_poly_handbook )
+    # if e.dim == 2
+        # degre_poly_handbook_linear_part_ := ( e.projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part, face ) ).poly_deg( face->var_inter )
+        # degre_poly_handbook_linear_part = max( degre_poly_handbook_linear_part, degre_poly_handbook_linear_part_ )
+        # if integration_type == "gauss_num"
+            # if integration_lang == "metil"
+                # res_torque_handbook_dim_2 = face->gauss_num_integration( e.projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part, face ), order_diff = degre_poly_handbook_linear_part_ )
+                # # res_torque_handbook_dim_2 = face->gauss_num_integration( e.projection_on_child_elem( GM_vect_prod_force_surf_handbook, face ), order_diff = degre_poly_handbook )
+            # else if integration_lang == "cpp"
+                # res_torque_handbook_dim_2 = e.projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part, face ) * face->jac
+                # # res_torque_handbook_dim_2 = e.projection_on_child_elem( GM_vect_prod_force_surf_handbook, face ) * face->jac
+        # else if integration_type == "formal"
+            # res_torque_handbook_dim_2 = face->integration( e.projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part, face ), order_diff = degre_poly_handbook_linear_part_ )
+            # # res_torque_handbook_dim_2 = face->integration( e.projection_on_child_elem( GM_vect_prod_force_surf_handbook, face ), order_diff = degre_poly_handbook )
+    # else if e.dim == 3
+        # for d in 0 .. e.dim
+            # infon d
+            # degre_poly_handbook_linear_part_ := ( e.projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part[ d ], face ) ).poly_deg( face->var_inter )
+            # degre_poly_handbook_linear_part = max( degre_poly_handbook_linear_part, degre_poly_handbook_linear_part_ )
+            # if integration_type == "gauss_num"
+                # if integration_lang == "metil"
+                    # res_torque_handbook_dim_3[ d ] = face->gauss_num_integration( e.projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part[ d ], face ), order_diff = degre_poly_handbook_linear_part_ )
+                    # # res_torque_handbook_dim_3[ d ] = face->gauss_num_integration( e.projection_on_child_elem( GM_vect_prod_force_surf_handbook[ d ], face ), order_diff = degre_poly_handbook )
+                # else if integration_lang == "cpp"
+                    # res_torque_handbook_dim_3[ d ] = e.projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part[ d ], face ) * face->jac
+                    # # res_torque_handbook_dim_3[ d ] = e.projection_on_child_elem( GM_vect_prod_force_surf_handbook[ d ], face ) * face->jac
+            # else if integration_type == "formal"
+                # res_torque_handbook_dim_3[ d ] = face->integration( e.projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part[ d ], face ), order_diff = degre_poly_handbook_linear_part_ )
+                # # res_torque_handbook_dim_3[ d ] = face->integration( e.projection_on_child_elem( GM_vect_prod_force_surf_handbook[ d ], face ), order_diff = degre_poly_handbook )
+
+# for face_ in e.children( 1 )
+    # face := child_cast( face_ )
+    # infon face->num_child
+    # v := Vec[ Op, dim ]()
+    # for d in 0 .. dim
+        # v[ d ] = pow( e.var_inter[ 0 ] * e.var_inter[ d ], 2 ) / pow( e.var_inter[ 2 ], 3 )
+    # w := e.projection_on_shape_functions_with_equilibrium( v, 5, face )
+    # infon v
+    # infon w
+    # for d in 0 .. dim
+        # infon face->gauss_num_integration( w[ d ] - v[ d ], order_diff = 5 )
+        # order := ( w[ d ] ).poly_deg( face->var_inter )
+        # infon face->gauss_num_integration( w[ d ], order_diff = order ) - face->gauss_num_integration( v[ d ], order_diff = 5 )
+    # GM := e.pos - e.barycenter
+    # GM_vect_prod_w_minus_v := vect_prod( GM, w - v )
+    # GM_vect_prod_w := vect_prod( GM, w )
+    # GM_vect_prod_v := vect_prod( GM, v )
+    # if dim == 2
+        # infon face->gauss_num_integration( e.projection_on_child_elem( GM_vect_prod_w_minus_v, face ), order_diff = 5 )
+        # order := ( GM_vect_prod_w ).poly_deg( face->var_inter )
+        # infon face->gauss_num_integration( e.projection_on_child_elem( GM_vect_prod_w, face ), order_diff = order ) - face->gauss_num_integration( e.projection_on_child_elem( GM_vect_prod_v, face ), order_diff = 5 )
+    # else if dim == 3
+        # for d in 0 .. dim
+            # infon face->gauss_num_integration( e.projection_on_child_elem( GM_vect_prod_w_minus_v[ d ], face ), order_diff = 5 )
+            # order := ( GM_vect_prod_w[ d ] ).poly_deg( face->var_inter )
+            # infon face->gauss_num_integration( e.projection_on_child_elem( GM_vect_prod_w[ d ], face ), order_diff = order ) - face->gauss_num_integration( e.projection_on_child_elem( GM_vect_prod_v[ d ], face ), order_diff = 5 )
+    # for n in 0 .. face->nb_nodes
+        # phi_n := face->get_shape_functions( "lagrange" )[ n ]
+        # infon n
+        # for d in 0 .. dim
+            # infon d
+            # order := ( phi_n * ( w[ d ] - v[ d ] ) ).poly_deg( face->var_inter )
+            # order_ := ( phi_n * w[ d ] ).poly_deg( face->var_inter )
+            # if order < 0
+                # order = max( order_, 5 )
+            # infon order
+            # infon face->gauss_num_integration( phi_n * ( w[ d ] - v[ d ] ), order_diff = order )
+
+# v1 := Vec[Op,e.dim]( function = d => symbol("v1[$d]") )
+# v2 := Vec[Op,e.dim]( function = d => symbol("v2[$d]") )
+# m := v1 (*) v2
+# m.display_tex( "m" )
+# m_sym_part := sym_part( m )
+# m_sym_part.display_tex( "m_{sym}" )
+
+# infon e.point_is_inside( 0.5, 1 )
+# infon e.point_is_inside( 0.5, 2 )
+# e_bar.pos_nodes[0] = [106]
+# e_bar.pos_nodes[1] = [115]
+# infon e_bar.gauss_num_integration( e_bar.var_inter[ 0 ]*e_bar.var_inter[ 0 ], order_diff = 0 )
+# infon e_bar.gauss_num_integration( e_bar.var_inter[ 0 ]*e_bar.var_inter[ 0 ], order_diff = 1 )
+# infon e_bar.gauss_num_integration( e_bar.var_inter[ 0 ]*e_bar.var_inter[ 0 ], order_diff = 2 )
+# infon e_bar.gauss_num_integration( e_bar.var_inter[ 0 ]*e_bar.var_inter[ 0 ], order_diff = 3 )
+# infon e_bar.gauss_num_integration( e_bar.var_inter[ 0 ]*e_bar.var_inter[ 0 ], order_diff = 4 )
+# infon e_bar.gauss_num_integration( e_bar.var_inter[ 0 ]*e_bar.var_inter[ 0 ], order_diff = 5 )
+# infon e_bar.gauss_num_integration( e_bar.var_inter[ 0 ]*e_bar.var_inter[ 0 ], order_diff = 6 )
+# infon e_bar.gauss_num_integration( e_bar.var_inter[ 0 ]*e_bar.var_inter[ 0 ], order_diff = 7 )
+# infon e_bar.gauss_num_integration( e_bar.var_inter[ 0 ]*e_bar.var_inter[ 0 ], order_diff = 8 )
+# infon e_bar.gauss_num_integration( e_bar.var_inter[ 0 ]*e_bar.var_inter[ 0 ], order_diff = 9 )
+# infon e_bar.gauss_num_integration( e_bar.var_inter[ 0 ]*e_bar.var_inter[ 0 ], order_diff = 10 )
+# infon e_bar.gauss_num_integration( e_bar.var_inter[ 0 ]*e_bar.var_inter[ 0 ], order_diff = 11 )
+
+# infon e.pos
+# infon e.jac
+# infon e.gauss_num_integration( e.var_inter[ 0 ], order_diff = 0 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ], order_diff = 1 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ], order_diff = 2 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ], order_diff = 3 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ], order_diff = 4 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ], order_diff = 5 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ], order_diff = 6 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ], order_diff = 7 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ], order_diff = 8 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ], order_diff = 9 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ], order_diff = 10 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ], order_diff = 11 )
+# infon e.gauss_num_integration( e.var_inter[ 1 ], order_diff = 0 )
+# infon e.gauss_num_integration( e.var_inter[ 1 ], order_diff = 1 )
+# infon e.gauss_num_integration( e.var_inter[ 1 ], order_diff = 2 )
+# infon e.gauss_num_integration( e.var_inter[ 1 ], order_diff = 3 )
+# infon e.gauss_num_integration( e.var_inter[ 1 ], order_diff = 4 )
+# infon e.gauss_num_integration( e.var_inter[ 1 ], order_diff = 5 )
+# infon e.gauss_num_integration( e.var_inter[ 1 ], order_diff = 6 )
+# infon e.gauss_num_integration( e.var_inter[ 1 ], order_diff = 7 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ] * e.var_inter[ 1 ], order_diff = 0 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ] * e.var_inter[ 1 ], order_diff = 1 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ] * e.var_inter[ 1 ], order_diff = 2 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ] * e.var_inter[ 1 ], order_diff = 3 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ] * e.var_inter[ 1 ], order_diff = 4 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ] * e.var_inter[ 1 ], order_diff = 5 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ] * e.var_inter[ 1 ], order_diff = 6 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ] * e.var_inter[ 1 ], order_diff = 7 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ] * e.var_inter[ 1 ], order_diff = 8 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ] * e.var_inter[ 1 ], order_diff = 9 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ] * e.var_inter[ 1 ], order_diff = 10 )
+# infon e.gauss_num_integration( e.var_inter[ 0 ] * e.var_inter[ 1 ], order_diff = 11 )
+
+
+# face.pos_nodes[0] = [0, 0]
+# face.pos_nodes[1] = [1, 0]
+# face.pos_nodes[2] = [0.5, 0]
+# face.assume_const_jac = false
+# infon face.assume_const_jac
+# infon face.jac
+# force_fluxes_base := "lagrange"
+# integration_type := "gauss_num"
+# sym_Fh_hat_face := Vec[ Op ]()
+# Fh_hat_face := face.new_variable( "\\hat{F}", interpolation_type = "nodal", nb_dim = [ face.dim ], sym = sym_Fh_hat_face, interpolation_base = force_fluxes_base )
+# infon Fh_hat_face
+# infon face.dim
+# infon sym_Fh_hat_face
+# deg_p := max( face.order_interpolation )
+# for d in 0 .. face.dim
+    # infon d
+    # for n in 0 .. face.nb_nodes
+        # infon n
+        # phi_n := face.get_shape_functions( force_fluxes_base )[ n ]
+        # Fh_hat_face_phi_n := Op( 0 )
+        # degre_poly := ( Fh_hat_face[ d ] * phi_n ).poly_deg( face.var_inter )
+        # infon ( Fh_hat_face[ d ] ).poly_deg( face.var_inter )
+        # infon ( phi_n ).poly_deg( face.var_inter )
+        # infon ( face.jac ).poly_deg( face.var_inter )
+        # infon degre_poly
+        # if integration_type == "gauss_num"
+            # Fh_hat_face_phi_n = face.gauss_num_integration( Fh_hat_face[ d ] * phi_n, order_diff = degre_poly )
+        # else if integration_type == "formal"
+            # Fh_hat_face_phi_n = face.integration( Fh_hat_face[ d ] * phi_n, order_diff = degre_poly )
+        # infon Fh_hat_face[ d ] * phi_n
+        # infon Fh_hat_face_phi_n
+        # K_face_n := Vec[ Op ]()
+        # for unk_Fh_hat_face in sym_Fh_hat_face
+            # K_face_n.push_back( Fh_hat_face_phi_n.diff( unk_Fh_hat_face ) )
+        # for m in 0 .. face.nb_nodes
+            # infon K_face_n[ m * face.dim + d ]
+
+
+# e.pos_nodes[0] = [1, 0.5]
+# e.pos_nodes[1] = [1, 1]
+# e.pos_nodes[2] = [0, 1]
+# e.pos_nodes[3] = [0.5, 0.75]
+# e.pos_nodes[4] = [0.25, 1]
+# e.pos_nodes[5] = [0.25, 0.75]
+# e.assume_const_jac = false
+# infon e.assume_const_jac
+# infon e.jac
+# infon e.inv_jac_mat
+# force_fluxes_base := "lagrange"
+# for d in 0 .. e.dim
+    # infon d
+    # for n in 0 .. e.nb_nodes
+        # infon n
+        # phi_n := e.get_shape_functions( force_fluxes_base )[ n ]
+        # # infon phi_n
+        # grad_phi_n := e.grad( phi_n )
+        # # infon grad_phi_n
+        # degre_poly := ( grad_phi_n[ d ] ).poly_deg( e.var_inter )
+        # infon e.gauss_num_integration( grad_phi_n[ d ], order_diff = 20 #~degre_poly~# )
+
+# infon e.jac_mat
+# deg_p := max( e.order_interpolation )
+# deg_k := 3
+# force_fluxes_base := "hierarchical"
+# recovery_base := "lagrange"
+# dep_hat_test := Vec[ Op, e.dim ]()
+# base := Vec[ Op ]()
+# base = e.get_upper_degree_shape_functions( recovery_base, deg_p + deg_k )
+# infon base.size
+# coeffs_dep_hat_test := Vec[ Vec[ Op, base.size ], e.dim ]()
+# sym_dep_hat_test := Vec[ Op ]()
+# for d in 0 .. e.dim
+#     for x in 0 .. base.size
+#         coeffs_dep_hat_test[ d ][ x ] = symbol( "{U^{\\ast}}^{$x}_{$d}" )
+#     dep_hat_test[ d ] = dot( coeffs_dep_hat_test[ d ], base )
+# for x in 0 .. base.size
+#     for d in 0 .. e.dim
+#         sym_dep_hat_test.push_back( coeffs_dep_hat_test[ d ][ x ] )
+# dep_hat_test.display_tex()
+# infon dep_hat_test[0].poly_deg( e.var_inter )
+
+
+# (e.get_shape_functions( "lagrange" )).display_tex()
+# (e.get_upper_degree_shape_functions( "lagrange", 1 )).display_tex()
+# (e.get_upper_degree_shape_functions( "lagrange", 2 )).display_tex()
+# (e.get_upper_degree_shape_functions( "lagrange", 3 )).display_tex()
+# (e.get_shape_functions( "hierarchical" )).display_tex()
+# (e.get_upper_degree_shape_functions( "hierarchical", 1 )).display_tex()
+# (e.get_upper_degree_shape_functions( "hierarchical", 2 )).display_tex()
+# (e.get_upper_degree_shape_functions( "hierarchical", 3 )).display_tex()
+
+# lagrange_shape_func := e.get_shape_functions( "lagrange" )
+# hierarchical_shape_func := e.get_shape_functions( "hierarchical" )
+# for i in 0 .. e.nb_nodes
+    # infon i
+    # val_shape_func_lag := Vec[ Op, e.nb_nodes ]()
+    # val_shape_func_hie := Vec[ Op, e.nb_nodes ]()
+    # for n in 0 .. e.nb_nodes
+        # val_shape_func_lag[n] = (lagrange_shape_func[i]).subs( e.var_inter, e.pos_nodes[n] )
+        # val_shape_func_hie[n] = (hierarchical_shape_func[i]).subs( e.var_inter, e.pos_nodes[n] )
+    # infon val_shape_func_lag
+    # infon val_shape_func_hie
+# for deg in deg_p .. deg_p + deg_k + 1
+    # infon deg
+    # points := e.upper_degree_points( deg )
+    # shape_func_lag := e.get_upper_degree_shape_functions( "lagrange", deg )
+    # shape_func_hie := e.get_upper_degree_shape_functions( "hierarchical", deg )
+    # shape_func_lag.display_tex()
+    # shape_func_hie.display_tex()
+    # for i in 0 .. points.size
+        # infon i
+        # val_shape_func_lag := Vec[ Op, points.size ]()
+        # val_shape_func_hie := Vec[ Op, points.size ]()
+        # for n in 0 .. points.size
+            # val_shape_func_lag[n] = (shape_func_lag[i]).subs( e.var_inter, points[n] )
+            # val_shape_func_hie[n] = (shape_func_hie[i]).subs( e.var_inter, points[n] )
+        # infon val_shape_func_lag
+        # infon val_shape_func_hie
+        # val_shape_func_lag.display_tex()
+        # val_shape_func_hie.display_tex()
+# a := symbol( "a" )
+# b := symbol( "b" )
+# G_new := newton_raphson_iteration( [ e.gauss_num_integration( e.var_inter[ 0 ] - a, order_diff = 1 ), e.gauss_num_integration( e.var_inter[ 1 ] - b, order_diff = 1 ) ], [a,b] )
+# infon G_new
+
+# infon (e.pos).subs( e.var_inter, e.get_center_of_var_inter() )
+# infon e.barycenter
+# infon e.G
+# infon e.get_G( 2 )
+# c := Vec[ Op, e.dim ]( function = x => symbol("c[$x]") )
+# r := e.gauss_num_integration( ( e.var_inter[ 0 ] - c[ 0 ] ) ^ 2 + ( e.var_inter[ 1 ] - c[ 1 ] ) ^ 2, order_diff = 2 )
+# infon newton_raphson_minimize_iteration( r, c )
+
+
+# face1 := SymbolicElement[ Bar, dim ]()
+# face1.pos_nodes[0] = [2.5 5]
+# face1.pos_nodes[1] = [0 5]
+# face2 := SymbolicElement[ Bar, dim ]()
+# face2.pos_nodes[0] = [5 5]
+# face2.pos_nodes[1] = [2.5 5]
+
+# lagrange_shape_func1 := face1.get_shape_functions( "lagrange" )
+# lagrange_shape_func2 := face2.get_shape_functions( "lagrange" )
+
+# sym_F_face1 := Vec[ Op ]()
+# F_face1 := face1.new_variable( "F_1", nb_dim = [ face1.dim ], sym = sym_F_face1, interpolation_type = "nodal" )
+# # F_face1.display_tex()
+# # sym_F_face1.display_tex()
+# sym_F_face2 := Vec[ Op ]()
+# F_face2 := face2.new_variable( "F_2", nb_dim = [ face2.dim ], sym = sym_F_face2, interpolation_type = "nodal" )
+# # F_face2.display_tex()
+# eqs := Vec[ Op, 8 ]()
+# eqs[ 0 ] = face1.gauss_num_integration( F_face1[ 0 ] * lagrange_shape_func1[ 1 ] ) - 5.5245e-4
+# eqs[ 1 ] = face1.gauss_num_integration( F_face1[ 1 ] * lagrange_shape_func1[ 1 ] ) - 1.2391
+# eqs[ 2 ] = face1.gauss_num_integration( F_face1[ 0 ] * lagrange_shape_func1[ 0 ] ) + face2.gauss_num_integration( F_face2[ 0 ] * lagrange_shape_func2[ 1 ] ) - 1.3202e-4
+# eqs[ 3 ] = face1.gauss_num_integration( F_face1[ 1 ] * lagrange_shape_func1[ 0 ] ) + face2.gauss_num_integration( F_face2[ 1 ] * lagrange_shape_func2[ 1 ] ) - 2.5218
+# eqs[ 4 ] = face2.gauss_num_integration( F_face2[ 0 ] * lagrange_shape_func2[ 0 ] ) + 6.8448e-4
+# eqs[ 5 ] = face2.gauss_num_integration( F_face2[ 1 ] * lagrange_shape_func2[ 0 ] ) - 1.2391
+# eqs[ 6 ] = ( F_face1[ 0 ] ).subs( face1.var_inter[0], 0 ) - ( F_face2[ 0 ] ).subs( face2.var_inter[0], 1 )
+# eqs[ 7 ] = ( F_face1[ 1 ] ).subs( face1.var_inter[0], 0 ) - ( F_face2[ 1 ] ).subs( face2.var_inter[0], 1 )
+# c :=  Vec[ Op ]( newton_raphson_iteration( eqs, [sym_F_face1[0],sym_F_face1[1],sym_F_face1[2],sym_F_face1[3],sym_F_face2[0],sym_F_face2[1],sym_F_face2[2],sym_F_face2[3]] ) )
+# for d in 0 .. 8
+    # infon c[ d ]
+# F_face1 = F_face1.subs( sym_F_face1, c[ 0 .. 4 ] )
+# infon F_face1
+# F_face2 = F_face2.subs( sym_F_face2, c[ 4 .. 8 ] )
+# infon F_face2
+# M_ref := e.var_inter
+# G_ref_false := e.get_center_of_var_inter()
+# G_ref_true := e.barycenter
+# M := e.pos
+# infon M
+# int_M := Vec[ Op, e.dim ]()
+# for d in 0 .. e.dim
+    # int_M[ d ] += e.gauss_num_integration( M[ d ], order_diff = 1 )
+# infon int_M
+# G_true := e.barycenter
+# infon G_true
+# int_G_true := Vec[ Op, e.dim ]()
+# for d in 0 .. e.dim
+    # int_G_true[ d ] += e.gauss_num_integration( G_true[ d ], order_diff = 1 )
+# infon int_G_true
+# G_false := (e.pos).subs( e.var_inter, e.get_center_of_var_inter() )
+# infon G_false
+# int_G_false := Vec[ Op, e.dim ]()
+# for d in 0 .. e.dim
+    # int_G_false[ d ] += e.gauss_num_integration( G_false[ d ], order_diff = 1 )
+# infon int_G_false
+# GM_true := e.pos - e.barycenter
+# int_GM_true := Vec[ Op, e.dim ]()
+# for d in 0 .. e.dim
+    # int_GM_true[ d ] = e.gauss_num_integration( GM_true[ d ], mul_by_jac = true, order_diff = 2 )
+    # int_GM_true[ d ] = e.integration( GM_true[ d ], mul_by_jac = false, order_diff = 2 )
+# infon int_GM_true
+# infon e.gauss_num_integration( dot( GM_true, GM_true ), mul_by_jac = true, order_diff = 2 )
+# GM_false := e.pos - (e.pos).subs( e.var_inter, e.get_center_of_var_inter() )
+# int_GM_false := Vec[ Op, e.dim ]()
+# for d in 0 .. e.dim
+    # int_GM_false[ d ] = e.gauss_num_integration( GM_false[ d ], mul_by_jac = true, order_diff = 2 )
+    # int_GM_false[ d ] = e.integration( GM_false[ d ], mul_by_jac = false, order_diff = 2 )
+# infon int_GM_false
+# infon e.gauss_num_integration( dot( GM_false, GM_false ), mul_by_jac = true, order_diff = 2 )
+# int_GM_new := Vec[ Op, e.dim ]()
+# for d in 0 .. e.dim
+    # int_GM_new[ d ] = e.gauss_num_integration( GM_new[ d ], order_diff = 1 )
+# infon int_GM_new
+# M.display_tex( "M" )
+# G.display_tex( "G" )
+# GM.display_tex( "GM" )
+# a := e.gauss_num_integration( e.var_inter[ 0 ], order_diff = 2 )
+# b := e.gauss_num_integration( e.var_inter[ 1 ], order_diff = 2 )
+# c := e.gauss_num_integration( e.var_inter[ 0 ] * e.var_inter[ 1 ], order_diff = 2 )
+# infon 106*(1+c-b-a)+110*(b-c)+115*(a-c)+115*c 
+# infon 19*(1-a-b+c)+22*(b-c)+11*(a-c)+18*c
+
+# P := dot( e.get_shape_functions( "lagrange" ), e.pos_nodes )
+# infon P
+# P_bis := e.pos
+# infon P_bis
+# coeffs := Vec[ Op, dim ]( function = x => symbol("c[$x]") )
+# barycenter_eqs := Vec[Op,e.dim]()
+# for d in 0 .. dim
+    # barycenter_eqs[ d ] = e.integration( P[ d ] - coeffs[ d ], mul_by_jac = true, order_diff = 2 )
+# init_sol := Vec[ Op, dim ]()
+# for d in 0 .. dim
+    # init_sol[ d ] = 0
+# infon Vec[ Op ]( newton_raphson_iteration( barycenter_eqs, coeffs, P.subs( e.var_inter, init_sol ) ) )
+# for d in 0 .. dim
+    # infon barycenter_eqs[ d ]
+
+# coeffs_bis := Vec[ Op, dim ]( function = x => symbol("c[$x]") )
+# d := e.pos - coeffs_bis
+# r := e.integration( dot( d, d ), mul_by_jac = true, order_diff = 4 )
+# infon Vec[ Op ]( newton_raphson_minimize_iteration_rec( r, coeffs_bis, 2, P.subs( e.var_inter, init_sol ) ) )
+# coeffs_bis = Vec[ Op ]( newton_raphson_minimize_iteration_rec( r, coeffs_bis, 2, P.subs( e.var_inter, init_sol ) ) )
+# infon r
+# infon e.inertia_operator_for_barycenter
+# infon e.inertia_operator_for_G
+# infon e.get_measure()
+
+# deg_p := max( e.order_interpolation )
+# force_fluxes_base := "lagrange"
+# f_vol_enhanced := Vec[ Op, e.dim ]()
+# f_vol_enhanced_part_res := Vec[ Op, e.dim ]()
+# f_vol_enhanced_part_torque := Vec[ Op, e.dim ]()
+# sym_force_surf_enhanced_elem := Vec[ Op ]()
+# GM := e.pos - e.barycenter
+# for face_ in e.children( 1 )
+    # face := child_cast( face_ )
+    # eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)" )
+    # sym_force_surf_enhanced := Vec[ Vec[ Op, face->dim ], face->nb_nodes ]()
+    # for i in 0 .. face->nb_nodes
+        # for d in 0 .. face->dim
+            # s := Op()
+            # s = symbol( "vec_force_fluxes_local[ $( face->num_child ) ][ $d ][ $i ]" )
+            # sym_force_surf_enhanced_elem.push_back( s )
+            # sym_force_surf_enhanced[ i ][ d ] = s
+    # force_surf_enhanced := Vec[ Op, face->dim ]( face->interpolation( sym_force_surf_enhanced, force_fluxes_base ) )
+    # infon force_surf_enhanced
+    # force_surf_enhanced.display_tex( "force_surf_enhanced_" + cpt++ )
+    # for d in 0 .. e.dim
+        # f_vol_enhanced[ d ] -= pow( e.measure , -1 ) * face->gauss_num_integration( #~eta *~# force_surf_enhanced[ d ], order_diff = 2 * deg_p )
+        # f_vol_enhanced_part_res[ d ] -= pow( e.measure , -1 ) * #~eta *~# face->gauss_num_integration( force_surf_enhanced[ d ], order_diff = 4 * deg_p )
+        # infon face->gauss_num_integration( force_surf_enhanced[ d ], order_diff = deg_p )
+        # ( face->gauss_num_integration( force_surf_enhanced[ d ], order_diff = deg_p ) ).display_tex( "tmp" + cpt++ )
+    # GM_vect_prod_force_surf_enhanced := vect_prod( GM, #~eta *~# force_surf_enhanced )
+    # infon GM_vect_prod_force_surf_enhanced
+    # GM_vect_prod_force_surf_enhanced.display_tex( "GM_vect_prod_force_surf_enhanced" + cpt++ )
+    # if face->dim == 3
+        # int_GM_vect_prod_force_surf_enhanced := Vec[ Op, face->dim ]()
+        # for d in 0 .. face->dim
+            # int_GM_vect_prod_force_surf_enhanced[ d ] = face->gauss_num_integration( e.projection_on_child_elem( GM_vect_prod_force_surf_enhanced[ d ], face ), order_diff = 2 * deg_p )
+        # f_vol_enhanced_torque := vect_prod( inv_tiny( e.operator_inertia_for_barycenter ) * int_GM_vect_prod_force_surf_enhanced, GM )
+        # for d in 0 .. e.dim
+            # f_vol_enhanced[ d ] -= f_vol_enhanced_torque[ d ]
+    # else
+        # N_vect_prod_GM := Vec[ Op, e.dim ]()
+        # N_vect_prod_GM[ 0 ] = -GM[ 1 ]
+        # N_vect_prod_GM[ 1 ] = GM[ 0 ]
+        # for d in 0 .. e.dim
+            # f_vol_enhanced[ d ] -= pow( e.inertia_operator_for_barycenter , -1 ) * face->gauss_num_integration( e.projection_on_child_elem( GM_vect_prod_force_surf_enhanced, face ), false, order_diff = 2 * deg_p ) * N_vect_prod_GM[ d ]
+# GM_vect_prod_f_vol_enhanced := vect_prod( GM, f_vol_enhanced )
+# GM_vect_prod_f_vol_enhanced_part_res := vect_prod( GM, f_vol_enhanced_part_res )
+# int_f_vol_enhanced_torque_d := e.gauss_num_integration( GM_vect_prod_f_vol_enhanced, false, order_diff = 2 * deg_p )
+# int_f_vol_enhanced_torque_d_e := int_f_vol_enhanced_torque_d.diff( sym_force_surf_enhanced_elem )
+# int_f_vol_enhanced_torque_d_part_res := e.gauss_num_integration( GM_vect_prod_f_vol_enhanced_part_res, order_diff = 2 * deg_p )
+# int_f_vol_enhanced_torque_d_e_part_res := int_f_vol_enhanced_torque_d_part_res.diff( sym_force_surf_enhanced_elem )
+# infon int_f_vol_enhanced_torque_d_e
+# infon int_f_vol_enhanced_torque_d_e_part_res
+
+
+# sym_force_surf_enhanced_elem.display_tex( "f_surf_enhanced_" + cpt++ )
+# f_vol_enhanced.display_tex( "f_vol_" + cpt++ )
+# dep_hat_test := Vec[ Op, e.dim ]()
+# base := Vec[ Op ]()
+# base = e.get_upper_degree_shape_functions( recovery_base, deg_p + deg_k )
+# coeffs_dep_hat_test := Vec[ Vec[ Op, base.size ], e.dim ]()
+# sym_dep_hat_test := Vec[ Op ]()
+# for d in 0 .. e.dim
+    # for x in 0 .. base.size
+        # coeffs_dep_hat_test[ d ][ x ] = symbol( "{U^{\\ast}}^{$x}_{$d}" )
+    # dep_hat_test[ d ] = dot( coeffs_dep_hat_test[ d ], base )
+# for x in 0 .. base.size
+    # for d in 0 .. e.dim
+        # sym_dep_hat_test.push_back( coeffs_dep_hat_test[ d ][ x ] )
+# energie_F_enhanced := Op( 0 )
+# energie_F_enhanced = dot( f_vol_enhanced, dep_hat_test ) * e.jac
+# energie_F_enhanced_e := energie_F_enhanced.diff( sym_force_surf_enhanced_elem )
+# energie_F_enhanced_e.display_tex( "energie_F_enhanced_e" + cpt++ )
+# for i in 0 .. sym_force_surf_enhanced_elem.size
+    # F_hat_enhanced_e := (energie_F_enhanced_e[ i ]).diff( sym_dep_hat_test )
+# for face_ in e.children( 1 )
+    # face := child_cast( face_ )
+    # eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)" )
+    # sym_force_flux_enhanced := Vec[ Op ]()
+    # sym_force_surf_enhanced := Vec[ Vec[ Op, face->dim ], face->nb_nodes ]()
+    # for i in 0 .. face->nb_nodes
+        # for d in 0 .. face->dim
+            # s := Op()
+            # s = symbol( "vec_force_fluxes_local[ $( face->num_child ) ][ $d ][ $i ]" )
+            # sym_force_flux_enhanced.push_back(s)
+            # sym_force_surf_enhanced[ i ][ d ] = s
+    # sym_force_surf_enhanced_elem.display_tex( "f_surf_enhanced_" + cpt++ )
+    # sym_force_flux_enhanced.display_tex( "f_flux_enhanced_" + cpt++ )
+    # force_surf_enhanced := Vec[ Op, face->dim ]( face->interpolation( sym_force_surf_enhanced, force_fluxes_base ) )
+    # energie_F_enhanced_face := Op( 0 )
+    # energie_F_enhanced_face = eta * dot( force_surf_enhanced, e.projection_on_child_elem( dep_hat_test, face ) ) * face->jac
+    # energie_F_enhanced_face.display_tex( "NRJ_face_" + cpt++ )
+    # energie_F_enhanced_face_e := energie_F_enhanced_face.diff( sym_force_flux_enhanced )
+    # energie_F_enhanced_face_e_new := energie_F_enhanced_face.diff( sym_force_surf_enhanced_elem )
+    # energie_F_enhanced_face_e.display_tex( "NRJ_"+ cpt++ )
+    # energie_F_enhanced_face_e_new.display_tex( "NRJ_new_"+ cpt++ )
+    # for i in 0 .. sym_force_surf_enhanced_elem.size
+        # F_hat_enhanced_face := (energie_F_enhanced_face_e_new[ i ]).diff( sym_dep_hat_test )
+
+
+
+
+
+
+
+
+
+
+
+# (e.get_shape_functions( "lagrange" )).display_tex()
+# sym_u := Vec[ Op, e.dim]( function = d => symbol("u[$d]") )
+# u := mul( dot( e.get_shape_functions( "lagrange" ), e.pos_nodes ), sym_u )
+# u.display_tex()
+# P := dot( e.get_shape_functions( "lagrange" ), e.pos_nodes )
+# G := e.get_center_of_var_inter()
+# G.display_tex()
+# mat := Mat[ Op, Gen[dim,dim] ]()
+# V_1 := Vec[Op,e.dim]( vect_prod( u, P - G ) )
+# V_1.display_tex()
+# V_2 := Vec[Op,e.dim]( vect_prod( P - G, V_1 ) )
+# V_2.display_tex()
+# V := Vec[Op,e.dim]()
+# for d_i in 0 .. e.dim
+    # for d_j in 0 .. e.dim
+        # mat[d_i,d_j] = e.integration( V_2[d_i].diff( sym_u[d_j] ), order_diff = 3 )
+# mat.display_tex()
+# for unk_u, i in sym_u, 0 .. sym_u.size
+    # dr := localpb_A.diff( unk_lambda_n_Fh_hat_face )
+# for d in 0 .. e.dim
+    # G[d] - P[d]
+
+
+# deg_p := max( e.order_interpolation )
+# deg_k := 2
+# points := e.upper_degree_points( deg_p + deg_k )
+# for p in 0 .. points.size
+#     infon e.point_is_on_edge( points[ p ] )
+# hierarchic_base := Vec[ Op, points.size ]()
+# canonical_base := Vec[ Op ]()
+# for order in 0...
+    # infon order
+    # for comb in ConstantSumList( sum = order, list_size = e.nvi )
+        # canonical_base.push_back( product( e.var_inter ^ comb ) )
+    # if canonical_base.size >= points.size
+        # infon canonical_base.size
+        # if e.construct_hierarchic_FE_base_using_canonical_base_( e.nb_vertex_nodes, points.size, points, e.var_inter, hierarchic_base, canonical_base )
+            # break
+# lagrange_base := Vec[ Op, points.size ]()
+# canonical_base := Vec[ Op ]()
+# for order in 0...
+    # infon order
+    # for comb in ConstantSumList( sum = order, list_size = e.nvi )
+        # canonical_base.push_back( product( e.var_inter ^ comb ) )
+    # if canonical_base.size >= points.size
+        # infon canonical_base.size
+        # if e.construct_lagrange_FE_base_using_canonical_base_( points.size, points, e.var_inter, lagrange_base, canonical_base )
+            # break
+
+# infon e.upper_degree_points(4).size
+# infon e.upper_degree_points(4)
+# for n in 0 .. e.upper_degree_points(4).size
+    # infon (e.upper_degree_points(4))[ n ]
+# deg_k := 1
+# deg_p := max( e.order_interpolation )
+# points := e.upper_degree_points( deg_p + deg_k )
+# for p in 0 .. points.size
+    # infon e.point_is_on_edge( points[ p ] )
+# base := Vec[ Op, points.size ]()
+# canonical_base := Vec[ Op ]()
+# for order in 0...
+    # for comb in ConstantSumList( sum = order, list_size = e.nvi )
+        # canonical_base.push_back( product( e.var_inter ^ comb ) )
+    # if canonical_base.size >= points.size
+        # if e.construct_hierarchic_FE_base_using_canonical_base_( e.nb_vertex_nodes, points.size, points, e.var_inter, base, canonical_base )
+            # break
+# base.display_tex( "tmp_" + cpt++ )
+# base_vertex := Vec[ Op, points.size ]()
+# for p in 0 .. points.size
+    # if e.point_is_a_vertex( points[ p ] )
+        # base_vertex[ p ] = base[ p ]
+    # else
+        # base_vertex[ p ] = 0
+# base_vertex.display_tex( "tmp_" + cpt++ )
+# coeffs_e_i_patch := Vec[ Vec[ Op, base.size ], e.dim ]()
+# coeffs_u_star_patch := Vec[ Vec[ Op, base.size], e.dim ]()
+# sym_e_i_patch := Vec[ Op ]()
+# e_i_patch := Vec[ Op, e.dim ]()
+# sym_u_star_patch := Vec[ Op ]()
+# u_star_patch := Vec[ Op, e.dim ]()
+# Pi_u_star_patch := Vec[ Op, e.dim ]()
+# for d in 0 .. e.dim
+    # for x in 0 .. base.size
+        # coeffs_e_i_patch[ d ][ x ] = symbol( "e^{$x}_{$d}" )
+        # coeffs_u_star_patch[ d ][ x ] = symbol( "{u^{\\ast}}^{$x}_{$d}" )
+    # e_i_patch[ d ] = dot( coeffs_e_i_patch[ d ], base )
+    # u_star_patch[ d ] = dot( coeffs_u_star_patch[ d ], base )
+    # Pi_u_star_patch[ d ] = dot( coeffs_u_star_patch[ d ], base_vertex )
+# u_star_patch.display_tex( "tmp_" + cpt++ )
+# Pi_u_star_patch.display_tex( "tmp_" + cpt++ )
+# # u_star_patch_test.display_tex( "tmp_" + cpt++ )
+# for x in 0 .. base.size
+    # for d in 0 .. e.dim
+        # sym_e_i_patch.push_back( coeffs_e_i_patch[ d ][ x ] )
+        # sym_u_star_patch.push_back( coeffs_u_star_patch[ d ][ x ] )
+
+        # sym_u_star_patch_test.push_back( coeffs_u_star_patch_test[ d ][ x ] )
+# base_vertex := Vec[ Op ]()
+# coeffs_vertex_e_i_patch := Vec[ Vec[ Op ], e.dim ]()
+# coeffs_vertex_u_star_patch := Vec[ Vec[ Op ], e.dim ]()
+# Pi_e_i_patch := Vec[ Op, e.dim ]()
+# Pi_u_star_patch := Vec[ Op, e.dim ]()
+# for x in 0 .. base.size
+#     if e.point_is_a_vertex( points[ x ] )
+#         base_vertex.push_back( base[ x ] )
+#         for d in 0 .. e.dim
+#             coeffs_vertex_e_i_patch[ d ].push_back( coeffs_e_i_patch[ d ][ x ] )
+#             coeffs_vertex_u_star_patch[ d ].push_back( coeffs_e_i_patch[ d ][ x ] )
+# base_vertex.display_tex( "tmp_" + cpt++ )
+# for d in 0 .. e.dim
+#     Pi_e_i_patch[ d ] = dot( coeffs_vertex_e_i_patch[ d ], base_vertex )
+#     Pi_u_star_patch[ d ] = dot( coeffs_vertex_u_star_patch[ d ], base_vertex )
+# Pi_e_i_patch.display_tex( "tmp_" + cpt++ )
+# Pi_u_star_patch.display_tex( "tmp_" + cpt++ )
+
+
+
+# test := u_star_patch - Pi_u_star_patch
+# ( e.gauss_num_integration( test[ 0 ] * e.shape_functions_vertex[ 0 ], mul_by_jac = false, order_diff = deg_p + deg_k + 1 ) ).display_tex( "tmp_" + cpt++ )
+# ( e.gauss_num_integration( test[ 0 ] * e.shape_functions_vertex[ 1 ], mul_by_jac = false, order_diff = deg_p + deg_k + 1 ) ).display_tex( "tmp_" + cpt++ )
+# for order in 0..7
+    # infon order
+    # gauss := e.gauss_num_integration( pow( e.var_inter[ 0 ], 6 )*pow( e.var_inter[ 1 ], 2 ), mul_by_jac = true, order_diff = order )
+    # formal := e.integration( pow( e.var_inter[ 0 ], 6 )*pow( e.var_inter[ 1 ], 2 ), mul_by_jac = true, order_diff = order )
+    # infon Float96(gauss)
+    # infon Float96(formal)
+    # infon Float96(formal-gauss)
+# test.display_tex( "tmp_" + cpt++ )
+# for d in 0 .. e.dim
+    # for n in 0 .. points.size
+        # ( test[ d ].subs( e.var_inter, points[ n ] ) ).display_tex( "test_d_" + cpt++ )
+    # for face_ in e.children( 1 )
+        # face := child_cast( face_ )
+        # points_face := face->upper_degree_points( deg_p + deg_k )
+        # for p in 0 .. points_face.size
+            # ( e.projection_on_child_elem( test[ d ], face ) ).subs( face->var_inter, points_face[ p ] ).display_tex( "test_proj_d_" + cpt_1++ )
+
+# p := Vec[ Vec[ Rationnal, 2 ] ]()
+# for j in 0 .. 4+1
+    # for i in 0 .. (4+1)-j
+        # p.push_back( [ i/4, j/4 ] )
+# infon p
+# infon e.var_inter[0]
+# infon e.gauss_num_integration( e.var_inter[0]^2*e.var_inter[1]^2#~, order_diff = 2~# )
+
+# infon sqrt(3.0)
+
+# base := Vec[Op]()
+# for order in 1 .. 4
+    # for comb in ConstantSumList( sum = order, list_size = 2 )
+        # base.push_back( product( e.var_inter ^ comb ) )
+# coeff_dep_expr := Vec[ Vec[ Op, base.size ], 2 ]()
+# coeff_dep_test := Vec[ Vec[ Op, base.size ], 2 ]()
+# sym_dep_expr := Vec[ Op ]()
+# sym_dep_test := Vec[ Op ]()
+# dep := Vec[ Op, e.dim ]()
+# tep := Vec[ Op, e.dim ]()
+# for d in 0 .. e.dim
+    # for x in 0 .. base.size
+        # coeff_dep_expr[ d ][ x ] = symbol("U^($x)_$d")
+        # coeff_dep_test[ d ][ x ] = symbol("{U^($x)_$d}^*")
+        # sym_dep_expr.push_back( coeff_dep_expr[ d ][ x ] )
+        # sym_dep_test.push_back( coeff_dep_test[ d ][ x ] )
+    # dep[ d ] = dot( coeff_dep_expr[ d ], base )
+    # tep[ d ] = dot( coeff_dep_test[ d ], base )
+
+# eps := e.grad_sym( dep )
+# ept := e.grad_sym( tep )
+# ene := eps : hooke_iso( 1, 0.3, e.dim ) : ept
+
+# # ene += 1e3 * dot( dep, tep ).subs( e.var_inter, [ 0 0 ] )
+# # ene += 1e3 * dot( dep - [ 0.1 0 ], tep ).subs( e.var_inter, [ 1 0 ] )
+# def asym( m )
+    # return m[0,1]-m[1,0]
+# omega_e := asym( e.grad( dep ).subs(e.var_inter,e.var_inter*0) )
+# omega_t := asym( e.grad( tep ).subs(e.var_inter,e.var_inter*0) )
+
+# ene = e.integration( ene ) + omega_t * omega_e
+
+# vec := ene.diff( sym_dep_test )
+# mat := vec.diff( sym_dep_expr )
+# vec *= -1
+
+# res := ( mat \ vec ).subs( sym_dep_expr, sym_dep_expr * 0 )
+
+
+
+# info Mat[Float64]( mat )
+
+# info res
+# info Vec[Float64]( dep.subs( sym_dep_expr, res ).subs( e.var_inter, [ 0 0 ] ) )
+# info Vec[Float64]( dep.subs( sym_dep_expr, res ).subs( e.var_inter, [ 1 0 ] ) )
+# info Vec[Float64]( dep.subs( sym_dep_expr, res ).subs( e.var_inter, [ 0 1 ] ) )
+
+# e.pos_nodes[0] = [0 0]
+# e.pos_nodes[1] = [1 0]
+# e.pos_nodes[2] = [0 1]
+# infon e.get_nb_nodes_()
+# infon e.nb_nodes
+# infon e.var_inter_()
+# e.var_inter_().display_tex( "x_" + cpt++ )
+# infon e.get_bubble_function()
+# infon e.var_inter_for_node_nb( 0 )
+# infon e.var_inter_for_node_nb( 1 )
+# infon e.var_inter_for_node_nb( 2 )
+# infon e.get_name()
+# infon e.get_nb_dim()
+# infon c->get_nb_nodes_()
+# for i in 1 .. (@c).get_nb_nodes_()
+    # infon c->interpolation( diff((@c).val[i]) ) 
+    # infon c->get_shape_functions()[0]
+# phi := e.new_variable( "\\phi", interpolation_type = "nodal", sym = sym_phi )
+# for c_ in e.children(1)
+    # c := child_cast(c_) # c_ renvoie à SymbolicElementAncestor et c renvoie à SymbolicElement
+    # A_m_e := Mat[Op](dim*(c->nb_nodes),dim*(c->nb_nodes))
+    # int_phi_phj := Mat[Op](c->nb_nodes,c->nb_nodes)
+    # infon c->num_child
+    # for i in 0 .. c->nb_nodes
+        # phi_i := c->shape_functions[i] 
+        # infon phi_i             # fonction de forme numero i
+        # for j in 0 .. c->nb_nodes
+            # phi_j := c->shape_functions[j]
+            # infon phi_j 
+            # int_phi_phj[ i, j ] = c->integration( phi_i * phi_j )
+        # int_phi_phj.display_tex( "x_" + cpt++ )
+        # for k in 0 .. dim
+            # for i in 0 .. c->nb_nodes
+                # for j in 0 .. c->nb_nodes
+                    # A_m_e[  i+k*(c->nb_nodes), j+k*(c->nb_nodes) ] = int_phi_phj[ i, j ]
+        # A_m_e.display_tex( "x_" + cpt++ )
+# infon child_cast( e.children( 2 )[ 0 ] )->pos
+# infon e.std_pos_symbol_function( 0,0 )
+# e.std_pos_symbol_function( 0,0 ).display_tex( "x_" + cpt++ )
+# infon e.std_pos_symbol_function( 0,1 )
+# e.std_pos_symbol_function( 0,1 ).display_tex( "x_" + cpt++ )
+# infon e.std_pos_symbol_function( 1,0 )
+# e.std_pos_symbol_function( 1,0 ).display_tex( "x_" + cpt++ )
+# infon e.std_pos_symbol_function( 1,1 )
+# e.std_pos_symbol_function( 1,1 ).display_tex( "x_" + cpt++ )
+# infon e.std_pos_symbol_function( 2,0 )
+# e.std_pos_symbol_function( 2,0 ).display_tex( "x_" + cpt++ )
+# infon e.std_pos_symbol_function( 2,1 )
+# e.std_pos_symbol_function( 2,1 ).display_tex( "x_" + cpt++ )
+# infon e.get_pos()
+# e.get_pos().display_tex( "x_" + cpt++ )
+# infon e.interpolation(1)
+# infon e.get_measure()
+# e.get_measure().display_tex( "x_" + cpt++ )
+# infon e.get_center_of_var_inter()
+# infon e.get_points()
+# infon e.val_nodes_from_lower_degre(l)
+# infon e.set_field_as_it_was_from_lower_degree_element( dep )
+#e.set_field_as_it_was_from_lower_degree_element( dep ).display_tex( "x_" + cpt++ )
+#  infon e.set_pos_field_as_it_was_from_lower_degree_element()
+# infon e.var_inter_from_child_var_inter( 1, 2, child_var_inter )
+# e.var_inter_from_child_var_inter( 1, 2, child_var_inter ).display_tex( "x_" + cpt++ )
+# for c in e.children(1)
+    # e.projection_on_child_elem(sigma.expr,c).display_tex(  "x_" + cpt++ )
+# infon e.get_jac_mat()
+# e.get_jac_mat().display_tex( "x_" + cpt++ )
+# infon e.get_jac()
+# e.get_jac().display_tex( "x_" + cpt++ )
+# infon e.get_inv_jac_mat()
+# e.get_inv_jac_mat().display_tex( "x_" + cpt++ )
+# infon e.get_order_interpolation()
+# infon e.dot_prod()
+# infon e.pol_inde_()
+# infon e.shape_function_der( variable, sym )
+# infon e.integration( e.pos[0] )
+# e.integration( e.pos[0] ).display_tex( "x_" + cpt++  )
+# infon e.bestial_num_integration( e.pos[0] )
+# e.bestial_num_integration( e.pos[0] ).display_tex( "x_" + cpt++  )
+# infon e.mean( dep.expr )
+# e.mean( dep.expr ).display_tex( "x_" + cpt++ )
+# infon e.make_interpolation( res, interpolation_type = "nodal", met_name, tex_name )
+# e.make_interpolation( res, interpolation_type = "nodal", met_name, tex_name ).display_tex( "x_" + cpt++ )
+# infon e.grad( sigma.expr )
+# e.grad( sigma.expr ).display_tex( "x_" + cpt++ )
+#  infon e.grad( dep.expr )
+# e.grad( dep.expr ).display_tex( "x_" + cpt++ )
+# infon e.grad_sym( dep.expr )
+# e.grad_sym( dep.expr ).display_tex( "x_" + cpt++ )
+# infon e.div( dep.expr )
+# e.div( dep.expr ).display_tex( "x_" + cpt++ )
+# infon e.div( epsilon.expr )
+# e.div( epsilon.expr ).display_tex( "x_" + cpt++ )
+# infon e.var_inter_for_pos( [0.5 0.5] )
+# e.var_inter_for_pos( [0.5 0.5] ).display_tex( "x_" + cpt++ )
+# infon e.point_is_inside( [0.5 0.5] )
+# infon e.var_inter_is_inside( [0.5 0.5] )
+# infon e.extrusion_with_normals ( normals, alpha )
+# infon e.var_inter_and_alpha_with_normals( normals, point, nb_iterations = 1 )
+# infon e.projection_with_normals ( normals, point, nb_iterations = 1 )
+#  infon e.get_shape_functions()
+#  e.get_shape_functions().display_tex( "x_" + cpt++ )
+# infon e.area_intersection( e ) 
+# infon e
+# infon e.TE::children
+# infon e.children( 1 )[0]->name
+# c0 := e.TE::children[0]
+# infon c0
+# infon c0[0]
+# infon c0[1]
+# infon c0[1][0]
+# infon c0[1][1]
+# infon e.children( 1 ).size
+# infon e.node
+# c1 := e.TE::children[1]
+# infon c1
+# infon c1[0]
+# infon c1[1]
+# infon c1[1][0]
+# infon c1[1][1]
+# c2 := e.TE::children[2]
+# infon c2
+# infon c2[0]
+# infon c2[1]
+# infon c2[1][0]
+# infon c2[1][1]
+
+# infon dep.expr[0]
+# interact
+# throw "error"
+# for c in e.children(1)
+    # e.projection_on_child_elem(sigma.expr,c).display_tex()
+
+# e.pos_nodes[0] = [0 0]
+# e.pos_nodes[1] = [1 0]
+# e.pos_nodes[2] = [0 1]
+# e.pos_nodes[3] = [1 1]
+# sym_vh_star_e := Vec[ Op ]()
+# vh_star_e := e.new_variable( "\\v_h^{\\ast}", nb_dim = [ e.dim ], sym = sym_vh_star_e, interpolation_type = "vertex_nodal" )
+# infon e.shape_functions
+# ( e.shape_functions ).display_tex( "x_" + cpt++ )
+# vh_star_e := e.new_variable( "\\v_h^{\\ast}", nb_dim = [ e.dim ], sym = sym_vh_star_e, interpolation_type = "vertex_nodal" )
+# infon e.shape_functions_vertex
+# ( e.shape_functions_vertex ).display_tex( "x_" + cpt++ )
+# mes_symboles := Vec[Op]()
+# dep := e.new_variable( "dep", nb_dim = [e.dim], sym = mes_symboles, interpolation_type = "nodal" )
+# dep.display_tex( "x_" + cpt++ )
+# res := e.projection_on_linear_FE_base( dep[ 0 ] )
+# res.display_tex( "x_" + cpt++ )
+# eps := e.grad_sym( dep )
+# omega := e.grad_asym( dep )
+# infon eps.type
+# eps.display_tex( "x_" + cpt++ )
+# omega.display_tex( "x_" + cpt++ )
+# H := hooke_iso( 1, 0.3, e.dim )
+# H_inv := inv_hooke_iso( 1, 0.3, e.dim )
+# infon H.type
+# infon H_inv.type
+# sigma := H : eps
+# sigma.display_tex( "x_" + cpt++ )
+# infon sigma.type
+# sigma_hooke_iso( eps, 1, 0.3 ).display_tex( "x_" + cpt++ )
+# infon sigma_hooke_iso( eps, 1, 0.3 ).type
+# Id := Mat[ Op, Gen[e.dim,e.dim] ]( function = x => x[0] == x[1] )
+# Id.display_tex( "x_" + cpt++ )
+# epsilon_direct := ( 1 + 0.3 ) / 1 * sigma_hooke_iso( eps, 1, 0.3 ) - 0.3 / 1 * trace( sigma_hooke_iso( eps, 1, 0.3 ) ) * Id
+# eps_hooke_iso( sigma_hooke_iso( eps, 1, 0.3 ), 1, 0.3 ).display_tex( "x_" + cpt++ )
+# infon eps_hooke_iso( sigma_hooke_iso( eps, 1, 0.3 ), 1, 0.3 ).type
+
+
+
+# epsilon_new := H_inv : sigma
+# epsilon_new.display_tex( "x_" + cpt++ )
+# epsilon_new_2 := H_inv : sigma_hooke_iso( eps, 1, 0.3 )
+# epsilon_new_2.display_tex( "x_" + cpt++ )
+# ( sigma : epsilon_hooke_iso( sigma, 1, 0.3 ) )
+# ( eps : sigma_hooke_iso( eps, 1, 0.3 ) ).display_tex( "x_" + cpt++ )
+# ( sigma : eps ).display_tex( "x_" + cpt++ )
+
+# sigma := Mat[ Op, Sym[e.dim] ]()
+# sigma[ 0, 0 ] = -86.045506
+# sigma[ 0, 1 ] = 10.196303
+# sigma[ 1, 1 ] = -184.301251
+
+
+
+# sigma.display_tex( "x_" + cpt++ )
+# eps := eps_hooke_iso( sigma, 1, 0.3 )
+# eps.display_tex( "x_" + cpt++ )
+# sig := sigma_hooke_iso( eps, 1, 0.3 )
+# sig.display_tex( "x_" + cpt++ )
+# ene_eps := 1/2 * e.integration( eps : sig )
+# infon ene_eps
+# ene_sig := 1/2 * e.integration( sigma : eps_hooke_iso( sigma, 1, 0.3 ) )
+# infon ene_sig
+# infon eps[0,0]
+# infon eps[0,0].poly_deg(e.var_inter[0])
+# integr := e.integration( eps[0,0], order_diff = 2 )
+# infon integr
+
+# e_node_numbers_to_vertex_node_numbers := e.node_numbers_to_vertex_node_numbers
+# e_vertex_node_numbers_to_node_numbers_in_parent_cpp := e.vertex_node_numbers_to_node_numbers_in_parent_cpp
+# lambda_n := e.shape_functions_vertex[ e_node_numbers_to_vertex_node_numbers[ 0 ] ]
+# localpb_R := e.integration( sigma : e.grad_sym( lambda_n * vh_star_e ) )
+# localpb_R.display_tex( "tmp_" + cpt++ )
+# R_e := Vec[ Op ]()
+# for unk_vh_star_e in sym_vh_star_e
+# unk_vh_star_e.display_tex( "tmp_" + cpt++ )
+    # R_e.push_back( localpb_R.diff( unk_vh_star_e ) )
+# R_e.display_tex( "tmp_" + cpt++ )
+#infon dep_new[0].type
+# mes_symboles.display_tex( "tmp" + cpt++ )
+# H := hooke_iso( 1, 0.3, e.dim )
+# H.display_tex( "tmp_" + cpt++ )
+# ener := 0.5 * e.grad_sym( dep ) : H : e.grad_sym( dep )
+# ener.display_tex( "tmp_" + cpt++ )
+#  qe := quadratic_expansion( ener, mes_symboles )
+# qe.v.display_tex( "tmp" + cpt++ )
+
+# p := 1e10
+# qe.m[0,0] += p
+# qe.m[1,1] += p
+# qe.m[2,2] += p
+# qe.v[2] += p*1
+# qe.m[3,3] += p
+# infon Mat[ Float64 ]( qe.m ) #  .display_tex()
+# info Vec[Float64]( qe.m \ qe.v )
+# m := Mesh()
+# dep := m.new_field()
+# eps := grad_sym( dep )
+
+# for p in e.TE::points
+    # r := e.TE::interval_var_inter( p )
+    # info r
+    # s := 0
+    # for pi, ri in p, r
+        # info pi
+        # info ri
+        # s += Bool( sum( pi == ri ) )
+        # info s
+    # info p, ( s == 2 )
+# e_nb_vertex := 0
+# e_vertex := Vec[Int32]( size = 3, default_value = 0 )
+# for i in 0 .. e.nb_nodes
+    # p := e.var_inter_for_node_nb( i )
+    # r := e.TE::interval_var_inter( p )
+    # s := 0
+    # for coord_p, coord_r in p, r
+        # s += Bool( sum( coord_p == coord_r ) )
+    # info p, ( s == 2 )
+    # if ( s == 2 )
+        # e_vertex[e_nb_vertex] = i
+        # e_nb_vertex += 1
+# infon e_nb_vertex
+# infon e_vertex
+
+
+
+
+# v := Vec[Op]()
+# for c_ in e.children(1)
+# c := child_cast( c_ )
+# v.push_back( c->pos[0] )
+# v.push_back( c->new_variable("d") )
+# v.display_tex("x_" + cpt++)
+# for i in v
+# info i
+#~
+infon e.node_numbers_to_node_numbers_in_parent_cpp
+e_node_numbers_to_vertex_node_numbers := e.node_numbers_to_vertex_node_numbers
+infon e_node_numbers_to_vertex_node_numbers
+e_vertex_node_numbers_to_node_numbers_in_parent_cpp := e.vertex_node_numbers_to_node_numbers_in_parent_cpp
+infon e_vertex_node_numbers_to_node_numbers_in_parent_cpp
+for gamma_ in e.children( 1 )
+    gamma := child_cast( gamma_ )
+    infon gamma->num_child
+    infon gamma->nb_nodes
+    infon gamma->node_numbers_to_node_numbers_in_parent_cpp
+    gamma_node_numbers_to_vertex_node_numbers := gamma->node_numbers_to_vertex_node_numbers
+    infon gamma_node_numbers_to_vertex_node_numbers
+    gamma_vertex_node_numbers_to_node_numbers_in_parent_cpp := gamma->vertex_node_numbers_to_node_numbers_in_parent_cpp
+    infon gamma_vertex_node_numbers_to_node_numbers_in_parent_cpp 
+~#
+# for i in 0 .. e.nb_nodes
+    # if e.node_number_is_a_vertex( i )
+        # nb_ddl_vh_star_e := 0
+        # for gamma_ in e.children( 1 )
+            # gamma := child_cast( gamma_ )
+            # if e.node_numbers_to_node_numbers_in_parent_cpp[ i ] in gamma->node_numbers_to_node_numbers_in_parent_cpp
+                # nb_ddl_vh_star_e += e.dim * ( gamma->nb_vertex_nodes -1 )
+        # nb_ddl_vh_star_e += e.dim
+        # infon nb_ddl_vh_star_e
+        
+# for gamma_ in e.children( 1 )
+    # gamma := child_cast( gamma_ )
+    # normale := gamma->normal
+    # infon normale
+    # normale.display_tex( "x_" + cpt++ )
+
+# e.var_inter[0].display_tex( "x_" + cpt++ )
+# e.var_inter[1].display_tex( "x_" + cpt++ )
+
+# for n in 0 .. e.nb_nodes
+    # lambda_n := e.shape_functions[ e.corr_cpp(n) ]
+    # lambda_n.display_tex( "x_" + cpt++ )
+
+# for n in 0 .. e.nb_nodes
+    # if e.node_number_is_a_vertex( n )
+        # lambda_n := e.shape_functions_vertex[ e.corr_cpp(n) ]
+        # lambda_n.display_tex( "x_" + cpt++ )
+        
+# sym_vh_star_e := Vec[ Op ]()
+# vh_star_e := e.new_variable( "\\v_h^{\\ast}", nb_dim = [ e.dim ], sym = sym_vh_star_e, interpolation_type = "vertex_nodal" )
+# sym_vh_star_e.display_tex( "x_" + cpt++ )
+# vh_star_e.display_tex( "x_" + cpt++ )
+# sym_vh_star_e_nodal := Vec[ Op ]()
+# vh_star_e_nodal := e.new_variable( "\\v_h^{\\ast}", nb_dim = [ e.dim ], sym = sym_vh_star_e_nodal, interpolation_type = "nodal" )
+# sym_vh_star_e_nodal.display_tex( "x_" + cpt++ )
+# sym_vh_star_e_new := Vec[ Op, sym_vh_star_e.size ]()
+# for j in 0 .. e.nb_nodes
+    # if e.node_number_is_a_vertex( j )
+        # for d in 0 .. e.dim
+            # sym_vh_star_e_new[ e.corr_cpp(j) * e.dim + d ] = sym_vh_star_e_nodal[ j * e.dim + d ]
+# sym_vh_star_e_new.display_tex( "x_" + cpt++ )
+
+# Id  := Mat[Op,Sym[e.dim]]( function = x => (x[0]==x[1]) )
+# Id.display_tex( "x_" + cpt++ )
+
+
+# for face_ in e.children( 1 )
+    # face := child_cast( face_ )
+    # int_phi_phj := Mat[Op](face->nb_nodes,face->nb_nodes)
+    # for i in 0 .. face->nb_nodes
+        # phi_i := face->shape_functions[i] 
+        # infon phi_i             # fonction de forme numero i
+        # for j in 0 .. face->nb_nodes
+            # phi_j := face->shape_functions[j]
+            # infon phi_j 
+            # int_phi_phj[ i, j ] = face->integration( phi_i * phi_j )
+    # int_phi_phj.display_tex( "x_" + cpt++ )
+    # ( face->integration( (1-face->var_inter[0]-face->var_inter[1])*face->var_inter[0] ) ).display_tex( "x_" + cpt++ )
+    # ( face->integration( face->var_inter[0]*face->var_inter[1] ) ).display_tex( "x_" + cpt++ )
+    # face_node_numbers_to_vertex_node_numbers := face->node_numbers_to_vertex_node_numbers
+    # sym_lambda_n_Fh_face := Vec[ Op ]()
+    # lambda_n_Fh_face := face->new_variable( "\\lambda F_h", nb_dim = [ face->dim ], sym = sym_lambda_n_Fh_face, interpolation_type = "nodal" )
+    # sym_lambda_n_Fh_face.display_tex( "tmp_" + cpt++ )
+    # lambda_n_Fh_face.display_tex( "tmp_" + cpt++ )
+    # cpt_vertex_nodes_n := 0
+    # for n in 0 .. face->nb_nodes
+        # if face->node_number_is_a_vertex( n )
+            # B_e := Mat[ Op ]( face->dim * (face->nb_nodes - 1), face->dim * face->nb_nodes )
+            # cpt_vertex_nodes_m := 0
+            # for m in 0 .. face->nb_nodes
+                # if face->node_number_is_a_vertex( m ) and m != n
+                    # lambda_m := face->shape_functions_vertex[ face_node_numbers_to_vertex_node_numbers[ m ] ]
+                    # ( lambda_m * lambda_n_Fh_face ).display_tex( "tmp_" + cpt++ )
+                    # cost_function_B := Vec[ Op ]()
+                    # for l in 0 .. lambda_n_Fh_face.size
+                        # ( lambda_m * lambda_n_Fh_face[ l ] ).display_tex( "tmp_" + cpt++ )
+                        # ( face->integration( lambda_m * lambda_n_Fh_face[ l ] ) ).display_tex( "tmp_" + cpt++ )
+                        # cost_function_B.push_back( face->integration( lambda_m * lambda_n_Fh_face[ l ] ) )
+                    # cost_function_B.display_tex( "tmp_" + cpt++ )
+                    # for j in 0 .. face->nb_nodes
+                        # infon j
+                        # cpt_dim := 0
+                        # for i in j*face->dim .. (j+1)*face->dim
+                            # infon i
+                            # infon sym_lambda_n_Fh_face[ i ]
+                            # ( sym_lambda_n_Fh_face[ i ] ).display_tex( "tmp_" + cpt++ )
+                            # dr := cost_function_B.diff( sym_lambda_n_Fh_face[ i ] )
+                            # infon dr
+                            # dr.display_tex( "tmp_" + cpt++ )
+                            # for d in 0 .. face->dim
+                                # B_e[ cpt_vertex_nodes_m * face->nb_nodes + cpt_dim, j * face->dim + d ] += dr[ d ]
+                                # infon cpt_vertex_nodes_m * face->nb_nodes + cpt_dim
+                                # infon j * face->dim + d
+                            # cpt_dim++
+                    # cpt_vertex_nodes_m++
+            # e.pos_nodes[0] = [0 0 0]
+            # e.pos_nodes[1] = [1 0 0]
+            # e.pos_nodes[2] = [0 1 0]
+            # e.pos_nodes[3] = [0 0 1]
+            # B_e.display_tex( "tmp_" + cpt++ )
+            
+# mes_symboles := Vec[Op]()
+# sig := e.new_variable( "sig", nb_dim = [e.dim,e.dim], sym = mes_symboles, interpolation_type = "elementary" )
+# sig.display_tex( "x_" + cpt++ )
+# mes_symboles_2 := Vec[Op]()
+# f_vol := e.new_variable( "f_{vol}", nb_dim = [e.dim], sym = mes_symboles_2, interpolation_type = "elementary" )
+# f_vol.display_tex( "x_" + cpt++ )
+# Q_e := Vec[ Op ]()
+# for n in 0 .. e.nb_nodes
+    # phi_n := e.shape_functions[ n ]
+    # infon n
+    # phi_n.display_tex( "tmp_" + cpt++ )
+    # ( e.grad( phi_n ) ).display_tex( "tmp_" + cpt++ )
+    # (mul( sig, e.grad( phi_n ) ) ).display_tex( "tmp_" + cpt++ )
+    # ( phi_n * f_vol ).display_tex( "tmp_" + cpt++ )
+    # Q_e_n := mul( sig, e.grad( phi_n ) ) - phi_n * f_vol
+    # Q_e_n.display_tex( "tmp_" + cpt++ )
+    # for d in 0 .. e.dim
+        # Q_e.push_back( e.integration( Q_e_n[ d ] ) )
+# Q_e.display_tex( "tmp_" + cpt++ )
+# infon Q_e[0]
+# infon e.integration( 1 )
+# infon e.integration( e.shape_functions[ 0 ] )
+# infon e.integration( e.shape_functions[ 1 ] )
+# infon e.integration( e.shape_functions[ 2 ] )
+# infon e.integration( e.shape_functions[ 3 ] )
+        
+        
+# for face_ in e.children( 1 )
+    # face := child_cast( face_ )
+    # for i in 0 .. face->nb_nodes
+        # phi_i := face->shape_functions[i] 
+        # infon phi_i             # fonction de forme numero i
+        # toto := face->integration( phi_i )
+    # int := integration( 1-face->var_inter[0], face->var_inter[0], 0, 1 )
+    # infon int
+    # int2 := integration( face->var_inter[0], face->var_inter[0], 0, 1 )
+    # infon int2
+        # toto .display_tex( "x_" + cpt++ )
+
+        
+        
+
+# cw_1.add( "K", K, __print__ )
+# cw_1.add( "dep_hat", dep_hat, __print__ )
+# # cw_1.add( "epsilon_expr", epsilon_expr, __print__ )
+# cw_1.add( "epsilonh_hat", epsilonh_hat, __print__ )
+# eps_from_sigma_hat := epsilon_hooke_iso( sigmah_hat, child_cast(f)->young.expr, child_cast(f)->poisson.expr )
+# cw_1.add( "eps_from_sigma_hat", eps_from_sigma_hat, __print__ )
+# cw_1.add( "sigma_expr", sigma_expr, __print__ )
+# sigma_0 := sigmah_hat.subs( e->var_inter, [ 0 0 ] )
+# sigma_1 := sigmah_hat.subs( e->var_inter, [ 1 0 ] )
+# sigma_2 := sigmah_hat.subs( e->var_inter, [ 0 1 ] )
+# sigma_3 := sigmah_hat.subs( e->var_inter, [ 1 1 ] )
+# cw_1.add( "sigma_0", sigma_0, __print__ )
+# cw_1.add( "sigma_1", sigma_1, __print__ )
+# cw_1.add( "sigma_2", sigma_2, __print__ )
+# cw_1.add( "sigma_3", sigma_3, __print__ )
+# sigmah_hat_center := sigmah_hat.subs( e->var_inter, [ 0.5 0.5 ] )
+# cw_1.add( "sigmah_hat_center", sigmah_hat_center, __print__ )
+# sigma_from_eps_hat :=  sigma_hooke_iso( epsilonh_hat, child_cast(f)->young.expr, child_cast(f)->poisson.expr )
+# cw_1.add( "sigma_from_eps_hat", sigma_from_eps_hat, __print__ )
+
+
+young := 1
+poisson := 0.3
+type_stress_2D := "plane stress"
+recovery_base := "canonical"
+integration_type := "gauss_num"
+integration_lang := "metil"
+hyp_const_jac := true
+if integration_type == "gauss_num"
+    hyp_const_jac = false
+deg_p := max( e.order_interpolation )
+deg_k := 0
+canonical_base := Vec[ Op ]()
+for order in 0 .. (deg_p+deg_k+1)
+    for comb in ConstantSumList( sum = order, list_size = e.nvi )
+        canonical_base.push_back( product( e.var_inter ^ comb ) )
+canonical_base.display_tex()
+
+sym_dep_hat_expr := Vec[ Op ]()
+dep_hat_expr := e.new_variable( "\\hat{U}", interpolation_type = "canonical", deg = deg_p + deg_k, nb_dim = [ e.dim ], sym = sym_dep_hat_expr )
+dep_hat_expr.display_tex()
+sym_dep_hat_expr.display_tex()
+sym_dep_hat_test := Vec[ Op ]()
+dep_hat_test := e.new_variable( "{\\hat{U}}^{\\ast}", interpolation_type = "canonical", deg = deg_p + deg_k, nb_dim = [ e.dim ], sym = sym_dep_hat_test )
+epsilon_hat_expr := e.grad_sym( dep_hat_expr )
+epsilon_hat_test := e.grad_sym( dep_hat_test )
+sigma_hat_expr := sigma_hooke_iso( epsilon_hat_expr, young, poisson, type_stress_2D )
+H := hooke_iso( young, poisson, e.dim, type_stress_2D )
+# H.display_tex()
+infon H
+
+H_simplified := Tensor[ Float96, [e.dim,e.dim,e.dim,e.dim] ]( H )
+infon H_simplified
+eps := Mat[ Op, Gen[e.dim,e.dim] ]( function = x => symbol("e_{$(x)}") )
+s := sigma_hooke_iso( eps, young, poisson, type_stress_2D )
+# s.display_tex()
+# -> sigma.diff( epsilon )
+# for ind_s, val_s in s
+    # infon ind_s,val_s
+    # for ind_e, val_e in eps
+        # infon ind_e,val_e
+        # H_simplified[ ind_s, ind_e ] = val_s.diff(val_e)
+
+# H_simplified := Mat[ Float96, Gen[ H.nb_rows, H.nb_cols ] ]()
+# for i in 0 .. H.nb_row
+    # for j in 0 .. H.nb_cols
+        # H_simplified[i,j] = H[i,j]
+# H_simplified.display_tex()
+
+energie_K := Op( 0 )
+
+e.assume_const_jac = true
+epsilon_hat_test_const_jac := e.grad_sym( dep_hat_test )
+sigma_hat_expr_const_jac := sigma_hooke_iso( e.grad_sym( dep_hat_expr ), young, poisson, type_stress_2D )
+e.assume_const_jac = hyp_const_jac
+degre_poly := ( sigma_hat_expr_const_jac : epsilon_hat_test_const_jac ).poly_deg( e.var_inter )
+infon degre_poly
+
+jacobian := e.get_jac_mat()
+jaco := Mat[ Float96, Gen[ jacobian.nb_rows, jacobian.nb_cols ] ]()
+infon e.get_jac()
+
+if integration_type == "gauss_num"
+    if integration_lang == "metil"
+        energie_K = e.gauss_num_integration( sigma_hat_expr : epsilon_hat_test, mul_by_jac = true, order_diff = degre_poly )
+    else if integration_lang == "cpp"
+        energie_K = sigma_hat_expr : epsilon_hat_test * e.jac
+else if integration_type == "formal"
+    energie_K = e.integration( sigma_hat_expr : epsilon_hat_test, order_diff = degre_poly )
+K := Mat[Op]()
+F := Vec[Op]()
+K.resize( sym_dep_hat_test.size, sym_dep_hat_expr.size )
+F.resize( sym_dep_hat_test.size )
+for test_symbol, cpt_test in sym_dep_hat_test, 0...
+    F[ cpt_test ] = energie_K.diff( test_symbol )
+for expr_symbol, cpt_expr in sym_dep_hat_expr, 0...
+    K.col( cpt_expr ) = diff( F, expr_symbol )
+# K.display_tex()
+mat := Mat[ Float96, Gen[ K.nb_rows, K.nb_cols ] ]()
+for i in 0 .. K.nb_rows
+    for j in 0 .. K.nb_cols
+        mat[i,j] = Float96( K[i,j] )
+mat.display_tex( "mat" )
+
+K_hat_mul_dep_hat_expr := energie_K.diff( sym_dep_hat_test )
+K_hat := K_hat_mul_dep_hat_expr.diff( sym_dep_hat_expr )
+mat_hat := Mat[ Float96, Gen[ K_hat.nb_rows, K_hat.nb_cols ] ]()
+for i in 0 .. K_hat.nb_rows
+    for j in 0 .. K_hat.nb_cols
+        mat_hat[i,j] = Float96( K_hat[i,j] )
+mat_hat.display_tex( "mat_hat" )
+
+

@@ -1,0 +1,55 @@
+#
+# Metil Interface: Material_properties_met
+#
+# Description: calcul des proprietes materiaux
+#
+#
+# Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2011
+#
+# Copyright: See COPYING file that comes with this distribution
+#
+#
+
+# Methode qui genere un fichier calc_material_coefficients_$(f->name).$(e->dim).$h et calc_material_coefficients_$(f->name).$(e->dim).$(e->name).$h pour calculer les coefficients materiaux
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_material_coefficients( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_material_coefficients_$(f->name).$(e->dim).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_material_coefficients_$(f->name).$(e->dim).h", "w" )
+        file_ <<< "#ifndef calc_material_coefficients_$(f->name)_$(e->dim)_h"
+        file_ <<< "#define calc_material_coefficients_$(f->name)_$(e->dim)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TM, class TF>"
+        file_ <<< "void calc_material_coefficients( TM &m, TF &f, Number<$(e->dim)> ) {"
+        coeff_la := lame_coeff_lambda( child_cast(f)->young.expr, child_cast(f)->poisson.expr, e->dim, type_stress_2D )
+        coeff_mu := lame_coeff_mu( child_cast(f)->young.expr, child_cast(f)->poisson.expr )
+        cw := CodeWriterAlt( "T" )
+        if child_cast(f)->young.interpolation == "global" and child_cast(f)->poisson.interpolation == "global"
+            cw.add( "m.la", coeff_la, reassign )
+            cw.add( "m.mu", coeff_mu, reassign )
+        file_ <<< "    typedef typename TM::TNode::T T;"
+        file_ <<< "$(cw.to_string( 4 ))"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+        file_name_elem := "calc_elem_material_coefficients_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name_elem )
+        file_elem := File( rep + "/calc_elem_material_coefficients_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_elem <<< "#ifndef calc_elem_material_coefficients_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_elem <<< "#define calc_elem_material_coefficients_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_elem <<< "namespace LMT {"
+        file_elem <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF>"
+        file_elem <<< "void calc_elem_material_coefficients( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f ) {"
+        cw_elem := CodeWriterAlt( "T" )
+        if child_cast(f)->young.interpolation == "elementary" or child_cast(f)->poisson.interpolation == "elementary"
+            cw_elem.add( "elem.la", coeff_la, reassign )
+            cw_elem.add( "elem.mu", coeff_mu, reassign )
+        file_elem <<< "    typedef typename TM::TNode::T T;"
+        file_elem <<< "$(cw_elem.to_string( 4 ))"
+        file_elem <<< "}"
+        file_elem <<< "}"
+        file_elem <<< "#endif"
+    return file_names

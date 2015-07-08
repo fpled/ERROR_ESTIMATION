@@ -1,0 +1,954 @@
+//
+// C++ Interface: Construct_standard_force_fluxes_EESPT
+//
+// Description: construction standard des densites d'effort par la methode EESPT
+//
+//
+// Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2010
+//
+// Copyright: See COPYING file that comes with this distribution
+//
+//
+#ifndef Construct_standard_force_fluxes_EESPT_h
+#define Construct_standard_force_fluxes_EESPT_h
+
+#include "EESPT.h"
+#include "../GEOMETRY/Calcul_geometry.h"
+#include "../LMT/include/containers/matumfpack.h"
+
+using namespace LMT;
+using namespace std;
+
+/// Construction standard des densites d'effort par la methode EESPT
+///-----------------------------------------------------------------
+template<class TM, class TF, class T>
+void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &cost_function, const bool &enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, const T &pen_N, const string &pb, const bool &want_local_enrichment, const bool &debug_method, const bool &verif_solver_minimisation, const T &tol_solver_minimisation, const bool &debug_geometry, const bool &debug_force_fluxes, Vec< Vec< Vec<T> > > &vec_force_fluxes ) {
+    
+    static const unsigned dim = TM::dim;
+    
+    TicToc t_construct_force_fluxes_std;
+    t_construct_force_fluxes_std.start();
+
+    Vec<unsigned> cpt_nodes_face;
+    Vec< Vec<unsigned> > list_nodes_face;
+    construct_nodes_connected_to_face( m, cpt_nodes_face, list_nodes_face, debug_geometry );
+
+    Vec<bool> correspondance_node_to_vertex_node;
+    Vec<unsigned> connect_node_to_vertex_node;
+    unsigned nb_vertex_nodes = match_node_to_vertex_node( m, correspondance_node_to_vertex_node, connect_node_to_vertex_node, debug_geometry );
+
+    Vec<unsigned> cpt_faces_vertex_node;
+    Vec< Vec<unsigned> > list_faces_vertex_node;
+    construct_faces_connected_to_vertex_node( m, nb_vertex_nodes, correspondance_node_to_vertex_node, connect_node_to_vertex_node, cpt_faces_vertex_node, list_faces_vertex_node, debug_geometry );
+
+    Vec<unsigned> cpt_vertex_nodes_elem;
+    Vec< Vec<unsigned> > list_vertex_nodes_elem;
+    construct_vertex_nodes_connected_to_elem( m, correspondance_node_to_vertex_node, connect_node_to_vertex_node, cpt_vertex_nodes_elem, list_vertex_nodes_elem, debug_geometry );
+
+    cpt_vertex_nodes_elem.free();
+
+    Vec<unsigned> cpt_vertex_nodes_face;
+    Vec< Vec<unsigned> > list_vertex_nodes_face;
+    construct_vertex_nodes_connected_to_face( m, correspondance_node_to_vertex_node, connect_node_to_vertex_node, cpt_vertex_nodes_face, list_vertex_nodes_face, debug_geometry );
+
+    correspondance_node_to_vertex_node.free();
+
+    Vec<unsigned> cpt_elems_node;
+    Vec< Vec<unsigned> > list_elems_node;
+    construct_elems_connected_to_node( m, cpt_elems_node, list_elems_node, debug_geometry );
+
+    list_elems_node.free();
+
+    Vec< Vec<unsigned> > type_face;
+    construct_type_face( m, f, type_face, debug_geometry );
+
+    cout << "-------------------------------------------" << endl;
+    cout << "Construction standard des densites d'effort" << endl;
+    cout << "-------------------------------------------" << endl << endl;
+
+    /// Reperage pour chaque face k et chaque direction d de l'indice de debut de ligne dans les matrices A[ j ][ d ] : face_ind[ k ][ d ]
+    /// Calcul du nb de lignes de la matrice A[ j ][ d ] : nb_unk[ j ][ d ]
+    ///---------------------------------------------------------------------------------------------------------------------------------------
+
+    cout << "Calcul du vecteur nb_unk" << endl << endl;
+
+    Vec< Vec<unsigned> > nb_unk;
+    nb_unk.resize( nb_vertex_nodes );
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
+        nb_unk[ j ].resize( dim );
+        nb_unk[ j ].set( 0 );
+    }
+
+    m.update_skin();
+    Vec< Vec< Vec<unsigned> > > face_ind;
+    face_ind.resize( m.sub_mesh(Number<1>()).elem_list.size() );
+    for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+        face_ind[ k ].resize( dim );
+    }
+
+    apply( m.sub_mesh(Number<1>()).elem_list, Calcul_Face_Ind_EESPT(), face_ind, nb_unk, connect_node_to_vertex_node ); // nb_unk[ j ][ d ] contient le nb de lignes de la matrice A[ j ][ d ] associee au j eme noeud sommet dans la direction d // face_ind[ k ][ d ][ numero_noeud_sommet_dans_face (0 ou 1) ] = indice de debut de ligne dans la matrice A[ j ][ d ] pour chaque face k du maillage et chaque la direction d
+
+    if ( debug_method ) {
+        for (unsigned j=0;j<nb_vertex_nodes;++j) {
+            for (unsigned d=0;d<dim;++d) {
+                cout << "nb d'inconnues lambda_F_hat associees au noeud sommet " << j << " dans la direction " << d << " : " << nb_unk[ j ][ d ] << endl;
+            }
+        }
+        cout << endl;
+        for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+            for (unsigned d=0;d<dim;++d) {
+                cout << "indice de debut de ligne de la face " << k << " dans les matrices A[ noeud sommet connecte a la face " << k << " ] dans la direction " << d << " : " << face_ind[ k ][ d ] << endl;
+            }
+        }
+        cout << endl << endl;
+    }
+
+    /// Reperage pour chaque element n et chaque direction d de l'indice de debut de colonne dans les matrices A[ j ][ d ] et de debut de ligne dans les vecteurs R[ j ][ d ] : vertex_nodal_ind[ n ][ d ]
+    /// Calcul du nb de colonnes de la matrice A[ j ][ d ] : nb_eq[ j ][ d ]
+    ///---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    cout << "Calcul du vecteur nb_eq" << endl << endl;
+
+    Vec< Vec<unsigned> > nb_eq; 
+    nb_eq.resize( nb_vertex_nodes );
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
+        nb_eq[ j ].resize( dim );
+        nb_eq[ j ].set( 0 );
+    }
+
+    Vec< Vec< Vec<unsigned> > > vertex_nodal_ind;
+    vertex_nodal_ind.resize( m.elem_list.size() );
+    for (unsigned n=0;n<m.elem_list.size();++n) {
+        vertex_nodal_ind[ n ].resize( dim );
+    }
+
+    apply( m.elem_list, Calcul_Vertex_Nodal_Ind_EESPT(), vertex_nodal_ind, nb_eq, connect_node_to_vertex_node ); // nb_eq[ j ][ d ] contient le nb de colonnes de la matrice A[ j ][ d ] associee au j eme noeud sommet dans la direction d // vertex_nodal_ind[ n ][ d ][ numero_noeud_sommet_dans_elem (0 ou 1 ou 2) ] = indice de debut de colonne dans la matrice A[ j ][ d ] pour chaque element n du maillage et chaque direction d
+
+    if ( debug_method ) {
+        for (unsigned j=0;j<nb_vertex_nodes;++j) {
+            for (unsigned d=0;d<dim;++d) {
+                cout << "nb d'equations associees au noeud sommet " << j << " dans la direction " << d << " : " << nb_eq[ j ][ d ] << endl;
+            }
+        }
+        cout << endl;
+        for (unsigned n=0;n<m.elem_list.size();++n) {
+            for (unsigned d=0;d<dim;++d) {
+                cout << "indice de debut de colonne de l'element " << n << " dans les matrices A[ noeud sommet connecte a l'element " << n << " dans la direction " << d << " ] : " << vertex_nodal_ind[ n ][ d ] << endl;
+            }
+        }
+        cout << endl << endl;
+    }
+
+    /// Construction des matrices A[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
+    ///---------------------------------------------------------------------------------------------------
+
+    cout << "Construction des matrices A" << endl << endl;
+
+    Vec< Vec< Mat<T, Gen<>, SparseLine<> > > > A; 
+    A.resize( nb_vertex_nodes );
+
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
+        A[ j ].resize( dim );
+        for (unsigned d=0;d<dim;++d) {
+            A[ j ][ d ].resize( nb_unk[ j ][ d ], nb_eq[ j ][ d ] );
+        }
+    }
+
+    Calcul_Vertex_Nodal_Matrix_A calcul_vertex_nodal_matrix_A;
+    calcul_vertex_nodal_matrix_A.face_ind = &face_ind;
+    calcul_vertex_nodal_matrix_A.vertex_nodal_ind = &vertex_nodal_ind;
+    calcul_vertex_nodal_matrix_A.list_vertex_nodes_elem = &list_vertex_nodes_elem;
+    calcul_vertex_nodal_matrix_A.list_nodes_face = &list_nodes_face;
+
+    apply( m.elem_list, calcul_vertex_nodal_matrix_A, m, connect_node_to_vertex_node, A );
+
+    if ( debug_method ) {
+        for (unsigned j=0;j<nb_vertex_nodes;++j) {
+            for (unsigned d=0;d<dim;++d) {
+                cout << "dimension de la matrice A associee au noeud sommet " << j << " dans la direction " << d << " : ( " << nb_unk[ j ][ d ] << ", " << nb_eq[ j ][ d ] << " )" << endl;
+                cout << "matrice A associee au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                cout << A[ j ][ d ] << endl << endl;
+            }
+        }
+    }
+    
+
+    /// Construction des vecteurs R[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
+    ///---------------------------------------------------------------------------------------------------
+
+    cout << "Construction des vecteurs R" << endl << endl;
+
+    Vec< Vec< Vec<T> > > R;
+    R.resize( nb_vertex_nodes );
+
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
+        R[ j ].resize( dim );
+        for (unsigned d=0;d<dim;++d) {
+            R[ j ][ d ].resize( nb_eq[ j ][ d ] );
+            R[ j ][ d ].set( 0. );
+        }
+    }
+
+    Calcul_Vertex_Nodal_Vector_R calcul_vertex_nodal_vector_R;
+    calcul_vertex_nodal_vector_R.connect_node_to_vertex_node = &connect_node_to_vertex_node;
+    calcul_vertex_nodal_vector_R.vertex_nodal_ind = &vertex_nodal_ind;
+    calcul_vertex_nodal_vector_R.list_vertex_nodes_elem = &list_vertex_nodes_elem;
+    calcul_vertex_nodal_vector_R.list_nodes_face = &list_nodes_face;
+    calcul_vertex_nodal_vector_R.cpt_elems_node = &cpt_elems_node;
+    calcul_vertex_nodal_vector_R.pb = &pb;
+    calcul_vertex_nodal_vector_R.want_local_enrichment = &want_local_enrichment;
+
+    apply( m.elem_list, calcul_vertex_nodal_vector_R, m, f, R );
+
+    if ( debug_method ) {
+        for (unsigned j=0;j<nb_vertex_nodes;++j) {
+            for (unsigned d=0;d<dim;++d) {
+                cout << "dimension du vecteur R associe au noeud sommet " << j << " dans la direction " << d << " : " << nb_eq[ j ][ d ] << endl;
+                cout << "vecteur R associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                cout << R[ j ][ d ] << endl << endl;
+            }
+        }
+    }
+    
+    list_vertex_nodes_elem.free();
+    cpt_elems_node.free();
+
+    /// Construction de la liste des noeuds connectes a un noeud sommet : list_nodes_vertex_node[ j ]
+    /// Construction de la liste des noeuds connectes a un noeud sommet et appartenant au bord du patch : list_edge_nodes_vertex_node[ j ]
+    ///-----------------------------------------------------------------------------------------------------------------------------------
+
+    cout << "Construction de la liste des noeuds connectes a un noeud sommet" << endl << endl;
+    cout << "Construction de la liste des noeuds connectes a un noeud sommet et appartenant au bord du patch" << endl << endl;
+
+    Vec< Vec<unsigned> > list_nodes_vertex_node;
+    list_nodes_vertex_node.resize( nb_vertex_nodes );
+
+    Vec< Vec<unsigned> > list_edge_nodes_vertex_node;
+    list_edge_nodes_vertex_node.resize( nb_vertex_nodes );
+
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
+        for (unsigned k=0;k<cpt_faces_vertex_node[ j ];++k) {
+            for (unsigned i=0;i<cpt_nodes_face[ list_faces_vertex_node[ j ][ k ] ];++i) {
+                list_nodes_vertex_node[ j ].push_back( list_nodes_face[ list_faces_vertex_node[ j ][ k ] ][ i ] );
+            }
+            if ( type_face[ list_faces_vertex_node[ j ][ k ] ][ 0 ] != 0 ) { // si la face consideree est sur le bord delta_Omega
+                for (unsigned i=0;i<cpt_nodes_face[ list_faces_vertex_node[ j ][ k ] ];++i) {
+                    list_edge_nodes_vertex_node[ j ].push_back( list_nodes_face[ list_faces_vertex_node[ j ][ k ] ][ i ] );
+                }
+            }
+        }
+        remove_doubles( list_nodes_vertex_node[ j ] );
+        remove_doubles( list_edge_nodes_vertex_node[ j ] );
+    }
+
+    if ( debug_method ) {
+        for (unsigned j=0;j<nb_vertex_nodes;++j) {
+            cout << "liste des noeuds connectes au noeud sommet " << j << " : " << list_nodes_vertex_node[ j ] << endl ;
+            cout << "liste des noeuds connectes au noeud sommet " << j << " et appartenant au bord du patch : " << list_edge_nodes_vertex_node[ j ] << endl << endl;
+        }
+    }
+
+    cpt_nodes_face.free();
+    cpt_faces_vertex_node.free();
+    list_faces_vertex_node.free();
+
+    /// Suppression du noyau des matrices A[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
+    /// Stockage des inconnues non bloques : eq_indep[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
+    /// Calcul du nb d'equations independantes : nb_eq_indep[ i ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
+    ///----------------------------------------------------------------------------------------------------------------------------
+
+    cout << "Suppression du noyau des matrices A" << endl << endl;
+    cout << "Calcul du vecteur nb_eq_indep" << endl << endl;
+
+    Vec< Vec<unsigned> > nb_eq_indep;
+    nb_eq_indep.resize( nb_vertex_nodes );
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
+        nb_eq_indep[ j ].resize( dim );
+        nb_eq_indep[ j ].set( 0 );
+    }
+
+    Vec< Vec< Vec<unsigned> > > eq_indep; // liste des inconnues non bloquees avec redondance de certaines inconnues
+    eq_indep.resize( nb_vertex_nodes );
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
+        eq_indep[ j ].resize( dim );
+    }
+
+    Vec< Vec<bool> > flag_node;
+    Vec< Vec<unsigned> > flag_elem;
+    flag_node.resize( nb_vertex_nodes );
+    flag_elem.resize( nb_vertex_nodes );
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
+        flag_node[ j ].resize( m.node_list.size() );
+        flag_node[ j ].set( 0 );
+        flag_elem[ j ].resize( m.node_list.size() );
+        flag_elem[ j ].set( 0 );
+    }
+
+    Remove_Kernel remove_kernel;
+    remove_kernel.connect_node_to_vertex_node = &connect_node_to_vertex_node;
+    remove_kernel.vertex_nodal_ind = &vertex_nodal_ind;
+    remove_kernel.list_nodes_vertex_node = &list_nodes_vertex_node;
+    remove_kernel.list_edge_nodes_vertex_node = &list_edge_nodes_vertex_node;
+    remove_kernel.flag_node = &flag_node;
+    remove_kernel.flag_elem = &flag_elem;
+
+    apply( m.elem_list, remove_kernel, m, eq_indep );
+
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
+        for(unsigned d=0;d<dim;++d) {
+            remove_doubles( eq_indep[ j ][ d ] );
+            nb_eq_indep[ j ][ d ] = eq_indep[ j ][ d ].size();
+        }
+    }
+
+    if ( debug_method ) {
+        for(unsigned j=0;j<nb_vertex_nodes;++j) {
+            for(unsigned d=0;d<dim;++d) {
+                cout << "nb d'equations associees au noeud sommet " << j << " dans la direction " << d << " avant suppression du noyau : " << nb_eq[ j ][ d ] << endl;
+                cout << "nb d'equations supprimees associees au noeud sommet " << j << " dans la direction " << d << " : " << ( nb_eq[ j ][ d ] - nb_eq_indep[ j ][ d ] ) << endl;
+                cout << "nb d'equations independantes associees au noeud sommet " << j << " dans la direction " << d << " apres suppression du noyau : " << nb_eq_indep[ j ][ d ] << endl;
+                cout << "indices des colonnes dans la matrice A_tilde et des lignes dans le vecteur R_tilde associes au noeud sommet " << j << " dans la direction " << d << " : " << eq_indep[ j ][ d ] << endl << endl;
+            }
+        }
+    }
+
+    nb_eq.free();
+    vertex_nodal_ind.free();
+    flag_node.free();
+    flag_elem.free();
+    list_nodes_vertex_node.free();
+    list_edge_nodes_vertex_node.free();
+
+    /// Construction des matrices A_tilde[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
+    ///---------------------------------------------------------------------------------------------------------
+
+    cout << "Construction des matrices A_tilde" << endl << endl;
+
+    Vec< Vec< Mat<T, Gen<>, SparseLine<> > > > A_tilde;
+    A_tilde.resize( nb_vertex_nodes );
+
+    for(unsigned j=0;j<nb_vertex_nodes;++j) {
+        A_tilde[ j ].resize( dim );
+        for(unsigned d=0;d<dim;++d) {
+            A_tilde[ j ][ d ].resize( nb_unk[ j ][ d ], nb_eq_indep[ j ][ d ] );
+        }
+    }
+
+    for(unsigned j=0;j<nb_vertex_nodes;++j) {
+        for(unsigned d=0;d<dim;++d) {
+            for(unsigned k=0;k<nb_eq_indep[ j ][ d ];++k) {
+                A_tilde[ j ][ d ].col( k ) = A[ j ][ d ].col( eq_indep[ j ][ d ][ k ] );
+            }
+        }
+    }
+
+    if ( debug_method ) {
+        for(unsigned j=0;j<nb_vertex_nodes;++j) {
+            for(unsigned d=0;d<dim;++d) {
+                cout << "dimension de la matrice A_tilde associee au noeud sommet " << j << " dans la direction " << d << " : ( " << nb_unk[ j ][ d ] << ", " << nb_eq_indep[ j ][ d ] << " )" << endl;
+                cout << "matrice A_tilde associee au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                cout << A_tilde[ j ][ d ] << endl << endl;
+            }
+        }
+    }
+
+    if ( debug_method == 0 ) {
+        A.free();
+    }
+
+    /// Construction des vecteurs R_tilde[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
+    ///---------------------------------------------------------------------------------------------------------
+
+    cout << "Construction des vecteurs R_tilde" << endl << endl;
+
+    Vec< Vec< Vec<T> > > R_tilde;
+    R_tilde.resize( nb_vertex_nodes );
+
+    for(unsigned j=0;j<nb_vertex_nodes;++j) {
+        R_tilde[ j ].resize( dim );
+        for(unsigned d=0;d<dim;++d) {
+            R_tilde[ j ][ d ].resize( nb_eq_indep[ j ][ d ] );
+            R_tilde[ j ][ d ].set( 0. );
+        }
+    }
+
+    for(unsigned j=0;j<nb_vertex_nodes;++j) {
+        for(unsigned d=0;d<dim;++d) {
+            for(unsigned k=0;k<nb_eq_indep[ j ][ d ];++k) {
+                R_tilde[ j ][ d ][ k ] += R[ j ][ d ][ eq_indep[ j ][ d ][ k ] ];
+            }
+        }
+    }
+
+    if ( debug_method ) {
+        for(unsigned j=0;j<nb_vertex_nodes;++j) {
+            for(unsigned d=0;d<dim;++d) {
+                cout << "dimension du vecteur R_tilde associe au noeud sommet " << j << " dans la direction " << d << " : " << nb_eq_indep[ j ][ d ] << endl;
+                cout << "vecteur R_tilde associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                cout << R_tilde[ j ][ d ] << endl << endl;
+            }
+        }
+    }
+
+    eq_indep.free();
+    if ( debug_method == 0 ) {
+        R.free();
+    }
+
+    /// Construction des vecteurs lambda_F[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
+    ///-------------------------------------------------------------------------------------------------------------
+
+    cout << "Construction des vecteurs lambda_F" << endl << endl;
+
+    Vec< Vec< Vec<T> > > lambda_F;
+    lambda_F.resize( nb_vertex_nodes );
+
+    for(unsigned j=0;j<nb_vertex_nodes;++j) {
+        lambda_F[ j ].resize( dim );
+        for(unsigned d=0;d<dim;++d) {
+            lambda_F[ j ][ d ].resize( nb_unk[ j ][ d ] );
+            lambda_F[ j ][ d ].set( 0. );
+        }
+    }
+
+    Vec<unsigned> degre_p;
+    degre_p.resize( m.elem_list.size() );
+    degre_p.set( 0 );
+    apply( m.elem_list, Calcul_Degre_p(), degre_p );
+
+    if ( debug_method ) {
+        cout << "degre du premier element : " << degre_p[ 0 ] << endl;
+    }
+
+    if ( degre_p[ 0 ] == 1  ) {
+        
+        /// Cas p = 1
+        ///----------
+        
+        cout << "Cas : p = 1" << endl << endl;
+        
+        Vec< Vec< Vec<T> > > lambda_F_face;
+        lambda_F_face.resize( m.sub_mesh(Number<1>()).elem_list.size() );
+        
+        for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+            lambda_F_face[ k ].resize( dim );
+            for(unsigned d=0;d<dim;++d) {
+                lambda_F_face[ k ][ d ].resize( cpt_vertex_nodes_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() );
+                lambda_F_face[ k ][ d ].set( 0. );
+            }
+        }
+        
+        /// Construction des matrices B[ k ][ d ] pour chaque face k du maillage et chaque direction d
+        ///-------------------------------------------------------------------------------------------
+        
+        cout << "Construction des matrices B" << endl << endl;
+        
+        Vec< Vec< Mat<T, Gen<>, SparseUMFPACK > > > B; 
+        B.resize( m.sub_mesh(Number<1>()).elem_list.size() );
+        
+        for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+            B[ k ].resize( dim );
+            for(unsigned d=0;d<dim;++d) {
+                B[ k ][ d ].resize( cpt_vertex_nodes_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() );
+            }
+        }
+        
+        apply( m.sub_mesh(Number<1>()).elem_list, Calcul_Skin_Elem_Matrix_B_p_1(), m, B );
+        
+        if ( debug_method ) {
+            for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+                for(unsigned d=0;d<dim;++d) {
+                    cout << "dimension de la matrice B associe a la face " << k << " dans la direction " << d << " : ( " << cpt_vertex_nodes_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << ", " << cpt_vertex_nodes_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << " )" << endl;
+                    cout << "matrice B associe a la face " << k << " dans la direction " << d << " :" << endl;
+                    cout << B[ k ][ d ] << endl << endl;
+                }
+            }
+        }
+        
+        /// Construction des vecteurs Q[ k ][ d ] pour chaque face k du maillage et chaque direction d
+        ///-------------------------------------------------------------------------------------------
+        
+        cout << "Construction des vecteurs Q" << endl << endl;
+        
+        Vec< Vec< Vec<T> > > Q; 
+        Q.resize( m.sub_mesh(Number<1>()).elem_list.size() );
+        
+        for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+            Q[ k ].resize( dim );
+            for(unsigned d=0;d<dim;++d) {
+                Q[ k ][ d ].resize( cpt_vertex_nodes_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() );
+                Q[ k ][ d ].set( 0. );
+            }
+        }
+        
+        Calcul_Skin_Elem_Vector_Q_p_1 calcul_skin_elem_vector_Q_p_1;
+        calcul_skin_elem_vector_Q_p_1.connect_node_to_vertex_node = &connect_node_to_vertex_node;
+        calcul_skin_elem_vector_Q_p_1.type_face = &type_face;
+        calcul_skin_elem_vector_Q_p_1.face_ind = &face_ind;
+        calcul_skin_elem_vector_Q_p_1.list_nodes_face = &list_nodes_face;
+        calcul_skin_elem_vector_Q_p_1.pb = &pb;
+        calcul_skin_elem_vector_Q_p_1.want_local_enrichment = &want_local_enrichment;
+        
+        apply( m.elem_list, calcul_skin_elem_vector_Q_p_1, m, f, Q );
+        
+        if ( debug_method ) {
+            for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+                for(unsigned d=0;d<dim;++d) {
+                    cout << "dimension du vecteur Q associe a la face " << k << " dans la direction " << d << " : " << cpt_vertex_nodes_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << endl;
+                    cout << "vecteur Q associe a la face " << k << " dans la direction " << d << " :" << endl;
+                    cout << Q[ k ][ d ] << endl << endl;
+                }
+            }
+        }
+        
+        /// Resolution des systemes lineaires B[ k ][ d ] * lambda_F_face[ k ][ d ] = Q[ k ][ d ] sur chaque face k du maillage et dans chaque direction d
+        /// Construction des vecteurs lambda_F_face[ k ][ d ] pour chaque face k du maillage et chaque direction d
+        ///-----------------------------------------------------------------------------------------------------------------------------------------------
+        
+        cout << "Resolution des systemes lineaires sur chaque face du maillage : B * lambda_F_face = Q" << endl;
+        cout << "Construction des vecteurs lambda_F_face" << endl << endl;
+        
+        TicToc t_solve_p_1_EESPT;
+        t_solve_p_1_EESPT.start();
+        
+        for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+            for(unsigned d=0;d<dim;++d) {
+                B[ k ][ d ].get_factorization();
+                lambda_F_face[ k ][ d ] = B[ k ][ d ].solve( Q[ k ][ d ] );
+            }
+        }
+        
+        t_solve_p_1_EESPT.stop();
+        cout << "Temps de calcul de la resolution des systemes lineaires pour la technique EESPT : " << t_solve_p_1_EESPT.res << endl << endl;
+        
+        if ( debug_method ) {
+            for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+                for(unsigned d=0;d<dim;++d) {
+                    cout << "dimension du vecteur lambda_F_face associe a la face " << k << " dans la direction " << d << " : " << cpt_vertex_nodes_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << endl;
+                    cout << "vecteur lambda_F_face associe a la face " << k << " dans la direction " << d << " :" << endl;
+                    cout << lambda_F_face[ k ][ d ] << endl << endl;
+                }
+            }
+        }
+        
+        B.free();
+        Q.free();
+        cpt_vertex_nodes_face.free();
+        
+        /// Construction des vecteurs lambda_F[ j ][ d ] pour chaque sommet j du maillage et chaque direction d
+        ///-------------------------------------------------------------------------------------------------------
+        
+        cout << "Construction des vecteurs lambda_F" << endl << endl;
+        
+        Calcul_Vertex_Nodal_Vector_lambda_F_p_1 calcul_vertex_nodal_vector_lambda_F_p_1;
+        calcul_vertex_nodal_vector_lambda_F_p_1.face_ind = &face_ind;
+        calcul_vertex_nodal_vector_lambda_F_p_1.connect_node_to_vertex_node = &connect_node_to_vertex_node;
+        
+        apply( m.sub_mesh(Number<1>()).elem_list, calcul_vertex_nodal_vector_lambda_F_p_1, lambda_F_face, lambda_F );
+        
+        lambda_F_face.free();
+        
+    }
+    else {
+        
+        /// Cas p >= 2
+        ///-----------
+        
+        cout << "Cas : p >= 2" << endl << endl;
+        
+        cout << "Construction des vecteurs lambda_F" << endl << endl;
+        
+        Calcul_Vertex_Nodal_Vector_lambda_F_p_2 calcul_vertex_nodal_vector_lambda_F_p_2;
+        calcul_vertex_nodal_vector_lambda_F_p_2.connect_node_to_vertex_node = &connect_node_to_vertex_node;
+        calcul_vertex_nodal_vector_lambda_F_p_2.type_face = &type_face;
+        calcul_vertex_nodal_vector_lambda_F_p_2.face_ind = &face_ind;
+        calcul_vertex_nodal_vector_lambda_F_p_2.list_nodes_face = &list_nodes_face;
+        calcul_vertex_nodal_vector_lambda_F_p_2.list_vertex_nodes_face = &list_vertex_nodes_face;
+        calcul_vertex_nodal_vector_lambda_F_p_2.pb = &pb;
+        calcul_vertex_nodal_vector_lambda_F_p_2.want_local_enrichment = &want_local_enrichment;
+        
+        apply( m.elem_list, calcul_vertex_nodal_vector_lambda_F_p_2, m, f, lambda_F );
+    }
+
+    if ( debug_method ) {
+        for(unsigned j=0;j<nb_vertex_nodes;++j) {
+            for(unsigned d=0;d<dim;++d) {
+                cout << "dimension du vecteur lambda_F associe au noeud sommet " << j << " dans la direction " << d << " : " << nb_unk[ j ][ d ] << endl;
+                cout << "vecteur lambda_F associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                cout << lambda_F[ j ][ d ] << endl << endl;
+            }
+        }
+    }
+
+    degre_p.free();
+    list_vertex_nodes_face.free();
+    list_nodes_face.free();
+
+    /// Condition de minimsation
+    ///-------------------------
+
+    cout << "Condition de minimsation" << endl << endl; // si minimisation[ j ][ d ] = 0, alors il n'y a pas d'etape de minimisation d'une fonction-cout pour le noeud sommet j du maillage dans la direction d
+                                                        // si minimisation[ j ][ d ] = 1, il y a une etape de minimisation d'une fonction-cout pour le noeud sommet j du maillage dans la direction d
+
+    Vec< Vec<bool> > minimisation; 
+    minimisation.resize( nb_vertex_nodes );
+
+    for(unsigned j=0;j<nb_vertex_nodes;++j) {
+        minimisation[ j ].resize( dim );
+        minimisation[ j ].set( 0 );
+    }
+
+    for(unsigned j=0;j<nb_vertex_nodes;++j) {
+        for(unsigned d=0;d<dim;++d) {
+             if ( nb_eq_indep[ j ][ d ] < nb_unk[ j ][ d ] ) {
+                minimisation[ j ][ d ] = 1;
+            }
+        }
+    }
+
+    if ( debug_method ) {
+        for(unsigned j=0;j<nb_vertex_nodes;++j) {
+            for(unsigned d=0;d<dim;++d) {
+                cout << "etape de minimisation associee au noeud sommet " << j << " dans la direction " << d << " : " << minimisation[ j ][ d ] << endl << endl;
+            }
+        }
+    }
+
+    /// Construction des matrices de minimisation M[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
+    ///-------------------------------------------------------------------------------------------------------------------
+
+    cout << "Construction des matrices M" << endl << endl;
+
+    cout << "valeur du coefficient de penalisation : " << pen_N << endl << endl;
+
+    Vec< Vec< Mat< T, Diag<> > > > M; 
+    M.resize( nb_vertex_nodes );
+
+    for(unsigned j=0;j<nb_vertex_nodes;++j) {
+        M[ j ].resize( dim );
+        for(unsigned d=0;d<dim;++d) {
+            if ( minimisation[ j ][ d ] ) {
+                M[ j ][ d ].resize( nb_unk[ j ][ d ] );
+                M[ j ][ d ].set( 0. );
+            }
+        }
+    }
+
+    m.update_skin();
+
+    Calcul_Vertex_Nodal_Matrix_M<T> calcul_vertex_nodal_matrix_M;
+    calcul_vertex_nodal_matrix_M.connect_node_to_vertex_node = &connect_node_to_vertex_node;
+    calcul_vertex_nodal_matrix_M.type_face = &type_face;
+    calcul_vertex_nodal_matrix_M.face_ind = &face_ind;
+    calcul_vertex_nodal_matrix_M.cost_function = &cost_function;
+    calcul_vertex_nodal_matrix_M.pen_N = &pen_N;
+    calcul_vertex_nodal_matrix_M.minimisation = &minimisation;
+
+    apply( m.sub_mesh(Number<1>()).elem_list, calcul_vertex_nodal_matrix_M, m, f, M );
+
+    if ( debug_method ) {
+        for(unsigned j=0;j<nb_vertex_nodes;++j) {
+            for(unsigned d=0;d<dim;++d) {
+                if ( minimisation[ j ][ d ] ) {
+                    cout << "dimension de la matrice de minimisation M associee au noeud sommet " << j << " dans la direction " << d << " : ( " << nb_unk[ j ][ d ] << ", " << nb_unk[ j ][ d ] << " )" << endl;
+                    cout << "matrice M associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                    cout << M[ j ][ d ] << endl << endl;
+                }
+            }
+        }
+    }
+
+    type_face.free();
+
+    /// Construction des matrices K[ j ][ d ] et des vecteurs F[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
+    ///-------------------------------------------------------------------------------------------------------------------------------
+
+    cout << "Construction des matrices K et des vecteurs F" << endl << endl;
+
+    Vec< Vec< Mat<T> > > K; 
+    K.resize( nb_vertex_nodes );
+
+    Vec< Vec< Vec<T> > > F; 
+    F.resize( nb_vertex_nodes );
+
+    Vec< Vec< Vec<T> > > U; 
+    U.resize( nb_vertex_nodes );
+
+    TicToc t_construct_K_F_EESPT;
+    t_construct_K_F_EESPT.start();
+
+    for(unsigned j=0;j<nb_vertex_nodes;++j) {
+        K[ j ].resize( dim );
+        F[ j ].resize( dim );
+        U[ j ].resize( dim );
+        for(unsigned d=0;d<dim;++d) {
+            if ( minimisation[ j ][ d ] == 0 ) {
+                K[ j ][ d ].resize( nb_unk[ j ][ d ] );
+                F[ j ][ d ].resize( nb_unk[ j ][ d ] );
+                U[ j ][ d ].resize( nb_unk[ j ][ d ] );
+            }
+            else {
+                K[ j ][ d ].resize( nb_unk[ j ][ d ] + nb_eq_indep[ j ][ d ] );
+                K[ j ][ d ].set( 0. );
+                F[ j ][ d ].resize( nb_unk[ j ][ d ] + nb_eq_indep[ j ][ d ] );
+                U[ j ][ d ].resize( nb_unk[ j ][ d ] + nb_eq_indep[ j ][ d ] );
+            }
+            K[ j ][ d ].set( 0. );
+            F[ j ][ d ].set( 0. );
+            U[ j ][ d ].set( 0. );
+        }
+    }
+
+    for(unsigned j=0;j<nb_vertex_nodes;++j) {
+        for(unsigned d=0;d<dim;++d) {
+            if ( minimisation[ j ][ d ] == 0 ) {
+                Vec<unsigned> vec_unk = range( nb_unk[ j ][ d ] );
+                Vec<unsigned> vec_eq_indep = range( nb_eq_indep[ j ][ d ] );
+                Mat<T, Gen<>, SparseLine<> > trans_A_tilde = trans( A_tilde[ j ][ d ] );
+                K[ j ][ d ]( vec_eq_indep, vec_unk ) = trans_A_tilde( vec_eq_indep, vec_unk )  * 1.;
+                F[ j ][ d ][ vec_eq_indep ] = R_tilde[ j ][ d ][ vec_eq_indep ]  * 1.;
+            }
+            else {
+                Vec<unsigned> vec_unk = range( nb_unk[ j ][ d ] );
+                Vec<unsigned> vec_eq_indep = range( nb_eq_indep[ j ][ d ] );
+                Vec<unsigned> vec_unk_to_unk_plus_eq_indep = range( nb_unk[ j ][ d ], nb_unk[ j ][ d ] + nb_eq_indep[ j ][ d ] );
+                Mat<T, Gen<>, SparseLine<> > trans_A_tilde = trans( A_tilde[ j ][ d ] );
+                K[ j ][ d ]( vec_unk, vec_unk ) = M[ j ][ d ][ vec_unk ] * 1.;
+                K[ j ][ d ]( vec_unk_to_unk_plus_eq_indep, vec_unk ) = trans_A_tilde( vec_eq_indep, vec_unk )  * 1.;
+                K[ j ][ d ]( vec_unk, vec_unk_to_unk_plus_eq_indep ) = A_tilde[ j ][ d ]( vec_unk, vec_eq_indep )  * 1.;
+                F[ j ][ d ][ vec_unk ] = ( M[ j ][ d ] * lambda_F[ j ][ d ] )[ vec_unk ]  * 1.;
+                F[ j ][ d ][ vec_unk_to_unk_plus_eq_indep ] = R_tilde[ j ][ d ][ vec_eq_indep ]  * 1.;
+            }
+        }
+    }
+
+    t_construct_K_F_EESPT.stop();
+    cout << "Temps de calcul de remplissage des matrices K et des vecteurs F associes aux problemes de minimisation pour la technique EESPT : " << t_construct_K_F_EESPT.res << endl << endl;
+
+    if ( debug_method ) {
+        for(unsigned j=0;j<nb_vertex_nodes;++j) {
+            for(unsigned d=0;d<dim;++d) {
+                cout << "dimension de la matrice K associee au noeud sommet " << j << " dans la direction " << d << " : ( " << K[ j ][ d ].nb_rows() << ", " << K[ j ][ d ].nb_cols() << " ) "<< endl;
+                cout << "matrice K associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                cout << K[ j ][ d ] << endl << endl;
+            }
+        }
+        for(unsigned j=0;j<nb_vertex_nodes;++j) {
+            for(unsigned d=0;d<dim;++d) {
+                cout << "dimension du vecteur F associe au noeud sommet " << j << " dans la direction " << d << " : " << F[ j ][ d ].size() << endl;
+                cout << "vecteur F associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                cout << F[ j ][ d ] << endl << endl;
+            }
+        }
+    }
+
+    M.free();
+    lambda_F.free();
+    nb_eq_indep.free();
+    if ( debug_method == 0 ) {
+        A_tilde.free();
+        R_tilde.free();
+    }
+
+    /// Resolution des problemes de minimsation K[ j ][ d ] * U[ j ][ d ] = F[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
+    /// Construction des vecteurs U[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
+    ///---------------------------------------------------------------------------------------------------------------------------------------------
+
+    cout << "Resolution des problemes de minimisation K * U = F" << endl;
+    cout << "Construction des vecteurs U" << endl << endl;
+
+    TicToc t_solve_minimization_EESPT;
+    t_solve_minimization_EESPT.start();
+
+    for(unsigned j=0;j<nb_vertex_nodes;++j) {
+        for(unsigned d=0;d<dim;++d) {
+            if ( minimisation[ j ][ d ] == 0 ) {
+#ifdef WITH_UMFPACK
+                Mat<T, Gen<>, SparseUMFPACK > K_UMFPACK = K[ j ][ d ];
+                K_UMFPACK.get_factorization();
+                U[ j ][ d ] = K_UMFPACK.solve( F[ j ][ d ] );
+#endif
+            }
+            else {
+                if ( solver_minimisation == "LDL" ) {
+#ifdef WITH_LDL
+                    Mat<T, Sym<>, SparseLine<> > K_LDL = K[ j ][ d ];
+                    U[ j ][ d ] = F[ j ][ d ];
+                    LDL_solver ls;
+                    Vec< Vec<T> > Ker;
+                    Vec<int> Pivots;
+                    ls.get_factorization( K_LDL, Ker, Pivots );
+                    ls.solve( U[ j ][ d ] );
+#endif
+                }
+                else if ( solver_minimisation == "UMFPACK" ) {
+#ifdef WITH_UMFPACK
+                    Mat<T, Gen<>, SparseUMFPACK > K_UMFPACK = K[ j ][ d ];
+                    K_UMFPACK.get_factorization();
+                    U[ j ][ d ] = K_UMFPACK.solve( F[ j ][ d ] );
+#endif
+                }
+                else if ( solver_minimisation == "Inv" ) {
+                    Mat<T, Sym<>, SparseLine<> > K_Inv = K[ j ][ d ];
+                    U[ j ][ d ] = inv( K_Inv ) * F[ j ][ d ];
+                }
+                else if ( solver_minimisation == "LUFactorize" ) {
+                    Mat<T, Sym<>, SparseLine<> > K_sym = K[ j ][ d ];
+                    Mat<T, Gen<>, SparseLU > K_LU = K_sym;
+//                     Vec<int> vector_permutation;
+                    lu_factorize( K_LU/*, vector_permutation*/ );
+                    solve_using_lu_factorize( K_LU, /*vector_permutation,*/ F[ j ][ d ], U[ j ][ d ] );
+                }
+                else if ( solver_minimisation == "CholFactorize" ) {
+                    Mat<T , Sym<>, SparseLine<> > K_sym = K[ j ][ d ];
+                    Mat<T , Sym<>, SparseLine<> > K_fact = K_sym;
+                    incomplete_chol_factorize( K_fact );
+                    solve_using_incomplete_chol_factorize( K_fact, K_sym, F[ j ][ d ], U[ j ][ d ] );
+                }
+                else {
+                    cerr << "Bing. Error : type de solveur pour la minimisation non implemente" << endl << endl;
+                }
+            }
+        }
+    }
+
+    t_solve_minimization_EESPT.stop();
+    cout << "Temps de calcul de la resolution des problemes de minimisation pour la technique EESPT : " << t_solve_minimization_EESPT.res << endl << endl;
+
+    if ( debug_method ) {
+        for(unsigned j=0;j<nb_vertex_nodes;++j) {
+            for(unsigned d=0;d<dim;++d) {
+                cout << "dimension du vecteur U associe au noeud sommet " << j << " dans la direction " << d << " : " << U[ j ][ d ].size() << endl;
+                cout << "vecteur U associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                cout << U[ j ][ d ] << endl << endl;
+            }
+        }
+    }
+    if ( verif_solver_minimisation ) {
+        cout << "Verification de la resolution des problemes de minimisation pour la technique EESPT" << endl << endl;
+        for(unsigned j=0;j<nb_vertex_nodes;++j) {
+            for(unsigned d=0;d<dim;++d) {
+                if ( norm_2( K[ j ][ d ] * U[ j ][ d ] - F[ j ][ d ] ) / norm_2( F[ j ][ d ] ) > tol_solver_minimisation ) {
+                    cout << "residu associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                    cout << "K * U - F =" << endl;
+                    cout << K[ j ][ d ] * U[ j ][ d ] - F[ j ][ d ] << endl << endl;
+                    cout << "norme 2 du residu = " << norm_2( K[ j ][ d ] * U[ j ][ d ] - F[ j ][ d ] ) / norm_2( F[ j ][ d ] ) << endl << endl;
+                    cout << "norme 2 du residu relatif = " << norm_2( K[ j ][ d ] * U[ j ][ d ] - F[ j ][ d ] ) / norm_2( F[ j ][ d ] ) << endl << endl;
+                }
+            }
+        }
+    }
+
+    K.free();
+    F.free();
+    minimisation.free();
+
+    /// Construction des vecteurs lambda_F_hat[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
+    ///-----------------------------------------------------------------------------------------------------------------
+
+    cout << "Construction des vecteurs lambda_F_hat" << endl << endl;
+
+    Vec< Vec< Vec<T> > > lambda_F_hat;
+    lambda_F_hat.resize( nb_vertex_nodes );
+
+    for(unsigned j=0;j<nb_vertex_nodes;++j) {
+        lambda_F_hat[ j ].resize( dim );
+        for(unsigned d=0;d<dim;++d) {
+            lambda_F_hat[ j ][ d ].resize( nb_unk[ j ][ d ] );
+            lambda_F_hat[ j ][ d ].set( 0. );
+        }
+    }
+
+    for(unsigned j=0;j<nb_vertex_nodes;++j) {
+        for(unsigned d=0;d<dim;++d) {
+            Vec<unsigned> vec_unk_lambda_F_hat = range( nb_unk[ j ][ d ] );
+            lambda_F_hat[ j ][ d ][ vec_unk_lambda_F_hat ] = U[ j ][ d ][ vec_unk_lambda_F_hat ] * 1.;
+        }
+    }
+
+    Reset_Vertex_Nodal_Vector_lambda_F_hat reset_vertex_nodal_vector_lambda_F_hat;
+    reset_vertex_nodal_vector_lambda_F_hat.connect_node_to_vertex_node = &connect_node_to_vertex_node;
+    reset_vertex_nodal_vector_lambda_F_hat.enhancement = &enhancement;
+    reset_vertex_nodal_vector_lambda_F_hat.flag_face_enh = &flag_face_enh;
+    reset_vertex_nodal_vector_lambda_F_hat.face_ind = &face_ind;
+
+    apply( m.sub_mesh(Number<1>()).elem_list, reset_vertex_nodal_vector_lambda_F_hat, m, lambda_F_hat );
+
+    if ( debug_method ) {
+        for(unsigned j=0;j<nb_vertex_nodes;++j) {
+            for(unsigned d=0;d<dim;++d) {
+                cout << "dimension du vecteur lambda_F_hat associee au noeud sommet " << j << " dans la direction " << d << " : " << nb_unk[ j ][ d ] << endl;
+                cout << "vecteur lambda_F_hat associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                cout << lambda_F_hat[ j ][ d ] << endl << endl;
+                if ( norm_2( trans( A[ j ][ d ] ) * lambda_F_hat[ j ][ d ] - R[ j ][ d ] ) / norm_2( R[ j ][ d ] ) > tol_solver_minimisation ) {
+                    cout << "A^T * lambda_F_hat - R =" << endl;
+                    cout << trans( A[ j ][ d ] ) * lambda_F_hat[ j ][ d ] - R[ j ][ d ] << endl << endl;
+                    cout << "A_tilde^T * lambda_F_hat - R_tilde =" << endl;
+                    cout << trans( A_tilde[ j ][ d ] ) * lambda_F_hat[ j ][ d ] - R_tilde[ j ][ d ]<< endl << endl;
+                }
+            }
+        }
+    }
+
+    nb_unk.free();
+    U.free();
+
+    /// Construction des vecteurs vec_force_fluxes[ k ][ d ] pour chaque face k du maillage et chaque direction d
+    /// Construction des matrices mat_force_fluxes[ k ] pour chaque face k du maillage
+    ///----------------------------------------------------------------------------------------------------------
+
+    cout << "Construction des vecteurs vec_force_fluxes_std et des matrices mat_force_fluxes_std" << endl << endl;
+
+    vec_force_fluxes.resize( m.sub_mesh(Number<1>()).elem_list.size() );
+
+    for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+        vec_force_fluxes[ k ].resize( dim );
+        for(unsigned d=0;d<dim;++d) {
+            vec_force_fluxes[ k ][ d ].resize( m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() );
+            vec_force_fluxes[ k ][ d ].set( 0. );
+        }
+    }
+
+    Vec< Mat<T> > mat_force_fluxes;
+    mat_force_fluxes.resize( m.sub_mesh(Number<1>()).elem_list.size() );
+
+    for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+        mat_force_fluxes[ k ].resize( m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual(), dim );
+        mat_force_fluxes[ k ].set( 0. );
+    }
+
+    Calcul_Skin_Elem_Force_Fluxes calcul_skin_elem_force_fluxes;
+    calcul_skin_elem_force_fluxes.connect_node_to_vertex_node = &connect_node_to_vertex_node;
+    calcul_skin_elem_force_fluxes.face_ind = &face_ind;
+
+    m.update_skin();
+    apply( m.sub_mesh(Number<1>()).elem_list, calcul_skin_elem_force_fluxes, lambda_F_hat, vec_force_fluxes, mat_force_fluxes );
+
+    if ( debug_force_fluxes or debug_method ) {
+        for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+            for(unsigned d=0;d<dim;++d) {
+                cout << "dimension du vecteur des densites d'effort associe a la face " << k << " dans la direction " << d << " : " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << endl;
+                cout << "vecteur des densites d'effort associe a la face " << k << " dans la direction " << d << " :" << endl;
+                cout << vec_force_fluxes[ k ][ d ] << endl << endl;
+            }
+        }
+    }
+    if ( debug_force_fluxes or debug_method ) {
+        for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+            cout << "dimension de la matrice des densites d'effort associee a la face " << k << " : ( " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << ", " << dim << " )" << endl;
+            cout << "matrice des densites d'effort associee a la face " << k << " :" << endl;
+            cout << mat_force_fluxes[ k ] << endl << endl;
+        }
+    }
+
+    face_ind.free();
+    lambda_F_hat.free();
+    mat_force_fluxes.free();
+    connect_node_to_vertex_node.free();
+
+    t_construct_force_fluxes_std.stop();
+    cout << "Temps de calcul de la construction standard des densites d'effort pour la technique EESPT : " << t_construct_force_fluxes_std.res << endl << endl;
+
+}
+
+#endif // Construct_standard_force_fluxes_EESPT_h

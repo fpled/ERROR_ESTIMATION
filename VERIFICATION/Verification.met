@@ -1,0 +1,226 @@
+#
+# Metil Interface: Verification_met
+#
+# Description: verification
+#
+#
+# Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2009
+#
+# Copyright: See COPYING file that comes with this distribution
+#
+#
+
+
+# Methode qui genere un fichier check_elem_eq_force_fluxes_$(f->name).$(e->dim).$(e->name).h pour ajouter la contribution d'un element aux vecteurs residual_force_fluxes[ e ]
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def check_elem_eq_force_fluxes( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "check_elem_eq_force_fluxes_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/check_elem_eq_force_fluxes_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef check_elem_eq_force_fluxes_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define check_elem_eq_force_fluxes_$(f->name)_$(e->dim)_$(e->name)_h"
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_NodalElement.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Bar.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Triangle.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Quad.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Tetra.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class S, class B, class T>"
+        file_ <<< "void check_elem_eq_force_fluxes( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<unsigned> > &list_nodes_face, const Vec<unsigned> &cpt_elems_node, const Vec< Vec< Vec<T> > > &vec_force_fluxes, const TTVV &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, Vec< Vec<T> > &residual_force_fluxes ) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+        deg_p := max( e->order_interpolation )
+        GM := e->pos - e->barycenter# ( e->pos ).subs( e->var_inter, e->get_center_of_var_inter() )
+        res_force := Vec[ Op, e->dim ]()
+        res_torque_dim_2 := Op( 0 )
+        res_torque_dim_3 := Vec[ Op, e->dim ]()
+        for d in 0 .. e->dim
+            degre_poly := ( child_cast(f)->f_vol.expr[ d ] + child_cast(f)->pre_f_vol.expr[ d ] ).poly_deg( e->var_inter )
+            if integration_type == "gauss_num"
+                res_force[ d ] = e->gauss_num_integration( child_cast(f)->f_vol.expr[ d ] + child_cast(f)->pre_f_vol.expr[ d ], order_diff = degre_poly )
+            else if integration_type == "formal"
+                res_force[ d ] = e->integration( child_cast(f)->f_vol.expr[ d ] + child_cast(f)->pre_f_vol.expr[ d ], order_diff = degre_poly )
+            for n in 0 .. e->nb_nodes
+                nb_elems_node := symbol( "cpt_elems_node[ elem.node( $n )->number ]" )
+                res_force[ d ] += ( child_cast(f)->pre_f_nodal.expr[ d ] ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
+        if e->dim == 2
+            GM_vect_prod_f_vol := vect_prod( GM, child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr )
+            GM_vect_prod_f_nodal := vect_prod( GM, child_cast(f)->pre_f_nodal.expr )
+            degre_poly := ( GM_vect_prod_f_vol ).poly_deg( e->var_inter )
+            if integration_type == "gauss_num"
+                res_torque_dim_2 = e->gauss_num_integration( GM_vect_prod_f_vol, order_diff = degre_poly )
+            else if integration_type == "formal"
+                res_torque_dim_2 = e->integration( GM_vect_prod_f_vol, order_diff = degre_poly )
+            for n in 0 .. e->nb_nodes
+                nb_elems_node := symbol( "cpt_elems_node[ elem.node( $n )->number ]" )
+                res_torque_dim_2 += ( GM_vect_prod_f_nodal ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
+        else if e->dim == 3
+            GM_vect_prod_f_vol := vect_prod( GM, child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr )
+            GM_vect_prod_f_nodal := vect_prod( GM, child_cast(f)->pre_f_nodal.expr )
+            for d in 0 .. e->dim
+                degre_poly := ( GM_vect_prod_f_vol[ d ] ).poly_deg( e->var_inter )
+                if integration_type == "gauss_num"
+                    res_torque_dim_3[ d ] = e->gauss_num_integration( GM_vect_prod_f_vol[ d ], order_diff = degre_poly )
+                else if integration_type == "formal"
+                    res_torque_dim_3[ d ] = e->integration( GM_vect_prod_f_vol[ d ], order_diff = degre_poly )
+                for n in 0 .. e->nb_nodes
+                    nb_elems_node := symbol( "cpt_elems_node[ elem.node( $n )->number ]" )
+                    res_torque_dim_3[ d ] += ( GM_vect_prod_f_nodal[ d ] ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
+        cw := CodeWriterAlt( "T" )
+        file_ <<<<
+                Vec< Vec< Vec<T> > > vec_force_fluxes_local;
+                vec_force_fluxes_local.resize( $(e->children( 1 ).size) );
+                Vec<unsigned> ind_in_list_nodes_face;
+        for face_ in e->children( 1 )
+            face := child_cast( face_ )
+            deg_p := max( face->order_interpolation )
+            eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)" )
+            sym_force_surf := Vec[ Vec[ Op, face->dim ], face->nb_nodes ]()
+            file_ <<< "    vec_force_fluxes_local[ $( face->num_child ) ].resize( $(face->dim) );"
+            for d in 0 .. face->dim
+                file_ <<< "    vec_force_fluxes_local[ $( face->num_child ) ][ $d ].resize( m.sub_mesh(Number<1>()).elem_list[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ]->nb_nodes_virtual(), 0. );"
+                for i in 0 .. face->nb_nodes
+                    file_ <<< "    ind_in_list_nodes_face = find_with_index( list_nodes_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ] == elem.node( $( face->node_numbers_to_node_numbers_in_parent_cpp[ i ] ) )->number );"
+                    file_ <<< "    vec_force_fluxes_local[ $( face->num_child ) ][ $d ][ $i ] += $( eta ) * vec_force_fluxes[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_list_nodes_face[ 0 ] ];"
+            for i in 0 .. face->nb_nodes
+                for d in 0 .. face->dim
+                    s := Op()
+                    s = symbol( "vec_force_fluxes_local[ $( face->num_child ) ][ $d ][ $i ]" )
+                    sym_force_surf[ i ][ d ] = s
+            force_surf := Vec[ Op, face->dim ]( face->interpolation( sym_force_surf, force_fluxes_base ) )
+            for d in 0 .. e->dim
+                degre_poly := ( force_surf[ d ] ).poly_deg( face->var_inter )
+                if integration_type == "gauss_num"
+                    res_force[ d ] += face->gauss_num_integration( force_surf[ d ], order_diff = degre_poly )
+                else if integration_type == "formal"
+                    res_force[ d ] += face->integration( force_surf[ d ], order_diff = degre_poly )
+            if e->dim == 2
+                GM_vect_prod_force_surf := vect_prod( GM, force_surf )
+                degre_poly := ( e->projection_on_child_elem( GM_vect_prod_force_surf, face ) ).poly_deg( face->var_inter )
+                if integration_type == "gauss_num"
+                    res_torque_dim_2 += face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_force_surf, face ), order_diff = degre_poly )
+                else if integration_type == "formal"
+                    res_torque_dim_2 += face->integration( e->projection_on_child_elem( GM_vect_prod_force_surf, face ), order_diff = degre_poly )
+            else if e->dim == 3
+                GM_vect_prod_force_surf := vect_prod( GM, force_surf )
+                for d in 0 .. e->dim
+                    degre_poly := ( e->projection_on_child_elem( GM_vect_prod_force_surf[ d ], face ) ).poly_deg( face->var_inter )
+                    if integration_type == "gauss_num"
+                        res_torque_dim_3[ d ] += face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_force_surf[ d ], face ), order_diff = degre_poly )
+                    else if integration_type == "formal"
+                        res_torque_dim_3[ d ] += face->integration( e->projection_on_child_elem( GM_vect_prod_force_surf[ d ], face ), order_diff = degre_poly )
+        for d in 0 .. e->dim
+            cw.add( "residual_force_fluxes[ elem.number ][ $d ]", res_force[ d ], add )
+        if e->dim == 2
+            cw.add( "residual_force_fluxes[ elem.number ][ $(e->dim) ]", res_torque_dim_2, add )
+        else if e->dim == 3
+            for d in 0 .. e->dim
+                cw.add( "residual_force_fluxes[ elem.number ][ $(e->dim) + $d ]", res_torque_dim_3[ d ], add )
+        file_ <<< "$(cw.to_string( 4 ))"
+        if want_local_enrichment
+            file_ <<< "    if ( pb == \"adjoint\" and want_local_enrichment ) {"
+            if integration_type == "gauss_num" and integration_lang == "cpp"
+                file_ <<< "        Vec<double> poids_face;"
+                file_ <<< "        Vec<Vec<double, $(e->dim)-1> > valeurs_face;"
+            for face_ in e->children( 1 )
+                face := child_cast( face_ )
+                file_ <<< "        {"
+                file_ <<< "        typedef typename TM::template SubMesh<1>::T TSubMesh;"
+                file_ <<< "        typedef typename TSubMesh::template TElem<typename TypeChildrenElement<typename Element<$(e->name),TN,TNG,TD,NET>::NE,1,$( face->num_child )>::T>::TE TCH;"
+                file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem,Number<1>())[ $( face->num_child ) ] ) );"
+                file_ <<< "        if ( skin_elem.phi_surf_handbook_zone_12 and elem.phi_elem_handbook_zone_1 ) {"
+                res_force_handbook := Vec[ Op, e->dim ]()
+                res_torque_handbook_dim_2 := Op( 0 )
+                res_torque_handbook_dim_3 := Vec[ Op, e->dim ]()
+                force_surf_handbook := e->projection_on_child_elem( child_cast(f)->sigma_handbook.expr, face ) * ( - face->normal )
+                force_surf_handbook_linear_part := e->projection_on_shape_functions_with_equilibrium( force_surf_handbook, degre_poly_handbook, face, force_fluxes_base )
+                degre_poly_handbook_linear_part := Op( 0 )
+                for d in 0 .. e->dim
+                    degre_poly_handbook_linear_part = ( force_surf_handbook_linear_part[ d ] ).poly_deg( face->var_inter )
+                    if integration_type == "gauss_num"
+                        if integration_lang == "metil"
+                            res_force_handbook[ d ] = face->gauss_num_integration( force_surf_handbook_linear_part[ d ], order_diff = degre_poly_handbook_linear_part )
+                            # res_force_handbook[ d ] = face->gauss_num_integration( force_surf_handbook[ d ], order_diff = degre_poly_handbook )
+                        else if integration_lang == "cpp"
+                            res_force_handbook[ d ] = force_surf_handbook_linear_part[ d ] * face->jac
+                            # res_force_handbook[ d ] = force_surf_handbook[ d ] * face->jac
+                    else if integration_type == "formal"
+                        res_force_handbook[ d ] = face->integration( force_surf_handbook_linear_part[ d ], order_diff = degre_poly_handbook_linear_part )
+                        # res_force_handbook[ d ] = face->integration( force_surf_handbook[ d ], order_diff = degre_poly_handbook )
+                if e->dim == 2
+                    GM_vect_prod_force_surf_handbook_linear_part := vect_prod( GM, force_surf_handbook_linear_part )
+                    # GM_vect_prod_force_surf_handbook := vect_prod( GM, force_surf_handbook )
+                    degre_poly_handbook_linear_part_ := ( e->projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part, face ) ).poly_deg( face->var_inter )
+                    degre_poly_handbook_linear_part = max( degre_poly_handbook_linear_part, degre_poly_handbook_linear_part_ )
+                    if integration_type == "gauss_num"
+                        if integration_lang == "metil"
+                            res_torque_handbook_dim_2 = face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part, face ), order_diff = degre_poly_handbook_linear_part_ )
+                            # res_torque_handbook_dim_2 = face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_force_surf_handbook, face ), order_diff = degre_poly_handbook )
+                        else if integration_lang == "cpp"
+                            res_torque_handbook_dim_2 = e->projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part, face ) * face->jac
+                            # res_torque_handbook_dim_2 = e->projection_on_child_elem( GM_vect_prod_force_surf_handbook, face ) * face->jac
+                    else if integration_type == "formal"
+                        res_torque_handbook_dim_2 = face->integration( e->projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part, face ), order_diff = degre_poly_handbook_linear_part_ )
+                        # res_torque_handbook_dim_2 = face->integration( e->projection_on_child_elem( GM_vect_prod_force_surf_handbook, face ), order_diff = degre_poly_handbook )
+                else if e->dim == 3
+                    GM_vect_prod_force_surf_handbook_linear_part := vect_prod( GM, force_surf_handbook_linear_part )
+                    # GM_vect_prod_force_surf_handbook := vect_prod( GM, force_surf_handbook )
+                    for d in 0 .. e->dim
+                        degre_poly_handbook_linear_part_ := ( e->projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part[ d ], face ) ).poly_deg( face->var_inter )
+                        degre_poly_handbook_linear_part = max( degre_poly_handbook_linear_part, degre_poly_handbook_linear_part_ )
+                        if integration_type == "gauss_num"
+                            if integration_lang == "metil"
+                                res_torque_handbook_dim_3[ d ] = face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part[ d ], face ), order_diff = degre_poly_handbook_linear_part_ )
+                                # res_torque_handbook_dim_3[ d ] = face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_force_surf_handbook[ d ], face ), order_diff = degre_poly_handbook )
+                            else if integration_lang == "cpp"
+                                res_torque_handbook_dim_3[ d ] = e->projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part[ d ], face ) * face->jac
+                                # res_torque_handbook_dim_3[ d ] = e->projection_on_child_elem( GM_vect_prod_force_surf_handbook[ d ], face ) * face->jac
+                        else if integration_type == "formal"
+                            res_torque_handbook_dim_3[ d ] = face->integration( e->projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part[ d ], face ), order_diff = degre_poly_handbook_linear_part_ )
+                            # res_torque_handbook_dim_3[ d ] = face->integration( e->projection_on_child_elem( GM_vect_prod_force_surf_handbook[ d ], face ), order_diff = degre_poly_handbook )
+                if integration_type == "gauss_num" and integration_lang == "cpp"
+                    file_ <<< "            gauss_points( $(face->name_for_gauss_point)(), $(degre_poly_handbook_linear_part), poids_face, valeurs_face );"
+                    # file_ <<< "            gauss_points( $(face->name_for_gauss_point)(), $(degre_poly_handbook), poids_face, valeurs_face );"
+                    file_ <<< "            for (unsigned n=0; n<poids_face.size(); ++n) {"
+                    file_ <<< "                Vec<double> var_inter( valeurs_face[ n ] );"
+                    file_ <<< "                Vec<T> residual_force_fluxes_tmp;"
+                    file_ <<< "                residual_force_fluxes_tmp.resize( residual_force_fluxes[ elem.number ].size() );"
+                    cw_handbook := CodeWriterAlt( "T" )
+                    for d in 0 .. e->dim
+                        cw_handbook.add( "residual_force_fluxes_tmp[ $d ]", res_force_handbook[ d ], reassign )
+                    if e->dim == 2
+                        cw_handbook.add( "residual_force_fluxes_tmp[ $(e->dim) ]", res_torque_handbook_dim_2, reassign )
+                    else if e->dim == 3
+                        for d in 0 .. e->dim
+                            cw_handbook.add( "residual_force_fluxes_tmp[ $(e->dim) + $d ]", res_torque_handbook_dim_3[ d ], reassign )
+                    file_ <<< "$(cw_handbook.to_string( 16 ))"
+                    for d in 0 .. e->dim
+                        file_ <<< "                residual_force_fluxes[ elem.number ][ $d ] += poids_face[ n ] * residual_force_fluxes_tmp[ $d ];"
+                    if e->dim == 2
+                        file_ <<< "                residual_force_fluxes[ elem.number ][ $(e->dim) ] += poids_face[ n ] * residual_force_fluxes_tmp[ $(e->dim) ];"
+                    else if e->dim == 3
+                        for d in 0 .. e->dim
+                            file_ <<< "                residual_force_fluxes[ elem.number ][ $(e->dim) + $d ] += poids_face[ n ] * residual_force_fluxes_tmp[ $(e->dim) + $d ];"
+                    file_ <<< "            }"
+                else
+                    cw_handbook := CodeWriterAlt( "T" )
+                    for d in 0 .. e->dim
+                        cw_handbook.add( "residual_force_fluxes[ elem.number ][ $d ]", res_force_handbook[ d ], add )
+                    if e->dim == 2
+                        cw_handbook.add( "residual_force_fluxes[ elem.number ][ $(e->dim) ]", res_torque_handbook_dim_2, add )
+                    else if e->dim == 3
+                        for d in 0 .. e->dim
+                            cw_handbook.add( "residual_force_fluxes[ elem.number ][ $(e->dim) + $d ]", res_torque_handbook_dim_3[ d ], add )
+                    file_ <<< "$(cw_handbook.to_string( 12 ))"
+                file_ <<< "        }"
+                file_ <<< "        }"
+            file_ <<< "    }"
+        file_ <<< "    #undef PNODE"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names

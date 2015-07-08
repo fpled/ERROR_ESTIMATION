@@ -1,0 +1,63 @@
+static const nvi := 0
+static const nb_nodes := 1
+static const nb_vertex_nodes := 1
+static const center_of_var_inter := [  ]
+#
+def interpolation( var_inter, val, interpolation_base )
+    if val.tensor_order==1 and val.size  return val[ 0 ]
+    return 0
+#
+def interpolation_deg( var_inter, val, interpolation_base, deg ) when deg == 0
+    if val.tensor_order==1 and val.size  return val[ 0 ]
+    return 0
+#
+def interpolation_deg( var_inter, val, interpolation_base, deg ) when deg == 1
+    if val.tensor_order==1 and val.size  return val[ 0 ]
+    return 0
+#
+def interpolation_deg( var_inter, val, interpolation_base, deg ) when deg == 2
+    if val.tensor_order==1 and val.size  return val[ 0 ]
+    return 0
+#
+def interpolation_deg( var_inter, val, interpolation_base, deg ) when deg == 3
+    if val.tensor_order==1 and val.size  return val[ 0 ]
+    return 0
+#
+def interpolation_vertex( var_inter, val_vertex )
+    if val_vertex.tensor_order==1 and val_vertex.size  return val_vertex[ 0 ]
+    return 0
+#
+def nb_children( sub_nvi ) when sub_nvi==0
+    return 1
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==0
+    return child_var_inter
+def type_child( sub_nvi, num_child ) when sub_nvi==0
+    return NodalElement
+def node_number_child( sub_nvi, num_child ) when sub_nvi==0
+    return 0 .. 1
+def normal( var_inter, pos_nodes )
+    assert( 0, "normal is defined only for nb_dim == nvi + 1" )
+#
+def jac_mat( var_inter, pos_nodes )
+    res := Mat[ Op, Gen[ 0, 2 ] ]()
+    return res
+#
+def jac( var_inter, pos_nodes )
+    res := 1.0; 
+    return res
+#
+def inv_jac_mat( var_inter, pos_nodes )
+    assert( 0, "inv_jac_mat() available only when nb var inter == dim" )
+#
+def measure( var_inter, pos_nodes )
+    res := 1.0; 
+    return res
+#
+def barycenter( var_inter, pos_nodes )
+    res := Vec[ Op, 2 ]()
+    res[0] = 0.0; res[1] = 0.0; 
+    return res
+#
+def inertia_operator_for_barycenter( var_inter, pos_nodes )
+    res := 0.0; 
+    return res

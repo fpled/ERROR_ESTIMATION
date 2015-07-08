@@ -1,0 +1,4 @@
+import "formulation.met"
+
+write_legacy_lmtpp_code( pb_name_parameter, formListParam, elemListParam, typeList = typeList, assume_const_jac_in_elems = true, integration_type = integration_type )
+

@@ -1,0 +1,684 @@
+#
+# Metil Interface: EET_met
+#
+# Description: construction de champs admissibles, methode EET : construction standard des densites d'effort
+#
+#
+# Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2009
+#
+# Copyright: See COPYING file that comes with this distribution
+#
+#
+
+# Methode qui genere un fichier calc_face_ind_EET_$(f->name).$(face.dim).$(face.name).h pour calculer l'indice associe a une face au niveau des lignes des vecteurs b[ i ][ d ] et des colonnes des matrices B[ i ][ d ]
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_face_ind_EET( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        name_face := e->children( 1 )[ 0 ]->name
+        face := SymbolicElement[ name_face, e->dim ]()
+        file_name := "calc_face_ind_EET_$(f->name).$(face.dim).$(face.name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_face_ind_EET_$(f->name).$(face.dim).$(face.name).h", "w" )
+        file_ <<< "#ifndef calc_face_ind_EET_$(f->name)_$(face.dim)_$(face.name)_h"
+        file_ <<< "#define calc_face_ind_EET_$(f->name)_$(face.dim)_$(face.name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET>"
+        file_ <<< "void calc_face_ind_EET( const Element<$(face.name),TN,TNG,TD,NET> &child_elem, Vec< Vec< Vec<unsigned> > > &face_ind, Vec< Vec<unsigned> > &nb_unk ) {"
+        for n in 0 .. face.nb_nodes
+            for d in 0 .. e->dim
+                file_ <<< "    face_ind[ child_elem.number ][ $d ].push_back( nb_unk[ child_elem.node( $n )->number ][ $d ] );"
+                file_ <<< "    nb_unk[ child_elem.node( $n )->number ][ $d ]++;"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_elem_ind_EET_$(f->name).$(e->dim).$(e->name).h pour calculer l'indice associe a un element au niveau des lignes des vecteurs r[ i ][ d ] et des matrices B[ i ][ d ]
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_elem_ind_EET( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_elem_ind_EET_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_elem_ind_EET_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_elem_ind_EET_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_elem_ind_EET_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET>"
+        file_ <<< "void calc_elem_ind_EET( const Element<$(e->name),TN,TNG,TD,NET> &elem, Vec< Vec< Vec<unsigned> > > &elem_ind, Vec< Vec<unsigned> > &nb_eq ) {"
+        for n in 0 .. e->nb_nodes
+            for d in 0 .. e->dim
+                file_ <<< "    elem_ind[ elem.number ][ $d ].push_back( nb_eq[ elem.node( $n )->number ][ $d ] );"
+                file_ <<< "    nb_eq[ elem.node( $n )->number ][ $d ]++;"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_nodal_vector_r_$(f->name).$(e->dim).$(e->name).h pour ajouter la contribution des noeuds d'un element aux vecteurs r[ i ][ d ]
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_nodal_vector_r( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_nodal_vector_r_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_nodal_vector_r_$(f->name).$(e->dim).$(e->name).h", "w")
+        file_ <<< "#ifndef calc_nodal_vector_r_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_nodal_vector_r_$(f->name)_$(e->dim)_$(e->name)_h"
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_NodalElement.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Bar.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Triangle.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Quad.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Tetra.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class S, class B, class T>"
+        file_ <<< "void calc_nodal_vector_r( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec< Vec<unsigned> > > &elem_ind, const Vec< Vec<unsigned> > &list_nodes_face, const Vec<unsigned> &cpt_elems_node, const TTVV &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, Vec< Vec< Vec<T> > > &r ) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "    Vec<double> poids;"
+            file_ <<< "    Vec<Vec<double, $(e->dim)> > valeurs;"
+        deg_p := max( e->order_interpolation )
+        cw := CodeWriterAlt( "T" )
+        cw_handbook := CodeWriterAlt( "T" )
+        for n in 0 .. e->nb_nodes
+            nb_elems_node := symbol( "cpt_elems_node[ elem.node( $n )->number ]" )
+            phi_n := e->get_shape_functions( force_fluxes_base )[ n ]
+            r_n := ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) * e->grad( phi_n ) - phi_n * ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr )
+            r_n_handbook := child_cast(f)->sigma_handbook_PUM_zone_2.expr * e->grad( phi_n )
+
+            e->assume_const_jac = true
+            sigma_const_jac := sigma_hooke_iso( e->grad_sym( child_cast(f)->dep.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+            r_n_const_jac := ( sigma_const_jac - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) * e->grad( phi_n ) - phi_n * ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr )
+            e->assume_const_jac = hyp_const_jac
+
+            for d in 0 .. e->dim
+                r := Op( 0 )
+                r_handbook := Op( 0 )
+                degre_poly := ( r_n[ d ] ).poly_deg( e->var_inter )
+                if degre_poly < 0
+                    degre_poly = ( r_n_const_jac[ d ] ).poly_deg( e->var_inter )
+                if integration_type == "gauss_num"
+                    if integration_lang == "metil"
+                        r = e->gauss_num_integration( r_n[ d ], order_diff = degre_poly )
+                        if want_local_enrichment
+                            r_handbook = e->gauss_num_integration( r_n_handbook[ d ], order_diff = degre_poly_handbook )
+                    else if integration_lang == "cpp"
+                        r = r_n[ d ] * e->jac
+                        if want_local_enrichment
+                            r_handbook = r_n_handbook[ d ] * e->jac
+                else if integration_type == "formal"
+                    r = e->integration( r_n[ d ], order_diff = degre_poly )
+                    if want_local_enrichment
+                        r_handbook = e->integration( r_n_handbook[ d ], order_diff = degre_poly_handbook )
+                if integration_type == "gauss_num" and integration_lang == "cpp"
+                    file_ <<< "    gauss_points( $(e->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
+                    file_ <<< "    for (unsigned n=0; n<poids.size(); ++n) {"
+                    file_ <<< "        Vec<double> var_inter( valeurs[ n ] );"
+                    file_ <<< "        T r_tmp = 0.0;"
+                    cw_cpp := CodeWriterAlt( "T" )
+                    cw_cpp.add( "r_tmp", r, reassign )
+                    file_ <<< "$(cw_cpp.to_string( 8 ))"
+                    file_ <<< "        r[ elem.node( $n )->number ][ $d ][ elem_ind[ elem.number ][ $d ][ $n ] ] += poids[ n ] * r_tmp;"
+                    file_ <<< "    }"
+                    if want_local_enrichment
+                        file_ <<< "    if ( pb == \"adjoint\" and want_local_enrichment ) {"
+                        file_ <<< "        gauss_points( $(e->name_for_gauss_point)(), $(degre_poly_handbook), poids, valeurs );"
+                        file_ <<< "        for (unsigned n=0; n<poids.size(); ++n) {"
+                        file_ <<< "            Vec<double> var_inter( valeurs[ n ] );"
+                        file_ <<< "            T r_handbook_tmp = 0.0;"
+                        cw_cpp_handbook := CodeWriterAlt( "T" )
+                        cw_cpp_handbook.add( "r_handbook_tmp", r_handbook, reassign )
+                        file_ <<< "$(cw_cpp_handbook.to_string( 12 ))"
+                        file_ <<< "            r[ elem.node( $n )->number ][ $d ][ elem_ind[ elem.number ][ $d ][ $n ] ] += poids[ n ] * r_handbook_tmp;"
+                        file_ <<< "        }"
+                        file_ <<< "    }"
+                else
+                    cw.add( "r[ elem.node( $n )->number ][ $d ][ elem_ind[ elem.number ][ $d ][ $n ] ]", r, add )
+                    if want_local_enrichment
+                        cw_handbook.add( "r[ elem.node( $n )->number ][ $d ][ elem_ind[ elem.number ][ $d ][ $n ] ]", r_handbook, add )
+                r_nodal := Op( 0 )
+                r_nodal = - ( phi_n * child_cast(f)->pre_f_nodal.expr[ d ] ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
+                cw.add( "r[ elem.node( $n )->number ][ $d ][ elem_ind[ elem.number ][ $d ][ $n ] ]", r_nodal, add )
+        file_ <<< "$(cw.to_string( 4 ))"
+        if ( integration_type != "gauss_num" or integration_lang != "cpp" ) and want_local_enrichment
+            file_ <<< "    if ( pb == \"adjoint\" and want_local_enrichment ) {"
+            file_ <<< "$(cw_handbook.to_string( 8 ))"
+            file_ <<< "    }"
+
+        if want_local_enrichment
+            file_ <<< "    if ( pb == \"adjoint\" and want_local_enrichment ) {"
+            if integration_type == "gauss_num" and integration_lang == "cpp"
+                file_ <<< "        Vec<double> poids_face;"
+                file_ <<< "        Vec<Vec<double, $(e->dim)-1> > valeurs_face;"
+            file_ <<< "        Vec<unsigned> ind_in_list_nodes_face;"
+            for face_ in e->children( 1 )
+                face := child_cast( face_ )
+                file_ <<< "        {"
+                file_ <<< "        typedef typename TM::template SubMesh<1>::T TSubMesh;"
+                file_ <<< "        typedef typename TSubMesh::template TElem<typename TypeChildrenElement<typename Element<$(e->name),TN,TNG,TD,NET>::NE,1,$( face->num_child )>::T>::TE TCH;"
+                file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem,Number<1>())[ $( face->num_child ) ] ) );"
+                file_ <<< "        if ( skin_elem.phi_surf_handbook_zone_12 and elem.phi_elem_handbook_zone_1 ) {"
+                f_surf_handbook := e->projection_on_child_elem( child_cast(f)->sigma_handbook.expr, face ) * face->normal
+                f_surf_handbook_linear_part := e->projection_on_shape_functions_with_equilibrium( f_surf_handbook, degre_poly_handbook, face, force_fluxes_base )
+                for n in 0 .. face->nb_nodes
+                    phi_n := face->get_shape_functions( force_fluxes_base )[ n ]
+                    file_ <<< "            ind_in_list_nodes_face = find_with_index( list_nodes_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ] == elem.node( $( face->node_numbers_to_node_numbers_in_parent_cpp[ n ] ) )->number );"
+                    r_n_handbook := phi_n * f_surf_handbook_linear_part
+                    for d in 0 .. face->dim
+                        r_handbook := Op( 0 )
+                        degre_poly_handbook_linear_part := ( r_n_handbook[ d ] ).poly_deg( face->var_inter )
+                        if integration_type == "gauss_num"
+                            if integration_lang == "metil"
+                                r_handbook = face->gauss_num_integration( r_n_handbook[ d ], order_diff = degre_poly_handbook_linear_part )
+                            else if integration_lang == "cpp"
+                                r_handbook = r_n_handbook[ d ] * face->jac
+                        else if integration_type == "formal"
+                            r_handbook = face->integration( r_n_handbook[ d ], order_diff = degre_poly_handbook_linear_part )
+                        if integration_type == "gauss_num" and integration_lang == "cpp"
+                            file_ <<< "            gauss_points( $(face->name_for_gauss_point)(), $(degre_poly_handbook_linear_part), poids_face, valeurs_face );"
+                            file_ <<< "            for (unsigned n=0; n<poids_face.size(); ++n) {"
+                            file_ <<< "                Vec<double> var_inter( valeurs_face[ n ] );"
+                            file_ <<< "                T r_handbook_tmp = 0.0;"
+                            cw_handbook_face := CodeWriterAlt( "T" )
+                            cw_handbook_face.add( "r_handbook_tmp", r_handbook, reassign )
+                            file_ <<< "$(cw_handbook_face.to_string( 16 ))"
+                            file_ <<< "                r[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_in_list_nodes_face[ 0 ] )->number ][ $d ][ elem_ind[ elem.number ][ $d ][ $( face->node_numbers_to_node_numbers_in_parent_cpp[ n ] ) ] ] += poids_face[ n ] * r_handbook_tmp;"
+                            file_ <<< "            }"
+                        else
+                            cw_handbook_face := CodeWriterAlt( "T" )
+                            cw_handbook_face.add( "r[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_in_list_nodes_face[ 0 ] )->number ][ $d ][ elem_ind[ elem.number ][ $d ][ $( face->node_numbers_to_node_numbers_in_parent_cpp[ n ] ) ] ]", r_handbook, add )
+                            file_ <<< "        {"
+                            file_ <<< "$(cw_handbook_face.to_string( 12 ))"
+                            file_ <<< "        }"
+                file_ <<< "        }"
+                file_ <<< "        }"
+            file_ <<< "    }"
+        file_ <<< "    #undef PNODE"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_nodal_matrix_B_$(f->name).$(e->dim).$(e->name).h pour ajouter la contribution des noeuds des faces d'un element aux matrices B[ i ][ d ]
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_nodal_matrix_B( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_nodal_matrix_B_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_nodal_matrix_B_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_nodal_matrix_B_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_nodal_matrix_B_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class T>"
+        file_ <<< "void calc_nodal_matrix_B( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const Vec< Vec< Vec<unsigned> > > &elem_ind, const Vec< Vec< Vec<unsigned> > > &face_ind, const Vec< Vec<unsigned> > &list_nodes_face, Vec< Vec< Mat<T, Gen<>, SparseLine<> > > > &B ) {"
+        file_ <<< "    Vec<unsigned> ind_in_list_nodes_face;"
+        for face_ in e->children( 1 )
+            face := child_cast( face_ ) 
+            eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[$(face->num_child)] )[ 0 ] == &elem ? 1 : -1)" )
+            for n in 0 .. face->nb_nodes
+                file_ <<< "    ind_in_list_nodes_face = find_with_index( list_nodes_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ] == elem.node( $( face->node_numbers_to_node_numbers_in_parent_cpp[ n ] ) )->number );"
+                file_ <<< "    {"
+                cw := CodeWriterAlt( "T" )
+                for d in 0 .. e->dim
+                    cw.add( "B[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_in_list_nodes_face[ 0 ] )->number ][ $d ]( elem_ind[ elem.number ][ $d ][ $( face->node_numbers_to_node_numbers_in_parent_cpp[ n ] ) ], face_ind[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_list_nodes_face[ 0 ] ] )", eta, add )
+                file_ <<< "$(cw.to_string( 8 ))"
+                file_ <<< "    }"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_nodal_matrix_C_$(f->name).$(e->dim).$(e->name).h pour ajouter la contribution des noeuds d'une face aux matrices C[ i ][ d ]
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_nodal_matrix_C( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        name_face := e->children( 1 )[ 0 ]->name
+        face := SymbolicElement[ name_face, e->dim ]()
+        file_name := "calc_nodal_matrix_C_$(f->name).$(face.dim).$(face.name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_nodal_matrix_C_$(f->name).$(face.dim).$(face.name).h", "w" )
+        file_ <<< "#ifndef calc_nodal_matrix_C_$(f->name)_$(face.dim)_$(face.name)_h"
+        file_ <<< "#define calc_nodal_matrix_C_$(f->name)_$(face.dim)_$(face.name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class T>"
+        file_ <<< "void calc_nodal_matrix_C( const Element<$(face.name),TN,TNG,TD,NET> &child_elem, const TM &m, const Vec< Vec<unsigned> > &type_face, const Vec< Vec< Vec<unsigned> > > &node_indices, const Vec< Vec< Vec<unsigned> > > &face_ind, const Vec< Vec<unsigned> > &list_faces_node, Vec< Vec< Mat<T, Gen<>, SparseLine<> > > > &C ) {"
+        file_ <<< "    Vec<unsigned> ind_in_list_faces_node;"
+        for d in 0 .. face.dim
+            file_ <<< "    if ( type_face[ child_elem.number ][ $d ] == 2 ) {"
+            for n in 0 .. face.nb_nodes
+                file_ <<< "        ind_in_list_faces_node = find_with_index( list_faces_node[ child_elem.node( $n )->number ] == child_elem.number );"
+                file_ <<< "        C[ child_elem.node( $n )->number ][ $d ]( node_indices[ child_elem.node( $n )->number ][ $d ][ ind_in_list_faces_node[ 0 ] ], face_ind[ child_elem.number ][ $d ][ $n ] ) = 1;"
+                # cw := CodeWriterAlt( "T" )
+                # cw.add( "C[ child_elem.node( $n )->number ][ $d ]( node_indices[ child_elem.node( $n )->number ][ $d ][ ind_in_list_faces_node[ 0 ] ], face_ind[ child_elem.number ][ $d ][ $n ] )", 1, reassign )
+                # file_ <<< "$(cw.to_string( 8 ))"
+            file_ <<< "    }"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_nodal_vector_q_$(f->name).$(e->dim).$(e->name).h pour ajouter la contribution des noeuds des faces d'un element aux vecteurs q[ i ][ d ]
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_nodal_vector_q( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_nodal_vector_q_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_nodal_vector_q_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_nodal_vector_q_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_nodal_vector_q_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class T>"
+        file_ <<< "void calc_nodal_vector_q( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<unsigned> > &type_face, const Vec< Vec< Vec<unsigned> > > &node_indices, const Vec< Vec<unsigned> > &list_nodes_face, const Vec< Vec<unsigned> > &list_faces_node, const TTVV &vectors, const Vec<unsigned> indices, Vec< Vec< Vec<T> > > &q ) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+        file_ <<< "    Vec<unsigned> ind_in_list_nodes_face;"
+        file_ <<< "    Vec<unsigned> ind_in_list_faces_node;"
+        for face_ in e->children( 1 )
+            face := child_cast( face_ )
+            deg_p := max( face->order_interpolation )
+            for d in 0 .. face->dim
+                file_ <<< "    if ( type_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ] == 2 ) {"
+                file_ <<< "        typedef typename TM::template SubMesh<1>::T TSubMesh;"
+                file_ <<< "        typedef typename TSubMesh::template TElem<typename TypeChildrenElement<typename Element<$(e->name),TN,TNG,TD,NET>::NE,1,$( face->num_child )>::T>::TE TCH;"
+                file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem,Number<1>())[ $( face->num_child ) ] ) );"
+                for n in 0 .. face->nb_nodes
+                    file_ <<< "        ind_in_list_nodes_face = find_with_index( list_nodes_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ] == elem.node( $( face->node_numbers_to_node_numbers_in_parent_cpp[ n ] ) )->number );"
+                    file_ <<< "        ind_in_list_faces_node = find_with_index( list_faces_node[ elem.node( $( face->node_numbers_to_node_numbers_in_parent_cpp[ n ] ) )->number ] == m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number );"
+                    phi_n := face->get_shape_functions( force_fluxes_base )[ n ]
+                    q := Op( 0 )
+                    degre_poly := ( child_cast(f)->f_surf.expr[ d ] * phi_n ).poly_deg( face->var_inter )
+                    if integration_type == "gauss_num"
+                        q = face->gauss_num_integration( child_cast(f)->f_surf.expr[ d ] * phi_n, order_diff = degre_poly )
+                    else if integration_type == "formal"
+                        q = face->integration( child_cast(f)->f_surf.expr[ d ] * phi_n, order_diff = degre_poly )
+                    cw := CodeWriterAlt( "T" )
+                    cw.add( "q[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_in_list_nodes_face[ 0 ] )->number ][ $d ][ node_indices[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_in_list_nodes_face[ 0 ] )->number ][ $d ][ ind_in_list_faces_node[ 0 ] ] ]", q, add )
+                    file_ <<< "        {"
+                    file_ <<< "$(cw.to_string( 8 ))"
+                    file_ <<< "        }"
+                file_ <<< "    }"
+        file_ <<< "    #undef PNODE"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_nodal_matrix_M_$(f->name).$(face.dim).$(face.name).h pour ajouter la contribution des noeuds d'une face aux matrices M[ i ][ d ]
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_nodal_matrix_M( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        name_face := e->children( 1 )[ 0 ]->name
+        face := SymbolicElement[ name_face, e->dim ]( name_node = "PNODE" )
+        file_name := "calc_nodal_matrix_M_$(f->name).$(face.dim).$(face.name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_nodal_matrix_M_$(f->name).$(face.dim).$(face.name).h", "w" )
+        file_ <<< "#ifndef calc_nodal_matrix_M_$(f->name)_$(face.dim)_$(face.name)_h"
+        file_ <<< "#define calc_nodal_matrix_M_$(f->name)_$(face.dim)_$(face.name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class T>"
+        file_ <<< "void calc_nodal_matrix_M( const Element<$(face.name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec< Vec<unsigned> > > &face_ind, const unsigned &cost_function, const Vec< Vec<bool> > &minimisation, Vec< Vec< Mat< T, Diag<> > > > &M ) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+        inv_meas_2 := pow( face.measure, -2 )
+        sym_Delta_b := Vec[ Op ]()
+        Delta_b := face.new_variable( "\\Delta b", interpolation_type = "elementary", nb_dim = [ face.dim ], sym = sym_Delta_b )
+        deg_p := max( face.order_interpolation )
+        face_normal := face.normal
+        if face_normal.depends_on( face.var_inter )
+            face_normal = ( face.normal ).subs( face.var_inter, face.get_center_of_var_inter() )
+        Delta_b_normal := dot( Delta_b, face_normal )
+        Pi_Delta_b := Delta_b - Delta_b_normal * face_normal
+        young := Op( 0 )
+        if child_cast(f)->young.interpolation == "global"
+            young = child_cast(f)->young.expr
+        else if child_cast(f)->young.interpolation == "elementary"
+            young = symbol( "(m.sub_mesh(Number<1>()).get_parents_of( elem ).size() != 2 ? m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 0 ]->number ]->get_field( \"young\", StructForType<T >() ) : 0.5*(m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 0 ]->number ]->get_field( \"young\", StructForType<T >() ) + m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 1 ]->number ]->get_field( \"young\", StructForType<T >() )))" )
+        poisson := Op( 0 )
+        if child_cast(f)->poisson.interpolation == "global"
+            poisson = child_cast(f)->poisson.expr
+        else if child_cast(f)->poisson.interpolation == "elementary"
+            poisson = symbol( "(m.sub_mesh(Number<1>()).get_parents_of( elem ).size() != 2 ? m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 0 ]->number ]->get_field( \"poisson\", StructForType<T >() ) : 0.5*(m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 0 ]->number ]->get_field( \"poisson\", StructForType<T >() ) + m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 1 ]->number ]->get_field( \"poisson\", StructForType<T >() )))" )
+        cost_function_2 := inv_meas_2 * ( 1 + poisson ) / ( young ) * ( ( 1 - 2 * poisson ) / ( 1 - poisson ) * pow( Delta_b_normal, 2 ) + 2 * dot( Pi_Delta_b, Pi_Delta_b ) )
+        M := Mat[ Op ]( sym_Delta_b.size, sym_Delta_b.size )
+        for unk_Delta_b_node, i in sym_Delta_b, 0 .. sym_Delta_b.size
+            dr := cost_function_2.diff( unk_Delta_b_node )
+            for unk_Delta_b_j, j in sym_Delta_b, 0 .. sym_Delta_b.size
+                M[ i, j ] = dr.diff( unk_Delta_b_j )
+        # M.display_tex( "tmp_" + cpt++ )
+        file_ <<< "    if ( cost_function == 0 ) {"
+        for n in 0 .. face.nb_nodes
+            for d in 0 .. face.dim
+                file_ <<< "        if ( minimisation[ elem.node( $n )->number ][ $d ] ) {"
+                # cw := CodeWriterAlt( "T" )
+                # cw.add( "M[ elem.node( $n )->number ][ $d ][ face_ind[ elem.number ][ $d ][ $n ] ]", 1, add )
+                # file_ <<< "$(cw.to_string( 12 ))"
+                file_ <<< "            M[ elem.node( $n )->number ][ $d ][ face_ind[ elem.number ][ $d ][ $n ] ] += 1;"
+                file_ <<< "        }"
+        file_ <<< "    }"
+        file_ <<< "    else if ( cost_function == 1 ) {"
+        for n in 0 .. face.nb_nodes
+            for d in 0 .. face.dim
+                file_ <<< "        if ( minimisation[ elem.node( $n )->number ][ $d ] ) {"
+                # cw := CodeWriterAlt( "T" )
+                # cw.add( "M[ elem.node( $n )->number ][ $d ][ face_ind[ elem.number ][ $d ][ $n ] ]", inv_meas_2, add )
+                # file_ <<< "$(cw.to_string( 12 ))"
+                file_ <<< "            M[ elem.node( $n )->number ][ $d ][ face_ind[ elem.number ][ $d ][ $n ] ] += pow( elem.measure_virtual(), -2 );"
+                file_ <<< "        }"
+        file_ <<< "    }"
+        file_ <<< "    else if ( cost_function == 2 ) {"
+        for n in 0 .. face.nb_nodes
+            for d in 0 .. face.dim
+                file_ <<< "        if ( minimisation[ elem.node( $n )->number ][ $d ] ) {"
+                cw := CodeWriterAlt( "T" )
+                cw.add( "M[ elem.node( $n )->number ][ $d ][ face_ind[ elem.number ][ $d ][ $n ] ]", M[ d, d ], add )
+                file_ <<< "$(cw.to_string( 12 ))"
+                file_ <<< "        }"
+        file_ <<< "    }"
+        file_ <<< "    #undef PNODE"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_nodal_vector_b_$(f->name).$(e->dim).$(e->name).h pour ajouter la contribution des noeuds des faces d'un element aux vecteurs b[ i ][ d ]
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_nodal_vector_b( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_nodal_vector_b_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_nodal_vector_b_$(f->name).$(e->dim).$(e->name).h", "w")
+        file_ <<< "#ifndef calc_nodal_vector_b_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_nodal_vector_b_$(f->name)_$(e->dim)_$(e->name)_h"
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_NodalElement.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Bar.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Triangle.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Quad.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Tetra.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class S, class B, class T>"
+        file_ <<< "void calc_nodal_vector_b( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<bool> > &minimisation, const Vec< Vec<unsigned> > &type_face, const Vec< Vec< Vec<unsigned> > > &face_ind, const Vec< Vec<unsigned> > &list_nodes_face, const TTVV &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, Vec< Vec< Vec<T> > > &b ) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "    Vec<double> poids_face;"
+            file_ <<< "    Vec<Vec<double, $(e->dim)-1> > valeurs_face;"
+        file_ <<< "    Vec<unsigned> ind_in_list_nodes_face;"
+        for face_ in e->children( 1 )
+            face := child_cast( face_ )
+            eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)" )
+            Pi_sigma := 1/eta * ( e->projection_on_child_elem( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ), face ) ) * face->normal
+            Pi_sigma_N := 1/eta * child_cast(f)->f_surf.expr
+            Pi_sigma_handbook := 1/eta * ( e->projection_on_child_elem( child_cast(f)->sigma_handbook_PUM_zone_2.expr, face ) ) * face->normal
+            Pi_sigma_N_handbook := 1/eta * e->projection_on_child_elem( child_cast(f)->sigma_handbook.expr, face ) * face->normal
+            Pi_sigma_N_handbook_linear_part := e->projection_on_shape_functions_with_equilibrium( Pi_sigma_N_handbook, degre_poly_handbook, face, force_fluxes_base )
+
+            e->assume_const_jac = true
+            sigma_const_jac := sigma_hooke_iso( e->grad_sym( child_cast(f)->dep.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+            face_normal := face->normal
+            if face_normal.depends_on( face->var_inter )
+                face_normal = ( face->normal ).subs( face->var_inter, face->get_center_of_var_inter() )
+            Pi_sigma_const_jac := 1/eta * ( e->projection_on_child_elem( ( sigma_const_jac - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ), face ) ) * face_normal
+            e->assume_const_jac = hyp_const_jac
+
+            deg_p := max( face->order_interpolation )
+            for n in 0 .. face->nb_nodes
+                phi_n := face->get_shape_functions( force_fluxes_base )[ n ]
+                file_ <<< "    ind_in_list_nodes_face = find_with_index( list_nodes_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ] == elem.node( $( face->node_numbers_to_node_numbers_in_parent_cpp[ n ] ) )->number );"
+                for d in 0 .. face->dim
+                    b := Op( 0 )
+                    b_N := Op( 0 )
+                    b_handbook := Op( 0 )
+                    b_N_handbook := Op( 0 )
+                    b_N_handbook_linear_part := Op( 0 )
+                    degre_poly := ( Pi_sigma[ d ] * phi_n ).poly_deg( face->var_inter )
+                    if degre_poly < 0
+                       degre_poly = ( Pi_sigma_const_jac[ d ] * phi_n ).poly_deg( face->var_inter )
+                    degre_poly_N := ( Pi_sigma_N[ d ] * phi_n ).poly_deg( face->var_inter )
+                    degre_poly_handbook_linear_part := ( Pi_sigma_N_handbook_linear_part[ d ] * phi_n ).poly_deg( face->var_inter )
+                    if integration_type == "gauss_num"
+                        if integration_lang == "metil"
+                            b = face->gauss_num_integration( Pi_sigma[ d ] * phi_n, order_diff = degre_poly )
+                            b_N = face->gauss_num_integration( Pi_sigma_N[ d ] * phi_n, order_diff = degre_poly_N )
+                            if want_local_enrichment
+                                b_handbook = face->gauss_num_integration( Pi_sigma_handbook[ d ] * phi_n, order_diff = degre_poly_handbook )
+                                b_N_handbook = face->gauss_num_integration( Pi_sigma_N_handbook[ d ] * phi_n, order_diff = degre_poly_handbook )
+                                # b_N_handbook = face->gauss_num_integration( Pi_sigma_N_handbook_linear_part[ d ] * phi_n, order_diff = degre_poly_handbook_linear_part )
+                        else if integration_lang == "cpp"
+                            b = Pi_sigma[ d ] * phi_n * face->jac
+                            b_N = Pi_sigma_N[ d ] * phi_n * face->jac
+                            if want_local_enrichment
+                                b_handbook = Pi_sigma_handbook[ d ] * phi_n * face->jac
+                                b_N_handbook = Pi_sigma_N_handbook[ d ] * phi_n * face->jac
+                                # b_N_handbook = Pi_sigma_N_handbook_linear_part[ d ] * phi_n * face->jac
+                    else if integration_type == "formal"
+                        b = face->integration( Pi_sigma[ d ] * phi_n, order_diff = degre_poly )
+                        b_N = face->integration( Pi_sigma_N[ d ] * phi_n, order_diff = degre_poly_N )
+                        if want_local_enrichment
+                            b_handbook = face->integration( Pi_sigma_handbook[ d ] * phi_n, order_diff = degre_poly_handbook )
+                            b_N_handbook = face->integration( Pi_sigma_N_handbook[ d ] * phi_n, order_diff = degre_poly_handbook )
+                            # b_N_handbook = face->integration( Pi_sigma_N_handbook_linear_part[ d ] * phi_n, order_diff = degre_poly_handbook_linear_part )
+                    file_ <<< "    if ( minimisation[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_in_list_nodes_face[ 0 ] )->number ][ $d ] ) {"
+                    # file_ <<< "        std::cout << \"node: \" << m.get_children_of( elem, Number<1>() )[ 2 ]->node_virtual( ind_in_list_nodes_face[ 0 ] )->number << std::endl;"
+                    # file_ <<< "        std::cout << \"face: \"<< m.get_children_of( elem, Number<1>() )[ 2 ]->number << std::endl;"
+                    # file_ <<< "        std::cout << \"type face direction \" << $d << \": \"<< type_face[ m.get_children_of( elem, Number<1>() )[ 2 ]->number ][ 1 ] << std::endl;"
+                    file_ <<< "        typedef typename TM::template SubMesh<1>::T TSubMesh;"
+                    file_ <<< "        typedef typename TSubMesh::template TElem<typename TypeChildrenElement<typename Element<$(e->name),TN,TNG,TD,NET>::NE,1,$( face->num_child )>::T>::TE TCH;"
+                    file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem,Number<1>())[ $( face->num_child ) ] ) );"
+                    if want_local_enrichment
+                        file_ <<< "        if ( pb == \"adjoint\" and want_local_enrichment and skin_elem.phi_surf_handbook_zone_12 and elem.phi_elem_handbook_zone_1 ) {"
+                        if integration_type == "gauss_num" and integration_lang == "cpp"
+                            file_ <<< "            gauss_points( $(face->name_for_gauss_point)(), $(degre_poly_handbook), poids_face, valeurs_face );"
+                            # file_ <<< "            gauss_points( $(face->name_for_gauss_point)(), $(degre_poly_handbook_linear_part), poids_face, valeurs_face );"
+                            file_ <<< "            for (unsigned n=0; n<poids_face.size(); ++n) {"
+                            file_ <<< "                Vec<double> var_inter( valeurs_face[ n ] );"
+                            file_ <<< "                T b_N_handbook_linear_part_tmp = 0.0;"
+                            cw_handbook := CodeWriterAlt( "T" )
+                            cw_handbook.add( "b_N_handbook_linear_part_tmp", b_N_handbook, reassign )
+                            file_ <<< "$(cw_handbook.to_string( 16 ))"
+                            file_ <<< "                b[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_in_list_nodes_face[ 0 ] )->number ][ $d ][ face_ind[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_list_nodes_face[ 0 ] ] ] += poids_face[ n ] * b_N_handbook_linear_part_tmp;"
+                            file_ <<< "            }"
+                        else
+                            cw_handbook := CodeWriterAlt( "T" )
+                            cw_handbook.add( "b[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_in_list_nodes_face[ 0 ] )->number ][ $d ][ face_ind[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_list_nodes_face[ 0 ] ] ]", b_N_handbook, add )
+                            file_ <<< "$(cw_handbook.to_string( 12 ))"
+                        file_ <<< "        }"
+                        file_ <<< "        else {"
+                    file_ <<< "        if ( type_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ] == 0 ) {"
+                    if integration_type == "gauss_num" and integration_lang == "cpp"
+                        file_ <<< "            gauss_points( $(face->name_for_gauss_point)(), $(degre_poly), poids_face, valeurs_face );"
+                        file_ <<< "            for (unsigned n=0; n<poids_face.size(); ++n) {"
+                        file_ <<< "                Vec<double> var_inter( valeurs_face[ n ] );"
+                        file_ <<< "                T b_tmp = 0.0;"
+                        cw_0 := CodeWriterAlt( "T" )
+                        cw_0.add( "b_tmp", 1/2 * b, reassign )
+                        file_ <<< "$(cw_0.to_string( 16 ))"
+                        file_ <<< "                b[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_in_list_nodes_face[ 0 ] )->number ][ $d ][ face_ind[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_list_nodes_face[ 0 ] ] ] += poids_face[ n ] * b_tmp;"
+                        file_ <<< "            }"
+                        if want_local_enrichment
+                            file_ <<< "            if ( pb == \"adjoint\" and want_local_enrichment and elem.phi_elem_handbook_zone_2 ) {"
+                            file_ <<< "                gauss_points( $(face->name_for_gauss_point)(), $(degre_poly_handbook), poids_face, valeurs_face );"
+                            file_ <<< "                for (unsigned n=0; n<poids_face.size(); ++n) {"
+                            file_ <<< "                    Vec<double> var_inter( valeurs_face[ n ] );"
+                            file_ <<< "                    T b_handbook_tmp = 0.0;"
+                            cw_0_handbook := CodeWriterAlt( "T" )
+                            cw_0_handbook.add( "b_handbook_tmp", 1/2 * b_handbook, reassign )
+                            file_ <<< "$(cw_0_handbook.to_string( 20 ))"
+                            file_ <<< "                    b[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_in_list_nodes_face[ 0 ] )->number ][ $d ][ face_ind[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_list_nodes_face[ 0 ] ] ] += poids_face[ n ] * b_handbook_tmp;"
+                            file_ <<< "                }"
+                            file_ <<< "            }"
+                    else
+                        cw_0 := CodeWriterAlt( "T" )
+                        cw_0.add( "b[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_in_list_nodes_face[ 0 ] )->number ][ $d ][ face_ind[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_list_nodes_face[ 0 ] ] ]", 1/2 * b, add )
+                        file_ <<< "$(cw_0.to_string( 12 ))"
+                        if want_local_enrichment
+                            file_ <<< "            if ( pb == \"adjoint\" and want_local_enrichment and elem.phi_elem_handbook_zone_2 ) {"
+                            cw_0_handbook := CodeWriterAlt( "T" )
+                            cw_0_handbook.add( "b[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_in_list_nodes_face[ 0 ] )->number ][ $d ][ face_ind[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_list_nodes_face[ 0 ] ] ]", 1/2 * b_handbook, add )
+                            file_ <<< "$(cw_0_handbook.to_string( 16 ))"
+                            file_ <<< "            }"
+                    file_ <<< "        }"
+                    file_ <<< "        else if ( type_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ] == 1 ) {"
+                    if integration_type == "gauss_num" and integration_lang == "cpp"
+                        file_ <<< "            gauss_points( $(face->name_for_gauss_point)(), $(degre_poly), poids_face, valeurs_face );"
+                        file_ <<< "            for (unsigned n=0; n<poids_face.size(); ++n) {"
+                        file_ <<< "                Vec<double> var_inter( valeurs_face[ n ] );"
+                        file_ <<< "                T b_tmp = 0.0;"
+                        cw_1 := CodeWriterAlt( "T" )
+                        cw_1.add( "b_tmp", b, reassign )
+                        file_ <<< "$(cw_1.to_string( 16 ))"
+                        file_ <<< "                b[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_in_list_nodes_face[ 0 ] )->number ][ $d ][ face_ind[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_list_nodes_face[ 0 ] ] ] += poids_face[ n ] * b_tmp;"
+                        file_ <<< "            }"
+                        if want_local_enrichment
+                            file_ <<< "            if ( pb == \"adjoint\" and want_local_enrichment and elem.phi_elem_handbook_zone_2 ) {"
+                            file_ <<< "                gauss_points( $(face->name_for_gauss_point)(), $(degre_poly_handbook), poids_face, valeurs_face );"
+                            file_ <<< "                for (unsigned n=0; n<poids_face.size(); ++n) {"
+                            file_ <<< "                    Vec<double> var_inter( valeurs_face[ n ] );"
+                            file_ <<< "                    T b_handbook_tmp = 0.0;"
+                            cw_1_handbook := CodeWriterAlt( "T" )
+                            cw_1_handbook.add( "b_handbook_tmp", b_handbook, reassign )
+                            file_ <<< "$(cw_1_handbook.to_string( 20 ))"
+                            file_ <<< "                    b[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_in_list_nodes_face[ 0 ] )->number ][ $d ][ face_ind[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_list_nodes_face[ 0 ] ] ] += poids_face[ n ] * b_handbook_tmp;"
+                            file_ <<< "                }"
+                            file_ <<< "            }"
+                    else
+                        cw_1 := CodeWriterAlt( "T" )
+                        cw_1.add( "b[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_in_list_nodes_face[ 0 ] )->number ][ $d ][ face_ind[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_list_nodes_face[ 0 ] ] ]", b, add )
+                        file_ <<< "$(cw_1.to_string( 12 ))"
+                        if want_local_enrichment
+                            file_ <<< "            if ( pb == \"adjoint\" and want_local_enrichment and elem.phi_elem_handbook_zone_2 ) {"
+                            cw_1_handbook := CodeWriterAlt( "T" )
+                            cw_1_handbook.add( "b[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_in_list_nodes_face[ 0 ] )->number ][ $d ][ face_ind[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_list_nodes_face[ 0 ] ] ]", b_handbook, add )
+                            file_ <<< "$(cw_1_handbook.to_string( 16 ))"
+                            file_ <<< "            }"
+                    file_ <<< "        }"
+                    file_ <<< "        else if ( type_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ] == 2 ) {"
+                    if integration_type == "gauss_num" and integration_lang == "cpp"
+                        file_ <<< "            gauss_points( $(face->name_for_gauss_point)(), $(degre_poly_N), poids_face, valeurs_face );"
+                        file_ <<< "            for (unsigned n=0; n<poids_face.size(); ++n) {"
+                        file_ <<< "                Vec<double> var_inter( valeurs_face[ n ] );"
+                        file_ <<< "                T b_N_tmp = 0.0;"
+                        cw_2 := CodeWriterAlt( "T" )
+                        cw_2.add( "b_N_tmp", b_N, reassign )
+                        file_ <<< "$(cw_2.to_string( 16 ))"
+                        file_ <<< "                b[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_in_list_nodes_face[ 0 ] )->number ][ $d ][ face_ind[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_list_nodes_face[ 0 ] ] ] += poids_face[ n ] * b_N_tmp;"
+                        file_ <<< "            }"
+                    else
+                        cw_2 := CodeWriterAlt( "T" )
+                        cw_2.add( "b[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_in_list_nodes_face[ 0 ] )->number ][ $d ][ face_ind[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_list_nodes_face[ 0 ] ] ]", b_N, add )
+                        file_ <<< "$(cw_2.to_string( 12 ))"
+                    file_ <<< "        }"
+                    if want_local_enrichment
+                        file_ <<< "        }"
+                    file_ <<< "    }"
+        file_ <<< "    #undef PNODE"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier reset_nodal_vector_b_hat_$(f->name).$(face.dim).$(face.name).h pour reset la contribution des noeuds des noeuds d'une face aux vecteurs b_hat[ i ][ d ] (si amelioration)
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def reset_nodal_vector_b_hat( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        name_face := e->children( 1 )[ 0 ]->name
+        face := SymbolicElement[ name_face, e->dim ]()
+        file_name := "reset_nodal_vector_b_hat_$(f->name).$(face.dim).$(face.name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/reset_nodal_vector_b_hat_$(f->name).$(face.dim).$(face.name).h", "w" )
+        file_ <<< "#ifndef reset_nodal_vector_b_hat_$(f->name)_$(face.dim)_$(face.name)_h"
+        file_ <<< "#define reset_nodal_vector_b_hat_$(f->name)_$(face.dim)_$(face.name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class T>"
+        file_ <<< "void reset_nodal_vector_b_hat( const Element<$(face.name),TN,TNG,TD,NET> &child_elem, const TM &m, const bool &enhancement, const Vec<bool> &flag_face_enh, const Vec< Vec< Vec<unsigned> > > &face_ind, Vec< Vec< Vec<T> > > &b_hat ) {"
+        file_ <<< "    if ( enhancement and flag_face_enh[ child_elem.number ] ) {"
+        for d in 0 .. face.dim
+            for n in 0 .. face.nb_nodes
+                if face.node_number_is_a_vertex( n )
+                    file_ <<< "        b_hat[ child_elem.node( $n )->number ][ $d ][ face_ind[ child_elem.number ][ $d ][ $n ] ] = 0;"
+        file_ <<< "    }"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_skin_elem_vector_b_face_$(f->name).$(face.dim).$(face.name).h pour ajouter la contribution d'une face aux vecteurs b_face[ k ]
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_skin_elem_vector_b_face( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        name_face := e->children( 1 )[ 0 ]->name
+        face := SymbolicElement[ name_face, e->dim ]()
+        file_name := "calc_skin_elem_vector_b_face_$(f->name).$(face.dim).$(face.name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_skin_elem_vector_b_face_$(f->name).$(face.dim).$(face.name).h", "w" )
+        file_ <<< "#ifndef calc_skin_elem_vector_b_face_$(f->name)_$(face.dim)_$(face.name)_h"
+        file_ <<< "#define calc_skin_elem_vector_b_face_$(f->name)_$(face.dim)_$(face.name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class T>"
+        file_ <<< "void calc_skin_elem_vector_b_face( const Element<$(face.name),TN,TNG,TD,NET> &child_elem, const Vec< Vec< Vec<unsigned> > > &face_ind, const Vec< Vec< Vec<T> > > &b_hat, Vec< Vec< Vec<T> > > &b_face) {"
+        for n in 0 .. face.nb_nodes
+            for d in 0 .. face.dim
+                file_ <<< "    b_face[ child_elem.number ][ $d ][ $n ] += b_hat[ child_elem.node( $n )->number ][ $d ][ face_ind[ child_elem.number ][ $d ][ $n ] ];"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_skin_elem_matrix_K_face_$(f->name).$(face.dim).$(face.name).h pour ajouter la contribution d'une face aux matrices K_face[ k ]
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_skin_elem_matrix_K_face( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        name_face := e->children( 1 )[ 0 ]->name
+        face := SymbolicElement[ name_face, e->dim ]()
+        file_name := "calc_skin_elem_matrix_K_face_$(f->name).$(face.dim).$(face.name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_skin_elem_matrix_K_face_$(f->name).$(face.dim).$(face.name).h", "w" )
+        file_ <<< "#ifndef calc_skin_elem_matrix_K_face_$(f->name)_$(face.dim)_$(face.name)_h"
+        file_ <<< "#define calc_skin_elem_matrix_K_face_$(f->name)_$(face.dim)_$(face.name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class T>"
+        file_ <<< "void calc_skin_elem_matrix_K_face( const Element<$(face.name),TN,TNG,TD,NET> &elem, Vec< Vec< Mat<T, Gen<>, SparseUMFPACK > > > &K_face) {"
+        sym_F_hat := Vec[ Op ]()
+        F_hat := face.new_variable( "\\hat{F}", interpolation_type = "nodal", nb_dim = [ face.dim ], sym = sym_F_hat, interpolation_base = force_fluxes_base )
+        cw := CodeWriterAlt( "T" )
+        deg_p := max( face.order_interpolation )
+        for d in 0 .. face.dim
+            for n in 0 .. face.nb_nodes
+                phi_n := face.get_shape_functions( force_fluxes_base )[ n ]
+                F_hat_phi_n := Op( 0 )
+                degre_poly := ( F_hat[ d ] * phi_n ).poly_deg( face.var_inter )
+                if integration_type == "gauss_num"
+                    F_hat_phi_n = face.gauss_num_integration( F_hat[ d ] * phi_n, order_diff = degre_poly )
+                else if integration_type == "formal"
+                    F_hat_phi_n = face.integration( F_hat[ d ] * phi_n, order_diff = degre_poly )
+                K_face_n := Vec[ Op ]()
+                for unk_F_hat in sym_F_hat
+                    K_face_n.push_back( F_hat_phi_n.diff( unk_F_hat ) )
+                for m in 0 .. face.nb_nodes
+                    K_face_n_m := K_face_n[ m * face.dim + d ]
+                    cw.add( "K_face[ elem.number ][ $d ]( $n, $m )", K_face_n_m, add )
+        file_ <<< "$(cw.to_string( 4 ))"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names

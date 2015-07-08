@@ -1,0 +1,758 @@
+#
+# Metil Interface: Enhancement_EET_EESPT_met
+#
+# Description: construction de champs admissibles, methodes EET et EESPT : amelioration des densites d'effort
+#
+#
+# Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2010
+#
+# Copyright: See COPYING file that comes with this distribution
+#
+#
+
+# Methode qui genere un fichier calc_elem_vector_F_hat_enh_$(f->name).$(e->dim).$(e->name).h pour calculer le vecteur elementaire F_hat_enh[ n ]
+#-----------------------------------------------------------------------------------------------------------------------------------------------
+def calc_elem_vector_F_hat_enh( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_elem_vector_F_hat_enh_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_elem_vector_F_hat_enh_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_elem_vector_F_hat_enh_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_elem_vector_F_hat_enh_$(f->name)_$(e->dim)_$(e->name)_h"
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_NodalElement.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Bar.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Triangle.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Quad.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Tetra.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class T>"
+        file_ <<< "void calc_elem_vector_F_hat_enh( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const TTVV &vectors, const Vec<unsigned> &indices, const Vec<bool> &flag_elem_enh, const Vec<unsigned> &list_elems_enh, Vec<unsigned> &nb_unk_local_enh, Vec< Vec< Vec<T> > > &F_hat_enh ) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+        file_ <<< "    if ( flag_elem_enh[ elem.number ] ) {"
+        file_ <<< "        Vec<unsigned> ind_in_list_elems_enh = find_with_index( list_elems_enh == elem.number );"
+        deg_p := max( e->order_interpolation )
+        f_vol_enh := Vec[ Op, e->dim ]()
+        sym_f_surf_enh_e := Vec[ Op ]()
+        GM := e->pos - e->barycenter
+        for face_ in e->children( 1 )
+            face := child_cast( face_ )
+            eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)" )
+            sym_f_surf_enh := Vec[ Vec[ Op, face->dim ], face->nb_nodes ]()
+            for i in 0 .. face->nb_nodes
+                for d in 0 .. face->dim
+                    s := Op()
+                    s = symbol( "f_surf[ $( face->num_child ) ][ $d ][ $i ]" )
+                    sym_f_surf_enh_e.push_back( s )
+                    sym_f_surf_enh[ i ][ d ] = s
+            f_surf_enh := Vec[ Op, face->dim ]( face->interpolation( sym_f_surf_enh, force_fluxes_base ) )
+            for d in 0 .. e->dim
+                degre_poly := ( f_surf_enh[ d ] ).poly_deg( face->var_inter )
+                f_vol_enh[ d ] -= pow( e->measure, -1 ) * eta * face->gauss_num_integration( f_surf_enh[ d ], order_diff = degre_poly )
+            if e->dim == 2
+                GM_vect_prod_f_surf_enh := vect_prod( GM, f_surf_enh )
+                N_vect_prod_GM := Vec[ Op, e->dim ]()
+                N_vect_prod_GM[ 0 ] = -GM[ 1 ]
+                N_vect_prod_GM[ 1 ] = GM[ 0 ]
+                for d in 0 .. e->dim
+                    degre_poly := ( e->projection_on_child_elem( GM_vect_prod_f_surf_enh, face ) ).poly_deg( face->var_inter )
+                    f_vol_enh[ d ] -= pow( e->inertia_operator_for_barycenter, -1 ) * eta * face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_f_surf_enh, face ), order_diff = degre_poly ) * N_vect_prod_GM[ d ]
+            else if e->dim == 3
+                GM_vect_prod_f_surf_enh := vect_prod( GM, f_surf_enh )
+                int_GM_vect_prod_f_surf_enh := Vec[ Op, face->dim ]()
+                for d in 0 .. face->dim
+                    degre_poly := ( e->projection_on_child_elem( GM_vect_prod_f_surf_enh[ d ], face ) ).poly_deg( face->var_inter )
+                    int_GM_vect_prod_f_surf_enh[ d ] = eta * face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_f_surf_enh[ d ], face ), order_diff = degre_poly )
+                f_vol_enh_torque := vect_prod( inv_tiny( e->inertia_operator_for_barycenter ) * int_GM_vect_prod_f_surf_enh, GM )
+                for d in 0 .. e->dim
+                    f_vol_enh[ d ] -= f_vol_enh_torque[ d ]
+        file_ <<< "        nb_unk_local_enh[ ind_in_list_elems_enh[ 0 ] ] = $(sym_f_surf_enh_e.size);"
+
+        sym_dep_hat_test := Vec[ Op ]()
+        dep_hat_test := e->new_variable( "{\\hat{U}}^{\\ast}", interpolation_type = "enriched_nodal", deg = deg_p + deg_k, nb_dim = [ e->dim ], sym = sym_dep_hat_test, interpolation_base = recovery_base )
+        residual := Op( 0 )
+        degre_poly := ( dot( f_vol_enh, dep_hat_test ) ).poly_deg( e->var_inter )
+        if integration_type == "gauss_num"
+            if integration_lang == "metil"
+                residual = e->gauss_num_integration( dot( f_vol_enh, dep_hat_test ), order_diff = degre_poly )
+            else if integration_lang == "cpp"
+                residual = dot( f_vol_enh, dep_hat_test ) * e->jac
+        else if integration_type == "formal"
+            residual = e->integration( dot( f_vol_enh, dep_hat_test ), order_diff = degre_poly )
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            dr := residual.diff( sym_f_surf_enh_e )
+            file_ <<< "        F_hat_enh[ ind_in_list_elems_enh[ 0 ] ].resize( nb_unk_local_enh[ ind_in_list_elems_enh[ 0 ] ] );"
+            file_ <<< "        Vec<double> poids;"
+            file_ <<< "        Vec<Vec<double, $(e->dim)> > valeurs;"
+            file_ <<< "        Vec<double> poids_face;"
+            file_ <<< "        Vec<Vec<double, $(e->dim)-1> > valeurs_face;"
+            file_ <<< "        gauss_points( $(e->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
+            for i in 0 .. sym_f_surf_enh_e.size
+                F_hat_enh := (dr[ i ]).diff( sym_dep_hat_test )
+                file_ <<< "        F_hat_enh[ ind_in_list_elems_enh[ 0 ] ][ $i ].resize( $(F_hat_enh.size), 0. );"
+                file_ <<< "        for (unsigned n=0; n<poids.size(); ++n) {"
+                file_ <<< "            Vec<double> var_inter( valeurs[ n ] );"
+                file_ <<< "            Vec<T> F_hat_enh_tmp;"
+                file_ <<< "            F_hat_enh_tmp.resize( $(F_hat_enh.size), 0. );"
+                cw_0 := CodeWriterAlt( "T" )
+                cw_0.add( "F_hat_enh_tmp", F_hat_enh, reassign )
+                file_ <<< "$(cw_0.to_string( 12 ))"
+                file_ <<< "            F_hat_enh[ ind_in_list_elems_enh[ 0 ] ][ $i ] += poids[ n ] * F_hat_enh_tmp;"
+                file_ <<< "        }"
+        for face_ in e->children( 1 )
+            face := child_cast( face_ )
+            eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)" )
+            sym_f_surf_enh_face := Vec[ Op ]()
+            sym_f_surf_enh := Vec[ Vec[ Op, face->dim ], face->nb_nodes ]()
+            for i in 0 .. face->nb_nodes
+                for d in 0 .. face->dim
+                    s := sym_f_surf_enh_e[ face->num_child * face->nb_nodes * face->dim + i * face->dim + d ]
+                    sym_f_surf_enh_face.push_back( s )
+                    sym_f_surf_enh[ i ][ d ] = s
+            f_surf_enh := Vec[ Op, face->dim ]( face->interpolation( sym_f_surf_enh, force_fluxes_base ) )
+            residual_face := Op( 0 )
+            degre_poly_face := ( dot( f_surf_enh, e->projection_on_child_elem( dep_hat_test, face ) ) ).poly_deg( face->var_inter )
+            if integration_type == "gauss_num"
+                if integration_lang == "metil"
+                    residual += eta * face->gauss_num_integration( dot( f_surf_enh, e->projection_on_child_elem( dep_hat_test, face ) ), order_diff = degre_poly_face )
+                else if integration_lang == "cpp"
+                    residual_face = eta * dot( f_surf_enh, e->projection_on_child_elem( dep_hat_test, face ) ) * face->jac
+            else if integration_type == "formal"
+                residual += eta * face->integration( dot( f_surf_enh, e->projection_on_child_elem( dep_hat_test, face ) ), order_diff = degre_poly_face )
+            if integration_type == "gauss_num" and integration_lang == "cpp"
+                dr := residual_face.diff( sym_f_surf_enh_face )
+                file_ <<< "        gauss_points( $(face->name_for_gauss_point)(), $(degre_poly_face), poids_face, valeurs_face );"
+                for i in 0 .. sym_f_surf_enh_face.size
+                    F_hat_enh_face := (dr[ i ]).diff( sym_dep_hat_test )
+                    file_ <<< "        for (unsigned n=0; n<poids_face.size(); ++n) {"
+                    file_ <<< "            Vec<double> var_inter( valeurs_face[ n ] );"
+                    file_ <<< "            Vec<T> F_hat_enh_face_tmp;"
+                    file_ <<< "            F_hat_enh_face_tmp.resize( $(F_hat_enh_face.size), 0. );"
+                    cw_1 := CodeWriterAlt( "T" )
+                    cw_1.add( "F_hat_enh_face_tmp", F_hat_enh_face, reassign )
+                    file_ <<< "$(cw_1.to_string( 12 ))"
+                    file_ <<< "            F_hat_enh[ ind_in_list_elems_enh[ 0 ] ][ $(face->num_child) * $(face->nb_nodes) * $(face->dim) + $i ] += poids_face[ n ] * F_hat_enh_face_tmp;"
+                    file_ <<< "        }"
+        if integration_type != "gauss_num" or integration_lang != "cpp"
+            dr := residual.diff( sym_f_surf_enh_e )
+            file_ <<< "        F_hat_enh[ ind_in_list_elems_enh[ 0 ] ].resize( nb_unk_local_enh[ ind_in_list_elems_enh[ 0 ] ] );"
+            for i in 0 .. sym_f_surf_enh_e.size
+                F_hat_enh := (dr[ i ]).diff( sym_dep_hat_test )
+                cw := CodeWriterAlt( "T" )
+                file_ <<< "        {"
+                file_ <<< "        F_hat_enh[ ind_in_list_elems_enh[ 0 ] ][ $i ].resize( $(F_hat_enh.size), 0. );"
+                cw.add( "F_hat_enh[ ind_in_list_elems_enh[ 0 ] ][ $i ]", F_hat_enh, reassign )
+                file_ <<< "$(cw.to_string( 4 ))"
+                file_ <<< "        }"
+        file_ <<< "    }"
+        file_ <<< "    #undef PNODE"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_elem_matrix_A_enh_$(f->name).$(e->dim).$(e->name).h pour calculer la matrice elementaire A_local_enh[ n ]
+#---------------------------------------------------------------------------------------------------------------------------------------------
+def calc_elem_matrix_A_enh( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_elem_matrix_A_enh_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_elem_matrix_A_enh_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_elem_matrix_A_enh_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_elem_matrix_A_enh_$(f->name)_$(e->dim)_$(e->name)_h"
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_NodalElement.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Bar.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Triangle.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Quad.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Tetra.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class T>"
+        file_ <<< "void calc_elem_matrix_A_enh( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec<bool> &flag_elem_enh, const Vec<unsigned> &list_elems_enh, const Vec< Vec< Vec<T> > > &dep_hat_enh, Vec< Mat<T, Gen<>, SparseLine<> > > &A_local_enh ) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+        file_ <<< "    if ( flag_elem_enh[ elem.number ] ) {"
+        file_ <<< "        Vec<unsigned> ind_in_list_elems_enh = find_with_index( list_elems_enh == elem.number );"
+        deg_p := max( e->order_interpolation )
+        sym_dep_hat_expr := Vec[ Op ]()
+        dep_hat_expr := e->new_variable( "\\hat{U}", interpolation_type = "enriched_nodal", deg = deg_p + deg_k, nb_dim = [ e->dim ], sym = sym_dep_hat_expr, interpolation_base = recovery_base )
+        epsilon_hat_expr := e->grad_sym( dep_hat_expr )
+        sigma_hat_expr := sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+
+        e->assume_const_jac = true
+        epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
+        degre_poly := ( ( epsilon_hat_const_jac : epsilon_hat_const_jac ) ).poly_deg( e->var_inter )
+        e->assume_const_jac = hyp_const_jac
+
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "        Vec<double> poids;"
+            file_ <<< "        Vec<Vec<double, $(e->dim)> > valeurs;"
+            file_ <<< "        gauss_points( $(e->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
+        cw := CodeWriterAlt( "T" )
+        for face_ in e->children( 1 )
+            face := child_cast( face_ )
+            for j in 0 .. face->nb_nodes
+                for d in 0 .. face->dim
+                    sym_dep_hat := Vec[ Op ]()
+                    for i in 0 .. sym_dep_hat_expr.size
+                        sy := Op()
+                        sy = symbol( "dep_hat_enh[ ind_in_list_elems_enh[ 0 ] ][ $(face->num_child) * $(face->nb_nodes) * $(face->dim) + $j * $(face->dim) + $d ][ $i ]" )
+                        sym_dep_hat.push_back( sy )
+                    sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
+                    epsilon_hat := epsilon_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
+                    for face_bis_ in e->children( 1 )
+                        face_bis := child_cast( face_bis_ )
+                        for k in 0 .. face_bis->nb_nodes
+                            for g in 0 .. face_bis->dim
+                                sym_dep_hat_bis := Vec[ Op ]()
+                                for i in 0 .. sym_dep_hat_expr.size
+                                    sy := Op()
+                                    sy = symbol( "dep_hat_enh[ ind_in_list_elems_enh[ 0 ] ][ $(face_bis->num_child) * $(face_bis->nb_nodes) * $(face_bis->dim) + $k * $(face_bis->dim) + $g ][ $i ]" )
+                                    sym_dep_hat_bis.push_back( sy )
+                                sigma_hat_bis := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat_bis )
+                                epsilon_hat_bis := epsilon_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat_bis )
+                                A := Op( 0 )
+                                if integration_type == "gauss_num"
+                                    if integration_lang == "metil"
+                                        A = e->gauss_num_integration( sigma_hat : eps_hooke_iso( sigma_hat_bis, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly )
+                                    else if integration_lang == "cpp"
+                                        A = ( sigma_hat : eps_hooke_iso( sigma_hat_bis, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) * e->jac
+                                else if integration_type == "formal"
+                                    A = e->integration( sigma_hat : eps_hooke_iso( sigma_hat_bis, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly )
+                                if integration_type == "gauss_num" and integration_lang == "cpp"
+                                    file_ <<< "        for (unsigned n=0; n<poids.size(); ++n) {"
+                                    file_ <<< "            Vec<double> var_inter( valeurs[ n ] );"
+                                    file_ <<< "            T A_tmp = 0.0;"
+                                    cw_cpp := CodeWriterAlt( "T" )
+                                    cw_cpp.add( "A_tmp", A, reassign )
+                                    file_ <<< "$(cw_cpp.to_string( 12 ))"
+                                    file_ <<< "            A_local_enh[ ind_in_list_elems_enh[ 0 ] ]( $(face->num_child) * $(face->nb_nodes) * $(face->dim) + $j * $(face->dim) + $d, $(face_bis->num_child) * $(face_bis->nb_nodes) * $(face_bis->dim) + $k * $(face_bis->dim) + $g ) += poids[ n ] * A_tmp;"
+                                    file_ <<< "        }"
+                                else
+                                    cw.add( "A_local_enh[ ind_in_list_elems_enh[ 0 ] ]( $(face->num_child) * $(face->nb_nodes) * $(face->dim) + $j * $(face->dim) + $d, $(face_bis->num_child) * $(face_bis->nb_nodes) * $(face_bis->dim) + $k * $(face_bis->dim) + $g )", A, reassign )
+        if integration_type != "gauss_num" or integration_lang != "cpp"
+            file_ <<< "$(cw.to_string( 8 ))"
+        file_ <<< "    }"
+        file_ <<< "    #undef PNODE"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_elem_vector_d_enh_$(f->name).$(e->dim).$(e->name).h pour calculer le vecteur elementaire d_local_enh[ n ]
+#---------------------------------------------------------------------------------------------------------------------------------------------
+def calc_elem_vector_d_enh( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_elem_vector_d_enh_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_elem_vector_d_enh_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_elem_vector_d_enh_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_elem_vector_d_enh_$(f->name)_$(e->dim)_$(e->name)_h"
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_NodalElement.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Bar.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Triangle.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Quad.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Tetra.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class T>"
+        file_ <<< "void calc_elem_vector_d_enh( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec<bool> &flag_elem_enh, const Vec<unsigned> &list_elems_enh, const Vec< Vec<T> > &dep_hat, const Vec< Vec< Vec<T> > > &dep_hat_enh, const TTVV &vectors, const Vec<unsigned> &indices, Vec< Vec<T> > &d_enh ) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+        file_ <<< "    if ( flag_elem_enh[ elem.number ] ) {"
+        file_ <<< "        Vec<unsigned> ind_in_list_elems_enh = find_with_index( list_elems_enh == elem.number );"
+        deg_p := max( e->order_interpolation )
+        sym_dep_hat_expr := Vec[ Op ]()
+        dep_hat_expr := e->new_variable( "\\hat{U}", interpolation_type = "enriched_nodal", deg = deg_p + deg_k, nb_dim = [ e->dim ], sym = sym_dep_hat_expr, interpolation_base = recovery_base )
+        epsilon_hat_expr := e->grad_sym( dep_hat_expr )
+        sigma_hat_expr := sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sym_dep_hat := Vec[ Op ]()
+        for i in 0 .. sym_dep_hat_expr.size
+            sy := Op()
+            sy = symbol( "dep_hat[ elem.number ][ $i ]" )
+            sym_dep_hat.push_back( sy )
+        sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
+        epsilon_hat := epsilon_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
+
+        e->assume_const_jac = true
+        epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
+        degre_poly := ( ( epsilon_hat_const_jac : epsilon_hat_const_jac ) ).poly_deg( e->var_inter )
+        e->assume_const_jac = hyp_const_jac
+        if want_local_enrichment
+            degre_poly = degre_poly_handbook
+
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "        Vec<double> poids;"
+            file_ <<< "        Vec<Vec<double, $(e->dim)> > valeurs;"
+            file_ <<< "        gauss_points( $(e->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
+        cw := CodeWriterAlt( "T" )
+        for face_ in e->children( 1 )
+            face := child_cast( face_ )
+            for j in 0 .. face->nb_nodes
+                for d in 0 .. face->dim
+                    sym_dep_hat_enh := Vec[ Op ]()
+                    for i in 0 .. sym_dep_hat_expr.size
+                        sy := Op()
+                        sy = symbol( "dep_hat_enh[ ind_in_list_elems_enh[ 0 ] ][ $(face->num_child) * $(face->nb_nodes) * $(face->dim) + $j * $(face->dim) + $d ][ $i ]" )
+                        sym_dep_hat_enh.push_back( sy )
+                    sigma_hat_enh := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat_enh )
+                    epsilon_hat_enh := epsilon_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat_enh )
+                    D := Op( 0 )
+                    if integration_type == "gauss_num"
+                        if integration_lang == "metil"
+                            D = e->gauss_num_integration( sigma_hat_enh : eps_hooke_iso( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) - sigma_hat, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly )
+                        else if integration_lang == "cpp"
+                            D = ( sigma_hat_enh : eps_hooke_iso( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) - sigma_hat, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) * e->jac
+                    else if integration_type == "formal"
+                        D = e->integration( sigma_hat_enh : eps_hooke_iso( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) - sigma_hat, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly )
+                    if integration_type == "gauss_num" and integration_lang == "cpp"
+                        file_ <<< "        for (unsigned n=0; n<poids.size(); ++n) {"
+                        file_ <<< "            Vec<double> var_inter( valeurs[ n ] );"
+                        file_ <<< "            T d_tmp = 0.0;"
+                        cw_cpp := CodeWriterAlt( "T" )
+                        cw_cpp.add( "d_tmp", D, reassign )
+                        file_ <<< "$(cw_cpp.to_string( 12 ))"
+                        file_ <<< "            d_enh[ ind_in_list_elems_enh[ 0 ] ][ $(face->num_child) * $(face->nb_nodes) * $(face->dim) + $j * $(face->dim) + $d ] += poids[ n ] * d_tmp;"
+                        file_ <<< "        }"
+                    else
+                        cw.add( "d_enh[ ind_in_list_elems_enh[ 0 ] ][ $(face->num_child) * $(face->nb_nodes) * $(face->dim) + $j * $(face->dim) + $d ]", D, reassign )
+        if integration_type != "gauss_num" or integration_lang != "cpp"
+            file_ <<< "$(cw.to_string( 8 ))"
+        file_ <<< "    }"
+        file_ <<< "    #undef PNODE"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_elem_matrix_L_enh_$(f->name).$(e->dim).$(e->name).h pour calculer la matrice elementaire L_local_enh[ n ]
+#---------------------------------------------------------------------------------------------------------------------------------------------
+def calc_elem_matrix_L_enh( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_elem_matrix_L_enh_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_elem_matrix_L_enh_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_elem_matrix_L_enh_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_elem_matrix_L_enh_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class T>"
+        file_ <<< "void calc_elem_matrix_L_enh( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec<bool> &flag_face_enh, const Vec<bool> &flag_elem_bal, const Vec<unsigned> &list_elems_bal, Vec<unsigned> &nb_unk_local_bal, Vec<unsigned> &nb_eq_f_vol_local_enh, Vec< Mat<T, Gen<>, SparseLine<> > > &L_local_enh ) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+        file_ <<< "    if ( flag_elem_bal[ elem.number ] ) {"
+        file_ <<< "        Vec<unsigned> ind_in_list_elems_bal = find_with_index( list_elems_bal == elem.number );"
+        deg_p := max( e->order_interpolation )
+        f_vol_enh := Vec[ Op, e->dim ]()
+        sym_f_surf_enh_e := Vec[ Op ]()
+        GM := e->pos - e->barycenter
+        for face_ in e->children( 1 )
+            face := child_cast( face_ )
+            eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)" )
+            flag_face_enh := symbol( "flag_face_enh[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ]" )
+            sym_f_surf_enh := Vec[ Vec[ Op, face->dim ], face->nb_nodes ]()
+            for i in 0 .. face->nb_nodes
+                for d in 0 .. face->dim
+                    s := Op()
+                    s = symbol( "f_surf[ $( face->num_child ) ][ $d ][ $i ]" )
+                    sym_f_surf_enh_e.push_back( s )
+                    sym_f_surf_enh[ i ][ d ] = s
+            f_surf_enh := Vec[ Op, face->dim ]( face->interpolation( sym_f_surf_enh, force_fluxes_base ) )
+            f_vol_enh_face := Vec[ Op, e->dim ]()
+            for d in 0 .. e->dim
+                degre_poly := ( f_surf_enh[ d ] ).poly_deg( face->var_inter )
+                f_vol_enh_face[ d ] -= pow( e->measure, -1 ) * face->gauss_num_integration( eta * f_surf_enh[ d ], order_diff = degre_poly )
+            if face->dim == 2
+                GM_vect_prod_f_surf_enh := vect_prod( GM, eta * f_surf_enh )
+                N_vect_prod_GM := Vec[ Op, e->dim ]()
+                N_vect_prod_GM[ 0 ] = -GM[ 1 ]
+                N_vect_prod_GM[ 1 ] = GM[ 0 ]
+                for d in 0 .. e->dim
+                    degre_poly := ( e->projection_on_child_elem( GM_vect_prod_f_surf_enh, face ) ).poly_deg( face->var_inter )
+                    f_vol_enh_face[ d ] -= pow( e->inertia_operator_for_barycenter, -1 ) * face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_f_surf_enh, face ), order_diff = degre_poly ) * N_vect_prod_GM[ d ]
+            else if face->dim == 3
+                GM_vect_prod_f_surf_enh := vect_prod( GM, eta * f_surf_enh )
+                int_GM_vect_prod_f_surf_enh := Vec[ Op, face->dim ]()
+                for d in 0 .. face->dim
+                    degre_poly := ( e->projection_on_child_elem( GM_vect_prod_f_surf_enh[ d ], face ) ).poly_deg( face->var_inter )
+                    int_GM_vect_prod_f_surf_enh[ d ] = face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_f_surf_enh[ d ], face ), order_diff = degre_poly )
+                f_vol_enh_torque := vect_prod( inv_tiny( e->inertia_operator_for_barycenter ) * int_GM_vect_prod_f_surf_enh, GM )
+                for d in 0 .. e->dim
+                    f_vol_enh_face[ d ] -= f_vol_enh_torque[ d ]
+            f_vol_enh += f_vol_enh_face * flag_face_enh
+        GM_vect_prod_f_vol_enh := vect_prod( GM, f_vol_enh )
+        L_enh := Vec[ Op ]()
+        for d in 0 .. e->dim
+            degre_poly := ( f_vol_enh[ d ] ).poly_deg( e->var_inter )
+            L_enh.push_back( e->gauss_num_integration( f_vol_enh[ d ], order_diff = degre_poly ) )
+        if e->dim == 2
+            degre_poly := ( GM_vect_prod_f_vol_enh ).poly_deg( e->var_inter )
+            L_enh.push_back( e->gauss_num_integration( GM_vect_prod_f_vol_enh, order_diff = degre_poly ) )
+        else if e->dim == 3
+            for d in 0 .. e->dim
+                degre_poly := ( GM_vect_prod_f_vol_enh[ d ] ).poly_deg( e->var_inter )
+                L_enh.push_back( e->gauss_num_integration( GM_vect_prod_f_vol_enh[ d ], order_diff = degre_poly ) )
+        file_ <<< "        nb_unk_local_bal[ ind_in_list_elems_bal[ 0 ] ] = $(sym_f_surf_enh_e.size);"
+        file_ <<< "        nb_eq_f_vol_local_enh[ ind_in_list_elems_bal[ 0 ] ] = $(L_enh.size);"
+        file_ <<< "        L_local_enh[ ind_in_list_elems_bal[ 0 ] ].resize( $(L_enh.size), $(sym_f_surf_enh_e.size) );"
+        cw := CodeWriterAlt( "T" )
+        for i in 0 .. L_enh.size
+            L_enh_e := ( L_enh[ i ] ).diff( sym_f_surf_enh_e )
+            for j in 0 .. sym_f_surf_enh_e.size
+                cw.add( "L_local_enh[ ind_in_list_elems_bal[ 0 ] ]( $i, $j )", L_enh_e[ j ], reassign )
+        file_ <<< "$(cw.to_string( 8 ))"
+        file_ <<< "    }"
+        file_ <<< "    #undef PNODE"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_elem_vector_b_enh_$(f->name).$(e->dim).$(e->name).h pour calculer le vecteur elementaire b_local_enh[ n ]
+#---------------------------------------------------------------------------------------------------------------------------------------------
+def calc_elem_vector_b_enh( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_elem_vector_b_enh_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_elem_vector_b_enh_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_elem_vector_b_enh_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_elem_vector_b_enh_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class T>"
+        file_ <<< "void calc_elem_vector_b_enh( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<unsigned> > &list_nodes_face, const Vec<unsigned> &cpt_elems_node, const Vec< Vec< Vec<T> > > &vec_force_fluxes, const Vec<bool> &flag_elem_bal, const Vec<unsigned> &list_elems_bal, Vec< Vec<T> > &b_local_enh ) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+        file_ <<< "    if ( flag_elem_bal[ elem.number ] ) {"
+        file_ <<< "        Vec<unsigned> ind_in_list_elems_bal = find_with_index( list_elems_bal == elem.number );"
+        deg_p := max( e->order_interpolation )
+        f_vol_std := Vec[ Op, e->dim ]()
+        GM := e->pos - e->barycenter
+        file_ <<<<
+                    Vec< Vec< Vec<T> > > f_surf;
+                    f_surf.resize( $(e->children( 1 ).size) );
+                    Vec<unsigned> ind_in_list_nodes_face;
+        for face_ in e->children( 1 )
+            face := child_cast( face_ )
+            eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)" )
+            sym_f_surf_std := Vec[ Vec[ Op, face->dim ], face->nb_nodes ]()
+            file_ <<< "        f_surf[ $( face->num_child ) ].resize( $(face->dim) );"
+            for d in 0 .. face->dim
+                file_ <<< "        f_surf[ $( face->num_child ) ][ $d ].resize( m.sub_mesh(Number<1>()).elem_list[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ]->nb_nodes_virtual(), 0. );"
+                for i in 0 .. face->nb_nodes
+                    file_ <<< "        ind_in_list_nodes_face = find_with_index( list_nodes_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ] == elem.node( $( face->node_numbers_to_node_numbers_in_parent_cpp[ i ] ) )->number );"
+                    file_ <<< "        f_surf[ $( face->num_child ) ][ $d ][ $i ] += $( eta ) * vec_force_fluxes[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_list_nodes_face[ 0 ] ];"
+            for i in 0 .. face->nb_nodes
+                for d in 0 .. face->dim
+                    s := Op()
+                    s = symbol( "f_surf[ $( face->num_child ) ][ $d ][ $i ]" )
+                    sym_f_surf_std[ i ][ d ] = s
+            f_surf_std := Vec[ Op, face->dim ]( face->interpolation( sym_f_surf_std, force_fluxes_base ) )
+            f_vol_std_face := Vec[ Op, e->dim ]()
+            for d in 0 .. e->dim
+                degre_poly := ( f_surf_std[ d ] ).poly_deg( face->var_inter )
+                f_vol_std_face[ d ] -= pow( e->measure, -1 ) * face->gauss_num_integration( f_surf_std[ d ], order_diff = degre_poly )
+            GM_vect_prod_f_surf_std := vect_prod( GM, f_surf_std )
+            if face->dim == 2
+                N_vect_prod_GM := Vec[ Op, e->dim ]()
+                N_vect_prod_GM[ 0 ] = -GM[ 1 ]
+                N_vect_prod_GM[ 1 ] = GM[ 0 ]
+                for d in 0 .. e->dim
+                    degre_poly := ( e->projection_on_child_elem( GM_vect_prod_f_surf_std, face ) ).poly_deg( face->var_inter )
+                    f_vol_std_face[ d ] -= pow( e->inertia_operator_for_barycenter, -1 ) * face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_f_surf_std, face ), order_diff = degre_poly ) * N_vect_prod_GM[ d ]
+            else if face->dim == 3
+                int_GM_vect_prod_f_surf_std := Vec[ Op, face->dim ]()
+                for d in 0 .. face->dim
+                    degre_poly := ( e->projection_on_child_elem( GM_vect_prod_f_surf_std[ d ], face ) ).poly_deg( face->var_inter )
+                    int_GM_vect_prod_f_surf_std[ d ] = face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_f_surf_std[ d ], face ), order_diff = degre_poly )
+                f_vol_std_torque := vect_prod( inv_tiny( e->inertia_operator_for_barycenter ) * int_GM_vect_prod_f_surf_std, GM )
+                for d in 0 .. e->dim
+                    f_vol_std_face[ d ] -= f_vol_std_torque[ d ]
+            f_vol_std += f_vol_std_face
+        GM_vect_prod_f_vol_std := vect_prod( GM, f_vol_std )
+        GM_vect_prod_f_vol := vect_prod( GM, child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr )
+        GM_vect_prod_f_nodal := vect_prod( GM, child_cast(f)->pre_f_nodal.expr )
+        b_enh := Vec[ Op ]()
+        for d in 0 .. e->dim
+            degre_poly := ( ( child_cast(f)->f_vol.expr[ d ] + child_cast(f)->pre_f_vol.expr[ d ] - f_vol_std[ d ] ) ).poly_deg( e->var_inter )
+            b_enh_res := e->gauss_num_integration( child_cast(f)->f_vol.expr[ d ] + child_cast(f)->pre_f_vol.expr[ d ] - f_vol_std[ d ], order_diff = degre_poly )
+            for n in 0 .. e->nb_nodes
+                nb_elems_node := symbol( "cpt_elems_node[ elem.node( $n )->number ]" )
+                b_enh_res += ( child_cast(f)->pre_f_nodal.expr[ d ] ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
+            b_enh.push_back( b_enh_res )
+        if e->dim == 2
+            degre_poly := ( GM_vect_prod_f_vol - GM_vect_prod_f_vol_std ).poly_deg( e->var_inter )
+            b_enh_torque := e->gauss_num_integration( GM_vect_prod_f_vol - GM_vect_prod_f_vol_std, order_diff = degre_poly )
+            for n in 0 .. e->nb_nodes
+                nb_elems_node := symbol( "cpt_elems_node[ elem.node( $n )->number ]" )
+                b_enh_torque += ( GM_vect_prod_f_nodal ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
+            b_enh.push_back( b_enh_torque )
+        else if e->dim == 3
+            for d in 0 .. e->dim
+                degre_poly := ( GM_vect_prod_f_vol[ d ] - GM_vect_prod_f_vol_std[ d ] ).poly_deg( e->var_inter )
+                b_enh_torque := e->gauss_num_integration( GM_vect_prod_f_vol[ d ] - GM_vect_prod_f_vol_std[ d ], order_diff = degre_poly )
+                for n in 0 .. e->nb_nodes
+                    nb_elems_node := symbol( "cpt_elems_node[ elem.node( $n )->number ]" )
+                    b_enh_torque += ( GM_vect_prod_f_nodal[ d ] ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
+                b_enh.push_back( b_enh_torque )
+        cw := CodeWriterAlt( "T" )
+        cw.add( "b_local_enh[ ind_in_list_elems_bal[ 0 ] ]", b_enh, reassign )
+        file_ <<< "        b_local_enh[ ind_in_list_elems_bal[ 0 ] ].resize( $(b_enh.size), 0. );"
+        file_ <<< "$(cw.to_string( 8 ))"
+        file_ <<< "    }"
+        file_ <<< "    #undef PNODE"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_glob_matrix_A_enh_$(f->name).$(e->dim).$(e->name).h pour calculer la matrice globale A_enh
+#------------------------------------------------------------------------------------------------------------------------------
+def calc_glob_matrix_A_enh( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_glob_matrix_A_enh_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_glob_matrix_A_enh_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_glob_matrix_A_enh_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_glob_matrix_A_enh_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class T>"
+        file_ <<< "void calc_glob_matrix_A_enh( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const Vec< Vec<unsigned> > &list_nodes_face, const Vec<bool> &flag_elem_enh, const Vec<unsigned> &list_elems_enh, const Vec<unsigned> &list_faces_enh, const Vec< Mat<T, Gen<>, SparseLine<> > > &A_local_enh, Mat<T, Gen<>, SparseLine<> > &A_enh ) {"
+        file_ <<< "    if ( flag_elem_enh[ elem.number ] ) {"
+        file_ <<< "        Vec<unsigned> ind_in_list_elems_enh = find_with_index( list_elems_enh == elem.number );"
+        file_ <<< "        Vec<unsigned> ind_in_list_faces_enh;"
+        file_ <<< "        Vec<unsigned> ind_in_list_faces_enh_bis;"
+        file_ <<< "        Vec<unsigned> ind_i_in_list_nodes_face;"
+        file_ <<< "        Vec<unsigned> ind_j_in_list_nodes_face_bis;"
+        for face_ in e->children( 1 )
+            face := child_cast( face_ )
+            file_ <<< "        ind_in_list_faces_enh = find_with_index( list_faces_enh == m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number );"
+            deg_p := max( face->order_interpolation )
+            for i in 0 .. face->nb_nodes
+                file_ <<< "        ind_i_in_list_nodes_face = find_with_index( list_nodes_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ] == elem.node( $( face->node_numbers_to_node_numbers_in_parent_cpp[ i ] ) )->number );"
+                for d_i in 0 .. face->dim
+                    for face_bis_ in e->children( 1 )
+                        face_bis := child_cast( face_bis_ )
+                        file_ <<< "        ind_in_list_faces_enh_bis = find_with_index( list_faces_enh == m.get_children_of( elem, Number<1>() )[ $( face_bis->num_child ) ]->number );"
+                        for j in 0 .. face_bis->nb_nodes
+                            file_ <<< "        ind_j_in_list_nodes_face_bis = find_with_index( list_nodes_face[ m.get_children_of( elem, Number<1>() )[ $( face_bis->num_child ) ]->number ] == elem.node( $( face_bis->node_numbers_to_node_numbers_in_parent_cpp[ j ] ) )->number );"
+                            for d_j in 0 .. face_bis->dim
+                                file_ <<< "        A_enh( ind_in_list_faces_enh[ 0 ] * $(face->nb_nodes) * $(face->dim) + ind_i_in_list_nodes_face[ 0 ] * $(face->dim)  + $(d_i), ind_in_list_faces_enh_bis[ 0 ] * $(face_bis->nb_nodes) * $(face_bis->dim) + ind_j_in_list_nodes_face_bis[ 0 ] * $(face_bis->dim)  + $(d_j) ) += A_local_enh[ ind_in_list_elems_enh[ 0 ] ]( $(face->num_child) * $(face->nb_nodes) * $(face->dim) + $i * $(face->dim) + $(d_i), $(face_bis->num_child) * $(face_bis->nb_nodes) * $(face_bis->dim) + $j * $(face_bis->dim) + $(d_j) );"
+        file_ <<< "    }"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_glob_vector_d_enh_$(f->name).$(e->dim).$(e->name).h pour calculer le vecteur global d_enh
+#-----------------------------------------------------------------------------------------------------------------------------
+def calc_glob_vector_d_enh( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_glob_vector_d_enh_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_glob_vector_d_enh_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_glob_vector_d_enh_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_glob_vector_d_enh_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class T>"
+        file_ <<< "void calc_glob_vector_d_enh( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const Vec< Vec<unsigned> > &list_nodes_face, const Vec<bool> &flag_elem_enh, const Vec<unsigned> &list_elems_enh, const Vec<unsigned> &list_faces_enh, const Vec< Vec<T> > &d_local_enh, Vec<T> &d_enh ) {"
+        file_ <<< "    if ( flag_elem_enh[ elem.number ] ) {"
+        file_ <<< "        Vec<unsigned> ind_in_list_elems_enh = find_with_index( list_elems_enh == elem.number );"
+        file_ <<< "        Vec<unsigned> ind_in_list_faces_enh;"
+        file_ <<< "        Vec<unsigned> ind_i_in_list_nodes_face;"
+        for face_ in e->children( 1 )
+            face := child_cast( face_ )
+            file_ <<< "        ind_in_list_faces_enh = find_with_index( list_faces_enh == m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number );"
+            deg_p := max( face->order_interpolation )
+            for i in 0 .. face->nb_nodes
+                file_ <<< "        ind_i_in_list_nodes_face = find_with_index( list_nodes_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ] == elem.node( $( face->node_numbers_to_node_numbers_in_parent_cpp[ i ] ) )->number );"
+                for d in 0 .. face->dim
+                    file_ <<< "        d_enh[ ind_in_list_faces_enh[ 0 ] * $(face->nb_nodes) * $(face->dim) + ind_i_in_list_nodes_face[ 0 ] * $(face->dim)  + $d ] += d_local_enh[ ind_in_list_elems_enh[ 0 ] ][ $(face->num_child) * $(face->nb_nodes) * $(face->dim) + $i * $(face->dim) + $d ];"
+        file_ <<< "    }"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_glob_matrix_L_enh_$(f->name).$(e->dim).$(e->name).h pour calculer la matrice globale L_enh
+#------------------------------------------------------------------------------------------------------------------------------
+def calc_glob_matrix_L_enh( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_glob_matrix_L_enh_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_glob_matrix_L_enh_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_glob_matrix_L_enh_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_glob_matrix_L_enh_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class T>"
+        file_ <<< "void calc_glob_matrix_L_enh( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const Vec< Vec<unsigned> > &list_nodes_face, const Vec<bool> &flag_elem_bal, const Vec<unsigned> &list_elems_bal, const Vec<bool> &flag_face_enh, const Vec<unsigned> &list_faces_enh, const Vec<unsigned> &nb_eq_f_vol_local_enh, const Vec< Mat<T, Gen<>, SparseLine<> > > &L_local_enh, Mat<T, Gen<>, SparseLine<> > &L_enh ) {"
+        file_ <<< "    if ( flag_elem_bal[ elem.number ] ) {"
+        file_ <<< "        Vec<unsigned> ind_in_list_elems_bal = find_with_index( list_elems_bal == elem.number );"
+        file_ <<< "        Vec<unsigned> ind_in_list_faces_enh;"
+        file_ <<< "        Vec<unsigned> ind_i_in_list_nodes_face;"
+        file_ <<< "        for (unsigned n=0;n<nb_eq_f_vol_local_enh[ ind_in_list_elems_bal[ 0 ] ];++n) {"
+        for face_ in e->children( 1 )
+            face := child_cast( face_ )
+            file_ <<< "            if ( flag_face_enh[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ] ) {"
+            file_ <<< "                ind_in_list_faces_enh = find_with_index( list_faces_enh == m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number );"
+            for i in 0 .. face->nb_nodes
+                file_ <<< "                ind_i_in_list_nodes_face = find_with_index( list_nodes_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ] == elem.node( $( face->node_numbers_to_node_numbers_in_parent_cpp[ i ] ) )->number );"
+                for d in 0 .. face->dim
+                    file_ <<< "                L_enh( ind_in_list_elems_bal[ 0 ] * nb_eq_f_vol_local_enh[ ind_in_list_elems_bal[ 0 ] ] + n, ind_in_list_faces_enh[ 0 ] * $(face->nb_nodes) * $(face->dim) + ind_i_in_list_nodes_face[ 0 ] * $(face->dim)  + $d ) += L_local_enh[ ind_in_list_elems_bal[ 0 ] ]( n, $(face->num_child) * $(face->nb_nodes) * $(face->dim) + $i * $(face->dim) + $d );"
+            file_ <<< "            }"
+        file_ <<< "        }"
+        file_ <<< "    }"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_glob_vector_b_enh_$(f->name).$(e->dim).$(e->name).h pour calculer le vecteur global b_enh
+#-----------------------------------------------------------------------------------------------------------------------------
+def calc_glob_vector_b_enh( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_glob_vector_b_enh_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_glob_vector_b_enh_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_glob_vector_b_enh_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_glob_vector_b_enh_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class T>"
+        file_ <<< "void calc_glob_vector_b_enh( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const Vec<bool> &flag_elem_bal, const Vec<unsigned> &list_elems_bal, const Vec<unsigned> &nb_eq_f_vol_local_enh, const Vec< Vec<T> > &b_local_enh, Vec<T> &b_enh ) {"
+        file_ <<< "    if ( flag_elem_bal[ elem.number ] ) {"
+        file_ <<< "        Vec<unsigned> ind_in_list_elems_bal = find_with_index( list_elems_bal == elem.number );"
+        file_ <<< "        for (unsigned n=0;n<nb_eq_f_vol_local_enh[ ind_in_list_elems_bal[ 0 ] ];++n) {"
+        file_ <<< "            b_enh[ ind_in_list_elems_bal[ 0 ] * nb_eq_f_vol_local_enh[ ind_in_list_elems_bal[ 0 ] ] + n ] += b_local_enh[ ind_in_list_elems_bal[ 0 ] ][ n ];"
+        file_ <<< "        }"
+        file_ <<< "    }"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_glob_matrix_C_enh_$(f->name).$(e->dim).$(e->name).h pour calculer la matrice globale C_enh
+#------------------------------------------------------------------------------------------------------------------------------
+def calc_glob_matrix_C_enh( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        name_face := e->children( 1 )[ 0 ]->name
+        face := SymbolicElement[ name_face, e->dim ]()
+        file_name := "calc_glob_matrix_C_enh_$(f->name).$(face.dim).$(face.name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_glob_matrix_C_enh_$(f->name).$(face.dim).$(face.name).h", "w" )
+        file_ <<< "#ifndef calc_glob_matrix_C_enh_$(f->name)_$(face.dim)_$(face.name)_h"
+        file_ <<< "#define calc_glob_matrix_C_enh_$(f->name)_$(face.dim)_$(face.name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class T>"
+        file_ <<< "void calc_glob_matrix_C_enh( const Element<$(face.name),TN,TNG,TD,NET> &child_elem, const Vec< Vec<unsigned> > &type_face, const Vec<bool> &flag_face_enh, const Vec<unsigned> &list_faces_enh, unsigned &cpt_eq_f_surf_enh, Mat<T, Gen<>, SparseLine<> > &C_enh ) {"
+        file_ <<< "    if ( flag_face_enh[ child_elem.number ] ) {"
+        file_ <<< "        Vec<unsigned> ind_in_list_faces_enh = find_with_index( list_faces_enh == child_elem.number );"
+        for d in 0 .. face.dim
+            file_ <<< "        if ( type_face[ child_elem.number ][ $d ] == 2 ) {"
+            for n in 0 .. face.nb_nodes
+                file_ <<< "            C_enh( cpt_eq_f_surf_enh++, ind_in_list_faces_enh[ 0 ] * $(face.nb_nodes) * $(face.dim) + $n * $(face.dim) + $d ) += 1;"
+            file_ <<< "        }"
+        file_ <<< "    }"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_glob_vector_q_enh_$(f->name).$(e->dim).$(e->name).h pour calculer le vecteur global q_enh
+#-----------------------------------------------------------------------------------------------------------------------------
+def calc_glob_vector_q_enh( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_glob_vector_q_enh_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_glob_vector_q_enh_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_glob_vector_q_enh_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_glob_vector_q_enh_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class T>"
+        file_ <<< "void calc_glob_vector_q_enh( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<unsigned> > &type_face, const TTVV &vectors, const Vec<unsigned> indices, const Vec<bool> &flag_elem_enh, unsigned &cpt_eq_f_surf_enh, Vec<T> &q_enh ) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+        file_ <<< "    if ( flag_elem_enh[ elem.number ] ) {"
+        for face_ in e->children( 1 )
+            face := child_cast( face_ )
+            deg_p := max( face->order_interpolation )
+            for d in 0 .. face->dim
+                file_ <<< "        if ( type_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ] == 2 ) {"
+                file_ <<< "            typedef typename TM::template SubMesh<1>::T TSubMesh;"
+                file_ <<< "            typedef typename TSubMesh::template TElem<typename TypeChildrenElement<typename Element<$(e->name),TN,TNG,TD,NET>::NE,1,$( face->num_child )>::T>::TE TCH;"
+                file_ <<< "            TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem,Number<1>())[ $( face->num_child ) ] ) );"
+                f_surf := child_cast(f)->f_surf.expr[ d ]
+                cw := CodeWriterAlt( "T" )
+                for n in 0 .. face->nb_nodes
+                    f_surf_proj_on_nodes := f_surf.subs( face->var_inter, face->points[ n ] )
+                    cw.add( "q_enh[ cpt_eq_f_surf_enh++ ]", f_surf_proj_on_nodes, add )
+                file_ <<< "$(cw.to_string( 12 ))"
+                file_ <<< "        }"
+        file_ <<< "    }"
+        file_ <<< "    #undef PNODE"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_glob_matrix_P_enh_$(f->name).$(face.dim).$(face.name).h pour calculer la matrice globale P_enh
+#----------------------------------------------------------------------------------------------------------------------------------
+def calc_glob_matrix_P_enh( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        name_face := e->children( 1 )[ 0 ]->name
+        face := SymbolicElement[ name_face, e->dim ]()
+        file_name := "calc_glob_matrix_P_enh_$(f->name).$(face.dim).$(face.name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_glob_matrix_P_enh_$(f->name).$(face.dim).$(face.name).h", "w" )
+        file_ <<< "#ifndef calc_glob_matrix_P_enh_$(f->name)_$(face.dim)_$(face.name)_h"
+        file_ <<< "#define calc_glob_matrix_P_enh_$(f->name)_$(face.dim)_$(face.name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class T>"
+        file_ <<< "void calc_glob_matrix_P_enh( const Element<$(face.name),TN,TNG,TD,NET> &elem, const Vec<bool> &flag_face_enh, const Vec<unsigned> &list_faces_enh, unsigned &cpt_eq_proj_f_surf_enh, Mat<T, Gen<>, SparseLine<> > &P_enh) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+        file_ <<< "    if ( flag_face_enh[ elem.number ] ) {"
+        file_ <<< "        Vec<unsigned> ind_in_list_faces_enh = find_with_index( list_faces_enh == elem.number );"
+        sym_F_hat := Vec[ Op ]()
+        F_hat := face.new_variable( "\\hat{F}", interpolation_type = "nodal", nb_dim = [ face.dim ], sym = sym_F_hat, interpolation_base = force_fluxes_base )
+        cw := CodeWriterAlt( "T" )
+        deg_p := max( face.order_interpolation )
+        for d in 0 .. face.dim
+            for n in 0 .. face.nb_nodes
+                if not face.node_number_is_a_vertex( n )
+                    phi_n := face.get_shape_functions( force_fluxes_base )[ n ]
+                    F_hat_phi_n := Op( 0 )
+                    degre_poly := ( F_hat[ d ] * phi_n ).poly_deg( face.var_inter )
+                    if integration_type == "gauss_num"
+                        F_hat_phi_n = face.gauss_num_integration( F_hat[ d ] * phi_n, order_diff = degre_poly )
+                    else if integration_type == "formal"
+                        F_hat_phi_n = face.integration( F_hat[ d ] * phi_n, order_diff = degre_poly )
+                    P := Vec[ Op ]()
+                    for unk_F_hat in sym_F_hat
+                        P.push_back( F_hat_phi_n.diff( unk_F_hat ) )
+                    cw.add( "P_enh( cpt_eq_proj_f_surf_enh++, ind_in_list_faces_enh[ 0 ] * $(face.nb_nodes) * $(face.dim) + $n * $(face.dim) + $d )", P[ n * face.dim + d ], add )
+        file_ <<< "$(cw.to_string( 8 ))"
+        file_ <<< "    }"
+        file_ <<< "    #undef PNODE"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names

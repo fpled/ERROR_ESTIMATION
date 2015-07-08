@@ -1,0 +1,1312 @@
+#
+# Metil Interface: interest_quantity_met
+#
+# Description: calcul de la quantite d'interet
+#
+#
+# Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2011
+#
+# Copyright: See COPYING file that comes with this distribution
+#
+#
+
+
+# Methode qui genere un fichier calc_interest_quantity_mean_sigma_epsilon_$(f->name).$(e->dim).$(e->name).h pour calculer une quantite d'interet = valeur moyenne d'une composante du champ de contrainte (mean_sigma) ou de deformation (mean_epsilon)
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_interest_quantity_mean_sigma_epsilon( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_interest_quantity_mean_sigma_epsilon_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_interest_quantity_mean_sigma_epsilon_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_interest_quantity_mean_sigma_epsilon_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_interest_quantity_mean_sigma_epsilon_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class T>"
+        file_ <<< "void calc_interest_quantity_mean_sigma_epsilon( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const TTVV &vectors, const Vec<unsigned> &indices, T &I ) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+        deg_p := max( e->order_interpolation )
+        I := Op( 0 )
+
+        e->assume_const_jac = true
+        epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
+        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        interest_quantity_const_jac := ( sigma_const_jac : child_cast(f)->pre_epsilon.expr ) + ( child_cast(f)->pre_sigma.expr : epsilon_const_jac )
+        e->assume_const_jac = hyp_const_jac
+        degre_poly := interest_quantity_const_jac.poly_deg( e->var_inter )
+
+        if integration_type == "gauss_num"
+            I = e->gauss_num_integration( ( child_cast(f)->sigma.expr : child_cast(f)->pre_epsilon.expr ) + ( child_cast(f)->pre_sigma.expr : child_cast(f)->epsilon.expr ), order_diff = degre_poly )
+        else if integration_type == "formal"
+            I = e->integration( ( child_cast(f)->sigma.expr : child_cast(f)->pre_epsilon.expr ) + ( child_cast(f)->pre_sigma.expr : child_cast(f)->epsilon.expr ), order_diff = degre_poly )
+        cw := CodeWriterAlt( "T" )
+        cw.add( "I", I, add )
+        file_ <<< "$(cw.to_string( 4 ))"
+        file_ <<< "    #undef PNODE"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_interest_quantity_pointwise_dep_sigma_epsilon_$(f->name).$(e->dim).$(e->name).h pour calculer une quantite d'interet = valeur ponctuelle d'une composante du champ de deplacement (pointwise_dep) ou de contrainte (pointwise_sigma) ou de deformation (pointwise_epsilon)
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_interest_quantity_pointwise_dep_sigma_epsilon( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_interest_quantity_pointwise_dep_sigma_epsilon_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_interest_quantity_pointwise_dep_sigma_epsilon_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_interest_quantity_pointwise_dep_sigma_epsilon_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_interest_quantity_pointwise_dep_sigma_epsilon_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class S, class Pvec, class T>"
+        file_ <<< "void calc_interest_quantity_pointwise_dep_sigma_epsilon( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const TTVV &vectors, const Vec<unsigned> &indices, const S &interest_quantity, const S &direction_extractor, const Pvec &pos_interest_quantity, T &I ) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+        pos_interest_quantity := Vec[ Op, e->dim ]()
+        for d in 0 .. e->dim
+            pos_interest_quantity[ d ] = symbol( "pos_interest_quantity[ $d ]" )
+        e_var_inter := e->var_inter_for_pos( pos_interest_quantity, 1 )
+        pointwise_dep := ( child_cast(f)->dep.expr ).subs( e->var_inter, e_var_inter )
+        pointwise_epsilon := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
+        pointwise_sigma := ( child_cast(f)->sigma.expr ).subs( e->var_inter, e_var_inter )
+        cw := CodeWriterAlt( "T" )
+        cw.add( "pointwise_dep", pointwise_dep, reassign )
+        cw.add( "pointwise_epsilon", pointwise_epsilon, reassign )
+        cw.add( "pointwise_sigma", pointwise_sigma, reassign )
+        file_ <<<<
+                Pvec pointwise_dep;
+                Mat<T, Sym<>, SparseLine<> > pointwise_sigma;
+                Mat<T, Sym<>, SparseLine<> > pointwise_epsilon;
+                pointwise_sigma.resize( $(e->dim) );
+                pointwise_epsilon.resize( $(e->dim) );
+        file_ <<< "$(cw.to_string( 4 ))"
+        file_ <<<<
+                if ( interest_quantity == "pointwise_dep" ) {
+                    if ( TM::dim == 1 ) {
+                        if ( direction_extractor == "x" )
+                            I = pointwise_dep[ 0 ];
+                        else {
+                            std::cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << $(e->dim) << " n'est pas implementee..." << std::endl << std::endl;
+                            throw "Anguille sous coquille...";
+                        }
+                    }
+                    else if ( TM::dim == 2 ) {
+                        if ( direction_extractor == "x" )
+                            I = pointwise_dep[ 0 ];
+                        else if ( direction_extractor == "y" )
+                            I = pointwise_dep[ 1 ];
+                        else {
+                            std::cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << $(e->dim) << " n'est pas implementee..." << std::endl << std::endl;
+                            throw "Anguille sous coquille...";
+                        }
+                    }
+                    else if ( TM::dim == 3 ) {
+                        if ( direction_extractor == "x" )
+                            I = pointwise_dep[ 0 ];
+                        else if ( direction_extractor == "y" )
+                            I = pointwise_dep[ 1 ];
+                        else if ( direction_extractor == "z" )
+                            I = pointwise_dep[ 2 ];
+                        else {
+                            std::cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << $(e->dim) << " n'est pas implementee..." << std::endl << std::endl;
+                            throw "Anguille sous coquille...";
+                        }
+                    }
+                }
+                else if ( interest_quantity == "pointwise_sigma" ) {
+                    if ( TM::dim == 1 ) {
+                        if ( direction_extractor == "xx" )
+                            I = pointwise_sigma( 0, 0 );
+                        else {
+                            std::cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << $(e->dim) << " n'est pas implementee..." << std::endl << std::endl;
+                            throw "Anguille sous coquille...";
+                        }
+                    }
+                    else if ( TM::dim == 2 ) {
+                        if ( direction_extractor == "xx" )
+                            I = pointwise_sigma( 0, 0 );
+                        else if ( direction_extractor == "xy" or direction_extractor == "yx" )
+                            I = pointwise_sigma( 0, 1 );
+                        else if ( direction_extractor == "yy" )
+                            I = pointwise_sigma( 1, 1 );
+                        else {
+                            std::cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << $(e->dim) << " n'est pas implementee..." << std::endl << std::endl;
+                            throw "Anguille sous coquille...";
+                        }
+                    }
+                    else if ( TM::dim == 3 ) {
+                        if ( direction_extractor == "xx" )
+                            I = pointwise_sigma( 0, 0 );
+                        else if ( direction_extractor == "xy" or direction_extractor == "yx" )
+                            I = pointwise_sigma( 0, 1 );
+                        else if ( direction_extractor == "yy" )
+                            I = pointwise_sigma( 1, 1 );
+                        else if ( direction_extractor == "xz" or direction_extractor == "zx" )
+                            I = pointwise_sigma( 0, 2 );
+                        else if ( direction_extractor == "yz" or direction_extractor == "zy"  )
+                            I = pointwise_sigma( 1, 2 );
+                        else if ( direction_extractor == "zz" )
+                            I = pointwise_sigma( 2, 2 );
+                        else {
+                            std::cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << $(e->dim) << " n'est pas implementee..." << std::endl << std::endl;
+                            throw "Anguille sous coquille...";
+                        }
+                    }
+                }
+                else if ( interest_quantity == "pointwise_epsilon" ) {
+                    if ( TM::dim == 1 ) {
+                        if ( direction_extractor == "xx" )
+                            I = pointwise_epsilon( 0, 0 );
+                        else {
+                            std::cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << $(e->dim) << " n'est pas implementee..." << std::endl << std::endl;
+                            throw "Anguille sous coquille...";
+                        }
+                    }
+                    else if ( TM::dim == 2 ) {
+                        if ( direction_extractor == "xx" )
+                            I = pointwise_epsilon( 0, 0 );
+                        else if ( direction_extractor == "xy" or direction_extractor == "yx" )
+                            I = pointwise_epsilon( 0, 1 );
+                        else if ( direction_extractor == "yy" )
+                            I = pointwise_epsilon( 1, 1 );
+                        else {
+                            std::cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << $(e->dim) << " n'est pas implementee..." << std::endl << std::endl;
+                            throw "Anguille sous coquille...";
+                        }
+                    }
+                    else if ( TM::dim == 3 ) {
+                        if ( direction_extractor == "xx" )
+                            I = pointwise_epsilon( 0, 0 );
+                        else if ( direction_extractor == "xy" or direction_extractor == "yx" )
+                            I = pointwise_epsilon( 0, 1 );
+                        else if ( direction_extractor == "yy" )
+                            I = pointwise_epsilon( 1, 1 );
+                        else if ( direction_extractor == "xz" or direction_extractor == "zx" )
+                            I = pointwise_epsilon( 0, 2 );
+                        else if ( direction_extractor == "yz" or direction_extractor == "zy"  )
+                            I = pointwise_epsilon( 1, 2 );
+                        else if ( direction_extractor == "zz" )
+                            I = pointwise_epsilon( 2, 2 );
+                        else {
+                            std::cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << $(e->dim) << " n'est pas implementee..." << std::endl << std::endl;
+                            throw "Anguille sous coquille...";
+                        }
+                    }
+                }
+                #undef PNODE
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_interest_quantity_SIF_$(f->name).$(e->dim).$(e->name).h pour calculer une quantite d'interet = facteur d'intensite de contrainte (SIF)
+#                 et un fichier def_extractor_SIF_$(f->name).$(e->dim).$(e->name).h pour definir l'extracteur associe
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_interest_quantity_SIF( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        deg_p := max( e->order_interpolation )
+        kappa := parameter_kappa( child_cast(f)->poisson.expr, e->dim, type_stress_2D )
+        pos_crack_tip := Vec[ Op, e->dim ]()
+        for d in 0 .. e->dim
+            pos_crack_tip[ d ] = symbol( "pos_crack_tip[ $d ]" )
+        OM := e->pos - pos_crack_tip
+        angle_crack := symbol( "angle_crack" )
+        r := norm_2( OM )
+        theta := atan2( OM[ 1 ], OM[ 0 ] ) - angle_crack
+        u_0 := 1 / ( 2 * sqrt( 2 * Pi * r ) * ( 1 + kappa ) )
+        u_tilde_I := Vec[ Op, e->dim ]()
+        u_tilde_I[ 0 ] = u_0 * ( ( 2 * kappa + 1 ) * cos( 3 * theta / 2 ) - 3 * cos( theta / 2 ) )
+        u_tilde_I[ 1 ] = u_0 * ( - ( 2 * kappa - 1 ) * sin( 3 * theta / 2 ) + 3 * sin( theta / 2 ) )
+        # u_tilde_I.display_tex( "u_tilde_I_" )
+        u_tilde_II := Vec[ Op, e->dim ]()
+        u_tilde_II[ 0 ] = u_0 * ( ( 2 * kappa + 1 ) * sin( 3 * theta / 2 ) - sin( theta / 2 ) )
+        u_tilde_II[ 1 ] = u_0 * ( ( 2 * kappa - 1 ) * cos( 3 * theta / 2 ) - cos( theta / 2 ) )
+        # u_tilde_II.display_tex( "u_tilde_II_" )
+        sigma_0 := - child_cast(f)->mu.expr / ( 2 * sqrt( 2 * Pi * r^3 ) * ( 1 + kappa ) )
+        sigma_tilde_I_ := Mat[ Op, Sym[e->dim] ]()
+        sigma_tilde_I_[ 0, 0 ] = sigma_0 * ( 7 * cos( 3 * theta / 2 ) - 3 * cos( theta / 2 ) )
+        sigma_tilde_I_[ 1, 1 ] = sigma_0 * ( cos( 3 * theta / 2 ) + 3 * cos( theta / 2 ) )
+        sigma_tilde_I_[ 0, 1 ] = sigma_0 * ( 3 * sin( 3 * theta / 2 ) + 3 * sin( theta / 2 ) )
+        # sigma_tilde_I_.display_tex( "sigma_tilde_I_" )
+        sigma_tilde_II_ := Mat[ Op, Sym[e->dim] ]()
+        sigma_tilde_II_[ 0, 0 ] = sigma_0 * ( 7 * sin( 3 * theta / 2 ) - sin( theta / 2 ) )
+        sigma_tilde_II_[ 1, 1 ] = sigma_0 * ( sin( 3 * theta / 2 ) + sin( theta / 2 ) )
+        sigma_tilde_II_[ 0, 1 ] = - sigma_0 * ( 3 * cos( 3 * theta / 2 ) + cos( theta / 2 ) )
+        # sigma_tilde_II_.display_tex( "sigma_tilde_II_" )
+        mat := Mat[ Op, Gen[e->dim,e->dim] ]()
+        mat[ 0, 0 ] = cos( theta + angle_crack )
+        mat[ 0, 1 ] = - sin( theta + angle_crack )
+        mat[ 1, 0 ] = sin( theta + angle_crack )
+        mat[ 1, 1 ] = cos( theta + angle_crack )
+        u_tilde_I = mat * u_tilde_I
+        # u_tilde_I.display_tex( "u_tilde_I" )
+        u_tilde_II = mat * u_tilde_II
+        # u_tilde_II.display_tex( "u_tilde_II" )
+        sigma_tilde_I := Mat[ Op, Gen[e->dim,e->dim] ]()
+        sigma_tilde_I = mat * sigma_tilde_I_ * trans( mat )
+        # sigma_tilde_I := sigma_hooke_iso( e->grad_sym( u_tilde_I ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        # sigma_tilde_I.display_tex( "sigma_tilde_I" )
+        sigma_tilde_II := Mat[ Op, Gen[e->dim,e->dim] ]()
+        sigma_tilde_II = mat * sigma_tilde_II_ * trans( mat )
+        # sigma_tilde_II := sigma_hooke_iso( e->grad_sym( u_tilde_II ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        # sigma_tilde_II.display_tex( "sigma_tilde_II" )
+        R_1 := symbol( "radius_R1" )
+        R_2 := symbol( "radius_R2" )
+        phi := ( R_2 - r ) / ( R_2 - R_1 )
+        epsilon_tilde_I := e->grad_sym( phi * u_tilde_I )
+        extractor_pre_sigma_I := sigma_hooke_iso( epsilon_tilde_I, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) - phi * sigma_tilde_I
+        extractor_pre_sigma_I_const_in_elem := extractor_pre_sigma_I.subs( e->var_inter, e->get_center_of_var_inter() )
+        epsilon_tilde_II := e->grad_sym( phi * u_tilde_II )
+        extractor_pre_sigma_II := sigma_hooke_iso( epsilon_tilde_II, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) - phi * sigma_tilde_II
+        extractor_pre_sigma_II_const_in_elem := extractor_pre_sigma_II.subs( e->var_inter, e->get_center_of_var_inter() )
+        extractor_pre_f_vol_I := Vec[ Op, e->dim ]()
+        extractor_pre_f_vol_I = - sigma_tilde_I * e->grad( phi )
+        extractor_pre_f_vol_I_const_in_elem := extractor_pre_f_vol_I.subs( e->var_inter, e->get_center_of_var_inter() )
+        extractor_pre_f_vol_II := Vec[ Op, e->dim ]()
+        extractor_pre_f_vol_II = - sigma_tilde_II * e->grad( phi )
+        extractor_pre_f_vol_II_const_in_elem := extractor_pre_f_vol_II.subs( e->var_inter, e->get_center_of_var_inter() )
+        file_name := "def_extractor_SIF_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/def_extractor_SIF_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef def_extractor_SIF_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define def_extractor_SIF_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class S, class T, class Pvec>"
+        file_ <<< "void def_extractor_SIF( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const S &interest_quantity, const S &direction_extractor, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_R1, const T &radius_R2 ) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+        cw_0 := CodeWriterAlt( "T" )
+        cw_0.add( "extractor_pre_sigma_I", extractor_pre_sigma_I_const_in_elem, reassign )
+        cw_0.add( "extractor_pre_sigma_II", extractor_pre_sigma_II_const_in_elem, reassign )
+        cw_0.add( "extractor_pre_f_vol_I", extractor_pre_f_vol_I_const_in_elem, reassign )
+        cw_0.add( "extractor_pre_f_vol_II", extractor_pre_f_vol_II_const_in_elem, reassign )
+        file_ <<<<
+                Mat<T, Sym<>, SparseLine<> > extractor_pre_sigma_I;
+                Mat<T, Sym<>, SparseLine<> > extractor_pre_sigma_II;
+                Vec<T> extractor_pre_f_vol_I;
+                Vec<T> extractor_pre_f_vol_II;
+                extractor_pre_sigma_I.resize( $(e->dim) );
+                extractor_pre_sigma_II.resize( $(e->dim) );
+                extractor_pre_f_vol_I.resize( $(e->dim) );
+                extractor_pre_f_vol_II.resize( $(e->dim) );
+        file_ <<< "$(cw_0.to_string( 4 ))"
+        file_ <<<<
+                if ( direction_extractor == "I" ) {
+                    elem.pre_sigma = extractor_pre_sigma_I;
+                    elem.pre_f_vol = extractor_pre_f_vol_I;
+                }
+                else if ( direction_extractor == "II" ) {
+                    elem.pre_sigma = extractor_pre_sigma_II;
+                    elem.pre_f_vol = extractor_pre_f_vol_II;
+                }
+                else {
+                    std::cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " n'est pas implementee..." << std::endl << std::endl;
+                    throw "Anguille sous coquille...";
+                }
+                #undef PNODE
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+        I_1 := Op( 0 )
+        I_2 := Op( 0 )
+
+        if integration_type == "gauss_num"
+            I_1 = e->gauss_num_integration( ( extractor_pre_sigma_I : child_cast(f)->epsilon.expr ) + dot( extractor_pre_f_vol_I, child_cast(f)->dep.expr ), order_diff = degre_poly_handbook )
+            I_2 = e->gauss_num_integration( ( extractor_pre_sigma_II : child_cast(f)->epsilon.expr ) + dot( extractor_pre_f_vol_II, child_cast(f)->dep.expr ), order_diff = degre_poly_handbook )
+        else if integration_type == "formal"
+            I_1 = e->integration( ( extractor_pre_sigma_I : child_cast(f)->epsilon.expr ) + dot( extractor_pre_f_vol_I, child_cast(f)->dep.expr ), order_diff = degre_poly_handbook )
+            I_2 = e->integration( ( extractor_pre_sigma_II : child_cast(f)->epsilon.expr ) + dot( extractor_pre_f_vol_II, child_cast(f)->dep.expr ), order_diff = degre_poly_handbook )
+        file_name_ := "calc_interest_quantity_SIF_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name_ )
+        file__ := File( rep + "/calc_interest_quantity_SIF_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file__ <<< "#ifndef calc_interest_quantity_SIF_$(f->name)_$(e->dim)_$(e->name)_h"
+        file__ <<< "#define calc_interest_quantity_SIF_$(f->name)_$(e->dim)_$(e->name)_h"
+        file__ <<< "namespace LMT {"
+        file__ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class S, class TTVV, class T, class Pvec>"
+        file__ <<< "void calc_interest_quantity_SIF( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const S &direction_extractor, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_R1, const T &radius_R2, const TTVV &vectors, const Vec<unsigned> &indices, T &I ) {"
+        file__ <<< "    #define PNODE(N) elem.node(N)"
+        file__ <<< "    if ( direction_extractor == \"I\" ) {"
+        cw_1 := CodeWriterAlt( "T" )
+        cw_1.add( "I", I_1, add )
+        file__ <<< "$(cw_1.to_string( 8 ))"
+        file__ <<< "    }"
+        file__ <<< "    else if ( direction_extractor == \"II\" ) {"
+        cw_2 := CodeWriterAlt( "T" )
+        cw_2.add( "I", I_2, add )
+        file__ <<< "$(cw_2.to_string( 8 ))"
+        file__ <<< "    }"
+        file__ <<< "    #undef PNODE"
+        file__ <<< "}"
+        file__ <<< "}"
+        file__ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_elem_correction_interest_quantity_wo_sigma_hat_m_$(f->name).$(e->dim).$(e->name).h pour calculer la correction I_hh sur la quantite d'interet (sans introduction de sigma_hat_m)
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_elem_correction_interest_quantity_wo_sigma_hat_m( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_elem_correction_interest_quantity_wo_sigma_hat_m_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_elem_correction_interest_quantity_wo_sigma_hat_m_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_elem_correction_interest_quantity_wo_sigma_hat_m_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_elem_correction_interest_quantity_wo_sigma_hat_m_$(f->name)_$(e->dim)_$(e->name)_h"
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_NodalElement.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Bar.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Triangle.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Quad.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Tetra.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
+        file_ <<< "namespace LMT {"
+        deg_p := max( e->order_interpolation )
+        dep_hat_expr := Vec[ Op, e->dim ]()
+        corr_SPET := symbol( "(method == \"SPET\" ? 1 : 0)" )
+        corr_EET_EESPT := symbol( "((method == \"EET\" or method == \"EESPT\") ? 1 : 0)" )
+        base := Vec[ Op ]()
+        base_EET_EESPT := e->get_upper_degree_shape_functions( recovery_base, deg_p + deg_k )
+        base_SPET := e->get_upper_degree_shape_functions( "hierarchical", deg_p + deg_k )
+        base = corr_EET_EESPT * base_EET_EESPT + corr_SPET * base_SPET
+        coeffs_dep_hat_expr := Vec[ Vec[ Op, base.size ], e->dim ]()
+        sym_dep_hat_expr := Vec[ Op ]()
+        for d in 0 .. e->dim
+            for x in 0 .. base.size
+                coeffs_dep_hat_expr[ d ][ x ] = symbol( "{\\hat{U}}^{N$x}_{$d}" )
+            dep_hat_expr[ d ] = dot( coeffs_dep_hat_expr[ d ], base )
+        for x in 0 .. base.size
+            for d in 0 .. e->dim
+                sym_dep_hat_expr.push_back( coeffs_dep_hat_expr[ d ][ x ] )
+        epsilon_hat_expr := e->grad_sym( dep_hat_expr )
+        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+
+        sym_dep_hat := Vec[ Op ]()
+        for i in 0 .. sym_dep_hat_expr.size
+            sy := Op()
+            sy = symbol( "dep_hat[ elem.number ][ $i ]" )
+            sym_dep_hat.push_back( sy )
+        sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
+        for _f_adjoint in list_f
+            _e_adjoint := child_cast( _f_adjoint->pe )
+            e_adjoint := new SymbolicElement[ _e_adjoint->name, _e_adjoint->dim ]( name_elem = "elem_adjoint", tex_symbol_pos = "P_{adjoint}", node_numbers_to_node_numbers_in_parent_cpp = range(_e_adjoint->nb_nodes).map( _e_adjoint->corr_cpp ) )
+            e_adjoint->assume_const_jac = e->assume_const_jac
+            f_adjoint := new FormulationElasticity[ _e_adjoint->dim ]( @e_adjoint, "adjoint_" )
+            f_adjoint->name = _f_adjoint->name
+            f_adjoint->make_matrices( @e_adjoint, integration_type )
+            file_ <<< "template<class TN, class TN_adjoint, class TNG, class TNG_adjoint, class TD, class TD_adjoint, unsigned NET, unsigned NET_adjoint, class TM, class TF, class TTVV, class S, class B, class T>"
+            file_ <<< "void calc_elem_correction_interest_quantity_wo_sigma_hat_m( const Element<$(e->name),TN,TNG,TD,NET> &elem, const Element<$(e_adjoint->name),TN_adjoint,TNG_adjoint,TD_adjoint,NET_adjoint> &elem_adjoint, const TM &m, const TM &m_adjoint, const TF &f, const TF &f_adjoint, const TTVV &vectors, const TTVV &adjoint_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &adjoint_indices, const S &method, const B &want_local_enrichment, const Vec< Vec<T> > &dep_hat, T &I_hh ) {"
+            file_ <<< "    #define PNODE(N) elem.node(N)"
+            # Calcul approche de la correction I_hh sur la quantite d'interet locale sur chaque element : on repere si le centre de l'element e_adjoint est inclus dans l'element e
+            #----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            deg_p_adjoint := max( e_adjoint->order_interpolation )
+            e_var_inter := e->var_inter_for_pos( e_adjoint->pos, 1 )
+            epsilon_proj := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
+            sigma_proj := ( child_cast(f)->sigma.expr ).subs( e->var_inter, e_var_inter )
+            sigma_hat_proj := ( sigma_hat ).subs( e->var_inter, e_var_inter )
+
+            corr_I_hh := Op( 0 )
+            corr_I_hh_handbook := Op( 0 )
+
+            e->assume_const_jac = true
+            epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
+            epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
+            e->assume_const_jac = hyp_const_jac
+            degre_poly_1 := ( epsilon_hat_const_jac : epsilon_const_jac ).poly_deg( e->var_inter )
+            degre_poly_2 := ( epsilon_const_jac : epsilon_const_jac ).poly_deg( e->var_inter )
+            degre_poly := max( degre_poly_1, degre_poly_2 )
+
+            if integration_type == "gauss_num"
+                if integration_lang == "metil"
+                    corr_I_hh = e_adjoint->gauss_num_integration( sigma_hat_proj : f_adjoint->epsilon.expr, order_diff = degre_poly_1 ) - e_adjoint->gauss_num_integration( sigma_proj : f_adjoint->epsilon.expr, order_diff = degre_poly_2 )
+                    if want_local_enrichment
+                        corr_I_hh_handbook = e_adjoint->gauss_num_integration( ( sigma_hat_proj - sigma_proj ) : f_adjoint->epsilon_handbook_PUM.expr, order_diff = degre_poly_handbook )
+                else if integration_lang == "cpp"
+                    corr_I_hh = ( ( sigma_hat_proj - sigma_proj ) : f_adjoint->epsilon.expr ) * e_adjoint->jac
+                    if want_local_enrichment
+                        corr_I_hh_handbook = ( ( sigma_hat_proj - sigma_proj ) : f_adjoint->epsilon_handbook_PUM.expr ) * e_adjoint->jac
+            else if integration_type == "formal"
+                corr_I_hh = e_adjoint->integration( sigma_hat_proj : f_adjoint->epsilon.expr, order_diff = degre_poly_1 ) - e_adjoint->integration( sigma_proj : f_adjoint->epsilon.expr, order_diff = degre_poly_2 )
+                if want_local_enrichment
+                    corr_I_hh_handbook = e_adjoint->integration( ( sigma_hat_proj - sigma_proj ) : f_adjoint->epsilon_handbook_PUM.expr, order_diff = degre_poly_handbook )
+            if integration_type == "gauss_num" and integration_lang == "cpp"
+                file_ <<< "    Vec<double> poids;"
+                file_ <<< "    Vec<Vec<double, $(e_adjoint->dim)> > valeurs;"
+                file_ <<< "    gauss_points( $(e_adjoint->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
+                file_ <<< "    for (unsigned n=0; n<poids.size(); ++n) {"
+                file_ <<< "        Vec<double> var_inter( valeurs[ n ] );"
+                file_ <<< "        T I_hh_tmp = 0.0;"
+                cw := CodeWriterAlt( "T" )
+                cw.add( "I_hh_tmp", corr_I_hh, reassign )
+                file_ <<< "$(cw.to_string( 8 ))"
+                file_ <<< "        I_hh += poids[ n ] * I_hh_tmp;"
+                file_ <<< "    }"
+                if want_local_enrichment
+                    file_ <<< "    if ( want_local_enrichment ) {"
+                    file_ <<< "        gauss_points( $(e_adjoint->name_for_gauss_point)(), $(degre_poly_handbook), poids, valeurs );"
+                    file_ <<< "        for (unsigned n=0; n<poids.size(); ++n) {"
+                    file_ <<< "            Vec<double> var_inter( valeurs[ n ] );"
+                    file_ <<< "            T I_hh_tmp = 0.0;"
+                    cw_handbook := CodeWriterAlt( "T" )
+                    cw_handbook.add( "I_hh_tmp", corr_I_hh_handbook, reassign )
+                    file_ <<< "$(cw_handbook.to_string( 12 ))"
+                    file_ <<< "            I_hh += poids[ n ] * I_hh_tmp;"
+                    file_ <<< "        }"
+                    file_ <<< "    }"
+            else
+                cw := CodeWriterAlt( "T" )
+                cw.add( "I_hh", corr_I_hh, add )
+                file_ <<< "$(cw.to_string( 4 ))"
+                if want_local_enrichment
+                    file_ <<< "    if ( want_local_enrichment ) {"
+                    cw_handbook := CodeWriterAlt( "T" )
+                    cw_handbook.add( "I_hh", corr_I_hh_handbook, add )
+                    file_ <<< "$(cw_handbook.to_string( 8 ))"
+                    file_ <<< "    }"
+            file_ <<< "    #undef PNODE"
+            file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_elem_correction_interest_quantity_w_sigma_hat_m_$(f->name).$(e->dim).$(e->name).h pour calculer la correction I_hh sur la quantite d'interet (avec introduction de sigma_hat_m)
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_elem_correction_interest_quantity_w_sigma_hat_m( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_elem_correction_interest_quantity_w_sigma_hat_m_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_elem_correction_interest_quantity_w_sigma_hat_m_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_elem_correction_interest_quantity_w_sigma_hat_m_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_elem_correction_interest_quantity_w_sigma_hat_m_$(f->name)_$(e->dim)_$(e->name)_h"
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_NodalElement.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Bar.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Triangle.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Quad.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Tetra.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
+        file_ <<< "namespace LMT {"
+        deg_p := max( e->order_interpolation )
+        dep_hat_expr := Vec[ Op, e->dim ]()
+        corr_SPET := symbol( "(method == \"SPET\" ? 1 : 0)" )
+        corr_EET_EESPT := symbol( "((method == \"EET\" or method == \"EESPT\") ? 1 : 0)" )
+        base := Vec[ Op ]()
+        base_EET_EESPT := e->get_upper_degree_shape_functions( recovery_base, deg_p + deg_k )
+        base_SPET := e->get_upper_degree_shape_functions( "hierarchical", deg_p + deg_k )
+        base = corr_EET_EESPT * base_EET_EESPT + corr_SPET * base_SPET
+        coeffs_dep_hat_expr := Vec[ Vec[ Op, base.size ], e->dim ]()
+        sym_dep_hat_expr := Vec[ Op ]()
+        for d in 0 .. e->dim
+            for x in 0 .. base.size
+                coeffs_dep_hat_expr[ d ][ x ] = symbol( "{\\hat{U}}^{N$x}_{$d}" )
+            dep_hat_expr[ d ] = dot( coeffs_dep_hat_expr[ d ], base )
+        for x in 0 .. base.size
+            for d in 0 .. e->dim
+                sym_dep_hat_expr.push_back( coeffs_dep_hat_expr[ d ][ x ] )
+        epsilon_hat_expr := e->grad_sym( dep_hat_expr )
+        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+
+        sym_dep_hat := Vec[ Op ]()
+        for i in 0 .. sym_dep_hat_expr.size
+            sy := Op()
+            sy = symbol( "dep_hat[ elem.number ][ $i ]" )
+            sym_dep_hat.push_back( sy )
+        sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
+        for _f_adjoint in list_f
+            _e_adjoint := child_cast( _f_adjoint->pe )
+            e_adjoint := new SymbolicElement[ _e_adjoint->name, _e_adjoint->dim ]( name_elem = "elem_adjoint", tex_symbol_pos = "P_{adjoint}", node_numbers_to_node_numbers_in_parent_cpp = range(_e_adjoint->nb_nodes).map( _e_adjoint->corr_cpp ) )
+            e_adjoint->assume_const_jac = e->assume_const_jac
+            f_adjoint := new FormulationElasticity[ _e_adjoint->dim ]( @e_adjoint, "adjoint_" )
+            f_adjoint->name = _f_adjoint->name
+            f_adjoint->make_matrices( @e_adjoint, integration_type )
+            file_ <<< "template<class TN, class TN_adjoint, class TNG, class TNG_adjoint, class TD, class TD_adjoint, unsigned NET, unsigned NET_adjoint, class TM, class TF, class TTVV, class S, class B, class T>"
+            file_ <<< "void calc_elem_correction_interest_quantity_w_sigma_hat_m( const Element<$(e->name),TN,TNG,TD,NET> &elem, const Element<$(e_adjoint->name),TN_adjoint,TNG_adjoint,TD_adjoint,NET_adjoint> &elem_adjoint, const TM &m, const TM &m_adjoint, const TF &f, const TF &f_adjoint, const TTVV &vectors, const TTVV &adjoint_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &adjoint_indices, const S &method, const S &method_adjoint, const B &want_local_enrichment, const Vec< Vec<T> > &dep_hat, const Vec< Vec<T> > &dep_adjoint_hat, T &I_hh ) {"
+            file_ <<< "    #define PNODE(N) elem.node(N)"
+            # Calcul approche de la correction I_hh_w_sigma_hat_m sur la quantite d'interet locale sur chaque element : on repere si le centre de l'element e_adjoint est inclus dans l'element e
+            #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            deg_p_adjoint := max( e_adjoint->order_interpolation )
+            dep_adjoint_hat_expr := Vec[ Op, e_adjoint->dim ]()
+            corr_SPET_adjoint := symbol( "(method_adjoint == \"SPET\" ? 1 : 0)" )
+            corr_EET_EESPT_adjoint := symbol( "( (method_adjoint == \"EET\" or method_adjoint == \"EESPT\") ? 1 : 0)" )
+            base_adjoint := Vec[ Op ]()
+            base_EET_EESPT_adjoint := e_adjoint->get_upper_degree_shape_functions( recovery_base, deg_p_adjoint + deg_k )
+            base_SPET_adjoint := e_adjoint->get_upper_degree_shape_functions( "hierarchical", deg_p_adjoint + deg_k )
+            base_adjoint = corr_EET_EESPT_adjoint * base_EET_EESPT_adjoint + corr_SPET_adjoint * base_SPET_adjoint
+            coeffs_dep_adjoint_hat_expr := Vec[ Vec[ Op, base_adjoint.size ], e_adjoint->dim ]()
+            sym_dep_adjoint_hat_expr := Vec[ Op ]()
+            for d in 0 .. e_adjoint->dim
+                for x in 0 .. base_adjoint.size
+                    coeffs_dep_adjoint_hat_expr[ d ][ x ] = symbol( "{\\hat{U}}^{N$x}_{$d}" )
+                dep_adjoint_hat_expr[ d ] = dot( coeffs_dep_adjoint_hat_expr[ d ], base_adjoint )
+            for x in 0 .. base_adjoint.size
+                for d in 0 .. e_adjoint->dim
+                    sym_dep_adjoint_hat_expr.push_back( coeffs_dep_adjoint_hat_expr[ d ][ x ] )
+            epsilon_adjoint_hat_expr := e->grad_sym( dep_adjoint_hat_expr )
+            sigma_adjoint_hat_expr := corr_SPET_adjoint * f_adjoint->sigma.expr + sigma_hooke_iso( epsilon_adjoint_hat_expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D )
+            sym_dep_adjoint_hat := Vec[ Op ]()
+            for i in 0 .. sym_dep_adjoint_hat_expr.size
+                sy := Op()
+                sy = symbol( "dep_adjoint_hat[ elem_adjoint.number ][ $i ]" )
+                sym_dep_adjoint_hat.push_back( sy )
+            sigma_adjoint_hat := sigma_adjoint_hat_expr.subs( sym_dep_adjoint_hat_expr, sym_dep_adjoint_hat )
+
+            e_var_inter := e->var_inter_for_pos( e_adjoint->pos, 1 )
+            epsilon_proj := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
+            sigma_proj := ( child_cast(f)->sigma.expr ).subs( e->var_inter, e_var_inter )
+            sigma_hat_proj := ( sigma_hat ).subs( e->var_inter, e_var_inter )
+
+            corr_I_hh := Op( 0 )
+            corr_I_hh_handbook := Op( 0 )
+
+            e->assume_const_jac = true
+            epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
+            epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
+            e->assume_const_jac = hyp_const_jac
+            degre_poly_1 := ( epsilon_hat_const_jac : epsilon_hat_const_jac ).poly_deg( e->var_inter )
+            degre_poly_2 := ( epsilon_const_jac : epsilon_const_jac ).poly_deg( e->var_inter )
+            degre_poly_3 := ( epsilon_hat_const_jac : epsilon_const_jac ).poly_deg( e->var_inter )
+            degre_poly := max( degre_poly_1, degre_poly_2, degre_poly_3 )
+
+            if integration_type == "gauss_num"
+                if integration_lang == "metil"
+                    corr_I_hh = 1/2 * ( e_adjoint->gauss_num_integration( sigma_hat_proj : eps_hooke_iso( sigma_adjoint_hat, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_1 ) - e_adjoint->gauss_num_integration( epsilon_proj : sigma_hooke_iso( f_adjoint->epsilon.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_2 ) + e_adjoint->gauss_num_integration( sigma_hat_proj : f_adjoint->epsilon.expr, order_diff = degre_poly_3 ) - e_adjoint->gauss_num_integration( sigma_adjoint_hat : epsilon_proj, order_diff = degre_poly_3 ) )
+                    if want_local_enrichment
+                        corr_I_hh_handbook = e_adjoint->gauss_num_integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( f_adjoint->sigma_handbook_PUM.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_handbook )
+                else if integration_lang == "cpp"
+                    corr_I_hh = 1/2 * ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_adjoint_hat + f_adjoint->sigma.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ) ) * e_adjoint->jac
+                    if want_local_enrichment
+                        corr_I_hh_handbook = ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( f_adjoint->sigma_handbook_PUM.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ) ) * e_adjoint->jac
+            else if integration_type == "formal"
+                corr_I_hh = 1/2 * ( e_adjoint->integration( sigma_hat_proj : eps_hooke_iso( sigma_adjoint_hat, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_1 ) - e_adjoint->integration( epsilon_proj : sigma_hooke_iso( f_adjoint->epsilon.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_2 ) + e_adjoint->integration( sigma_hat_proj : f_adjoint->epsilon.expr, order_diff = degre_poly_3 ) - e_adjoint->integration( sigma_adjoint_hat : epsilon_proj, order_diff = degre_poly_3 ) )
+                if want_local_enrichment
+                    corr_I_hh_handbook = e_adjoint->integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( f_adjoint->sigma_handbook_PUM.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_handbook )
+            if integration_type == "gauss_num" and integration_lang == "cpp"
+                file_ <<< "    Vec<double> poids;"
+                file_ <<< "    Vec<Vec<double, $(e_adjoint->dim)> > valeurs;"
+                file_ <<< "    gauss_points( $(e_adjoint->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
+                file_ <<< "    for (unsigned n=0; n<poids.size(); ++n) {"
+                file_ <<< "        Vec<double> var_inter( valeurs[ n ] );"
+                file_ <<< "        T I_hh_tmp = 0.0;"
+                cw := CodeWriterAlt( "T" )
+                cw.add( "I_hh_tmp", corr_I_hh, reassign )
+                file_ <<< "$(cw.to_string( 8 ))"
+                file_ <<< "        I_hh += poids[ n ] * I_hh_tmp;"
+                file_ <<< "    }"
+                if want_local_enrichment
+                    file_ <<< "    if ( want_local_enrichment ) {"
+                    file_ <<< "        gauss_points( $(e_adjoint->name_for_gauss_point)(), $(degre_poly_handbook), poids, valeurs );"
+                    file_ <<< "        for (unsigned n=0; n<poids.size(); ++n) {"
+                    file_ <<< "            Vec<double> var_inter( valeurs[ n ] );"
+                    file_ <<< "            T I_hh_tmp = 0.0;"
+                    cw_handbook := CodeWriterAlt( "T" )
+                    cw_handbook.add( "I_hh_tmp", corr_I_hh_handbook, reassign )
+                    file_ <<< "$(cw_handbook.to_string( 12 ))"
+                    file_ <<< "            I_hh += poids[ n ] * I_hh_tmp;"
+                    file_ <<< "        }"
+                    file_ <<< "    }"
+            else
+                cw := CodeWriterAlt( "T" )
+                cw.add( "I_hh", corr_I_hh, add )
+                file_ <<< "$(cw.to_string( 4 ))"
+                if want_local_enrichment
+                    file_ <<< "    if ( want_local_enrichment ) {"
+                    cw_handbook := CodeWriterAlt( "T" )
+                    cw_handbook.add( "I_hh", corr_I_hh_handbook, add )
+                    file_ <<< "$(cw_handbook.to_string( 8 ))"
+                    file_ <<< "    }"
+            file_ <<< "    #undef PNODE"
+            file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_elem_error_estimate_lambda_$(f->name).$(e->dim).$(e->name).h pour construire un champ de contrainte admissible au niveau d'un element
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_elem_error_estimate_lambda( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_elem_error_estimate_lambda_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_elem_error_estimate_lambda_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_elem_error_estimate_lambda_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_elem_error_estimate_lambda_$(f->name)_$(e->dim)_$(e->name)_h"
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_NodalElement.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Bar.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Triangle.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Quad.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Tetra.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
+        file_ <<< "namespace LMT {"
+        deg_p := max( e->order_interpolation )
+        e_lambda := new SymbolicElement[ e->name, e->dim ]( name_elem = "elem_lambda", tex_symbol_pos = "P_{lambda}", node_numbers_to_node_numbers_in_parent_cpp = range(e->nb_nodes).map( e->corr_cpp ) )
+        e_lambda->assume_const_jac = e->assume_const_jac
+        f_lambda := new FormulationElasticity[ e->dim ]( @e_lambda, "lambda_" )
+        f_lambda->name = f->name
+        f_lambda->make_matrices( @e_lambda, integration_type )
+        file_ <<< "template<class TN, class TN_lambda, class TNG, class TNG_lambda, class TD, class TD_lambda, unsigned NET, unsigned NET_lambda, class TM, class TF, class TTVV, class S, class T>"
+        file_ <<< "void calc_elem_error_estimate_lambda( const Element<$(e->name),TN,TNG,TD,NET> &elem, Element<$(e_lambda->name),TN_lambda,TNG_lambda,TD_lambda,NET_lambda> &elem_lambda, const TM &m, const TM &m_lambda, const TF &f, const TF &f_lambda, const TTVV &vectors, const TTVV &lambda_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &lambda_indices, const Vec< Vec<T> > &dep_hat, Vec< Vec<T> > &dep_hat_lambda, const S &method, Vec<T> &theta_elem, T &theta ) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+        dep_hat_expr := Vec[ Op, e->dim ]()
+        corr_SPET := symbol( "(method == \"SPET\" ? 1 : 0)" )
+        corr_EET_EESPT := symbol( "((method == \"EET\" or method == \"EESPT\") ? 1 : 0)" )
+        base := Vec[ Op ]()
+        base_EET_EESPT := e->get_upper_degree_shape_functions( recovery_base, deg_p + deg_k )
+        base_SPET := e->get_upper_degree_shape_functions( "hierarchical", deg_p + deg_k )
+        base = corr_EET_EESPT * base_EET_EESPT + corr_SPET * base_SPET
+        coeffs_dep_hat_expr := Vec[ Vec[ Op, base.size ], e->dim ]()
+        sym_dep_hat_expr := Vec[ Op ]()
+        for d in 0 .. e->dim
+            for x in 0 .. base.size
+                coeffs_dep_hat_expr[ d ][ x ] = symbol( "{\\hat{U}}^{N$x}_{$d}" )
+            dep_hat_expr[ d ] = dot( coeffs_dep_hat_expr[ d ], base )
+        for x in 0 .. base.size
+            for d in 0 .. e->dim
+                sym_dep_hat_expr.push_back( coeffs_dep_hat_expr[ d ][ x ] )
+        epsilon_hat_expr := e->grad_sym( dep_hat_expr )
+        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+
+        sym_dep_hat := Vec[ Op ]()
+        for i in 0 .. sym_dep_hat_expr.size
+            sy := Op()
+            sy = symbol( "dep_hat[ elem.number ][ $i ]" )
+            sym_dep_hat.push_back( sy )
+        dep_hat := dep_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
+        sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
+
+        e_var_inter := e->var_inter_for_pos( e_lambda->pos, 1 )
+        dep_hat_proj := ( dep_hat ).subs( e->var_inter, e_var_inter )
+        epsilon_proj := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
+        sigma_hat_proj := ( sigma_hat ).subs( e->var_inter, e_var_inter )
+        # sigma_proj := ( child_cast(f)->sigma.expr ).subs( e->var_inter, e_var_inter )
+        sigma_hat_proj_const_in_elem := sigma_hat_proj.subs( e_lambda->var_inter, e_lambda->get_center_of_var_inter() )
+        # sigma_proj_const_in_elem := sigma_proj.subs( e_lambda->var_inter, e_lambda->get_center_of_var_inter() )
+
+        deg_p_lambda := max( e_lambda->order_interpolation )
+        points := e_lambda->upper_degree_points( deg_p_lambda + deg_k )
+        dep_hat_lambda_e := Vec[ Op ]()
+        for x in 0 .. ( e_lambda->upper_degree_points( deg_p_lambda + deg_k ) ).size
+            val_on_points_for_dep_hat_proj := dep_hat_proj.subs( e_lambda->var_inter, points[ x ] )
+            for d in 0 .. e_lambda->dim
+                dep_hat_lambda_e.push_back( val_on_points_for_dep_hat_proj[ d ] )
+        cw_0 := CodeWriterAlt( "T" )
+        cw_0.add( "sigma_hat_proj_tmp", sigma_hat_proj_const_in_elem, reassign )
+        # cw_0.add( "sigma_proj_tmp", sigma_proj_const_in_elem, reassign )
+        cw_0.add( "dep_hat_lambda[ elem_lambda.number ]", dep_hat_lambda_e, reassign )
+        file_ <<< "    bool same_element = 1;"
+        file_ <<< "    Vec<Vec<typename TM::TNode::T, $(e_lambda->dim)>, $(e_lambda->nb_nodes) > pos_nodes_lambda;"
+        file_ <<< "    for(unsigned i=0;i<elem_lambda.nb_nodes;++i)"
+        file_ <<< "        pos_nodes_lambda[i] = elem_lambda.pos(i);"
+        file_ <<< "    for(unsigned i=0;i<elem.nb_nodes;++i) {"
+        file_ <<< "        if ( not is_inside_linear( $(e_lambda->name)(), pos_nodes_lambda, elem.pos(i) ) )"
+        file_ <<< "            same_element = 0;"
+        file_ <<< "    }"
+        file_ <<< "    dep_hat_lambda[ elem_lambda.number ].resize( $(( e_lambda->upper_degree_points( deg_p_lambda + deg_k ) ).size) * $(e_lambda->dim) );"
+        file_ <<< "    if ( same_element ) {"
+        file_ <<< "        dep_hat_lambda[ elem_lambda.number ] = dep_hat[ elem.number ];"
+        file_ <<< "    }"
+        file_ <<< "    else if ( same_element == 0 ) {"
+        file_ <<<<
+                    Mat<T, Sym<>, SparseLine<> > sigma_hat_proj_tmp;
+                    // Mat<T, Sym<>, SparseLine<> > sigma_proj_tmp;
+                    sigma_hat_proj_tmp.resize( $(e_lambda->dim) );
+                    // sigma_proj_tmp.resize( $(e_lambda->dim) );
+        file_ <<< "$(cw_0.to_string( 8 ))"
+        file_ <<<<
+                    // elem_lambda.sigma = sigma_proj_tmp;
+                    if ( method == "EET" ) {
+                        elem_lambda.sigma_hat_EET = sigma_hat_proj_tmp;
+                    }
+                    if ( method == "SPET" ) {
+                        elem_lambda.sigma_hat_SPET = sigma_hat_proj_tmp;
+                    }
+                    if ( method == "EESPT" ) {
+                        elem_lambda.sigma_hat_EESPT = sigma_hat_proj_tmp;
+                    }
+        theta := Op( 0 )
+
+        e->assume_const_jac = true
+        epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
+        epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
+        e->assume_const_jac = hyp_const_jac
+        degre_poly_1 := ( epsilon_hat_const_jac : epsilon_hat_const_jac ).poly_deg( e->var_inter )
+        degre_poly_2 := ( epsilon_const_jac : epsilon_const_jac ).poly_deg( e->var_inter )
+        degre_poly_3 := ( epsilon_hat_const_jac : epsilon_const_jac ).poly_deg( e->var_inter )
+        degre_poly := max( degre_poly_1, degre_poly_2, degre_poly_3 )
+
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "        Vec<double> poids;"
+            file_ <<< "        Vec<Vec<double, $(e_lambda->dim)> > valeurs;"
+            file_ <<< "        gauss_points( $(e_lambda->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
+        if integration_type == "gauss_num"
+            if integration_lang == "metil"
+                theta = e_lambda->gauss_num_integration( sigma_hat_proj : eps_hooke_iso( sigma_hat_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ), order_diff = degre_poly_1 ) + e_lambda->gauss_num_integration( epsilon_proj : sigma_hooke_iso( epsilon_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ), order_diff = degre_poly_2 ) - 2 * e_lambda->gauss_num_integration( sigma_hat_proj : epsilon_proj, order_diff = degre_poly_3 )
+            else if integration_lang == "cpp"
+                theta = ( sigma_hat_proj : eps_hooke_iso( sigma_hat_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ) + epsilon_proj : sigma_hooke_iso( epsilon_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ) - 2 * ( sigma_hat_proj : epsilon_proj ) ) * e_lambda->jac
+        else if integration_type == "formal"
+            theta = e_lambda->integration( sigma_hat_proj : eps_hooke_iso( sigma_hat_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ), order_diff = degre_poly_1 ) + e_lambda->integration( epsilon_proj : sigma_hooke_iso( epsilon_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ), order_diff = degre_poly_2 ) - 2 * e_lambda->integration( sigma_hat_proj : epsilon_proj, order_diff = degre_poly_3 )
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "        for (unsigned n=0; n<poids.size(); ++n) {"
+            file_ <<< "            Vec<double> var_inter( valeurs[ n ] );"
+            file_ <<< "            T theta_tmp = 0.0;"
+            cw := CodeWriterAlt( "T" )
+            cw.add( "theta_tmp", theta, reassign )
+            file_ <<<<
+                $(cw.to_string( 12 ))
+                            theta += poids[ n ] * theta_tmp;
+                            theta_elem[ elem_lambda.number ] += poids[ n ] * theta_tmp;
+            file_ <<< "        }"
+        else
+            cw := CodeWriterAlt( "T" )
+            cw.add( "theta_elem[ elem_lambda.number ]", theta, reassign )
+            file_ <<<<
+                        {
+                $(cw.to_string( 8 ))
+                        theta += theta_elem[ elem_lambda.number ];
+                        }
+        file_ <<< "    }"
+        file_ <<<<
+                if ( method == "EET" ) {
+                    if ( same_element ) {
+                        theta_elem[ elem_lambda.number ] = elem.theta_elem_EET;
+                        theta += theta_elem[ elem_lambda.number ];
+                    }
+                    elem_lambda.ecre_elem_EET = theta_elem[ elem_lambda.number ] / 2;
+                    elem_lambda.theta_elem_EET = theta_elem[ elem_lambda.number ];
+                    elem_lambda.theta_elem_rel_EET = theta_elem[ elem_lambda.number ] * pow( elem_lambda.measure_virtual(), -1 );
+                }
+                if ( method == "SPET" ) {
+                    if ( same_element ) {
+                        theta_elem[ elem_lambda.number ] = elem.theta_elem_SPET;
+                        theta += theta_elem[ elem_lambda.number ];
+                    }
+                    elem_lambda.theta_elem_SPET = theta_elem[ elem_lambda.number ];
+                    elem_lambda.theta_elem_rel_SPET = theta_elem[ elem_lambda.number ] * pow( elem_lambda.measure_virtual(), -1 );
+                }
+                if ( method == "EESPT" ) {
+                    if ( same_element ) {
+                        theta_elem[ elem_lambda.number ] = elem.theta_elem_EESPT;
+                        theta += theta_elem[ elem_lambda.number ];
+                    }
+                    elem_lambda.ecre_elem_EESPT = theta_elem[ elem_lambda.number ] / 2;
+                    elem_lambda.theta_elem_EESPT = theta_elem[ elem_lambda.number ];
+                    elem_lambda.theta_elem_rel_EESPT = theta_elem[ elem_lambda.number ] * pow( elem_lambda.measure_virtual(), -1 );
+                }
+        file_ <<< "    #undef PNODE"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_elem_weighted_error_estimate_lambda_$(f->name).$(e->dim).$(e->name).h pour construire un champ de contrainte admissible et calculer un estimateur d'erreur globale pondere
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_elem_weighted_error_estimate_lambda( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_elem_weighted_error_estimate_lambda_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_elem_weighted_error_estimate_lambda_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_elem_weighted_error_estimate_lambda_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_elem_weighted_error_estimate_lambda_$(f->name)_$(e->dim)_$(e->name)_h"
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_NodalElement.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Bar.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Triangle.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Quad.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Tetra.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
+        file_ <<< "namespace LMT {"
+        deg_p := max( e->order_interpolation )
+        e_lambda := new SymbolicElement[ e->name, e->dim ]( name_elem = "elem_lambda", tex_symbol_pos = "P_{lambda}", node_numbers_to_node_numbers_in_parent_cpp = range(e->nb_nodes).map( e->corr_cpp ) )
+        e_lambda->assume_const_jac = e->assume_const_jac
+        f_lambda := new FormulationElasticity[ e->dim ]( @e_lambda, "lambda_" )
+        f_lambda->name = f->name
+        f_lambda->make_matrices( @e_lambda, integration_type )
+        file_ <<< "template<class TN, class TN_lambda, class TNG, class TNG_lambda, class TD, class TD_lambda, unsigned NET, unsigned NET_lambda, class TM, class TF, class TTVV, class S, class T, class Pvec>"
+        file_ <<< "void calc_elem_weighted_error_estimate_lambda( const Element<$(e->name),TN,TNG,TD,NET> &elem, const Element<$(e_lambda->name),TN_lambda,TNG_lambda,TD_lambda,NET_lambda> &elem_lambda, const TM &m, const TM &m_lambda, const TF &f, const TF &f_lambda, const TTVV &vectors, const TTVV &lambda_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &lambda_indices, const Vec< Vec<T> > &dep_hat, const S &method, const T &h, const Pvec &domain_center, const Vec<T> &domain_length, const T &k_min, T &weighted_theta ) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+
+        domain_center := Vec[ Op, e_lambda->dim ]()
+        for d in 0 .. e_lambda->dim
+            domain_center[ d ] = symbol( "domain_center[ $d ]" )
+        OM := e_lambda->pos - domain_center
+        r := norm_2( OM )
+        r_min := symbol( "( k_min * domain_length[ 0 ] )" )
+        h := symbol( "h" )
+
+        dep_hat_expr := Vec[ Op, e->dim ]()
+        corr_SPET := symbol( "(method == \"SPET\" ? 1 : 0)" )
+        corr_EET_EESPT := symbol( "((method == \"EET\" or method == \"EESPT\") ? 1 : 0)" )
+        base := Vec[ Op ]()
+        base_EET_EESPT := e->get_upper_degree_shape_functions( recovery_base, deg_p + deg_k )
+        base_SPET := e->get_upper_degree_shape_functions( "hierarchical", deg_p + deg_k )
+        base = corr_EET_EESPT * base_EET_EESPT + corr_SPET * base_SPET
+        coeffs_dep_hat_expr := Vec[ Vec[ Op, base.size ], e->dim ]()
+        sym_dep_hat_expr := Vec[ Op ]()
+        for d in 0 .. e->dim
+            for x in 0 .. base.size
+                coeffs_dep_hat_expr[ d ][ x ] = symbol( "{\\hat{U}}^{N$x}_{$d}" )
+            dep_hat_expr[ d ] = dot( coeffs_dep_hat_expr[ d ], base )
+        for x in 0 .. base.size
+            for d in 0 .. e->dim
+                sym_dep_hat_expr.push_back( coeffs_dep_hat_expr[ d ][ x ] )
+        epsilon_hat_expr := e->grad_sym( dep_hat_expr )
+        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+
+        sym_dep_hat := Vec[ Op ]()
+        for i in 0 .. sym_dep_hat_expr.size
+            sy := Op()
+            sy = symbol( "dep_hat[ elem.number ][ $i ]" )
+            sym_dep_hat.push_back( sy )
+        dep_hat := dep_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
+        sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
+
+        e_var_inter := e->var_inter_for_pos( e_lambda->pos, 1 )
+        epsilon_proj := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
+        sigma_hat_proj := ( sigma_hat ).subs( e->var_inter, e_var_inter )
+
+        weighted_theta := Op( 0 )
+
+        e->assume_const_jac = true
+        epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
+        epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
+        e->assume_const_jac = hyp_const_jac
+        degre_poly_1 := ( epsilon_hat_const_jac : epsilon_hat_const_jac ).poly_deg( e->var_inter )
+        degre_poly_2 := ( epsilon_const_jac : epsilon_const_jac ).poly_deg( e->var_inter )
+        degre_poly_3 := ( epsilon_hat_const_jac : epsilon_const_jac ).poly_deg( e->var_inter )
+        degre_poly := max( degre_poly_1, degre_poly_2, degre_poly_3 )
+
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "    Vec<double> poids;"
+            file_ <<< "    Vec<Vec<double, $(e_lambda->dim)> > valeurs;"
+            file_ <<< "    gauss_points( $(e_lambda->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
+        if integration_type == "gauss_num"
+            if integration_lang == "metil"
+                weighted_theta = e_lambda->gauss_num_integration( pow( r_min / r, 1/h ) * ( sigma_hat_proj : eps_hooke_iso( sigma_hat_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ) ), order_diff = degre_poly_1 ) + e_lambda->gauss_num_integration( pow( r_min / r, 1/h ) * ( epsilon_proj : sigma_hooke_iso( epsilon_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ) ), order_diff = degre_poly_2 ) - 2 * e_lambda->gauss_num_integration( pow( r_min / r, 1/h ) * ( sigma_hat_proj : epsilon_proj ), order_diff = degre_poly_3 )
+            else if integration_lang == "cpp"
+                weighted_theta = pow( r_min / r, 1/h ) * ( sigma_hat_proj : eps_hooke_iso( sigma_hat_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ) + epsilon_proj : sigma_hooke_iso( epsilon_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ) - 2 * ( sigma_hat_proj : epsilon_proj ) ) * e_lambda->jac
+        else if integration_type == "formal"
+            weighted_theta = e_lambda->integration( pow( r_min / r, 1/h ) * ( sigma_hat_proj : eps_hooke_iso( sigma_hat_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ) ), order_diff = degre_poly_1 ) + e_lambda->integration( pow( r_min / r, 1/h ) * ( epsilon_proj : sigma_hooke_iso( epsilon_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ) ), order_diff = degre_poly_2 ) - 2 * e_lambda->integration( pow( r_min / r, 1/h ) * ( sigma_hat_proj : epsilon_proj ), order_diff = degre_poly_3 )
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "    for (unsigned n=0; n<poids.size(); ++n) {"
+            file_ <<< "        Vec<double> var_inter( valeurs[ n ] );"
+            file_ <<< "        T weighted_theta_tmp = 0.0;"
+            cw := CodeWriterAlt( "T" )
+            cw.add( "weighted_theta_tmp", weighted_theta, reassign )
+            file_ <<<<
+                $(cw.to_string( 8 ))
+                        weighted_theta += poids[ n ] * weighted_theta_tmp;
+            file_ <<< "    }"
+        else
+            cw := CodeWriterAlt( "T" )
+            cw.add( "weighted_theta", weighted_theta, add )
+            file_ <<<<
+                    {
+                $(cw.to_string( 4 ))
+                    }
+        file_ <<< "    #undef PNODE"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_skin_elem_error_estimate_lambda_boundary_$(f->name).$(e->dim).$(e->name).h pour construire un champ de contrainte admissible et calculer un estimateur d'erreur globale associe au bord d'un domaine
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_skin_elem_error_estimate_lambda_boundary( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_skin_elem_error_estimate_lambda_boundary_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_skin_elem_error_estimate_lambda_boundary_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_skin_elem_error_estimate_lambda_boundary_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_skin_elem_error_estimate_lambda_boundary_$(f->name)_$(e->dim)_$(e->name)_h"
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_NodalElement.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Bar.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Triangle.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Quad.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Tetra.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
+        file_ <<< "namespace LMT {"
+        deg_p := max( e->order_interpolation )
+        e_lambda := new SymbolicElement[ e->name, e->dim ]( name_elem = "elem_lambda", tex_symbol_pos = "P_{lambda}", node_numbers_to_node_numbers_in_parent_cpp = range(e->nb_nodes).map( e->corr_cpp ) )
+        e_lambda->assume_const_jac = e->assume_const_jac
+        f_lambda := new FormulationElasticity[ e->dim ]( @e_lambda, "lambda_" )
+        f_lambda->name = f->name
+        f_lambda->make_matrices( @e_lambda, integration_type )
+        file_ <<< "template<class TN, class TN_lambda, class TNG, class TNG_lambda, class TD, class TD_lambda, unsigned NET, unsigned NET_lambda, class TM, class TF, class TTVV, class S, class T, class Pvec>"
+        file_ <<< "void calc_skin_elem_error_estimate_lambda_boundary( const Element<$(e->name),TN,TNG,TD,NET> &elem, const Element<$(e_lambda->name),TN_lambda,TNG_lambda,TD_lambda,NET_lambda> &elem_lambda, const TM &m, const TM &m_lambda, const TF &f, const TF &f_lambda, const TTVV &vectors, const TTVV &lambda_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &lambda_indices, const Vec< Vec<T> > &dep_hat, const S &method, const Pvec &domain_center, Vec<T> &theta_boundary_face, T &theta_boundary ) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+        domain_center := Vec[ Op, e->dim ]()
+        for d in 0 .. e->dim
+            domain_center[ d ] = symbol( "domain_center[ $d ]" )
+        dep_hat_expr := Vec[ Op, e->dim ]()
+        corr_SPET := symbol( "(method == \"SPET\" ? 1 : 0)" )
+        corr_EET_EESPT := symbol( "((method == \"EET\" or method == \"EESPT\") ? 1 : 0)" )
+        base := Vec[ Op ]()
+        base_EET_EESPT := e->get_upper_degree_shape_functions( recovery_base, deg_p + deg_k )
+        base_SPET := e->get_upper_degree_shape_functions( "hierarchical", deg_p + deg_k )
+        base = corr_EET_EESPT * base_EET_EESPT + corr_SPET * base_SPET
+        coeffs_dep_hat_expr := Vec[ Vec[ Op, base.size ], e->dim ]()
+        sym_dep_hat_expr := Vec[ Op ]()
+        for d in 0 .. e->dim
+            for x in 0 .. base.size
+                coeffs_dep_hat_expr[ d ][ x ] = symbol( "{\\hat{U}}^{N$x}_{$d}" )
+            dep_hat_expr[ d ] = dot( coeffs_dep_hat_expr[ d ], base )
+        for x in 0 .. base.size
+            for d in 0 .. e->dim
+                sym_dep_hat_expr.push_back( coeffs_dep_hat_expr[ d ][ x ] )
+        epsilon_hat_expr := e->grad_sym( dep_hat_expr )
+        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+
+        sym_dep_hat := Vec[ Op ]()
+        for i in 0 .. sym_dep_hat_expr.size
+            sy := Op()
+            sy = symbol( "dep_hat[ elem.number ][ $i ]" )
+            sym_dep_hat.push_back( sy )
+        dep_hat := dep_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
+        sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
+
+        e_var_inter := e->var_inter_for_pos( e_lambda->pos, 1 )
+        epsilon_proj := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
+        sigma_hat_proj := ( sigma_hat ).subs( e->var_inter, e_var_inter )
+        # sigma_proj := ( child_cast(f)->sigma.expr ).subs( e->var_inter, e_var_inter )
+
+        for face_lambda_ in e_lambda->children( 1 )
+            face_lambda := child_cast( face_lambda_ )
+            file_ <<< "    if ( m_lambda.sub_mesh(Number<1>()).get_parents_of_EA( m_lambda.get_children_of( elem_lambda, Number<1>() )[ $( face_lambda->num_child ) ] ).size() != 2 ) {"
+            theta_face := Op( 0 )
+            u := face_lambda->pos - domain_center
+
+            e->assume_const_jac = true
+            epsilon_const_jac := e->projection_on_child_elem( e->grad_sym( child_cast(f)->dep.expr ), child_cast( e->children( 1 )[ face_lambda->num_child ] ) )
+            epsilon_hat_const_jac := e->projection_on_child_elem( e->grad_sym( dep_hat ), child_cast( e->children( 1 )[ face_lambda->num_child ] ) )
+            u_n_const_jac := dot( child_cast( e->children( 1 )[ face_lambda->num_child ] )->pos - domain_center, child_cast( e->children( 1 )[ face_lambda->num_child ] )->normal )
+            e->assume_const_jac = hyp_const_jac
+            degre_poly_1 := ( u_n_const_jac * ( epsilon_hat_const_jac : epsilon_hat_const_jac ) ).poly_deg( child_cast( e->children( 1 )[ face_lambda->num_child ] )->var_inter )
+            degre_poly_2 := ( u_n_const_jac * ( epsilon_const_jac : epsilon_const_jac ) ).poly_deg( child_cast( e->children( 1 )[ face_lambda->num_child ] )->var_inter )
+            degre_poly_3 := ( u_n_const_jac * ( epsilon_hat_const_jac : epsilon_const_jac ) ).poly_deg( child_cast( e->children( 1 )[ face_lambda->num_child ] )->var_inter )
+            degre_poly := max( degre_poly_1, degre_poly_2, degre_poly_3 )
+
+            if integration_type == "gauss_num" and integration_lang == "cpp"
+                file_ <<< "        Vec<double> poids_face;"
+                file_ <<< "        Vec<Vec<double, $(e_lambda->dim)-1> > valeurs_face;"
+                file_ <<< "        gauss_points( $(face_lambda->name_for_gauss_point)(), $(degre_poly), poids_face, valeurs_face );"
+            if integration_type == "gauss_num"
+                if integration_lang == "metil"
+                    theta_face = face_lambda->gauss_num_integration( dot( u, face_lambda->normal ) * e_lambda->projection_on_child_elem( sigma_hat_proj : eps_hooke_iso( sigma_hat_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ), face_lambda ), order_diff = degre_poly_1 ) + face_lambda->gauss_num_integration( dot( u, face_lambda->normal ) * e_lambda->projection_on_child_elem( epsilon_proj : sigma_hooke_iso( epsilon_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ), face_lambda ), order_diff = degre_poly_2 ) - 2 * face_lambda->gauss_num_integration( dot( u, face_lambda->normal ) * e_lambda->projection_on_child_elem( sigma_hat_proj : epsilon_proj, face_lambda), order_diff = degre_poly_3 )
+                else if integration_lang == "cpp"
+                    theta_face = dot( u, face_lambda->normal ) * e_lambda->projection_on_child_elem( sigma_hat_proj : eps_hooke_iso( sigma_hat_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ) + epsilon_proj : sigma_hooke_iso( epsilon_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ) - 2 * ( sigma_hat_proj : epsilon_proj ), face_lambda ) * face_lambda->jac
+            else if integration_type == "formal"
+                theta_face = face_lambda->integration( dot( u, face_lambda->normal ) * e_lambda->projection_on_child_elem( sigma_hat_proj : eps_hooke_iso( sigma_hat_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ), face_lambda ), order_diff = degre_poly_1 ) + face_lambda->integration( dot( u, face_lambda->normal ) * e_lambda->projection_on_child_elem( epsilon_proj : sigma_hooke_iso( epsilon_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ), face_lambda ), order_diff = degre_poly_2 ) - 2 * face_lambda->integration( dot( u, face_lambda->normal ) * e_lambda->projection_on_child_elem( sigma_hat_proj : epsilon_proj, face_lambda ), order_diff = degre_poly_3 )
+            file_ <<< "        T theta_boundary_tmp = 0.;"
+            if integration_type == "gauss_num" and integration_lang == "cpp"
+                file_ <<< "        for (unsigned n=0; n<poids_face.size(); ++n) {"
+                file_ <<< "            Vec<double> var_inter( valeurs_face[ n ] );"
+                file_ <<< "            T theta_face_tmp = 0.0;"
+                cw := CodeWriterAlt( "T" )
+                cw.add( "theta_face_tmp", theta_face, reassign )
+                file_ <<<<
+                    $(cw.to_string( 12 ))
+                                theta_boundary_tmp += poids_face[ n ] * theta_face_tmp;
+                            }
+                            theta_boundary += theta_boundary_tmp;
+                            theta_boundary_face.push_back( theta_boundary_tmp );
+            else
+                cw := CodeWriterAlt( "T" )
+                cw.add( "theta_boundary_tmp", theta_face, reassign )
+                file_ <<<<
+                    $(cw.to_string( 8 ))
+                            theta_boundary += theta_boundary_tmp;
+                            theta_boundary_face.push_back( theta_boundary_tmp );
+            file_ <<< "    }"
+        file_ <<< "    #undef PNODE"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_elem_correction_interest_quantity_lambda_$(f->name).$(e->dim).$(e->name).h pour ajouter la contribution d'un element a la correction I_hhh
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_elem_correction_interest_quantity_lambda( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_elem_correction_interest_quantity_lambda_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_elem_correction_interest_quantity_lambda_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_elem_correction_interest_quantity_lambda_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_elem_correction_interest_quantity_lambda_$(f->name)_$(e->dim)_$(e->name)_h"
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_NodalElement.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Bar.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Triangle.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Quad.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Tetra.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
+        file_ <<< "namespace LMT {"
+        deg_p := max( e->order_interpolation )
+        dep_hat_expr := Vec[ Op, e->dim ]()
+        corr_SPET := symbol( "(method == \"SPET\" ? 1 : 0)" )
+        corr_EET_EESPT := symbol( "((method == \"EET\" or method == \"EESPT\") ? 1 : 0)" )
+        base := Vec[ Op ]()
+        base_EET_EESPT := e->get_upper_degree_shape_functions( recovery_base, deg_p + deg_k )
+        base_SPET := e->get_upper_degree_shape_functions( "hierarchical", deg_p + deg_k )
+        base = corr_EET_EESPT * base_EET_EESPT + corr_SPET * base_SPET
+        coeffs_dep_hat_expr := Vec[ Vec[ Op, base.size ], e->dim ]()
+        sym_dep_hat_expr := Vec[ Op ]()
+        for d in 0 .. e->dim
+            for x in 0 .. base.size
+                coeffs_dep_hat_expr[ d ][ x ] = symbol( "{\\hat{U}}^{N$x}_{$d}" )
+            dep_hat_expr[ d ] = dot( coeffs_dep_hat_expr[ d ], base )
+        for x in 0 .. base.size
+            for d in 0 .. e->dim
+                sym_dep_hat_expr.push_back( coeffs_dep_hat_expr[ d ][ x ] )
+        epsilon_hat_expr := e->grad_sym( dep_hat_expr )
+        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+
+        sym_dep_hat := Vec[ Op ]()
+        for i in 0 .. sym_dep_hat_expr.size
+            sy := Op()
+            sy = symbol( "dep_hat[ elem.number ][ $i ]" )
+            sym_dep_hat.push_back( sy )
+        sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
+        for _f_adjoint in list_f
+            _e_adjoint := child_cast( _f_adjoint->pe )
+            e_adjoint := new SymbolicElement[ _e_adjoint->name, _e_adjoint->dim ]( name_elem = "elem_adjoint", tex_symbol_pos = "P_{adjoint}", node_numbers_to_node_numbers_in_parent_cpp = range(_e_adjoint->nb_nodes).map( _e_adjoint->corr_cpp ) )
+            e_adjoint->assume_const_jac = e->assume_const_jac
+            f_adjoint := new FormulationElasticity[ _e_adjoint->dim ]( @e_adjoint, "adjoint_" )
+            f_adjoint->name = _f_adjoint->name
+            f_adjoint->make_matrices( @e_adjoint, integration_type )
+            file_ <<< "template<class TN, class TN_adjoint, class TNG, class TNG_adjoint, class TD, class TD_adjoint, unsigned NET, unsigned NET_adjoint, class TM, class TF, class TTVV, class S, class T>"
+            file_ <<< "void calc_elem_correction_interest_quantity_lambda( const Element<$(e->name),TN,TNG,TD,NET> &elem, const Element<$(e_adjoint->name),TN_adjoint,TNG_adjoint,TD_adjoint,NET_adjoint> &elem_adjoint, const TM &m, const TM &m_adjoint, const TF &f, const TF &f_adjoint, const TTVV &vectors, const TTVV &adjoint_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &adjoint_indices, const S &method, const S &method_adjoint, const Vec< Vec<T> > &dep_hat, const Vec< Vec<T> > &dep_adjoint_hat, T &I_hhh ) {"
+            file_ <<< "    #define PNODE(N) elem.node(N)"
+            # Calcul approche de la correction I_hhh : on repere si le centre de l'element e_adjoint est inclus dans l'element e
+            #-------------------------------------------------------------------------------------------------------------------
+            deg_p_adjoint := max( e_adjoint->order_interpolation )
+            dep_adjoint_hat_expr := Vec[ Op, e->dim ]()
+            corr_SPET_adjoint := symbol( "(method_adjoint == \"SPET\" ? 1 : 0)" )
+            corr_EET_EESPT_adjoint := symbol( "( (method_adjoint == \"EET\" or method_adjoint == \"EESPT\") ? 1 : 0)" )
+            base_adjoint := Vec[ Op ]()
+            base_EET_EESPT_adjoint := e_adjoint->get_upper_degree_shape_functions( recovery_base, deg_p_adjoint + deg_k )
+            base_SPET_adjoint := e_adjoint->get_upper_degree_shape_functions( "hierarchical", deg_p_adjoint + deg_k )
+            base_adjoint = corr_EET_EESPT_adjoint * base_EET_EESPT_adjoint + corr_SPET_adjoint * base_SPET_adjoint
+            coeffs_dep_adjoint_hat_expr := Vec[ Vec[ Op, base_adjoint.size ], e_adjoint->dim ]()
+            sym_dep_adjoint_hat_expr := Vec[ Op ]()
+            for d in 0 .. e_adjoint->dim
+                for x in 0 .. base_adjoint.size
+                    coeffs_dep_adjoint_hat_expr[ d ][ x ] = symbol( "{\\hat{U}}^{N$x}_{$d}" )
+                dep_adjoint_hat_expr[ d ] = dot( coeffs_dep_adjoint_hat_expr[ d ], base_adjoint )
+            for x in 0 .. base_adjoint.size
+                for d in 0 .. e_adjoint->dim
+                    sym_dep_adjoint_hat_expr.push_back( coeffs_dep_adjoint_hat_expr[ d ][ x ] )
+            epsilon_adjoint_hat_expr := e->grad_sym( dep_adjoint_hat_expr )
+            sigma_adjoint_hat_expr := corr_SPET_adjoint * f_adjoint->sigma.expr + sigma_hooke_iso( epsilon_adjoint_hat_expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D )
+
+            sym_dep_adjoint_hat := Vec[ Op ]()
+            for i in 0 .. sym_dep_adjoint_hat_expr.size
+                sy := Op()
+                sy = symbol( "dep_adjoint_hat[ elem_adjoint.number ][ $i ]" )
+                sym_dep_adjoint_hat.push_back( sy )
+            sigma_adjoint_hat := sigma_adjoint_hat_expr.subs( sym_dep_adjoint_hat_expr, sym_dep_adjoint_hat )
+
+            e_var_inter := e->var_inter_for_pos( e_adjoint->pos, 1 )
+            epsilon_proj := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
+            sigma_proj := ( child_cast(f)->sigma.expr ).subs( e->var_inter, e_var_inter )
+            sigma_hat_proj := ( sigma_hat ).subs( e->var_inter, e_var_inter )
+
+            corr_I_hhh := Op( 0 )
+
+            e->assume_const_jac = true
+            epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
+            epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
+            e->assume_const_jac = hyp_const_jac
+            degre_poly_1 := ( epsilon_hat_const_jac : epsilon_hat_const_jac ).poly_deg( e->var_inter )
+            degre_poly_2 := ( epsilon_const_jac : epsilon_const_jac ).poly_deg( e->var_inter )
+            degre_poly_3 := ( epsilon_hat_const_jac : epsilon_const_jac ).poly_deg( e->var_inter )
+            degre_poly := max( degre_poly_1, degre_poly_2, degre_poly_3 )
+
+            if integration_type == "gauss_num" and integration_lang == "cpp"
+                file_ <<< "    Vec<double> poids;"
+                file_ <<< "    Vec<Vec<double, $(e_adjoint->dim)> > valeurs;"
+                file_ <<< "    gauss_points( $(e_adjoint->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
+            if integration_type == "gauss_num"
+                if integration_lang == "metil"
+                    corr_I_hhh = 1/2 * ( e_adjoint->gauss_num_integration( sigma_hat_proj : eps_hooke_iso( sigma_adjoint_hat, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_1 ) + e_adjoint->gauss_num_integration( epsilon_proj : sigma_hooke_iso( f_adjoint->epsilon.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_2 ) - e_adjoint->gauss_num_integration( sigma_hat_proj : f_adjoint->epsilon.expr, order_diff = degre_poly_3 ) - e_adjoint->gauss_num_integration( sigma_adjoint_hat : epsilon_proj, order_diff = degre_poly_3 ) )
+                else if integration_lang == "cpp"
+                    corr_I_hhh = 1/2 * ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_adjoint_hat - f_adjoint->sigma.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ) ) * e_adjoint->jac
+            else if integration_type == "formal"
+                corr_I_hhh = 1/2 * ( e_adjoint->integration( sigma_hat_proj : eps_hooke_iso( sigma_adjoint_hat, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_1 ) + e_adjoint->integration( epsilon_proj : sigma_hooke_iso( f_adjoint->epsilon.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_2 ) - e_adjoint->integration( sigma_hat_proj : f_adjoint->epsilon.expr, order_diff = degre_poly_3 ) - e_adjoint->integration( sigma_adjoint_hat : epsilon_proj, order_diff = degre_poly_3 ) )
+            file_ <<< "    Vec<Vec<typename TM::TNode::T, $(e->dim)>, $(e->nb_nodes) > pos_nodes;"
+            file_ <<< "    for(unsigned i=0;i<elem.nb_nodes;++i)"
+            file_ <<< "        pos_nodes[i] = elem.pos(i);"
+            file_ <<< "    if ( is_inside_linear( $(e->name)(), pos_nodes, center( elem_adjoint ) ) ) {"
+            if integration_type == "gauss_num" and integration_lang == "cpp"
+                file_ <<< "        for (unsigned n=0; n<poids.size(); ++n) {"
+                file_ <<< "            Vec<double> var_inter( valeurs[ n ] );"
+                file_ <<< "            T I_hhh_tmp = 0.0;"
+                cw := CodeWriterAlt( "T" )
+                cw.add( "I_hhh_tmp", corr_I_hhh, reassign )
+                file_ <<< "$(cw.to_string( 12 ))"
+                file_ <<< "            I_hhh += poids[ n ] * I_hhh_tmp;"
+                file_ <<< "        }"
+            else
+                cw := CodeWriterAlt( "T" )
+                cw.add( "I_hhh", corr_I_hhh, add )
+                file_ <<< "$(cw.to_string( 8 ))"
+            file_ <<< "    }"
+            file_ <<< "    #undef PNODE"
+            file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_elem_error_estimate_proj_on_adjoint_$(f->name).$(e->dim).$(e->name).h pour calculer la contribution d'un element a l'estimateur d'erreur du pb direct sur un element du maillage adjoint
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_elem_error_estimate_proj_on_adjoint( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_elem_error_estimate_proj_on_adjoint_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_elem_error_estimate_proj_on_adjoint_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_elem_error_estimate_proj_on_adjoint_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_elem_error_estimate_proj_on_adjoint_$(f->name)_$(e->dim)_$(e->name)_h"
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_NodalElement.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Bar.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Triangle.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Quad.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Tetra.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
+        file_ <<< "namespace LMT {"
+        deg_p := max( e->order_interpolation )
+        dep_hat_expr := Vec[ Op, e->dim ]()
+        corr_SPET := symbol( "(method == \"SPET\" ? 1 : 0)" )
+        corr_EET_EESPT := symbol( "((method == \"EET\" or method == \"EESPT\") ? 1 : 0)" )
+        base := Vec[ Op ]()
+        base_EET_EESPT := e->get_upper_degree_shape_functions( recovery_base, deg_p + deg_k )
+        base_SPET := e->get_upper_degree_shape_functions( "hierarchical", deg_p + deg_k )
+        base = corr_EET_EESPT * base_EET_EESPT + corr_SPET * base_SPET
+        coeffs_dep_hat_expr := Vec[ Vec[ Op, base.size ], e->dim ]()
+        sym_dep_hat_expr := Vec[ Op ]()
+        for d in 0 .. e->dim
+            for x in 0 .. base.size
+                coeffs_dep_hat_expr[ d ][ x ] = symbol( "{\\hat{U}}^{N$x}_{$d}" )
+            dep_hat_expr[ d ] = dot( coeffs_dep_hat_expr[ d ], base )
+        for x in 0 .. base.size
+            for d in 0 .. e->dim
+                sym_dep_hat_expr.push_back( coeffs_dep_hat_expr[ d ][ x ] )
+        epsilon_hat_expr := e->grad_sym( dep_hat_expr )
+        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+
+        sym_dep_hat := Vec[ Op ]()
+        for i in 0 .. sym_dep_hat_expr.size
+            sy := Op()
+            sy = symbol( "dep_hat[ elem.number ][ $i ]" )
+            sym_dep_hat.push_back( sy )
+        sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
+        for _f_adjoint in list_f
+            _e_adjoint := child_cast( _f_adjoint->pe )
+            e_adjoint := new SymbolicElement[ _e_adjoint->name, _e_adjoint->dim ]( name_elem = "elem_adjoint", tex_symbol_pos = "P_{adjoint}", node_numbers_to_node_numbers_in_parent_cpp = range(_e_adjoint->nb_nodes).map( _e_adjoint->corr_cpp ) )
+            e_adjoint->assume_const_jac = e->assume_const_jac
+            f_adjoint := new FormulationElasticity[ _e_adjoint->dim ]( @e_adjoint, "adjoint_" )
+            f_adjoint->name = _f_adjoint->name
+            f_adjoint->make_matrices( @e_adjoint, integration_type )
+            file_ <<< "template<class TN, class TN_adjoint, class TNG, class TNG_adjoint, class TD, class TD_adjoint, unsigned NET, unsigned NET_adjoint, class TM, class TF, class TTVV, class S, class T>"
+            file_ <<< "void calc_elem_error_estimate_proj_on_adjoint( const Element<$(e->name),TN,TNG,TD,NET> &elem, const Element<$(e_adjoint->name),TN_adjoint,TNG_adjoint,TD_adjoint,NET_adjoint> &elem_adjoint, const TM &m, const TM &m_adjoint, const TF &f, const TF &f_adjoint, const TTVV &vectors, const TTVV &adjoint_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &adjoint_indices, const S &method, const Vec< Vec<T> > &dep_hat, Vec<T> &theta_elem_proj_on_adjoint ) {"
+            file_ <<< "    #define PNODE(N) elem.node(N)"
+            deg_p_adjoint := max( e_adjoint->order_interpolation )
+
+            e_var_inter := e->var_inter_for_pos( e_adjoint->pos, 1 )
+            epsilon_proj := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
+            sigma_hat_proj := ( sigma_hat ).subs( e->var_inter, e_var_inter )
+
+            theta_proj := Op( 0 )
+
+            e->assume_const_jac = true
+            epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
+            epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
+            e->assume_const_jac = hyp_const_jac
+            degre_poly_1 := ( epsilon_hat_const_jac : epsilon_hat_const_jac ).poly_deg( e->var_inter )
+            degre_poly_2 := ( epsilon_const_jac : epsilon_const_jac ).poly_deg( e->var_inter )
+            degre_poly_3 := ( epsilon_hat_const_jac : epsilon_const_jac ).poly_deg( e->var_inter )
+            degre_poly := max( degre_poly_1, degre_poly_2, degre_poly_3 )
+
+            if integration_type == "gauss_num" and integration_lang == "cpp"
+                file_ <<< "    Vec<double> poids;"
+                file_ <<< "    Vec<Vec<double, $(e_adjoint->dim)> > valeurs;"
+                file_ <<< "    gauss_points( $(e_adjoint->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
+            if integration_type == "gauss_num"
+                if integration_lang == "metil"
+                    theta_proj = e_adjoint->gauss_num_integration( sigma_hat_proj : eps_hooke_iso( sigma_hat_proj, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_1 ) + e_adjoint->gauss_num_integration( epsilon_proj : sigma_hooke_iso( epsilon_proj, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_2 ) - 2 * e_adjoint->gauss_num_integration( sigma_hat_proj : epsilon_proj, order_diff = degre_poly_3 )
+                else if integration_lang == "cpp"
+                    theta_proj = ( sigma_hat_proj : eps_hooke_iso( sigma_hat_proj, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ) + epsilon_proj : sigma_hooke_iso( epsilon_proj, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ) - 2 * sigma_hat_proj : epsilon_proj ) * e_adjoint->jac
+            else if integration_type == "formal"
+                theta_proj = e_adjoint->integration( sigma_hat_proj : eps_hooke_iso( sigma_hat_proj, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_1 ) + e_adjoint->integration( epsilon_proj : sigma_hooke_iso( epsilon_proj, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_2 ) - 2 * e_adjoint->integration( sigma_hat_proj : epsilon_proj, order_diff = degre_poly_3 )
+            if integration_type == "gauss_num" and integration_lang == "cpp"
+                file_ <<< "    for (unsigned n=0; n<poids.size(); ++n) {"
+                file_ <<< "        Vec<double> var_inter( valeurs[ n ] );"
+                file_ <<< "        T theta_proj_tmp = 0.0;"
+                cw := CodeWriterAlt( "T" )
+                cw.add( "theta_proj_tmp", theta_proj, reassign )
+                file_ <<< "$(cw.to_string( 8 ))"
+                file_ <<< "        theta_elem_proj_on_adjoint[ elem_adjoint.number ] += poids[ n ] * theta_proj_tmp;"
+                file_ <<< "    }"
+            else
+                cw := CodeWriterAlt( "T" )
+                cw.add( "theta_elem_proj_on_adjoint[ elem_adjoint.number ]", theta_proj, add )
+                file_ <<< "$(cw.to_string( 4 ))"
+            file_ <<< "    #undef PNODE"
+            file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
+# Methode qui genere un fichier calc_dep_handbook_in_infinite_domain_$(f->name).$(e->dim).$(e->name).h pour calculer la fonction d'enrichissement (Green) dep_handbook dans un domaine infini
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_dep_handbook_in_infinite_domain( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        pos_handbook := Vec[ Op, e->dim ]()
+        for d in 0 .. e->dim
+            pos_handbook[ d ] = symbol( "f.m->pos_handbook[ $d ]" )
+        OM := e->pos - pos_handbook
+        Galerkin_vector := Galerkin_vector_function( e->dim, OM, child_cast(f)->mu.expr, child_cast(f)->phi_handbook_for_pointwise_force_in_infinite_domain.expr, child_cast(f)->phi_handbook_for_pointwise_pre_sigma_in_infinite_domain.expr, child_cast(f)->phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain.expr )
+        u_handbook := dep_handbook_function( @e, Galerkin_vector, child_cast(f)->la.expr, child_cast(f)->mu.expr )
+        file_name := "calc_dep_handbook_in_infinite_domain_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_dep_handbook_in_infinite_domain_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_dep_handbook_in_infinite_domain_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_dep_handbook_in_infinite_domain_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF>"
+        file_ <<< "void calc_dep_handbook_in_infinite_domain( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f ) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+        file_ <<< "    typedef typename TM::TNode::T T;"
+        file_ <<<<
+                Vec<T> dep_handbook;
+                dep_handbook.resize( $(e->dim) );
+        for n in 0 .. e->nb_nodes
+            u_handbook_nodal := u_handbook.subs( e->var_inter, e->points[ n ] )
+            cw := CodeWriterAlt( "T" )
+            cw.add( "dep_handbook", u_handbook_nodal, reassign )
+            file_ <<< "    {"
+            file_ <<< "$(cw.to_string( 4 ))"
+            file_ <<<<
+                    PNODE($n)->dep_handbook = dep_handbook;
+                    }
+        file_ <<< "    #undef PNODE"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+

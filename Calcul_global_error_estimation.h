@@ -1,0 +1,343 @@
+//
+// C++ Interface: Calcul_global_error_estimation
+//
+// Description: construction d'un champ de contrainte admissible et calcul d'un estimateur d'erreur globale
+//
+//
+// Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2011
+//
+// Copyright: See COPYING file that comes with this distribution
+//
+//
+#ifndef Calcul_global_error_estimation_h
+#define Calcul_global_error_estimation_h
+
+#include "EET/Construct_standard_force_fluxes_EET.h"
+#include "EESPT/Construct_standard_force_fluxes_EESPT.h"
+#include "ENHANCEMENT/Construct_enhanced_force_fluxes_EET_EESPT.h"
+#include "ECRE/Construct_K_hat.h"
+#include "ECRE/Construct_F_hat.h"
+#include "ECRE/Construct_dep_hat.h"
+#include "ECRE/Calcul_error_estimate_prolongation_condition.h"
+#include "SPET/Calcul_error_estimate_partition_unity.h"
+#include "VERIFICATION/Verification.h"
+#include "CRITERIUM_ENHANCEMENT/Construct_criterium_enhancement.h"
+#include "Display.h"
+
+using namespace LMT;
+using namespace std;
+
+/// Calcul d'un estimateur d'erreur globale
+///----------------------------------------
+template<class TF, class TM, class T>
+void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const string &method, const unsigned &cost_function, const T &pen_N, const string &solver, const string &solver_minimisation, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const string &geometric_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, const bool &verif_compatibility_conditions, const T &tol_compatibility_conditions, const bool &verif_eq_force_fluxes, const T &tol_eq_force_fluxes, const bool &verif_solver, const T &tol_solver, const bool &verif_solver_enhancement, const T &tol_solver_enhancement, const bool &verif_solver_minimisation, const T &tol_solver_minimisation, const bool &verif_solver_minimisation_enhancement, const T &tol_solver_minimisation_enhancement, const bool &want_global_discretization_error, const bool &want_local_discretization_error, const bool &want_local_enrichment, T &theta, Vec<T> &theta_elem, Vec< Vec<T> > &dep_hat, const bool &debug_geometry, const bool &debug_force_fluxes, const bool &debug_force_fluxes_enhancement, const bool &debug_criterium_enhancement, const bool &debug_error_estimate, const bool &debug_local_effectivity_index, const bool &debug_method, const bool &debug_method_enhancement ) {
+    
+    ///-------------///
+    /// Methode EET ///
+    ///-------------///
+    
+    if ( method.find("EET") != string::npos ) {
+        
+        display_method( pb, "EET", enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, cost_function, solver, solver_minimisation );
+        
+        TicToc t_EET;
+        t_EET.start();
+        
+        Vec< Vec< Vec<T> > > vec_force_fluxes;
+        Vec< Mat<T, Sym<> > > K_hat;
+        Vec< Vec<T> > F_hat;
+        
+        theta = 0.;
+        
+        Vec<bool> flag_elem_enh;
+        Vec<bool> flag_face_enh;
+        Vec<bool> flag_elem_bal;
+        Vec<unsigned> list_elems_enh;
+        Vec<unsigned> list_faces_enh;
+        Vec<unsigned> list_elems_bal;
+        
+        bool enhancement = 0;
+        bool balancing = 0;
+        
+        ///-----------------------------------------------------------------------------///
+        /// Critere d'amelioration geometrique de la construction des densites d'effort ///
+        ///-----------------------------------------------------------------------------///
+        
+        Vec<T> geometric_ratio;
+        
+        if ( enhancement_with_geometric_criterium ) {
+            enhancement = 1;
+            construct_geometric_criterium( m, geometric_criterium, geometric_ratio, debug_criterium_enhancement );
+        }
+        
+        ///----------------------------------------------------------------------------------///
+        /// Critere d'amelioration sur l'estimateur de la construction des densites d'effort ///
+        ///----------------------------------------------------------------------------------///
+        
+        Vec<T> estimator_ratio;
+        
+        if ( enhancement == 0 or enhancement_with_estimator_criterium ) {
+           
+            enhancement = 0;
+           
+            /// Construction des densites d'effort standard
+            ///--------------------------------------------
+            
+            Vec< Vec< Vec<T> > > vec_force_fluxes_standard;
+            construct_standard_force_fluxes_EET( m, f, pb, cost_function, enhancement, flag_face_enh, solver_minimisation, want_local_enrichment, debug_method, verif_solver_minimisation, tol_solver_minimisation, debug_geometry, verif_compatibility_conditions, tol_compatibility_conditions, debug_force_fluxes, vec_force_fluxes_standard );
+            
+            /// Verification de l'equilibre des densites d'effort standard
+            ///-----------------------------------------------------------
+            
+            check_equilibrium_force_fluxes( m, f, pb, vec_force_fluxes_standard, verif_eq_force_fluxes, tol_eq_force_fluxes, want_local_enrichment, debug_geometry );
+            
+            /// Resolution des problemes locaux associes aux densites d'effort standard
+            ///------------------------------------------------------------------------
+            
+            construct_K_hat( m, f, "EET", K_hat, debug_method );
+            
+            balancing = 0;
+            construct_F_hat( m, f, pb, balancing, flag_elem_bal, flag_elem_enh, vec_force_fluxes_standard, F_hat, want_local_enrichment, debug_method, debug_geometry );
+            
+            construct_dep_hat( m, f, "EET", solver, K_hat, F_hat, dep_hat, debug_method, verif_solver, tol_solver );
+            
+            /// Construction d'un champ de contrainte admissible par element, Calcul d'un estimateur d'erreur globale
+            ///------------------------------------------------------------------------------------------------------
+            
+            calcul_error_estimate_prolongation_condition( m, f, pb, "EET", theta, theta_elem, dep_hat, debug_method, debug_method_enhancement, debug_error_estimate, debug_local_effectivity_index, want_global_discretization_error, want_local_discretization_error );
+            
+            if ( enhancement_with_estimator_criterium ) {
+           
+                enhancement = 1;
+               
+                /// Construction du critere d'amelioration sur l'estimateur d'erreur
+                ///-----------------------------------------------------------------
+                
+                construct_estimator_criterium( m, estimator_ratio, theta_elem, debug_criterium_enhancement );
+               
+            }
+            
+        }
+        
+        if ( enhancement ) {
+            
+            /// Application du critere d'amelioration
+            ///--------------------------------------
+            
+            apply_criterium_enhancement( m, "EET", enhancement_with_estimator_criterium, enhancement_with_geometric_criterium, estimator_ratio, geometric_ratio, val_estimator_criterium, val_geometric_criterium, flag_elem_enh, flag_face_enh, flag_elem_bal, list_elems_enh, list_faces_enh, list_elems_bal, debug_criterium_enhancement );
+            
+            geometric_ratio.free();
+            estimator_ratio.free();
+            
+            /// Construction de la partie standard des densites d'effort
+            ///---------------------------------------------------------
+            
+            construct_standard_force_fluxes_EET( m, f, pb, cost_function, enhancement, flag_face_enh, solver_minimisation, want_local_enrichment, debug_method, verif_solver_minimisation, tol_solver_minimisation, debug_geometry, verif_compatibility_conditions, tol_compatibility_conditions, debug_force_fluxes, vec_force_fluxes );
+            
+            /// Resolution des problemes locaux associes a la partie standard des densites d'effort avec procedure d'equilibrage
+            ///-----------------------------------------------------------------------------------------------------------------
+            
+            if ( enhancement_with_estimator_criterium == 0 )
+                construct_K_hat( m, f, "EET", K_hat, debug_method );
+            
+            balancing = 1;
+            construct_F_hat( m, f, pb, balancing, flag_elem_bal, flag_elem_enh, vec_force_fluxes, F_hat, want_local_enrichment, debug_method, debug_geometry );
+            
+            construct_dep_hat( m, f, "EET", solver, K_hat, F_hat, dep_hat, debug_method, verif_solver, tol_solver );
+            
+            /// Construction de la partie amelioree des densites d'effort
+            ///----------------------------------------------------------
+            
+            construct_enhanced_force_fluxes_EET_EESPT( m, f, "EET", flag_elem_enh, flag_face_enh, flag_elem_bal, list_elems_enh, list_faces_enh, list_elems_bal, K_hat, dep_hat, vec_force_fluxes, solver, solver_minimisation, debug_method_enhancement, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, debug_geometry, debug_force_fluxes_enhancement );
+            
+            /// Verification de l'equilibre des densites d'effort standard + ameliorees
+            ///-------------------------------------------------------------------------
+            
+            check_equilibrium_force_fluxes( m, f, pb, vec_force_fluxes, verif_eq_force_fluxes, tol_eq_force_fluxes, want_local_enrichment, debug_geometry );
+            
+            /// Resolution des problemes locaux associes aux densites d'effort standard + ameliorees sans procedure d'equilibrage
+            ///------------------------------------------------------------------------------------------------------------------
+            
+            balancing = 0;
+            construct_F_hat( m, f, pb, balancing, flag_elem_bal, flag_elem_enh, vec_force_fluxes, F_hat, want_local_enrichment, debug_method_enhancement, debug_geometry );
+            
+            construct_dep_hat( m, f, "EET", solver, K_hat, F_hat, dep_hat, debug_method_enhancement, verif_solver_enhancement, tol_solver_enhancement );
+            
+            /// Construction d'un champ de contrainte admissible par element, Calcul d'un estimateur d'erreur globale
+            ///------------------------------------------------------------------------------------------------------
+            
+            calcul_error_estimate_prolongation_condition( m, f, pb, "EET", theta, theta_elem, dep_hat, debug_method, debug_method_enhancement, debug_error_estimate, debug_local_effectivity_index, want_global_discretization_error, want_local_discretization_error );
+            
+        }
+        
+        t_EET.stop();
+        cout << "Temps de calcul total pour la technique EET : " << t_EET.res << endl << endl;
+        
+    }
+
+    ///--------------///
+    /// Methode SPET ///
+    ///--------------///
+    
+    if ( method.find("SPET") != string::npos ) {
+        
+        display_method( pb, "SPET", enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, cost_function, solver, solver_minimisation );
+        
+        TicToc t_SPET;
+        t_SPET.start();
+        
+        /// Calcul d'un estimateur d'erreur globale
+        ///----------------------------------------
+        
+        theta = 0.;
+        calcul_error_estimate_partition_unity( m, f, pb, solver, "SPET", theta, theta_elem, dep_hat, debug_method, verif_solver, tol_solver, debug_geometry, debug_error_estimate, debug_local_effectivity_index, want_global_discretization_error, want_local_discretization_error, want_local_enrichment );
+        
+        t_SPET.stop();
+        cout << "Temps de calcul total pour la technique SPET : " << t_SPET.res << endl << endl;
+        
+    }
+    
+    ///---------------///
+    /// Methode EESPT ///
+    ///---------------///
+    
+    if ( method.find("EESPT") != string::npos ) {
+        
+        display_method( pb, "EESPT", enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, cost_function, solver, solver_minimisation );
+        
+        TicToc t_EESPT;
+        t_EESPT.start();
+        
+        Vec< Vec< Vec<T> > > vec_force_fluxes;
+        Vec< Mat<T, Sym<> > > K_hat;
+        Vec< Vec<T> > F_hat;
+        
+        theta = 0.;
+        
+        Vec<bool> flag_elem_enh;
+        Vec<bool> flag_face_enh;
+        Vec<bool> flag_elem_bal;
+        Vec<unsigned> list_elems_enh;
+        Vec<unsigned> list_faces_enh;
+        Vec<unsigned> list_elems_bal;
+        
+        bool enhancement = 0;
+        bool balancing = 0;
+        
+        ///-----------------------------------------------------------------------------///
+        /// Critere d'amelioration geometrique de la construction des densites d'effort ///
+        ///-----------------------------------------------------------------------------///
+        
+        Vec<T> geometric_ratio;
+        
+        if ( enhancement_with_geometric_criterium ) {
+            enhancement = 1;
+            construct_geometric_criterium( m, geometric_criterium, geometric_ratio, debug_criterium_enhancement );
+        }
+        
+        ///----------------------------------------------------------------------------------///
+        /// Critere d'amelioration sur l'estimateur de la construction des densites d'effort ///
+        ///----------------------------------------------------------------------------------///
+        
+        Vec<T> estimator_ratio;
+        
+        if ( enhancement == 0 or enhancement_with_estimator_criterium ) {
+           
+            enhancement = 0;
+            
+            /// Construction des densites d'effort standard
+            ///--------------------------------------------
+            
+            Vec< Vec< Vec<T> > > vec_force_fluxes_standard;
+            construct_standard_force_fluxes_EESPT( m, f, cost_function, enhancement, flag_face_enh, solver_minimisation, pen_N, pb, want_local_enrichment, debug_method, verif_solver_minimisation, tol_solver_minimisation,  debug_geometry, debug_force_fluxes, vec_force_fluxes_standard );
+            
+            /// Verification de l'equilibre des densites d'effort standard
+            ///-----------------------------------------------------------
+            
+            check_equilibrium_force_fluxes( m, f, pb, vec_force_fluxes_standard, verif_eq_force_fluxes, tol_eq_force_fluxes, want_local_enrichment, debug_geometry );
+            
+            /// Resolution des problemes locaux associes aux densites d'effort standard
+            ///------------------------------------------------------------------------
+            
+            construct_K_hat( m, f, "EESPT", K_hat, debug_method );
+            balancing = 0;
+            construct_F_hat( m, f, pb, balancing, flag_elem_bal, flag_elem_enh, vec_force_fluxes_standard, F_hat, want_local_enrichment, debug_method, debug_geometry );
+            
+            construct_dep_hat( m, f, "EESPT", solver, K_hat, F_hat, dep_hat, debug_method, verif_solver, tol_solver );
+            
+            /// Construction d'un champ de contrainte admissible par element, Calcul d'un estimateur d'erreur globale
+            ///------------------------------------------------------------------------------------------------------
+            
+            calcul_error_estimate_prolongation_condition( m, f, pb, "EESPT", theta, theta_elem, dep_hat, debug_method, debug_method_enhancement, debug_error_estimate, debug_local_effectivity_index, want_global_discretization_error, want_local_discretization_error );
+            
+            if ( enhancement_with_estimator_criterium ) {
+                
+                enhancement = 1;
+               
+                /// Construction du critere d'amelioration sur l'estimateur d'erreur globale
+                ///-------------------------------------------------------------------------
+                
+                construct_estimator_criterium( m, estimator_ratio, theta_elem, debug_criterium_enhancement );
+               
+            }
+            
+        }
+        
+        if ( enhancement ) {
+            
+            /// Application du critere d'amelioration
+            ///--------------------------------------
+            
+            apply_criterium_enhancement( m, "EESPT", enhancement_with_estimator_criterium, enhancement_with_geometric_criterium, estimator_ratio, geometric_ratio, val_estimator_criterium, val_geometric_criterium, flag_elem_enh, flag_face_enh, flag_elem_bal, list_elems_enh, list_faces_enh, list_elems_bal, debug_criterium_enhancement );
+            
+            geometric_ratio.free();
+            estimator_ratio.free();
+            
+            /// Construction de la partie standard des densites d'effort
+            ///---------------------------------------------------------
+            
+            construct_standard_force_fluxes_EESPT( m, f, cost_function, enhancement, flag_face_enh, solver_minimisation, pen_N, pb, want_local_enrichment, debug_method, verif_solver_minimisation, tol_solver_minimisation, debug_geometry, debug_force_fluxes, vec_force_fluxes );
+            
+            /// Resolution des problemes locaux associes a la partie standard des densites d'effort avec procedure d'equilibrage
+            ///-----------------------------------------------------------------------------------------------------------------
+            
+            if ( enhancement_with_estimator_criterium == 0 )
+                construct_K_hat( m, f, "EESPT", K_hat, debug_method );
+            
+            balancing = 1;
+            construct_F_hat( m, f, pb, balancing, flag_elem_bal, flag_elem_enh, vec_force_fluxes, F_hat, want_local_enrichment, debug_method, debug_geometry );
+            
+            construct_dep_hat( m, f, "EESPT", solver, K_hat, F_hat, dep_hat, debug_method, verif_solver, tol_solver );
+            
+            /// Construction de la partie amelioree des densites d'effort
+            ///----------------------------------------------------------
+            
+            construct_enhanced_force_fluxes_EET_EESPT( m, f, "EESPT", flag_elem_enh, flag_face_enh, flag_elem_bal, list_elems_enh, list_faces_enh, list_elems_bal, K_hat, dep_hat, vec_force_fluxes, solver, solver_minimisation, debug_method_enhancement, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, debug_geometry, debug_force_fluxes_enhancement );
+            
+            /// Verification de l'equilibre des densites d'effort standard + ameliorees
+            ///-------------------------------------------------------------------------
+            
+            check_equilibrium_force_fluxes( m, f, pb, vec_force_fluxes, verif_eq_force_fluxes, tol_eq_force_fluxes, want_local_enrichment, debug_geometry );
+            
+            /// Resolution des problemes locaux associes aux densites d'effort standard + ameliorees sans procedure d'equilibrage
+            ///------------------------------------------------------------------------------------------------------------------
+            
+            balancing = 0;
+            construct_F_hat( m, f, pb, balancing, flag_elem_bal, flag_elem_enh, vec_force_fluxes, F_hat, want_local_enrichment, debug_method_enhancement, debug_geometry );
+            
+            construct_dep_hat( m, f, "EESPT", solver, K_hat, F_hat, dep_hat, debug_method_enhancement, verif_solver_enhancement, tol_solver_enhancement );
+            
+            /// Construction d'un champ de contrainte admissible par element, Calcul d'un estimateur d'erreur globale
+            ///------------------------------------------------------------------------------------------------------
+            
+            calcul_error_estimate_prolongation_condition( m, f, pb, "EESPT", theta, theta_elem, dep_hat, debug_method, debug_method_enhancement, debug_error_estimate, debug_local_effectivity_index, want_global_discretization_error, want_local_discretization_error );
+            
+        }
+        
+        t_EESPT.stop();
+        cout << "Temps de calcul total pour la technique EESPT : " << t_EESPT.res << endl << endl;
+        
+    }
+}
+
+#endif // Calcul_global_error_estimation_h

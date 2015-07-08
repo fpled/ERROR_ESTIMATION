@@ -1,0 +1,626 @@
+static const nvi := 2
+static const nb_nodes := 8
+static const nb_vertex_nodes := 4
+static const center_of_var_inter := [ 1.0/2.0, 1.0/2.0 ]
+#
+def interpolation( var_inter, val, interpolation_base )
+    if interpolation_base == "lagrange"
+        return val[0]*(1+var_inter[1]*(2*var_inter[1]-3)+var_inter[0]*(2*(var_inter[0]*(1-var_inter[1])-pow(var_inter[1],2))+5*var_inter[1]-3))+val[1]*var_inter[0]*(-1-var_inter[1]-2*(var_inter[0]*(var_inter[1]-1)-pow(var_inter[1],2)))+val[2]*var_inter[0]*var_inter[1]*(2*(var_inter[0]+var_inter[1])-3)+val[3]*var_inter[1]*(2*(var_inter[1]+var_inter[0]*(var_inter[0]-var_inter[1]))-1-var_inter[0])+4*val[4]*var_inter[0]*(1+var_inter[1]*(var_inter[0]-1)-var_inter[0])+4*val[7]*var_inter[1]*(1+var_inter[1]*(var_inter[0]-1)-var_inter[0])-4*val[5]*var_inter[0]*var_inter[1]*(var_inter[1]-1)-4*val[6]*var_inter[1]*var_inter[0]*(var_inter[0]-1)
+    else if interpolation_base == "hierarchical"
+        return val[0]*(1+var_inter[0]*(var_inter[1]-1)-var_inter[1])+val[1]*var_inter[0]*(1-var_inter[1])+val[2]*var_inter[0]*var_inter[1]+val[3]*var_inter[1]*(1-var_inter[0])+4*val[4]*var_inter[0]*(1+var_inter[1]*(var_inter[0]-1)-var_inter[0])+4*val[7]*var_inter[1]*(1+var_inter[1]*(var_inter[0]-1)-var_inter[0])-4*val[5]*var_inter[0]*var_inter[1]*(var_inter[1]-1)-4*val[6]*var_inter[1]*var_inter[0]*(var_inter[0]-1)
+
+#
+def interpolation_deg( var_inter, val, interpolation_base, deg ) when deg == 2
+    if interpolation_base == "lagrange"
+        return val[8]*var_inter[0]*var_inter[1]*(1+4*var_inter[0]*var_inter[1]-2*(var_inter[0]+var_inter[1]))+val[7]*var_inter[0]*var_inter[1]*(-8*var_inter[1]*(var_inter[0]-1)-4*(1-var_inter[0]))+val[5]*var_inter[0]*var_inter[1]*(8*var_inter[0]-4)*(1-var_inter[1])+val[3]*var_inter[1]*(4+var_inter[0]*(8*var_inter[0]-12))*(1-var_inter[1])+val[2]*var_inter[0]*(2*var_inter[0]+var_inter[1]*(3+var_inter[0]*(4*var_inter[1]-6)-2*var_inter[1])-1)+val[1]*var_inter[0]*(1-var_inter[0])*(4+var_inter[1]*(8*var_inter[1]-12))+val[0]*(1+var_inter[0]*(2*var_inter[0]+var_inter[1]*(9+var_inter[0]*(4*var_inter[1]-6)-6*var_inter[1])-3)+var_inter[1]*(2*var_inter[1]-3))+val[6]*var_inter[1]*(2*var_inter[1]+var_inter[0]*(3+var_inter[0]*(4*var_inter[1]-2)-6*var_inter[1])-1)-16*var_inter[0]*var_inter[1]*(var_inter[1]+var_inter[0]*(1-var_inter[1])-1)*val[4]
+    else if interpolation_base == "hierarchical"
+        return var_inter[1]*(1-var_inter[0])*val[6]+4*var_inter[1]*(1+var_inter[1]*(var_inter[0]-1)-var_inter[0])*val[3]+val[2]*var_inter[0]*(1-var_inter[1])+(1+var_inter[0]*(var_inter[1]-1)-var_inter[1])*val[0]+4*var_inter[0]*(1+var_inter[1]*(var_inter[0]-1)-var_inter[0])*val[1]+var_inter[0]*var_inter[1]*val[8]-16*var_inter[0]*var_inter[1]*(var_inter[1]+var_inter[0]*(1-var_inter[1])-1)*val[4]-4*val[5]*var_inter[0]*var_inter[1]*(var_inter[1]-1)-4*val[7]*var_inter[1]*var_inter[0]*(var_inter[0]-1)
+
+#
+def interpolation_deg( var_inter, val, interpolation_base, deg ) when deg == 3
+    if interpolation_base == "lagrange"
+        return val[15]*var_inter[0]*var_inter[1]*(1+var_inter[0]*(-81.0/4.0*var_inter[1]*(var_inter[1]+var_inter[0]*(1-var_inter[1])-1)-9.0/2.0*(1-var_inter[0]))-9.0/2.0*var_inter[1]*(1-var_inter[1]))+var_inter[0]*var_inter[1]*(var_inter[1]*(81.0/4.0*(1-var_inter[1])+var_inter[0]*(-81*(1-var_inter[1])-243.0/4.0*var_inter[0]*(var_inter[1]-1)))+var_inter[0]*(18-27.0/2.0*var_inter[0])-9.0/2.0)*val[14]+val[12]*var_inter[1]*(1+var_inter[0]*(var_inter[0]*(9+var_inter[1]*(81.0/4.0*var_inter[0]-81.0/2.0)*(1-var_inter[1])-9.0/2.0*var_inter[0])-11.0/2.0-99.0/4.0*var_inter[1]*(var_inter[1]-1))-9.0/2.0*var_inter[1]*(1-var_inter[1]))+var_inter[1]*var_inter[0]*(var_inter[0]*(1-var_inter[0])*(81.0/4.0+var_inter[1]*(243.0/4.0*var_inter[1]-81))+var_inter[1]*(18-27.0/2.0*var_inter[1])-9.0/2.0)*val[11]+var_inter[1]*(var_inter[0]*(99.0/4.0+var_inter[1]*(var_inter[0]*(162+var_inter[0]*(243.0/4.0*var_inter[1]-81)-243.0/2.0*var_inter[1])+297.0/4.0*var_inter[1]-99)+var_inter[0]*(81.0/4.0*var_inter[0]-81.0/2.0))+var_inter[1]*(18-27.0/2.0*var_inter[1])-9.0/2.0)*val[8]+val[6]*var_inter[0]*var_inter[1]*(var_inter[0]*(162+var_inter[1]*(var_inter[0]*(1215.0/4.0-729.0/4.0*var_inter[1])+243*var_inter[1]-405)-243.0/2.0*var_inter[0])+var_inter[1]*(405.0/4.0-243.0/4.0*var_inter[1])-81.0/2.0)+val[0]*(1+var_inter[0]*(var_inter[0]*(9-9.0/2.0*var_inter[0])-11.0/2.0)+var_inter[1]*(var_inter[1]*(9-9.0/2.0*var_inter[1])+var_inter[0]*(121.0/4.0+var_inter[1]*(99.0/4.0*var_inter[1]-99.0/2.0)+var_inter[0]*(99.0/4.0*var_inter[0]+var_inter[1]*(81+81.0/4.0*var_inter[0]*var_inter[1]-81.0/2.0*(var_inter[0]+var_inter[1]))-99.0/2.0))-11.0/2.0))+val[1]*var_inter[0]*(9+var_inter[0]*(27.0/2.0*var_inter[0]-45.0/2.0)+var_inter[1]*(var_inter[0]*(495.0/4.0-297.0/4.0*var_inter[0])+var_inter[1]*(81+var_inter[0]*(243.0/2.0*var_inter[0]+var_inter[1]*(405.0/4.0-243.0/4.0*var_inter[0])-405.0/2.0)-81.0/2.0*var_inter[1])-99.0/2.0))+val[2]*var_inter[0]*(var_inter[0]*(18-27.0/2.0*var_inter[0])+var_inter[1]*(99.0/4.0+var_inter[0]*(297.0/4.0*var_inter[0]+var_inter[1]*(162+var_inter[1]*(243.0/4.0*var_inter[0]-81)-243.0/2.0*var_inter[0])-99)+var_inter[1]*(81.0/4.0*var_inter[1]-81.0/2.0))-9.0/2.0)+val[3]*var_inter[0]*(1+var_inter[1]*(var_inter[1]*(9+var_inter[0]*(1-var_inter[0])*(81.0/4.0*var_inter[1]-81.0/2.0)-9.0/2.0*var_inter[1])-11.0/2.0-99.0/4.0*var_inter[0]*(var_inter[0]-1))-9.0/2.0*var_inter[0]*(1-var_inter[0]))+val[4]*var_inter[1]*(9+var_inter[0]*(var_inter[1]*(495.0/4.0-297.0/4.0*var_inter[1])+var_inter[0]*(81+var_inter[1]*(405.0/4.0*var_inter[0]+var_inter[1]*(243.0/2.0-243.0/4.0*var_inter[0])-405.0/2.0)-81.0/2.0*var_inter[0])-99.0/2.0)+var_inter[1]*(27.0/2.0*var_inter[1]-45.0/2.0))+val[5]*var_inter[1]*var_inter[0]*(81+var_inter[1]*(243.0/2.0*var_inter[1]-405.0/2.0)+var_inter[0]*(243.0/2.0*var_inter[0]+var_inter[1]*(2025.0/4.0+729.0/4.0*var_inter[0]*var_inter[1]-1215.0/4.0*(var_inter[0]+var_inter[1]))-405.0/2.0))+val[7]*var_inter[0]*var_inter[1]*(9+var_inter[0]*(1-var_inter[0])*(var_inter[1]*(405.0/4.0-243.0/4.0*var_inter[1])-81.0/2.0)+var_inter[1]*(27.0/2.0*var_inter[1]-45.0/2.0))+val[9]*var_inter[1]*var_inter[0]*(var_inter[1]*(162-243.0/2.0*var_inter[1])+var_inter[0]*(405.0/4.0+var_inter[1]*(1215.0/4.0*var_inter[1]+var_inter[0]*(243-729.0/4.0*var_inter[1])-405)-243.0/4.0*var_inter[0])-81.0/2.0)+var_inter[1]*var_inter[0]*(81.0/4.0+var_inter[1]*(243.0/4.0*var_inter[1]-81)+var_inter[0]*(var_inter[1]*(324+729.0/4.0*var_inter[0]*var_inter[1]-243*(var_inter[0]+var_inter[1]))+243.0/4.0*var_inter[0]-81))*val[10]+val[13]*var_inter[0]*var_inter[1]*(9+81.0/2.0*var_inter[1]*(var_inter[1]-1)+var_inter[0]*(var_inter[1]*(405.0/4.0*(1-var_inter[1])+243.0/4.0*var_inter[0]*(var_inter[1]-1))+27.0/2.0*var_inter[0]-45.0/2.0))
+    else if interpolation_base == "hierarchical"
+        return var_inter[1]*var_inter[0]*(9+var_inter[0]*(27.0/2.0*var_inter[0]-45.0/2.0))*val[13]+val[2]*var_inter[0]*(var_inter[0]*(18*(1-var_inter[1])+27.0/2.0*var_inter[0]*(var_inter[1]-1))-9.0/2.0*(1-var_inter[1]))+(1+var_inter[0]*(var_inter[1]-1)-var_inter[1])*val[0]+var_inter[0]*(9*(1-var_inter[1])+var_inter[0]*(-45.0/2.0*(1-var_inter[1])-27.0/2.0*var_inter[0]*(var_inter[1]-1)))*val[1]+val[3]*var_inter[0]*(1-var_inter[1])+val[4]*var_inter[1]*(var_inter[1]*(-45.0/2.0*(1-var_inter[0])-27.0/2.0*var_inter[1]*(var_inter[0]-1))+9*(1-var_inter[0]))+val[5]*var_inter[1]*var_inter[0]*(81+var_inter[1]*(243.0/2.0*var_inter[1]-405.0/2.0)+var_inter[0]*(243.0/2.0*var_inter[0]+var_inter[1]*(2025.0/4.0+729.0/4.0*var_inter[0]*var_inter[1]-1215.0/4.0*(var_inter[0]+var_inter[1]))-405.0/2.0))+val[6]*var_inter[0]*var_inter[1]*(var_inter[0]*(162+var_inter[1]*(var_inter[0]*(1215.0/4.0-729.0/4.0*var_inter[1])+243*var_inter[1]-405)-243.0/2.0*var_inter[0])+var_inter[1]*(405.0/4.0-243.0/4.0*var_inter[1])-81.0/2.0)+val[7]*var_inter[0]*var_inter[1]*(9+var_inter[1]*(27.0/2.0*var_inter[1]-45.0/2.0))+var_inter[1]*(var_inter[1]*(18*(1-var_inter[0])+27.0/2.0*var_inter[1]*(var_inter[0]-1))-9.0/2.0*(1-var_inter[0]))*val[8]+val[9]*var_inter[1]*var_inter[0]*(var_inter[1]*(162-243.0/2.0*var_inter[1])+var_inter[0]*(405.0/4.0+var_inter[1]*(1215.0/4.0*var_inter[1]+var_inter[0]*(243-729.0/4.0*var_inter[1])-405)-243.0/4.0*var_inter[0])-81.0/2.0)+var_inter[1]*var_inter[0]*(81.0/4.0+var_inter[1]*(243.0/4.0*var_inter[1]-81)+var_inter[0]*(var_inter[1]*(324+729.0/4.0*var_inter[0]*var_inter[1]-243*(var_inter[0]+var_inter[1]))+243.0/4.0*var_inter[0]-81))*val[10]+val[11]*var_inter[0]*var_inter[1]*(var_inter[1]*(18-27.0/2.0*var_inter[1])-9.0/2.0)+var_inter[1]*(1-var_inter[0])*val[12]+var_inter[0]*var_inter[1]*(var_inter[0]*(18-27.0/2.0*var_inter[0])-9.0/2.0)*val[14]+var_inter[0]*var_inter[1]*val[15]
+
+#
+def interpolation_deg( var_inter, val, interpolation_base, deg ) when deg == 4
+    if interpolation_base == "lagrange"
+        return var_inter[0]*var_inter[1]*(256.0/3.0+var_inter[0]*(var_inter[0]*(512-2048.0/9.0*var_inter[0])+var_inter[1]*(23296.0/9.0+var_inter[1]*(26624.0/9.0*var_inter[1]+var_inter[0]*(7168+var_inter[0]*(16384.0/9.0*var_inter[1]-28672.0/9.0)-4096*var_inter[1])-46592.0/9.0)+var_inter[0]*(14336.0/9.0*var_inter[0]-3584))-3328.0/9.0)+var_inter[1]*(var_inter[1]*(3584.0/3.0-2048.0/3.0*var_inter[1])-1792.0/3.0))*val[16]+var_inter[0]*var_inter[1]*(var_inter[0]*(448+var_inter[0]*(512*var_inter[0]-896))+var_inter[1]*(1216.0/3.0+var_inter[1]*(1024.0/3.0*var_inter[1]-2048.0/3.0)+var_inter[0]*(var_inter[0]*(17024.0/3.0-9728.0/3.0*var_inter[0])+var_inter[1]*(14336.0/3.0+var_inter[0]*(16384.0/3.0*var_inter[0]+var_inter[1]*(14336.0/3.0-8192.0/3.0*var_inter[0])-28672.0/3.0)-7168.0/3.0*var_inter[1])-8512.0/3.0))-64)*val[13]+var_inter[1]*var_inter[0]*(144+var_inter[1]*(var_inter[1]*(1536-768*var_inter[1])-912)+var_inter[0]*(var_inter[0]*(1536-768*var_inter[0])+var_inter[1]*(5776+var_inter[1]*(4864*var_inter[1]+var_inter[0]*(16384+4096*var_inter[0]*var_inter[1]-8192*(var_inter[0]+var_inter[1]))-9728)+var_inter[0]*(4864*var_inter[0]-9728))-912))*val[12]+val[11]*var_inter[1]*var_inter[0]*(var_inter[1]*(1216+var_inter[1]*(1024*var_inter[1]-2048))+var_inter[0]*(832+var_inter[0]*(512*var_inter[0]-1152)+var_inter[1]*(var_inter[1]*(26624.0/3.0-13312.0/3.0*var_inter[1])+var_inter[0]*(7296+var_inter[1]*(6144*var_inter[1]+var_inter[0]*(16384.0/3.0-8192.0/3.0*var_inter[1])-12288)-9728.0/3.0*var_inter[0])-15808.0/3.0))-192)+var_inter[1]*(var_inter[0]*(100+var_inter[0]*(var_inter[0]*(320-128*var_inter[0])-280)+var_inter[1]*(var_inter[1]*(3200.0/3.0-1600.0/3.0*var_inter[1])+var_inter[0]*(5320.0/3.0+var_inter[0]*(2432.0/3.0*var_inter[0]-6080.0/3.0)+var_inter[1]*(4480.0/3.0*var_inter[1]+var_inter[0]*(10240.0/3.0+var_inter[1]*(2048.0/3.0*var_inter[0]-5120.0/3.0)-4096.0/3.0*var_inter[0])-8960.0/3.0))-1900.0/3.0))+var_inter[1]*(76+var_inter[1]*(64*var_inter[1]-128))-12)*val[10]+val[6]*var_inter[0]*var_inter[1]*(256+var_inter[0]*(var_inter[0]*(1536-2048.0/3.0*var_inter[0])-3328.0/3.0)+var_inter[1]*(var_inter[1]*(1536-2048.0/3.0*var_inter[1])+var_inter[0]*(43264.0/9.0+var_inter[0]*(26624.0/9.0*var_inter[0]+var_inter[1]*(9216+16384.0/9.0*var_inter[0]*var_inter[1]-4096*(var_inter[0]+var_inter[1]))-6656)+var_inter[1]*(26624.0/9.0*var_inter[1]-6656))-3328.0/3.0))+val[4]*var_inter[0]*(var_inter[0]*(22.0/3.0+var_inter[0]*(32.0/3.0*var_inter[0]-16))+var_inter[1]*(25.0/3.0+var_inter[1]*(var_inter[1]*(80.0/3.0-32.0/3.0*var_inter[1])-70.0/3.0)+var_inter[0]*(var_inter[0]*(400.0/3.0-800.0/9.0*var_inter[0])+var_inter[1]*(1540.0/9.0+var_inter[0]*(2240.0/9.0*var_inter[0]-1120.0/3.0)+var_inter[1]*(704.0/9.0*var_inter[1]+var_inter[0]*(1280.0/3.0+var_inter[0]*(1024.0/9.0*var_inter[1]-2560.0/9.0)-512.0/3.0*var_inter[1])-1760.0/9.0))-550.0/9.0))-1)+var_inter[0]*(16.0/3.0+var_inter[1]*(var_inter[1]*(1120.0/9.0+var_inter[1]*(512.0/9.0*var_inter[1]-1280.0/9.0))+var_inter[0]*(2800.0/9.0+var_inter[0]*(3200.0/9.0*var_inter[0]-5600.0/9.0)+var_inter[1]*(var_inter[0]*(15680.0/9.0-8960.0/9.0*var_inter[0])+var_inter[1]*(8960.0/9.0+var_inter[0]*(7168.0/9.0*var_inter[1]+var_inter[0]*(10240.0/9.0-4096.0/9.0*var_inter[1])-17920.0/9.0)-3584.0/9.0*var_inter[1])-7840.0/9.0))-400.0/9.0)+var_inter[0]*(var_inter[0]*(224.0/3.0-128.0/3.0*var_inter[0])-112.0/3.0))*val[3]+var_inter[0]*(var_inter[0]*(76+var_inter[0]*(64*var_inter[0]-128))+var_inter[1]*(100+var_inter[1]*(var_inter[1]*(320-128*var_inter[1])+var_inter[0]*(5320.0/3.0+var_inter[1]*(2432.0/3.0*var_inter[1]-6080.0/3.0)+var_inter[0]*(4480.0/3.0*var_inter[0]+var_inter[1]*(10240.0/3.0+var_inter[0]*(2048.0/3.0*var_inter[1]-5120.0/3.0)-4096.0/3.0*var_inter[1])-8960.0/3.0))-280)+var_inter[0]*(var_inter[0]*(3200.0/3.0-1600.0/3.0*var_inter[0])-1900.0/3.0))-12)*val[2]+val[1]*var_inter[0]*(16+var_inter[0]*(var_inter[0]*(96-128.0/3.0*var_inter[0])-208.0/3.0)+var_inter[1]*(var_inter[0]*(5200.0/9.0+var_inter[0]*(3200.0/9.0*var_inter[0]-800)+var_inter[1]*(var_inter[0]*(2240-8960.0/9.0*var_inter[0])+var_inter[1]*(16640.0/9.0+var_inter[0]*(10240.0/9.0*var_inter[0]+var_inter[1]*(1024-4096.0/9.0*var_inter[0])-2560)-6656.0/9.0*var_inter[1])-14560.0/9.0))+var_inter[1]*(1120.0/3.0+var_inter[1]*(512.0/3.0*var_inter[1]-1280.0/3.0))-400.0/3.0))+val[0]*(1+var_inter[0]*(var_inter[1]*(625.0/9.0+var_inter[0]*(var_inter[0]*(2000.0/9.0-800.0/9.0*var_inter[0])+var_inter[1]*(4900.0/9.0+var_inter[1]*(2240.0/9.0*var_inter[1]-5600.0/9.0)+var_inter[0]*(2240.0/9.0*var_inter[0]+var_inter[1]*(6400.0/9.0+1024.0/9.0*var_inter[0]*var_inter[1]-2560.0/9.0*(var_inter[0]+var_inter[1]))-5600.0/9.0))-1750.0/9.0)+var_inter[1]*(var_inter[1]*(2000.0/9.0-800.0/9.0*var_inter[1])-1750.0/9.0))+var_inter[0]*(70.0/3.0+var_inter[0]*(32.0/3.0*var_inter[0]-80.0/3.0))-25.0/3.0)+var_inter[1]*(var_inter[1]*(70.0/3.0+var_inter[1]*(32.0/3.0*var_inter[1]-80.0/3.0))-25.0/3.0))+var_inter[1]*(16+var_inter[1]*(var_inter[1]*(96-128.0/3.0*var_inter[1])-208.0/3.0)+var_inter[0]*(var_inter[0]*(1120.0/3.0+var_inter[0]*(512.0/3.0*var_inter[0]-1280.0/3.0))+var_inter[1]*(5200.0/9.0+var_inter[1]*(3200.0/9.0*var_inter[1]-800)+var_inter[0]*(var_inter[0]*(16640.0/9.0-6656.0/9.0*var_inter[0])+var_inter[1]*(2240+var_inter[0]*(1024*var_inter[0]+var_inter[1]*(10240.0/9.0-4096.0/9.0*var_inter[0])-2560)-8960.0/9.0*var_inter[1])-14560.0/9.0))-400.0/3.0))*val[5]+var_inter[0]*var_inter[1]*(var_inter[1]*(832+var_inter[1]*(512*var_inter[1]-1152))+var_inter[0]*(1216+var_inter[0]*(1024*var_inter[0]-2048)+var_inter[1]*(var_inter[0]*(26624.0/3.0-13312.0/3.0*var_inter[0])+var_inter[1]*(7296+var_inter[0]*(6144*var_inter[0]+var_inter[1]*(16384.0/3.0-8192.0/3.0*var_inter[0])-12288)-9728.0/3.0*var_inter[1])-15808.0/3.0))-192)*val[7]+var_inter[0]*var_inter[1]*(256.0/3.0+var_inter[1]*(var_inter[1]*(512-2048.0/9.0*var_inter[1])-3328.0/9.0)+var_inter[0]*(var_inter[0]*(3584.0/3.0-2048.0/3.0*var_inter[0])+var_inter[1]*(23296.0/9.0+var_inter[1]*(14336.0/9.0*var_inter[1]+var_inter[0]*(7168+var_inter[0]*(16384.0/9.0*var_inter[1]-4096)-28672.0/9.0*var_inter[1])-3584)+var_inter[0]*(26624.0/9.0*var_inter[0]-46592.0/9.0))-1792.0/3.0))*val[8]+val[9]*var_inter[0]*var_inter[1]*(var_inter[0]*(352.0/3.0+var_inter[0]*(512.0/3.0*var_inter[0]-256))+var_inter[1]*(208.0/3.0+var_inter[0]*(var_inter[1]*(704-2816.0/9.0*var_inter[1])+var_inter[0]*(3328.0/3.0+var_inter[1]*(1024*var_inter[0]+var_inter[1]*(2048.0/3.0-4096.0/9.0*var_inter[0])-1536)-6656.0/9.0*var_inter[0])-4576.0/9.0)+var_inter[1]*(128.0/3.0*var_inter[1]-96))-16)+var_inter[0]*var_inter[1]*(12+var_inter[1]*(var_inter[1]*(128-64*var_inter[1])-76)+var_inter[0]*(var_inter[0]*(192-128*var_inter[0])+var_inter[1]*(1672.0/3.0+var_inter[0]*(2432.0/3.0*var_inter[0]-1216)+var_inter[1]*(1408.0/3.0*var_inter[1]+var_inter[0]*(2048+var_inter[0]*(2048.0/3.0*var_inter[1]-4096.0/3.0)-1024*var_inter[1])-2816.0/3.0))-88))*val[14]+var_inter[1]*(16.0/3.0+var_inter[1]*(var_inter[1]*(224.0/3.0-128.0/3.0*var_inter[1])-112.0/3.0)+var_inter[0]*(var_inter[1]*(2800.0/9.0+var_inter[1]*(3200.0/9.0*var_inter[1]-5600.0/9.0))+var_inter[0]*(1120.0/9.0+var_inter[0]*(512.0/9.0*var_inter[0]-1280.0/9.0)+var_inter[1]*(var_inter[1]*(15680.0/9.0-8960.0/9.0*var_inter[1])+var_inter[0]*(8960.0/9.0+var_inter[1]*(10240.0/9.0*var_inter[1]+var_inter[0]*(7168.0/9.0-4096.0/9.0*var_inter[1])-17920.0/9.0)-3584.0/9.0*var_inter[0])-7840.0/9.0))-400.0/9.0))*val[15]+var_inter[1]*var_inter[0]*(var_inter[0]*(1216.0/3.0+var_inter[0]*(1024.0/3.0*var_inter[0]-2048.0/3.0)+var_inter[1]*(var_inter[1]*(17024.0/3.0-9728.0/3.0*var_inter[1])+var_inter[0]*(14336.0/3.0+var_inter[1]*(16384.0/3.0*var_inter[1]+var_inter[0]*(14336.0/3.0-8192.0/3.0*var_inter[1])-28672.0/3.0)-7168.0/3.0*var_inter[0])-8512.0/3.0))+var_inter[1]*(448+var_inter[1]*(512*var_inter[1]-896))-64)*val[17]+var_inter[0]*var_inter[1]*(256.0/9.0+var_inter[1]*(var_inter[1]*(3584.0/9.0-2048.0/9.0*var_inter[1])-1792.0/9.0)+var_inter[0]*(var_inter[0]*(3584.0/9.0-2048.0/9.0*var_inter[0])+var_inter[1]*(12544.0/9.0+var_inter[1]*(14336.0/9.0*var_inter[1]-25088.0/9.0)+var_inter[0]*(14336.0/9.0*var_inter[0]+var_inter[1]*(50176.0/9.0+16384.0/9.0*var_inter[0]*var_inter[1]-28672.0/9.0*(var_inter[0]+var_inter[1]))-25088.0/9.0))-1792.0/9.0))*val[18]+var_inter[0]*var_inter[1]*(var_inter[1]*(112.0/3.0+var_inter[1]*(128.0/3.0*var_inter[1]-224.0/3.0))+var_inter[0]*(352.0/9.0+var_inter[0]*(512.0/9.0*var_inter[0]-256.0/3.0)+var_inter[1]*(var_inter[1]*(4928.0/9.0-2816.0/9.0*var_inter[1])+var_inter[0]*(1792.0/3.0+var_inter[1]*(2048.0/3.0*var_inter[1]+var_inter[0]*(7168.0/9.0-4096.0/9.0*var_inter[1])-3584.0/3.0)-3584.0/9.0*var_inter[0])-2464.0/9.0))-16.0/3.0)*val[19]+var_inter[1]*(var_inter[1]*(22.0/3.0+var_inter[1]*(32.0/3.0*var_inter[1]-16))+var_inter[0]*(25.0/3.0+var_inter[1]*(var_inter[1]*(400.0/3.0-800.0/9.0*var_inter[1])-550.0/9.0)+var_inter[0]*(var_inter[0]*(80.0/3.0-32.0/3.0*var_inter[0])+var_inter[1]*(1540.0/9.0+var_inter[0]*(704.0/9.0*var_inter[0]-1760.0/9.0)+var_inter[1]*(2240.0/9.0*var_inter[1]+var_inter[0]*(1280.0/3.0+var_inter[0]*(1024.0/9.0*var_inter[1]-512.0/3.0)-2560.0/9.0*var_inter[1])-1120.0/3.0))-70.0/3.0))-1)*val[20]+var_inter[0]*var_inter[1]*(var_inter[0]*(208.0/3.0+var_inter[0]*(128.0/3.0*var_inter[0]-96))+var_inter[1]*(352.0/3.0+var_inter[1]*(512.0/3.0*var_inter[1]-256)+var_inter[0]*(var_inter[0]*(704-2816.0/9.0*var_inter[0])+var_inter[1]*(3328.0/3.0+var_inter[0]*(var_inter[1]*(1024-4096.0/9.0*var_inter[0])+2048.0/3.0*var_inter[0]-1536)-6656.0/9.0*var_inter[1])-4576.0/9.0))-16)*val[21]+var_inter[0]*var_inter[1]*(12+var_inter[1]*(var_inter[1]*(192-128*var_inter[1])-88)+var_inter[0]*(var_inter[0]*(128-64*var_inter[0])+var_inter[1]*(1672.0/3.0+var_inter[0]*(1408.0/3.0*var_inter[0]-2816.0/3.0)+var_inter[1]*(2432.0/3.0*var_inter[1]+var_inter[0]*(2048+var_inter[1]*(2048.0/3.0*var_inter[0]-4096.0/3.0)-1024*var_inter[0])-1216))-76))*val[22]+var_inter[0]*var_inter[1]*(var_inter[1]*(352.0/9.0+var_inter[1]*(512.0/9.0*var_inter[1]-256.0/3.0))+var_inter[0]*(112.0/3.0+var_inter[0]*(128.0/3.0*var_inter[0]-224.0/3.0)+var_inter[1]*(var_inter[1]*(1792.0/3.0+var_inter[0]*(2048.0/3.0*var_inter[0]+var_inter[1]*(7168.0/9.0-4096.0/9.0*var_inter[0])-3584.0/3.0)-3584.0/9.0*var_inter[1])+var_inter[0]*(4928.0/9.0-2816.0/9.0*var_inter[0])-2464.0/9.0))-16.0/3.0)*val[23]+val[24]*var_inter[0]*var_inter[1]*(1+var_inter[1]*(var_inter[1]*(16-32.0/3.0*var_inter[1])+var_inter[0]*(484.0/9.0+var_inter[0]*(704.0/9.0*var_inter[0]-352.0/3.0)+var_inter[1]*(704.0/9.0*var_inter[1]+var_inter[0]*(256+var_inter[0]*(1024.0/9.0*var_inter[1]-512.0/3.0)-512.0/3.0*var_inter[1])-352.0/3.0))-22.0/3.0)+var_inter[0]*(var_inter[0]*(16-32.0/3.0*var_inter[0])-22.0/3.0))
+    else if interpolation_base == "hierarchical"
+        return var_inter[0]*var_inter[1]*val[24]+var_inter[1]*var_inter[0]*(16.0/3.0+var_inter[0]*(var_inter[0]*(224.0/3.0-128.0/3.0*var_inter[0])-112.0/3.0))*val[23]+var_inter[1]*var_inter[0]*(16+var_inter[0]*(var_inter[0]*(96-128.0/3.0*var_inter[0])-208.0/3.0))*val[21]+var_inter[0]*var_inter[1]*(256.0/9.0+var_inter[1]*(var_inter[1]*(3584.0/9.0-2048.0/9.0*var_inter[1])+var_inter[0]*(12544.0/9.0+var_inter[1]*(14336.0/9.0*var_inter[1]-25088.0/9.0)+var_inter[0]*(14336.0/9.0*var_inter[0]+var_inter[1]*(50176.0/9.0+16384.0/9.0*var_inter[0]*var_inter[1]-28672.0/9.0*(var_inter[0]+var_inter[1]))-25088.0/9.0))-1792.0/9.0)+var_inter[0]*(var_inter[0]*(3584.0/9.0-2048.0/9.0*var_inter[0])-1792.0/9.0))*val[18]+var_inter[1]*var_inter[0]*(var_inter[0]*(1216.0/3.0+var_inter[0]*(1024.0/3.0*var_inter[0]-2048.0/3.0)+var_inter[1]*(var_inter[1]*(17024.0/3.0-9728.0/3.0*var_inter[1])+var_inter[0]*(14336.0/3.0+var_inter[1]*(16384.0/3.0*var_inter[1]+var_inter[0]*(14336.0/3.0-8192.0/3.0*var_inter[1])-28672.0/3.0)-7168.0/3.0*var_inter[0])-8512.0/3.0))+var_inter[1]*(448+var_inter[1]*(512*var_inter[1]-896))-64)*val[17]+var_inter[0]*var_inter[1]*(256.0/3.0+var_inter[0]*(var_inter[0]*(512-2048.0/9.0*var_inter[0])+var_inter[1]*(23296.0/9.0+var_inter[1]*(26624.0/9.0*var_inter[1]+var_inter[0]*(7168+var_inter[0]*(16384.0/9.0*var_inter[1]-28672.0/9.0)-4096*var_inter[1])-46592.0/9.0)+var_inter[0]*(14336.0/9.0*var_inter[0]-3584))-3328.0/9.0)+var_inter[1]*(var_inter[1]*(3584.0/3.0-2048.0/3.0*var_inter[1])-1792.0/3.0))*val[16]+var_inter[1]*(var_inter[1]*(var_inter[1]*(224.0/3.0*(1-var_inter[0])+128.0/3.0*var_inter[1]*(var_inter[0]-1))-112.0/3.0*(1-var_inter[0]))+16.0/3.0*(1-var_inter[0]))*val[15]+var_inter[0]*var_inter[1]*(var_inter[1]*(76+var_inter[1]*(64*var_inter[1]-128))-12)*val[14]+var_inter[0]*var_inter[1]*(var_inter[0]*(448+var_inter[0]*(512*var_inter[0]-896)+var_inter[1]*(var_inter[0]*(17024.0/3.0-9728.0/3.0*var_inter[0])+var_inter[1]*(14336.0/3.0+var_inter[0]*(16384.0/3.0*var_inter[0]+var_inter[1]*(14336.0/3.0-8192.0/3.0*var_inter[0])-28672.0/3.0)-7168.0/3.0*var_inter[1])-8512.0/3.0))+var_inter[1]*(1216.0/3.0+var_inter[1]*(1024.0/3.0*var_inter[1]-2048.0/3.0))-64)*val[13]+var_inter[1]*var_inter[0]*(144+var_inter[1]*(var_inter[1]*(1536-768*var_inter[1])-912)+var_inter[0]*(var_inter[0]*(1536-768*var_inter[0])+var_inter[1]*(5776+var_inter[1]*(4864*var_inter[1]-9728)+var_inter[0]*(4864*var_inter[0]+var_inter[1]*(16384+4096*var_inter[0]*var_inter[1]-8192*(var_inter[0]+var_inter[1]))-9728))-912))*val[12]+var_inter[0]*var_inter[1]*(256.0/3.0+var_inter[0]*(var_inter[0]*(3584.0/3.0-2048.0/3.0*var_inter[0])-1792.0/3.0)+var_inter[1]*(var_inter[1]*(512-2048.0/9.0*var_inter[1])+var_inter[0]*(23296.0/9.0+var_inter[1]*(14336.0/9.0*var_inter[1]+var_inter[0]*(7168+var_inter[0]*(16384.0/9.0*var_inter[1]-4096)-28672.0/9.0*var_inter[1])-3584)+var_inter[0]*(26624.0/9.0*var_inter[0]-46592.0/9.0))-3328.0/9.0))*val[8]+var_inter[0]*var_inter[1]*(var_inter[1]*(832+var_inter[1]*(512*var_inter[1]-1152))+var_inter[0]*(1216+var_inter[0]*(1024*var_inter[0]-2048)+var_inter[1]*(var_inter[0]*(26624.0/3.0-13312.0/3.0*var_inter[0])+var_inter[1]*(7296+var_inter[0]*(16384.0/3.0*var_inter[1]+var_inter[0]*(6144-8192.0/3.0*var_inter[1])-12288)-9728.0/3.0*var_inter[1])-15808.0/3.0))-192)*val[7]+val[6]*var_inter[0]*var_inter[1]*(256+var_inter[0]*(var_inter[0]*(1536-2048.0/3.0*var_inter[0])-3328.0/3.0)+var_inter[1]*(var_inter[1]*(1536-2048.0/3.0*var_inter[1])+var_inter[0]*(43264.0/9.0+var_inter[0]*(26624.0/9.0*var_inter[0]+var_inter[1]*(9216+16384.0/9.0*var_inter[0]*var_inter[1]-4096*(var_inter[0]+var_inter[1]))-6656)+var_inter[1]*(26624.0/9.0*var_inter[1]-6656))-3328.0/3.0))+var_inter[0]*(var_inter[0]*(var_inter[0]*(-128*(1-var_inter[1])-64*var_inter[0]*(var_inter[1]-1))+76*(1-var_inter[1]))-12*(1-var_inter[1]))*val[2]+var_inter[0]*(16+var_inter[0]*(var_inter[0]*(96-128.0/3.0*var_inter[0])-208.0/3.0))*(1-var_inter[1])*val[1]+(1+var_inter[0]*(var_inter[1]-1)-var_inter[1])*val[0]+val[3]*var_inter[0]*(16.0/3.0+var_inter[0]*(var_inter[0]*(224.0/3.0-128.0/3.0*var_inter[0])-112.0/3.0))*(1-var_inter[1])+val[4]*var_inter[0]*(1-var_inter[1])+var_inter[1]*(16*(1-var_inter[0])+var_inter[1]*(var_inter[1]*(128.0/3.0*var_inter[1]*(var_inter[0]-1)+96*(1-var_inter[0]))-208.0/3.0*(1-var_inter[0])))*val[5]+val[9]*var_inter[0]*var_inter[1]*(16+var_inter[1]*(var_inter[1]*(96-128.0/3.0*var_inter[1])-208.0/3.0))+var_inter[1]*(var_inter[1]*(var_inter[1]*(-64*var_inter[1]*(var_inter[0]-1)-128*(1-var_inter[0]))+76*(1-var_inter[0]))-12*(1-var_inter[0]))*val[10]+val[11]*var_inter[1]*var_inter[0]*(var_inter[0]*(832+var_inter[0]*(512*var_inter[0]-1152))+var_inter[1]*(1216+var_inter[1]*(1024*var_inter[1]-2048)+var_inter[0]*(var_inter[0]*(7296-9728.0/3.0*var_inter[0])+var_inter[1]*(26624.0/3.0+var_inter[0]*(16384.0/3.0*var_inter[0]+var_inter[1]*(6144-8192.0/3.0*var_inter[0])-12288)-13312.0/3.0*var_inter[1])-15808.0/3.0))-192)+var_inter[0]*var_inter[1]*(16.0/3.0+var_inter[1]*(var_inter[1]*(224.0/3.0-128.0/3.0*var_inter[1])-112.0/3.0))*val[19]+var_inter[1]*(1-var_inter[0])*val[20]+var_inter[1]*var_inter[0]*(var_inter[0]*(76+var_inter[0]*(64*var_inter[0]-128))-12)*val[22]
+
+#
+def interpolation_deg( var_inter, val, interpolation_base, deg ) when deg == 5
+    if interpolation_base == "lagrange"
+        return val[28]*var_inter[0]*var_inter[1]*(625.0/16.0+var_inter[0]*(var_inter[0]*(128125.0/96.0+var_inter[0]*(78125.0/96.0*var_inter[0]-171875.0/96.0))-38125.0/96.0)+var_inter[1]*(var_inter[1]*(128125.0/96.0+var_inter[1]*(78125.0/96.0*var_inter[1]-171875.0/96.0))+var_inter[0]*(2325625.0/576.0+var_inter[0]*(var_inter[0]*(10484375.0/576.0-4765625.0/576.0*var_inter[0])-7815625.0/576.0)+var_inter[1]*(var_inter[1]*(10484375.0/576.0-4765625.0/576.0*var_inter[1])+var_inter[0]*(26265625.0/576.0+var_inter[1]*(16015625.0/576.0*var_inter[1]-35234375.0/576.0)+var_inter[0]*(16015625.0/576.0*var_inter[0]+var_inter[1]*(47265625.0/576.0+9765625.0/576.0*var_inter[0]*var_inter[1]-21484375.0/576.0*(var_inter[0]+var_inter[1]))-35234375.0/576.0))-7815625.0/576.0))-38125.0/96.0))+val[25]*var_inter[1]*var_inter[0]*(var_inter[0]*(48125.0/48.0+var_inter[1]*(var_inter[1]*(9865625.0/288.0+var_inter[1]*(6015625.0/288.0*var_inter[1]-13234375.0/288.0))+var_inter[0]*(13534375.0/576.0+var_inter[0]*(4765625.0/576.0*var_inter[0]-6671875.0/288.0)+var_inter[1]*(var_inter[0]*(22421875.0/288.0-16015625.0/576.0*var_inter[0])+var_inter[1]*(61015625.0/576.0+var_inter[0]*(21484375.0/576.0*var_inter[0]+var_inter[1]*(13671875.0/288.0-9765625.0/576.0*var_inter[0])-30078125.0/288.0)-27734375.0/576.0*var_inter[1])-45484375.0/576.0))-2935625.0/288.0)+var_inter[0]*(var_inter[0]*(109375.0/48.0-78125.0/96.0*var_inter[0])-221875.0/96.0))+var_inter[1]*(38125.0/24.0+var_inter[1]*(var_inter[1]*(171875.0/24.0-78125.0/24.0*var_inter[1])-128125.0/24.0))-625.0/4.0)+val[21]*var_inter[0]*var_inter[1]*(2500.0/9.0+var_inter[1]*(var_inter[1]*(153125.0/18.0+var_inter[1]*(78125.0/18.0*var_inter[1]-31250.0/3.0))-8125.0/3.0)+var_inter[0]*(var_inter[0]*(153125.0/18.0+var_inter[0]*(78125.0/18.0*var_inter[0]-31250.0/3.0))+var_inter[1]*(105625.0/4.0+var_inter[0]*(var_inter[0]*(203125.0/2.0-1015625.0/24.0*var_inter[0])+var_inter[1]*(37515625.0/144.0+var_inter[1]*(19140625.0/144.0*var_inter[1]-3828125.0/12.0)+var_inter[0]*(19140625.0/144.0*var_inter[0]+var_inter[1]*(390625+var_inter[0]*(9765625.0/144.0*var_inter[1]-1953125.0/12.0)-1953125.0/12.0*var_inter[1])-3828125.0/12.0))-1990625.0/24.0)+var_inter[1]*(var_inter[1]*(203125.0/2.0-1015625.0/24.0*var_inter[1])-1990625.0/24.0))-8125.0/3.0))+val[20]*var_inter[1]*var_inter[0]*(var_inter[0]*(66875.0/18.0+var_inter[0]*(var_inter[0]*(203125.0/18.0-78125.0/18.0*var_inter[0])-184375.0/18.0))+var_inter[1]*(8125.0/2.0+var_inter[0]*(var_inter[1]*(16384375.0/144.0+var_inter[1]*(8359375.0/144.0*var_inter[1]-1671875.0/12.0))+var_inter[0]*(2396875.0/24.0+var_inter[0]*(1015625.0/24.0*var_inter[0]-2640625.0/24.0)+var_inter[1]*(var_inter[0]*(49765625.0/144.0-19140625.0/144.0*var_inter[0])+var_inter[1]*(4609375.0/12.0+var_inter[0]*(1953125.0/12.0*var_inter[0]+var_inter[1]*(25390625.0/144.0-9765625.0/144.0*var_inter[0])-5078125.0/12.0)-23046875.0/144.0*var_inter[1])-45171875.0/144.0))-869375.0/24.0)+var_inter[1]*(var_inter[1]*(15625-78125.0/12.0*var_inter[1])-153125.0/12.0))-1250.0/3.0)+var_inter[1]*(50.0/3.0+var_inter[1]*(var_inter[1]*(6125.0/12.0+var_inter[1]*(3125.0/12.0*var_inter[1]-625))-325.0/2.0)+var_inter[0]*(var_inter[0]*(3125.0/4.0+var_inter[0]*(var_inter[0]*(15625.0/12.0-15625.0/36.0*var_inter[0])-53125.0/36.0)+var_inter[1]*(var_inter[1]*(765625.0/32.0+var_inter[1]*(390625.0/32.0*var_inter[1]-234375.0/8.0))+var_inter[0]*(690625.0/48.0+var_inter[0]*(203125.0/48.0*var_inter[0]-203125.0/16.0)+var_inter[1]*(var_inter[0]*(3828125.0/96.0-3828125.0/288.0*var_inter[0])+var_inter[1]*(1328125.0/24.0+var_inter[0]*(1953125.0/96.0*var_inter[1]+var_inter[0]*(390625.0/24.0-1953125.0/288.0*var_inter[1])-390625.0/8.0)-6640625.0/288.0*var_inter[1])-13015625.0/288.0))-121875.0/16.0))+var_inter[1]*(44525.0/24.0+var_inter[1]*(var_inter[1]*(85625.0/12.0-428125.0/144.0*var_inter[1])-839125.0/144.0))-3425.0/18.0))*val[18]+var_inter[1]*var_inter[0]*(var_inter[1]*(2675.0/12.0+var_inter[1]*(var_inter[1]*(8125.0/12.0-3125.0/12.0*var_inter[1])-7375.0/12.0))+var_inter[0]*(3125.0/12.0+var_inter[0]*(var_inter[0]*(15625.0/12.0-15625.0/24.0*var_inter[0])-21875.0/24.0)+var_inter[1]*(var_inter[0]*(2340625.0/288.0+var_inter[0]*(1671875.0/288.0*var_inter[0]-1671875.0/144.0))+var_inter[1]*(921875.0/144.0+var_inter[1]*(390625.0/144.0*var_inter[1]-1015625.0/144.0)+var_inter[0]*(var_inter[0]*(4609375.0/144.0+var_inter[1]*(1953125.0/144.0*var_inter[1]+var_inter[0]*(5078125.0/288.0-1953125.0/288.0*var_inter[1])-5078125.0/144.0)-4609375.0/288.0*var_inter[0])+var_inter[1]*(7109375.0/288.0-2734375.0/288.0*var_inter[1])-6453125.0/288.0))-334375.0/144.0))-25)*val[17]+var_inter[1]*var_inter[0]*(var_inter[1]*(66875.0/18.0+var_inter[1]*(var_inter[1]*(203125.0/18.0-78125.0/18.0*var_inter[1])-184375.0/18.0))+var_inter[0]*(8125.0/2.0+var_inter[0]*(var_inter[0]*(15625-78125.0/12.0*var_inter[0])-153125.0/12.0)+var_inter[1]*(var_inter[1]*(2396875.0/24.0+var_inter[0]*(var_inter[1]*(49765625.0/144.0-19140625.0/144.0*var_inter[1])+var_inter[0]*(4609375.0/12.0+var_inter[1]*(1953125.0/12.0*var_inter[1]+var_inter[0]*(25390625.0/144.0-9765625.0/144.0*var_inter[1])-5078125.0/12.0)-23046875.0/144.0*var_inter[0])-45171875.0/144.0)+var_inter[1]*(1015625.0/24.0*var_inter[1]-2640625.0/24.0))+var_inter[0]*(16384375.0/144.0+var_inter[0]*(8359375.0/144.0*var_inter[0]-1671875.0/12.0))-869375.0/24.0))-1250.0/3.0)*val[15]+val[13]*var_inter[1]*var_inter[0]*(var_inter[0]*(48125.0/12.0+var_inter[0]*(var_inter[0]*(109375.0/12.0-78125.0/24.0*var_inter[0])-221875.0/24.0))+var_inter[1]*(66875.0/12.0+var_inter[1]*(var_inter[1]*(203125.0/12.0-78125.0/12.0*var_inter[1])-184375.0/12.0)+var_inter[0]*(var_inter[1]*(14196875.0/144.0+var_inter[1]*(6015625.0/144.0*var_inter[1]-15640625.0/144.0))+var_inter[0]*(23740625.0/288.0+var_inter[0]*(8359375.0/288.0*var_inter[0]-11703125.0/144.0)+var_inter[1]*(var_inter[0]*(32265625.0/144.0-23046875.0/288.0*var_inter[0])+var_inter[1]*(72109375.0/288.0+var_inter[0]*(25390625.0/288.0*var_inter[0]+var_inter[1]*(13671875.0/144.0-9765625.0/288.0*var_inter[0])-35546875.0/144.0)-27734375.0/288.0*var_inter[1])-65453125.0/288.0))-5149375.0/144.0))-625)+val[12]*var_inter[1]*(var_inter[1]*(2675.0/12.0+var_inter[1]*(var_inter[1]*(8125.0/12.0-3125.0/12.0*var_inter[1])-7375.0/12.0))+var_inter[0]*(3425.0/12.0+var_inter[0]*(var_inter[1]*(334375.0/32.0+var_inter[0]*(var_inter[0]*(1671875.0/96.0-1671875.0/288.0*var_inter[0])-5684375.0/288.0)+var_inter[1]*(var_inter[1]*(1015625.0/32.0-390625.0/32.0*var_inter[1])+var_inter[0]*(15671875.0/288.0+var_inter[1]*(6640625.0/288.0*var_inter[1]-17265625.0/288.0)+var_inter[0]*(4609375.0/288.0*var_inter[0]+var_inter[1]*(5078125.0/96.0+var_inter[0]*(1953125.0/288.0*var_inter[1]-5078125.0/288.0)-1953125.0/96.0*var_inter[1])-4609375.0/96.0))-921875.0/32.0))+var_inter[0]*(53125.0/24.0+var_inter[0]*(15625.0/24.0*var_inter[0]-15625.0/8.0))-9375.0/8.0)+var_inter[1]*(var_inter[1]*(1010375.0/144.0+var_inter[1]*(428125.0/144.0*var_inter[1]-1113125.0/144.0))-366475.0/144.0))-25)+var_inter[1]*var_inter[0]*(1250.0/3.0+var_inter[1]*(var_inter[1]*(221875.0/36.0+var_inter[1]*(78125.0/36.0*var_inter[1]-109375.0/18.0))-48125.0/18.0)+var_inter[0]*(var_inter[0]*(153125.0/12.0+var_inter[0]*(78125.0/12.0*var_inter[0]-15625))+var_inter[1]*(625625.0/24.0+var_inter[1]*(var_inter[1]*(1421875.0/24.0-1015625.0/48.0*var_inter[1])+var_inter[0]*(54359375.0/288.0+var_inter[1]*(19140625.0/288.0*var_inter[1]-26796875.0/144.0)+var_inter[0]*(27734375.0/288.0*var_inter[0]+var_inter[1]*(2734375.0/12.0+var_inter[1]*(9765625.0/288.0*var_inter[0]-1953125.0/24.0)-13671875.0/144.0*var_inter[0])-5546875.0/24.0))-2884375.0/48.0)+var_inter[0]*(var_inter[0]*(1203125.0/12.0-6015625.0/144.0*var_inter[0])-11790625.0/144.0))-8125.0/2.0))*val[9]+val[7]*var_inter[0]*var_inter[1]*(625+var_inter[0]*(var_inter[0]*(221875.0/24.0+var_inter[0]*(78125.0/24.0*var_inter[0]-109375.0/12.0))-48125.0/12.0)+var_inter[1]*(var_inter[1]*(221875.0/24.0+var_inter[1]*(78125.0/24.0*var_inter[1]-109375.0/12.0))+var_inter[0]*(3705625.0/144.0+var_inter[0]*(var_inter[0]*(8421875.0/144.0-6015625.0/288.0*var_inter[0])+var_inter[1]*(78765625.0/576.0+var_inter[1]*(27734375.0/576.0*var_inter[1]-38828125.0/288.0)+var_inter[0]*(27734375.0/576.0*var_inter[0]+var_inter[1]*(19140625.0/144.0+9765625.0/576.0*var_inter[0]*var_inter[1]-13671875.0/288.0*(var_inter[0]+var_inter[1]))-38828125.0/288.0))-17084375.0/288.0)+var_inter[1]*(var_inter[1]*(8421875.0/144.0-6015625.0/288.0*var_inter[1])-17084375.0/288.0))-48125.0/12.0))+val[5]*var_inter[0]*(1+var_inter[1]*(var_inter[1]*(375.0/8.0+var_inter[1]*(var_inter[1]*(625.0/8.0-625.0/24.0*var_inter[1])-2125.0/24.0))+var_inter[0]*(17125.0/144.0+var_inter[1]*(var_inter[1]*(265625.0/288.0+var_inter[1]*(78125.0/288.0*var_inter[1]-78125.0/96.0))+var_inter[0]*(109375.0/64.0+var_inter[0]*(78125.0/64.0*var_inter[0]-78125.0/32.0)+var_inter[1]*(var_inter[0]*(1328125.0/288.0-1328125.0/576.0*var_inter[0])+var_inter[1]*(546875.0/192.0+var_inter[0]*(390625.0/192.0*var_inter[0]+var_inter[1]*(390625.0/288.0-390625.0/576.0*var_inter[0])-390625.0/96.0)-546875.0/576.0*var_inter[1])-1859375.0/576.0))-15625.0/32.0)+var_inter[0]*(var_inter[0]*(85625.0/144.0-85625.0/288.0*var_inter[0])-119875.0/288.0))-137.0/12.0)+var_inter[0]*(var_inter[0]*(875.0/24.0+var_inter[0]*(625.0/24.0*var_inter[0]-625.0/12.0))-125.0/12.0))+val[3]*var_inter[0]*(50.0/3.0+var_inter[0]*(var_inter[0]*(6125.0/12.0+var_inter[0]*(3125.0/12.0*var_inter[0]-625))-325.0/2.0)+var_inter[1]*(var_inter[0]*(44525.0/24.0+var_inter[0]*(var_inter[0]*(85625.0/12.0-428125.0/144.0*var_inter[0])-839125.0/144.0))+var_inter[1]*(3125.0/4.0+var_inter[1]*(var_inter[1]*(15625.0/12.0-15625.0/36.0*var_inter[1])-53125.0/36.0)+var_inter[0]*(var_inter[0]*(765625.0/32.0+var_inter[0]*(390625.0/32.0*var_inter[0]-234375.0/8.0))+var_inter[1]*(690625.0/48.0+var_inter[1]*(203125.0/48.0*var_inter[1]-203125.0/16.0)+var_inter[0]*(var_inter[0]*(1328125.0/24.0-6640625.0/288.0*var_inter[0])+var_inter[1]*(3828125.0/96.0+var_inter[0]*(1953125.0/96.0*var_inter[0]+var_inter[1]*(390625.0/24.0-1953125.0/288.0*var_inter[0])-390625.0/8.0)-3828125.0/288.0*var_inter[1])-13015625.0/288.0))-121875.0/16.0))-3425.0/18.0))+(1+var_inter[0]*(var_inter[0]*(375.0/8.0+var_inter[0]*(var_inter[0]*(625.0/8.0-625.0/24.0*var_inter[0])-2125.0/24.0))-137.0/12.0)+var_inter[1]*(var_inter[0]*(18769.0/144.0+var_inter[0]*(var_inter[0]*(291125.0/288.0+var_inter[0]*(85625.0/288.0*var_inter[0]-85625.0/96.0))+var_inter[1]*(140625.0/64.0+var_inter[0]*(var_inter[0]*(234375.0/64.0-78125.0/64.0*var_inter[0])-265625.0/64.0)+var_inter[1]*(var_inter[1]*(234375.0/64.0-78125.0/64.0*var_inter[1])+var_inter[0]*(4515625.0/576.0+var_inter[0]*(1328125.0/576.0*var_inter[0]+var_inter[1]*(390625.0/64.0+390625.0/576.0*var_inter[0]*var_inter[1]-390625.0/192.0*(var_inter[0]+var_inter[1]))-1328125.0/192.0)+var_inter[1]*(1328125.0/576.0*var_inter[1]-1328125.0/192.0))-265625.0/64.0))-17125.0/32.0)+var_inter[1]*(var_inter[1]*(291125.0/288.0+var_inter[1]*(85625.0/288.0*var_inter[1]-85625.0/96.0))-17125.0/32.0))+var_inter[1]*(375.0/8.0+var_inter[1]*(var_inter[1]*(625.0/8.0-625.0/24.0*var_inter[1])-2125.0/24.0))-137.0/12.0))*val[0]+var_inter[0]*(25+var_inter[0]*(var_inter[0]*(8875.0/24.0+var_inter[0]*(3125.0/24.0*var_inter[0]-4375.0/12.0))-1925.0/12.0)+var_inter[1]*(var_inter[1]*(9375.0/8.0+var_inter[0]*(var_inter[0]*(1109375.0/64.0+var_inter[0]*(390625.0/64.0*var_inter[0]-546875.0/32.0)+var_inter[1]*(var_inter[0]*(9296875.0/288.0-6640625.0/576.0*var_inter[0])+var_inter[1]*(5546875.0/192.0+var_inter[0]*(1953125.0/192.0*var_inter[0]+var_inter[1]*(2734375.0/288.0-1953125.0/576.0*var_inter[0])-2734375.0/96.0)-5546875.0/576.0*var_inter[1])-18859375.0/576.0))+var_inter[1]*(4090625.0/288.0+var_inter[1]*(1203125.0/288.0*var_inter[1]-1203125.0/96.0))-240625.0/32.0)+var_inter[1]*(var_inter[1]*(15625.0/8.0-15625.0/24.0*var_inter[1])-53125.0/24.0))+var_inter[0]*(263725.0/144.0+var_inter[0]*(var_inter[0]*(599375.0/144.0-428125.0/288.0*var_inter[0])-1215875.0/288.0))-3425.0/12.0))*val[1]+val[2]*var_inter[0]*(var_inter[0]*(2675.0/12.0+var_inter[0]*(var_inter[0]*(8125.0/12.0-3125.0/12.0*var_inter[0])-7375.0/12.0))+var_inter[1]*(3425.0/12.0+var_inter[1]*(var_inter[0]*(334375.0/32.0+var_inter[1]*(var_inter[1]*(1671875.0/96.0-1671875.0/288.0*var_inter[1])-5684375.0/288.0)+var_inter[0]*(var_inter[0]*(1015625.0/32.0-390625.0/32.0*var_inter[0])+var_inter[1]*(15671875.0/288.0+var_inter[0]*(6640625.0/288.0*var_inter[0]-17265625.0/288.0)+var_inter[1]*(4609375.0/288.0*var_inter[1]+var_inter[0]*(5078125.0/96.0+var_inter[1]*(1953125.0/288.0*var_inter[0]-5078125.0/288.0)-1953125.0/96.0*var_inter[0])-4609375.0/96.0))-921875.0/32.0))+var_inter[1]*(53125.0/24.0+var_inter[1]*(15625.0/24.0*var_inter[1]-15625.0/8.0))-9375.0/8.0)+var_inter[0]*(var_inter[0]*(1010375.0/144.0+var_inter[0]*(428125.0/144.0*var_inter[0]-1113125.0/144.0))-366475.0/144.0))-25)+val[4]*var_inter[0]*(var_inter[0]*(1525.0/24.0+var_inter[0]*(var_inter[0]*(6875.0/24.0-3125.0/24.0*var_inter[0])-5125.0/24.0))+var_inter[1]*(3425.0/48.0+var_inter[1]*(var_inter[1]*(53125.0/96.0+var_inter[1]*(15625.0/96.0*var_inter[1]-15625.0/32.0))-9375.0/32.0)+var_inter[0]*(var_inter[0]*(702125.0/288.0+var_inter[0]*(428125.0/288.0*var_inter[0]-941875.0/288.0))+var_inter[1]*(190625.0/64.0+var_inter[0]*(var_inter[0]*(859375.0/64.0-390625.0/64.0*var_inter[0])+var_inter[1]*(10890625.0/576.0+var_inter[1]*(3203125.0/576.0*var_inter[1]-3203125.0/192.0)+var_inter[0]*(6640625.0/576.0*var_inter[0]+var_inter[1]*(4296875.0/192.0+var_inter[1]*(1953125.0/576.0*var_inter[0]-4296875.0/576.0)-1953125.0/192.0*var_inter[0])-14609375.0/576.0))-640625.0/64.0)+var_inter[1]*(var_inter[1]*(953125.0/192.0-953125.0/576.0*var_inter[1])-3240625.0/576.0))-208925.0/288.0))-25.0/4.0)+val[6]*var_inter[1]*(25+var_inter[1]*(var_inter[1]*(8875.0/24.0+var_inter[1]*(3125.0/24.0*var_inter[1]-4375.0/12.0))-1925.0/12.0)+var_inter[0]*(var_inter[0]*(9375.0/8.0+var_inter[1]*(var_inter[0]*(4090625.0/288.0+var_inter[0]*(1203125.0/288.0*var_inter[0]-1203125.0/96.0))+var_inter[1]*(1109375.0/64.0+var_inter[1]*(390625.0/64.0*var_inter[1]-546875.0/32.0)+var_inter[0]*(var_inter[0]*(5546875.0/192.0+var_inter[1]*(2734375.0/288.0*var_inter[0]+var_inter[1]*(1953125.0/192.0-1953125.0/576.0*var_inter[0])-2734375.0/96.0)-5546875.0/576.0*var_inter[0])+var_inter[1]*(9296875.0/288.0-6640625.0/576.0*var_inter[1])-18859375.0/576.0))-240625.0/32.0)+var_inter[0]*(var_inter[0]*(15625.0/8.0-15625.0/24.0*var_inter[0])-53125.0/24.0))+var_inter[1]*(263725.0/144.0+var_inter[1]*(var_inter[1]*(599375.0/144.0-428125.0/288.0*var_inter[1])-1215875.0/288.0))-3425.0/12.0))+val[8]*var_inter[1]*var_inter[0]*(var_inter[1]*(48125.0/12.0+var_inter[1]*(var_inter[1]*(109375.0/12.0-78125.0/24.0*var_inter[1])-221875.0/24.0))+var_inter[0]*(66875.0/12.0+var_inter[0]*(var_inter[0]*(203125.0/12.0-78125.0/12.0*var_inter[0])-184375.0/12.0)+var_inter[1]*(var_inter[0]*(14196875.0/144.0+var_inter[1]*(var_inter[1]*(32265625.0/144.0-23046875.0/288.0*var_inter[1])+var_inter[0]*(72109375.0/288.0+var_inter[1]*(13671875.0/144.0*var_inter[0]+var_inter[1]*(25390625.0/288.0-9765625.0/288.0*var_inter[0])-35546875.0/144.0)-27734375.0/288.0*var_inter[0])-65453125.0/288.0)+var_inter[0]*(6015625.0/144.0*var_inter[0]-15640625.0/144.0))+var_inter[1]*(23740625.0/288.0+var_inter[1]*(8359375.0/288.0*var_inter[1]-11703125.0/144.0))-5149375.0/144.0))-625)+val[10]*var_inter[0]*var_inter[1]*(var_inter[1]*(48125.0/48.0+var_inter[1]*(var_inter[1]*(109375.0/48.0-78125.0/96.0*var_inter[1])-221875.0/96.0))+var_inter[0]*(38125.0/24.0+var_inter[0]*(var_inter[0]*(171875.0/24.0-78125.0/24.0*var_inter[0])-128125.0/24.0)+var_inter[1]*(var_inter[0]*(9865625.0/288.0+var_inter[0]*(6015625.0/288.0*var_inter[0]-13234375.0/288.0)+var_inter[1]*(var_inter[0]*(61015625.0/576.0-27734375.0/576.0*var_inter[0])+var_inter[1]*(22421875.0/288.0+var_inter[0]*(21484375.0/576.0*var_inter[1]+var_inter[0]*(13671875.0/288.0-9765625.0/576.0*var_inter[1])-30078125.0/288.0)-16015625.0/576.0*var_inter[1])-45484375.0/576.0))+var_inter[1]*(13534375.0/576.0+var_inter[1]*(4765625.0/576.0*var_inter[1]-6671875.0/288.0))-2935625.0/288.0))-625.0/4.0)+val[11]*var_inter[0]*var_inter[1]*(25+var_inter[0]*(var_inter[0]*(21875.0/24.0+var_inter[0]*(15625.0/24.0*var_inter[0]-15625.0/12.0))-3125.0/12.0)+var_inter[1]*(var_inter[1]*(8875.0/24.0+var_inter[1]*(3125.0/24.0*var_inter[1]-4375.0/12.0))+var_inter[0]*(240625.0/144.0+var_inter[1]*(var_inter[1]*(546875.0/144.0-390625.0/288.0*var_inter[1])-1109375.0/288.0)+var_inter[0]*(var_inter[0]*(1203125.0/144.0-1203125.0/288.0*var_inter[0])+var_inter[1]*(7765625.0/576.0+var_inter[1]*(2734375.0/576.0*var_inter[1]-3828125.0/288.0)+var_inter[0]*(5546875.0/576.0*var_inter[0]+var_inter[1]*(2734375.0/144.0+var_inter[0]*(1953125.0/576.0*var_inter[1]-2734375.0/288.0)-1953125.0/288.0*var_inter[1])-5546875.0/288.0))-1684375.0/288.0))-1925.0/12.0))+val[14]*var_inter[1]*var_inter[0]*(625+var_inter[0]*(var_inter[0]*(184375.0/12.0+var_inter[0]*(78125.0/12.0*var_inter[0]-203125.0/12.0))+var_inter[1]*(7155625.0/144.0+var_inter[0]*(var_inter[0]*(21734375.0/144.0-8359375.0/144.0*var_inter[0])-19728125.0/144.0)+var_inter[1]*(var_inter[1]*(21734375.0/144.0-8359375.0/144.0*var_inter[1])+var_inter[0]*(54390625.0/144.0+var_inter[1]*(23046875.0/144.0*var_inter[1]-59921875.0/144.0)+var_inter[0]*(23046875.0/144.0*var_inter[0]+var_inter[1]*(66015625.0/144.0+9765625.0/144.0*var_inter[0]*var_inter[1]-25390625.0/144.0*(var_inter[0]+var_inter[1]))-59921875.0/144.0))-19728125.0/144.0))-66875.0/12.0)+var_inter[1]*(var_inter[1]*(184375.0/12.0+var_inter[1]*(78125.0/12.0*var_inter[1]-203125.0/12.0))-66875.0/12.0))+val[16]*var_inter[1]*var_inter[0]*(625.0/4.0+var_inter[1]*(var_inter[1]*(184375.0/48.0+var_inter[1]*(78125.0/48.0*var_inter[1]-203125.0/48.0))-66875.0/48.0)+var_inter[0]*(var_inter[0]*(128125.0/24.0+var_inter[0]*(78125.0/24.0*var_inter[0]-171875.0/24.0))+var_inter[1]*(4079375.0/288.0+var_inter[1]*(var_inter[1]*(12390625.0/288.0-4765625.0/288.0*var_inter[1])-11246875.0/288.0)+var_inter[0]*(var_inter[0]*(18390625.0/288.0-8359375.0/288.0*var_inter[0])+var_inter[1]*(37796875.0/288.0+var_inter[1]*(16015625.0/288.0*var_inter[1]-41640625.0/288.0)+var_inter[0]*(23046875.0/288.0*var_inter[0]+var_inter[1]*(55859375.0/288.0+var_inter[0]*(9765625.0/288.0*var_inter[1]-25390625.0/288.0)-21484375.0/288.0*var_inter[1])-50703125.0/288.0))-13709375.0/288.0))-38125.0/24.0))+val[19]*var_inter[0]*var_inter[1]*(1250.0/3.0+var_inter[0]*(var_inter[0]*(221875.0/36.0+var_inter[0]*(78125.0/36.0*var_inter[0]-109375.0/18.0))-48125.0/18.0)+var_inter[1]*(var_inter[1]*(153125.0/12.0+var_inter[1]*(78125.0/12.0*var_inter[1]-15625))+var_inter[0]*(625625.0/24.0+var_inter[1]*(var_inter[1]*(1203125.0/12.0-6015625.0/144.0*var_inter[1])-11790625.0/144.0)+var_inter[0]*(var_inter[0]*(1421875.0/24.0-1015625.0/48.0*var_inter[0])+var_inter[1]*(54359375.0/288.0+var_inter[1]*(27734375.0/288.0*var_inter[1]-5546875.0/24.0)+var_inter[0]*(19140625.0/288.0*var_inter[0]+var_inter[1]*(2734375.0/12.0+var_inter[0]*(9765625.0/288.0*var_inter[1]-1953125.0/24.0)-13671875.0/144.0*var_inter[1])-26796875.0/144.0))-2884375.0/48.0))-8125.0/2.0))+val[22]*var_inter[1]*var_inter[0]*(var_inter[1]*(8125.0/8.0+var_inter[1]*(var_inter[1]*(15625.0/4.0-78125.0/48.0*var_inter[1])-153125.0/48.0))+var_inter[0]*(38125.0/36.0+var_inter[0]*(var_inter[0]*(171875.0/36.0-78125.0/36.0*var_inter[0])-128125.0/36.0)+var_inter[1]*(var_inter[1]*(9340625.0/288.0+var_inter[1]*(4765625.0/288.0*var_inter[1]-953125.0/24.0))+var_inter[0]*(1665625.0/48.0+var_inter[0]*(1015625.0/48.0*var_inter[0]-2234375.0/48.0)+var_inter[1]*(var_inter[1]*(3203125.0/24.0-16015625.0/288.0*var_inter[1])+var_inter[0]*(42109375.0/288.0+var_inter[1]*(21484375.0/288.0*var_inter[1]+var_inter[0]*(1953125.0/24.0-9765625.0/288.0*var_inter[1])-4296875.0/24.0)-19140625.0/288.0*var_inter[0])-31390625.0/288.0))-495625.0/48.0))-625.0/6.0)+val[23]*var_inter[1]*var_inter[0]*(50.0/3.0+var_inter[1]*(var_inter[1]*(6125.0/12.0+var_inter[1]*(3125.0/12.0*var_inter[1]-625))-325.0/2.0)+var_inter[0]*(var_inter[0]*(21875.0/36.0+var_inter[0]*(15625.0/36.0*var_inter[0]-15625.0/18.0))+var_inter[1]*(40625.0/24.0+var_inter[1]*(var_inter[1]*(78125.0/12.0-390625.0/144.0*var_inter[1])-765625.0/144.0)+var_inter[0]*(var_inter[0]*(203125.0/24.0-203125.0/48.0*var_inter[0])+var_inter[1]*(5359375.0/288.0+var_inter[1]*(2734375.0/288.0*var_inter[1]-546875.0/24.0)+var_inter[0]*(3828125.0/288.0*var_inter[0]+var_inter[1]*(390625.0/12.0+var_inter[0]*(1953125.0/288.0*var_inter[1]-390625.0/24.0)-1953125.0/144.0*var_inter[1])-3828125.0/144.0))-284375.0/48.0))-3125.0/18.0))+val[24]*var_inter[1]*(var_inter[1]*(1525.0/24.0+var_inter[1]*(var_inter[1]*(6875.0/24.0-3125.0/24.0*var_inter[1])-5125.0/24.0))+var_inter[0]*(3425.0/48.0+var_inter[1]*(var_inter[1]*(702125.0/288.0+var_inter[1]*(428125.0/288.0*var_inter[1]-941875.0/288.0))-208925.0/288.0)+var_inter[0]*(var_inter[1]*(190625.0/64.0+var_inter[0]*(var_inter[0]*(953125.0/192.0-953125.0/576.0*var_inter[0])+var_inter[1]*(10890625.0/576.0+var_inter[0]*(3203125.0/576.0*var_inter[0]-3203125.0/192.0)+var_inter[1]*(6640625.0/576.0*var_inter[1]+var_inter[0]*(4296875.0/192.0+var_inter[1]*(1953125.0/576.0*var_inter[0]-1953125.0/192.0)-4296875.0/576.0*var_inter[0])-14609375.0/576.0))-3240625.0/576.0)+var_inter[1]*(var_inter[1]*(859375.0/64.0-390625.0/64.0*var_inter[1])-640625.0/64.0))+var_inter[0]*(53125.0/96.0+var_inter[0]*(15625.0/96.0*var_inter[0]-15625.0/32.0))-9375.0/32.0))-25.0/4.0)+var_inter[1]*var_inter[0]*(625.0/4.0+var_inter[0]*(var_inter[0]*(184375.0/48.0+var_inter[0]*(78125.0/48.0*var_inter[0]-203125.0/48.0))-66875.0/48.0)+var_inter[1]*(var_inter[1]*(128125.0/24.0+var_inter[1]*(78125.0/24.0*var_inter[1]-171875.0/24.0))+var_inter[0]*(4079375.0/288.0+var_inter[1]*(var_inter[1]*(18390625.0/288.0-8359375.0/288.0*var_inter[1])+var_inter[0]*(37796875.0/288.0+var_inter[1]*(23046875.0/288.0*var_inter[1]-50703125.0/288.0)+var_inter[0]*(16015625.0/288.0*var_inter[0]+var_inter[1]*(55859375.0/288.0+var_inter[1]*(9765625.0/288.0*var_inter[0]-25390625.0/288.0)-21484375.0/288.0*var_inter[0])-41640625.0/288.0))-13709375.0/288.0)+var_inter[0]*(var_inter[0]*(12390625.0/288.0-4765625.0/288.0*var_inter[0])-11246875.0/288.0))-38125.0/24.0))*val[26]+var_inter[0]*var_inter[1]*(var_inter[1]*(38125.0/36.0+var_inter[1]*(var_inter[1]*(171875.0/36.0-78125.0/36.0*var_inter[1])-128125.0/36.0))+var_inter[0]*(8125.0/8.0+var_inter[0]*(var_inter[0]*(15625.0/4.0-78125.0/48.0*var_inter[0])-153125.0/48.0)+var_inter[1]*(var_inter[1]*(1665625.0/48.0+var_inter[1]*(1015625.0/48.0*var_inter[1]-2234375.0/48.0))+var_inter[0]*(9340625.0/288.0+var_inter[0]*(4765625.0/288.0*var_inter[0]-953125.0/24.0)+var_inter[1]*(var_inter[0]*(3203125.0/24.0-16015625.0/288.0*var_inter[0])+var_inter[1]*(42109375.0/288.0+var_inter[0]*(21484375.0/288.0*var_inter[0]+var_inter[1]*(1953125.0/24.0-9765625.0/288.0*var_inter[0])-4296875.0/24.0)-19140625.0/288.0*var_inter[1])-31390625.0/288.0))-495625.0/48.0))-625.0/6.0)*val[27]+var_inter[0]*var_inter[1]*(var_inter[1]*(1525.0/24.0+var_inter[1]*(var_inter[1]*(6875.0/24.0-3125.0/24.0*var_inter[1])-5125.0/24.0))+var_inter[0]*(3125.0/48.0+var_inter[0]*(var_inter[0]*(15625.0/48.0-15625.0/96.0*var_inter[0])-21875.0/96.0)+var_inter[1]*(var_inter[0]*(1334375.0/576.0+var_inter[0]*(953125.0/576.0*var_inter[0]-953125.0/288.0)+var_inter[1]*(var_inter[1]*(6015625.0/576.0-2734375.0/576.0*var_inter[1])+var_inter[0]*(3203125.0/288.0+var_inter[1]*(1953125.0/288.0*var_inter[1]+var_inter[0]*(4296875.0/576.0-1953125.0/576.0*var_inter[1])-4296875.0/288.0)-3203125.0/576.0*var_inter[0])-4484375.0/576.0))+var_inter[1]*(640625.0/288.0+var_inter[1]*(390625.0/288.0*var_inter[1]-859375.0/288.0))-190625.0/288.0))-25.0/4.0)*val[29]+val[30]*var_inter[1]*(1+var_inter[0]*(var_inter[0]*(375.0/8.0+var_inter[0]*(var_inter[0]*(625.0/8.0-625.0/24.0*var_inter[0])-2125.0/24.0))+var_inter[1]*(17125.0/144.0+var_inter[0]*(var_inter[1]*(109375.0/64.0+var_inter[1]*(78125.0/64.0*var_inter[1]-78125.0/32.0))+var_inter[0]*(265625.0/288.0+var_inter[0]*(78125.0/288.0*var_inter[0]-78125.0/96.0)+var_inter[1]*(var_inter[1]*(1328125.0/288.0-1328125.0/576.0*var_inter[1])+var_inter[0]*(546875.0/192.0+var_inter[1]*(390625.0/192.0*var_inter[1]+var_inter[0]*(390625.0/288.0-390625.0/576.0*var_inter[1])-390625.0/96.0)-546875.0/576.0*var_inter[0])-1859375.0/576.0))-15625.0/32.0)+var_inter[1]*(var_inter[1]*(85625.0/144.0-85625.0/288.0*var_inter[1])-119875.0/288.0))-137.0/12.0)+var_inter[1]*(var_inter[1]*(875.0/24.0+var_inter[1]*(625.0/24.0*var_inter[1]-625.0/12.0))-125.0/12.0))+var_inter[0]*var_inter[1]*(25+var_inter[0]*(var_inter[0]*(8875.0/24.0+var_inter[0]*(3125.0/24.0*var_inter[0]-4375.0/12.0))+var_inter[1]*(240625.0/144.0+var_inter[0]*(var_inter[0]*(546875.0/144.0-390625.0/288.0*var_inter[0])+var_inter[1]*(7765625.0/576.0+var_inter[1]*(5546875.0/576.0*var_inter[1]-5546875.0/288.0)+var_inter[0]*(2734375.0/576.0*var_inter[0]+var_inter[1]*(2734375.0/144.0+var_inter[0]*(1953125.0/576.0*var_inter[1]-1953125.0/288.0)-2734375.0/288.0*var_inter[1])-3828125.0/288.0))-1109375.0/288.0)+var_inter[1]*(var_inter[1]*(1203125.0/144.0-1203125.0/288.0*var_inter[1])-1684375.0/288.0))-1925.0/12.0)+var_inter[1]*(var_inter[1]*(21875.0/24.0+var_inter[1]*(15625.0/24.0*var_inter[1]-15625.0/12.0))-3125.0/12.0))*val[31]+val[32]*var_inter[0]*var_inter[1]*(var_inter[0]*(2675.0/12.0+var_inter[0]*(var_inter[0]*(8125.0/12.0-3125.0/12.0*var_inter[0])-7375.0/12.0))+var_inter[1]*(3125.0/12.0+var_inter[1]*(var_inter[1]*(15625.0/12.0-15625.0/24.0*var_inter[1])-21875.0/24.0)+var_inter[0]*(var_inter[1]*(2340625.0/288.0+var_inter[1]*(1671875.0/288.0*var_inter[1]-1671875.0/144.0))+var_inter[0]*(921875.0/144.0+var_inter[0]*(390625.0/144.0*var_inter[0]-1015625.0/144.0)+var_inter[1]*(var_inter[0]*(7109375.0/288.0+var_inter[1]*(1953125.0/144.0*var_inter[0]+var_inter[1]*(5078125.0/288.0-1953125.0/288.0*var_inter[0])-5078125.0/144.0)-2734375.0/288.0*var_inter[0])+var_inter[1]*(4609375.0/144.0-4609375.0/288.0*var_inter[1])-6453125.0/288.0))-334375.0/144.0))-25)+val[33]*var_inter[0]*var_inter[1]*(50.0/3.0+var_inter[1]*(var_inter[1]*(21875.0/36.0+var_inter[1]*(15625.0/36.0*var_inter[1]-15625.0/18.0))-3125.0/18.0)+var_inter[0]*(var_inter[0]*(6125.0/12.0+var_inter[0]*(3125.0/12.0*var_inter[0]-625))+var_inter[1]*(40625.0/24.0+var_inter[0]*(var_inter[0]*(78125.0/12.0-390625.0/144.0*var_inter[0])+var_inter[1]*(5359375.0/288.0+var_inter[1]*(3828125.0/288.0*var_inter[1]-3828125.0/144.0)+var_inter[0]*(2734375.0/288.0*var_inter[0]+var_inter[1]*(390625.0/12.0+var_inter[0]*(1953125.0/288.0*var_inter[1]-1953125.0/144.0)-390625.0/24.0*var_inter[1])-546875.0/24.0))-765625.0/144.0)+var_inter[1]*(var_inter[1]*(203125.0/24.0-203125.0/48.0*var_inter[1])-284375.0/48.0))-325.0/2.0))+val[34]*var_inter[1]*var_inter[0]*(var_inter[1]*(3125.0/48.0+var_inter[1]*(var_inter[1]*(15625.0/48.0-15625.0/96.0*var_inter[1])-21875.0/96.0))+var_inter[0]*(1525.0/24.0+var_inter[0]*(var_inter[0]*(6875.0/24.0-3125.0/24.0*var_inter[0])-5125.0/24.0)+var_inter[1]*(var_inter[1]*(1334375.0/576.0+var_inter[1]*(953125.0/576.0*var_inter[1]-953125.0/288.0))+var_inter[0]*(640625.0/288.0+var_inter[1]*(var_inter[1]*(3203125.0/288.0-3203125.0/576.0*var_inter[1])+var_inter[0]*(6015625.0/576.0+var_inter[1]*(4296875.0/576.0*var_inter[1]+var_inter[0]*(1953125.0/288.0-1953125.0/576.0*var_inter[1])-4296875.0/288.0)-2734375.0/576.0*var_inter[0])-4484375.0/576.0)+var_inter[0]*(390625.0/288.0*var_inter[0]-859375.0/288.0))-190625.0/288.0))-25.0/4.0)+val[35]*var_inter[0]*var_inter[1]*(1+var_inter[1]*(var_inter[1]*(875.0/24.0+var_inter[1]*(625.0/24.0*var_inter[1]-625.0/12.0))-125.0/12.0)+var_inter[0]*(var_inter[0]*(875.0/24.0+var_inter[0]*(625.0/24.0*var_inter[0]-625.0/12.0))+var_inter[1]*(15625.0/144.0+var_inter[1]*(var_inter[1]*(78125.0/144.0-78125.0/288.0*var_inter[1])-109375.0/288.0)+var_inter[0]*(var_inter[0]*(78125.0/144.0-78125.0/288.0*var_inter[0])+var_inter[1]*(765625.0/576.0+var_inter[0]*(546875.0/576.0*var_inter[0]-546875.0/288.0)+var_inter[1]*(546875.0/576.0*var_inter[1]+var_inter[0]*(390625.0/144.0+390625.0/576.0*var_inter[0]*var_inter[1]-390625.0/288.0*(var_inter[0]+var_inter[1]))-546875.0/288.0))-109375.0/288.0))-125.0/12.0))
+    else if interpolation_base == "hierarchical"
+        return val[32]*var_inter[1]*var_inter[0]*(var_inter[0]*(2675.0/12.0+var_inter[0]*(var_inter[0]*(8125.0/12.0-3125.0/12.0*var_inter[0])-7375.0/12.0))-25)+val[30]*var_inter[1]*(1-var_inter[0])+var_inter[0]*var_inter[1]*(625.0/16.0+var_inter[0]*(var_inter[0]*(128125.0/96.0+var_inter[0]*(78125.0/96.0*var_inter[0]-171875.0/96.0))-38125.0/96.0)+var_inter[1]*(var_inter[0]*(2325625.0/576.0+var_inter[1]*(var_inter[0]*(26265625.0/576.0+var_inter[0]*(16015625.0/576.0*var_inter[0]-35234375.0/576.0)+var_inter[1]*(var_inter[0]*(47265625.0/576.0+9765625.0/576.0*var_inter[0]*var_inter[1]-21484375.0/576.0*(var_inter[0]+var_inter[1]))+16015625.0/576.0*var_inter[1]-35234375.0/576.0))+var_inter[1]*(10484375.0/576.0-4765625.0/576.0*var_inter[1])-7815625.0/576.0)+var_inter[0]*(var_inter[0]*(10484375.0/576.0-4765625.0/576.0*var_inter[0])-7815625.0/576.0))+var_inter[1]*(128125.0/96.0+var_inter[1]*(78125.0/96.0*var_inter[1]-171875.0/96.0))-38125.0/96.0))*val[28]+var_inter[1]*(1-var_inter[0])*(var_inter[1]*(1525.0/24.0+var_inter[1]*(var_inter[1]*(6875.0/24.0-3125.0/24.0*var_inter[1])-5125.0/24.0))-25.0/4.0)*val[24]+val[21]*var_inter[0]*var_inter[1]*(2500.0/9.0+var_inter[0]*(var_inter[0]*(153125.0/18.0+var_inter[0]*(78125.0/18.0*var_inter[0]-31250.0/3.0))+var_inter[1]*(105625.0/4.0+var_inter[0]*(var_inter[1]*(37515625.0/144.0+var_inter[0]*(var_inter[1]*(390625+9765625.0/144.0*var_inter[0]*var_inter[1]-1953125.0/12.0*(var_inter[0]+var_inter[1]))+19140625.0/144.0*var_inter[0]-3828125.0/12.0)+var_inter[1]*(19140625.0/144.0*var_inter[1]-3828125.0/12.0))+var_inter[0]*(203125.0/2.0-1015625.0/24.0*var_inter[0])-1990625.0/24.0)+var_inter[1]*(var_inter[1]*(203125.0/2.0-1015625.0/24.0*var_inter[1])-1990625.0/24.0))-8125.0/3.0)+var_inter[1]*(var_inter[1]*(153125.0/18.0+var_inter[1]*(78125.0/18.0*var_inter[1]-31250.0/3.0))-8125.0/3.0))+val[20]*var_inter[1]*var_inter[0]*(var_inter[1]*(8125.0/2.0+var_inter[0]*(var_inter[0]*(2396875.0/24.0+var_inter[0]*(1015625.0/24.0*var_inter[0]-2640625.0/24.0))+var_inter[1]*(16384375.0/144.0+var_inter[0]*(var_inter[1]*(4609375.0/12.0-23046875.0/144.0*var_inter[1])+var_inter[0]*(49765625.0/144.0+var_inter[1]*(25390625.0/144.0*var_inter[1]+var_inter[0]*(1953125.0/12.0-9765625.0/144.0*var_inter[1])-5078125.0/12.0)-19140625.0/144.0*var_inter[0])-45171875.0/144.0)+var_inter[1]*(8359375.0/144.0*var_inter[1]-1671875.0/12.0))-869375.0/24.0)+var_inter[1]*(var_inter[1]*(15625-78125.0/12.0*var_inter[1])-153125.0/12.0))+var_inter[0]*(66875.0/18.0+var_inter[0]*(var_inter[0]*(203125.0/18.0-78125.0/18.0*var_inter[0])-184375.0/18.0))-1250.0/3.0)+val[14]*var_inter[1]*var_inter[0]*(625+var_inter[0]*(var_inter[0]*(184375.0/12.0+var_inter[0]*(78125.0/12.0*var_inter[0]-203125.0/12.0))-66875.0/12.0)+var_inter[1]*(var_inter[1]*(184375.0/12.0+var_inter[1]*(78125.0/12.0*var_inter[1]-203125.0/12.0))+var_inter[0]*(7155625.0/144.0+var_inter[0]*(var_inter[0]*(21734375.0/144.0-8359375.0/144.0*var_inter[0])-19728125.0/144.0)+var_inter[1]*(var_inter[1]*(21734375.0/144.0-8359375.0/144.0*var_inter[1])+var_inter[0]*(54390625.0/144.0+var_inter[1]*(23046875.0/144.0*var_inter[1]-59921875.0/144.0)+var_inter[0]*(23046875.0/144.0*var_inter[0]+var_inter[1]*(66015625.0/144.0+var_inter[0]*(9765625.0/144.0*var_inter[1]-25390625.0/144.0)-25390625.0/144.0*var_inter[1])-59921875.0/144.0))-19728125.0/144.0))-66875.0/12.0))+val[10]*var_inter[0]*var_inter[1]*(var_inter[1]*(48125.0/48.0+var_inter[1]*(var_inter[1]*(109375.0/48.0-78125.0/96.0*var_inter[1])-221875.0/96.0))+var_inter[0]*(38125.0/24.0+var_inter[0]*(var_inter[0]*(171875.0/24.0-78125.0/24.0*var_inter[0])-128125.0/24.0)+var_inter[1]*(var_inter[0]*(9865625.0/288.0+var_inter[0]*(6015625.0/288.0*var_inter[0]-13234375.0/288.0))+var_inter[1]*(13534375.0/576.0+var_inter[1]*(4765625.0/576.0*var_inter[1]-6671875.0/288.0)+var_inter[0]*(var_inter[1]*(22421875.0/288.0-16015625.0/576.0*var_inter[1])+var_inter[0]*(61015625.0/576.0+var_inter[1]*(13671875.0/288.0*var_inter[0]+var_inter[1]*(21484375.0/576.0-9765625.0/576.0*var_inter[0])-30078125.0/288.0)-27734375.0/576.0*var_inter[0])-45484375.0/576.0))-2935625.0/288.0))-625.0/4.0)+val[9]*var_inter[1]*var_inter[0]*(1250.0/3.0+var_inter[1]*(var_inter[1]*(221875.0/36.0+var_inter[1]*(78125.0/36.0*var_inter[1]-109375.0/18.0))-48125.0/18.0)+var_inter[0]*(var_inter[0]*(153125.0/12.0+var_inter[0]*(78125.0/12.0*var_inter[0]-15625))+var_inter[1]*(625625.0/24.0+var_inter[1]*(var_inter[1]*(1421875.0/24.0-1015625.0/48.0*var_inter[1])-2884375.0/48.0)+var_inter[0]*(var_inter[0]*(1203125.0/12.0-6015625.0/144.0*var_inter[0])+var_inter[1]*(54359375.0/288.0+var_inter[1]*(19140625.0/288.0*var_inter[1]-26796875.0/144.0)+var_inter[0]*(27734375.0/288.0*var_inter[0]+var_inter[1]*(2734375.0/12.0+var_inter[0]*(9765625.0/288.0*var_inter[1]-13671875.0/144.0)-1953125.0/24.0*var_inter[1])-5546875.0/24.0))-11790625.0/144.0))-8125.0/2.0))+val[8]*var_inter[1]*var_inter[0]*(var_inter[1]*(48125.0/12.0+var_inter[1]*(var_inter[1]*(109375.0/12.0-78125.0/24.0*var_inter[1])-221875.0/24.0))+var_inter[0]*(66875.0/12.0+var_inter[0]*(var_inter[0]*(203125.0/12.0-78125.0/12.0*var_inter[0])-184375.0/12.0)+var_inter[1]*(var_inter[1]*(23740625.0/288.0+var_inter[1]*(8359375.0/288.0*var_inter[1]-11703125.0/144.0)+var_inter[0]*(var_inter[0]*(72109375.0/288.0-27734375.0/288.0*var_inter[0])+var_inter[1]*(32265625.0/144.0+var_inter[0]*(25390625.0/288.0*var_inter[1]+var_inter[0]*(13671875.0/144.0-9765625.0/288.0*var_inter[1])-35546875.0/144.0)-23046875.0/288.0*var_inter[1])-65453125.0/288.0))+var_inter[0]*(14196875.0/144.0+var_inter[0]*(6015625.0/144.0*var_inter[0]-15640625.0/144.0))-5149375.0/144.0))-625)+val[3]*var_inter[0]*(50.0/3.0+var_inter[0]*(var_inter[0]*(6125.0/12.0+var_inter[0]*(3125.0/12.0*var_inter[0]-625))-325.0/2.0))*(1-var_inter[1])+val[2]*var_inter[0]*(var_inter[0]*(2675.0/12.0+var_inter[0]*(var_inter[0]*(8125.0/12.0-3125.0/12.0*var_inter[0])-7375.0/12.0))-25)*(1-var_inter[1])+(1+var_inter[0]*(var_inter[1]-1)-var_inter[1])*val[0]+var_inter[0]*(25+var_inter[0]*(var_inter[0]*(8875.0/24.0+var_inter[0]*(3125.0/24.0*var_inter[0]-4375.0/12.0))-1925.0/12.0))*(1-var_inter[1])*val[1]+var_inter[0]*(var_inter[0]*(1525.0/24.0+var_inter[0]*(var_inter[0]*(6875.0/24.0-3125.0/24.0*var_inter[0])-5125.0/24.0))-25.0/4.0)*(1-var_inter[1])*val[4]+val[5]*var_inter[0]*(1-var_inter[1])+val[6]*var_inter[1]*(1-var_inter[0])*(25+var_inter[1]*(var_inter[1]*(8875.0/24.0+var_inter[1]*(3125.0/24.0*var_inter[1]-4375.0/12.0))-1925.0/12.0))+val[7]*var_inter[0]*var_inter[1]*(625+var_inter[1]*(var_inter[1]*(221875.0/24.0+var_inter[1]*(78125.0/24.0*var_inter[1]-109375.0/12.0))-48125.0/12.0)+var_inter[0]*(var_inter[0]*(221875.0/24.0+var_inter[0]*(78125.0/24.0*var_inter[0]-109375.0/12.0))+var_inter[1]*(3705625.0/144.0+var_inter[1]*(var_inter[1]*(8421875.0/144.0-6015625.0/288.0*var_inter[1])-17084375.0/288.0)+var_inter[0]*(var_inter[0]*(8421875.0/144.0-6015625.0/288.0*var_inter[0])+var_inter[1]*(78765625.0/576.0+var_inter[1]*(27734375.0/576.0*var_inter[1]+var_inter[0]*(19140625.0/144.0+var_inter[0]*(9765625.0/576.0*var_inter[1]-13671875.0/288.0)-13671875.0/288.0*var_inter[1])-38828125.0/288.0)+var_inter[0]*(27734375.0/576.0*var_inter[0]-38828125.0/288.0))-17084375.0/288.0))-48125.0/12.0))+val[11]*var_inter[0]*var_inter[1]*(25+var_inter[1]*(var_inter[1]*(8875.0/24.0+var_inter[1]*(3125.0/24.0*var_inter[1]-4375.0/12.0))-1925.0/12.0))+val[12]*var_inter[1]*(1-var_inter[0])*(var_inter[1]*(2675.0/12.0+var_inter[1]*(var_inter[1]*(8125.0/12.0-3125.0/12.0*var_inter[1])-7375.0/12.0))-25)+val[13]*var_inter[1]*var_inter[0]*(var_inter[1]*(66875.0/12.0+var_inter[1]*(var_inter[1]*(203125.0/12.0-78125.0/12.0*var_inter[1])-184375.0/12.0))+var_inter[0]*(48125.0/12.0+var_inter[0]*(var_inter[0]*(109375.0/12.0-78125.0/24.0*var_inter[0])-221875.0/24.0)+var_inter[1]*(var_inter[1]*(14196875.0/144.0+var_inter[1]*(6015625.0/144.0*var_inter[1]-15640625.0/144.0)+var_inter[0]*(var_inter[1]*(72109375.0/288.0-27734375.0/288.0*var_inter[1])+var_inter[0]*(32265625.0/144.0+var_inter[1]*(13671875.0/144.0*var_inter[1]+var_inter[0]*(25390625.0/288.0-9765625.0/288.0*var_inter[1])-35546875.0/144.0)-23046875.0/288.0*var_inter[0])-65453125.0/288.0))+var_inter[0]*(23740625.0/288.0+var_inter[0]*(8359375.0/288.0*var_inter[0]-11703125.0/144.0))-5149375.0/144.0))-625)+var_inter[1]*var_inter[0]*(var_inter[0]*(8125.0/2.0+var_inter[0]*(var_inter[0]*(15625-78125.0/12.0*var_inter[0])-153125.0/12.0))+var_inter[1]*(66875.0/18.0+var_inter[0]*(var_inter[0]*(16384375.0/144.0+var_inter[1]*(var_inter[1]*(49765625.0/144.0-19140625.0/144.0*var_inter[1])+var_inter[0]*(4609375.0/12.0+var_inter[1]*(1953125.0/12.0*var_inter[1]+var_inter[0]*(25390625.0/144.0-9765625.0/144.0*var_inter[1])-5078125.0/12.0)-23046875.0/144.0*var_inter[0])-45171875.0/144.0)+var_inter[0]*(8359375.0/144.0*var_inter[0]-1671875.0/12.0))+var_inter[1]*(2396875.0/24.0+var_inter[1]*(1015625.0/24.0*var_inter[1]-2640625.0/24.0))-869375.0/24.0)+var_inter[1]*(var_inter[1]*(203125.0/18.0-78125.0/18.0*var_inter[1])-184375.0/18.0))-1250.0/3.0)*val[15]+val[16]*var_inter[1]*var_inter[0]*(625.0/4.0+var_inter[1]*(var_inter[1]*(184375.0/48.0+var_inter[1]*(78125.0/48.0*var_inter[1]-203125.0/48.0))-66875.0/48.0)+var_inter[0]*(var_inter[0]*(128125.0/24.0+var_inter[0]*(78125.0/24.0*var_inter[0]-171875.0/24.0))+var_inter[1]*(4079375.0/288.0+var_inter[1]*(var_inter[0]*(37796875.0/288.0+var_inter[1]*(16015625.0/288.0*var_inter[1]-41640625.0/288.0)+var_inter[0]*(23046875.0/288.0*var_inter[0]+var_inter[1]*(55859375.0/288.0+var_inter[0]*(9765625.0/288.0*var_inter[1]-25390625.0/288.0)-21484375.0/288.0*var_inter[1])-50703125.0/288.0))+var_inter[1]*(12390625.0/288.0-4765625.0/288.0*var_inter[1])-11246875.0/288.0)+var_inter[0]*(var_inter[0]*(18390625.0/288.0-8359375.0/288.0*var_inter[0])-13709375.0/288.0))-38125.0/24.0))+var_inter[0]*var_inter[1]*(var_inter[1]*(2675.0/12.0+var_inter[1]*(var_inter[1]*(8125.0/12.0-3125.0/12.0*var_inter[1])-7375.0/12.0))-25)*val[17]+var_inter[1]*(1-var_inter[0])*(50.0/3.0+var_inter[1]*(var_inter[1]*(6125.0/12.0+var_inter[1]*(3125.0/12.0*var_inter[1]-625))-325.0/2.0))*val[18]+val[19]*var_inter[0]*var_inter[1]*(1250.0/3.0+var_inter[1]*(var_inter[0]*(625625.0/24.0+var_inter[0]*(var_inter[1]*(54359375.0/288.0+var_inter[1]*(var_inter[0]*(2734375.0/12.0+var_inter[0]*(9765625.0/288.0*var_inter[1]-1953125.0/24.0)-13671875.0/144.0*var_inter[1])+27734375.0/288.0*var_inter[1]-5546875.0/24.0)+var_inter[0]*(19140625.0/288.0*var_inter[0]-26796875.0/144.0))+var_inter[0]*(1421875.0/24.0-1015625.0/48.0*var_inter[0])-2884375.0/48.0)+var_inter[1]*(var_inter[1]*(1203125.0/12.0-6015625.0/144.0*var_inter[1])-11790625.0/144.0))+var_inter[1]*(153125.0/12.0+var_inter[1]*(78125.0/12.0*var_inter[1]-15625))-8125.0/2.0)+var_inter[0]*(var_inter[0]*(221875.0/36.0+var_inter[0]*(78125.0/36.0*var_inter[0]-109375.0/18.0))-48125.0/18.0))+val[22]*var_inter[1]*var_inter[0]*(var_inter[1]*(8125.0/8.0+var_inter[1]*(var_inter[1]*(15625.0/4.0-78125.0/48.0*var_inter[1])-153125.0/48.0))+var_inter[0]*(38125.0/36.0+var_inter[0]*(var_inter[0]*(171875.0/36.0-78125.0/36.0*var_inter[0])-128125.0/36.0)+var_inter[1]*(var_inter[1]*(9340625.0/288.0+var_inter[0]*(var_inter[1]*(3203125.0/24.0-16015625.0/288.0*var_inter[1])+var_inter[0]*(42109375.0/288.0+var_inter[1]*(21484375.0/288.0*var_inter[1]+var_inter[0]*(1953125.0/24.0-9765625.0/288.0*var_inter[1])-4296875.0/24.0)-19140625.0/288.0*var_inter[0])-31390625.0/288.0)+var_inter[1]*(4765625.0/288.0*var_inter[1]-953125.0/24.0))+var_inter[0]*(1665625.0/48.0+var_inter[0]*(1015625.0/48.0*var_inter[0]-2234375.0/48.0))-495625.0/48.0))-625.0/6.0)+val[23]*var_inter[0]*var_inter[1]*(50.0/3.0+var_inter[1]*(var_inter[1]*(6125.0/12.0+var_inter[1]*(3125.0/12.0*var_inter[1]-625))-325.0/2.0))+val[25]*var_inter[1]*var_inter[0]*(var_inter[1]*(38125.0/24.0+var_inter[0]*(var_inter[1]*(9865625.0/288.0+var_inter[1]*(6015625.0/288.0*var_inter[1]-13234375.0/288.0))+var_inter[0]*(13534375.0/576.0+var_inter[0]*(4765625.0/576.0*var_inter[0]-6671875.0/288.0)+var_inter[1]*(var_inter[0]*(22421875.0/288.0-16015625.0/576.0*var_inter[0])+var_inter[1]*(61015625.0/576.0+var_inter[0]*(21484375.0/576.0*var_inter[0]+var_inter[1]*(13671875.0/288.0-9765625.0/576.0*var_inter[0])-30078125.0/288.0)-27734375.0/576.0*var_inter[1])-45484375.0/576.0))-2935625.0/288.0)+var_inter[1]*(var_inter[1]*(171875.0/24.0-78125.0/24.0*var_inter[1])-128125.0/24.0))+var_inter[0]*(48125.0/48.0+var_inter[0]*(var_inter[0]*(109375.0/48.0-78125.0/96.0*var_inter[0])-221875.0/96.0))-625.0/4.0)+var_inter[1]*var_inter[0]*(625.0/4.0+var_inter[0]*(var_inter[1]*(4079375.0/288.0+var_inter[0]*(var_inter[1]*(37796875.0/288.0+var_inter[0]*(16015625.0/288.0*var_inter[0]-41640625.0/288.0)+var_inter[1]*(var_inter[0]*(55859375.0/288.0+var_inter[1]*(9765625.0/288.0*var_inter[0]-25390625.0/288.0)-21484375.0/288.0*var_inter[0])+23046875.0/288.0*var_inter[1]-50703125.0/288.0))+var_inter[0]*(12390625.0/288.0-4765625.0/288.0*var_inter[0])-11246875.0/288.0)+var_inter[1]*(var_inter[1]*(18390625.0/288.0-8359375.0/288.0*var_inter[1])-13709375.0/288.0))+var_inter[0]*(184375.0/48.0+var_inter[0]*(78125.0/48.0*var_inter[0]-203125.0/48.0))-66875.0/48.0)+var_inter[1]*(var_inter[1]*(128125.0/24.0+var_inter[1]*(78125.0/24.0*var_inter[1]-171875.0/24.0))-38125.0/24.0))*val[26]+var_inter[0]*var_inter[1]*(var_inter[1]*(38125.0/36.0+var_inter[0]*(var_inter[1]*(1665625.0/48.0+var_inter[0]*(var_inter[1]*(42109375.0/288.0-19140625.0/288.0*var_inter[1])+var_inter[0]*(3203125.0/24.0+var_inter[1]*(1953125.0/24.0*var_inter[1]+var_inter[0]*(21484375.0/288.0-9765625.0/288.0*var_inter[1])-4296875.0/24.0)-16015625.0/288.0*var_inter[0])-31390625.0/288.0)+var_inter[1]*(1015625.0/48.0*var_inter[1]-2234375.0/48.0))+var_inter[0]*(9340625.0/288.0+var_inter[0]*(4765625.0/288.0*var_inter[0]-953125.0/24.0))-495625.0/48.0)+var_inter[1]*(var_inter[1]*(171875.0/36.0-78125.0/36.0*var_inter[1])-128125.0/36.0))+var_inter[0]*(8125.0/8.0+var_inter[0]*(var_inter[0]*(15625.0/4.0-78125.0/48.0*var_inter[0])-153125.0/48.0))-625.0/6.0)*val[27]+var_inter[0]*var_inter[1]*(var_inter[1]*(1525.0/24.0+var_inter[1]*(var_inter[1]*(6875.0/24.0-3125.0/24.0*var_inter[1])-5125.0/24.0))-25.0/4.0)*val[29]+var_inter[1]*var_inter[0]*(25+var_inter[0]*(var_inter[0]*(8875.0/24.0+var_inter[0]*(3125.0/24.0*var_inter[0]-4375.0/12.0))-1925.0/12.0))*val[31]+val[33]*var_inter[1]*var_inter[0]*(50.0/3.0+var_inter[0]*(var_inter[0]*(6125.0/12.0+var_inter[0]*(3125.0/12.0*var_inter[0]-625))-325.0/2.0))+val[34]*var_inter[0]*var_inter[1]*(var_inter[0]*(1525.0/24.0+var_inter[0]*(var_inter[0]*(6875.0/24.0-3125.0/24.0*var_inter[0])-5125.0/24.0))-25.0/4.0)+var_inter[0]*var_inter[1]*val[35]
+
+#
+def interpolation_vertex( var_inter, val_vertex )
+    return val_vertex[1]*var_inter[0]*(1-var_inter[1])+val_vertex[0]*(1+var_inter[0]*(var_inter[1]-1)-var_inter[1])+val_vertex[2]*var_inter[0]*var_inter[1]+val_vertex[3]*var_inter[1]*(1-var_inter[0])
+#
+def nb_children( sub_nvi ) when sub_nvi==0
+    return 1
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==0
+    return child_var_inter
+def type_child( sub_nvi, num_child ) when sub_nvi==0
+    return Quad_8
+def node_number_child( sub_nvi, num_child ) when sub_nvi==0
+    return 0 .. 8
+#
+def nb_children( sub_nvi ) when sub_nvi==1
+    return 4
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==1 and num_child==0
+    return [(2*child_var_inter[0]-1)*child_var_inter[0]-2*(child_var_inter[0]-1)*child_var_inter[0],0]
+def type_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==0
+    return Bar_3
+def node_number_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==0
+    return [0,1,4]
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==1 and num_child==1
+    return [1+child_var_inter[0]*(2*child_var_inter[0]-3)+(2*child_var_inter[0]-1)*child_var_inter[0]-4*child_var_inter[0]*(child_var_inter[0]-1),(2*child_var_inter[0]-1)*child_var_inter[0]-2*child_var_inter[0]*(child_var_inter[0]-1)]
+def type_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==1
+    return Bar_3
+def node_number_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==1
+    return [1,2,5]
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==1 and num_child==2
+    return [1+(2*child_var_inter[0]-3)*child_var_inter[0]-2*child_var_inter[0]*(child_var_inter[0]-1),1+(2*child_var_inter[0]-1)*child_var_inter[0]+(2*child_var_inter[0]-3)*child_var_inter[0]-4*child_var_inter[0]*(child_var_inter[0]-1)]
+def type_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==2
+    return Bar_3
+def node_number_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==2
+    return [2,3,6]
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==1 and num_child==3
+    return [0,1+child_var_inter[0]*(2*child_var_inter[0]-3)-2*child_var_inter[0]*(child_var_inter[0]-1)]
+def type_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==3
+    return Bar_3
+def node_number_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==3
+    return [3,0,7]
+#
+def nb_children( sub_nvi ) when sub_nvi==2
+    return 4
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==2 and num_child==0
+    return [0,0]
+def type_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==0
+    return NodalElement
+def node_number_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==0
+    return [0]
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==2 and num_child==1
+    return [1,0]
+def type_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==1
+    return NodalElement
+def node_number_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==1
+    return [1]
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==2 and num_child==2
+    return [1,1]
+def type_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==2
+    return NodalElement
+def node_number_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==2
+    return [2]
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==2 and num_child==3
+    return [0,1]
+def type_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==3
+    return NodalElement
+def node_number_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==3
+    return [3]
+def normal( var_inter, pos_nodes )
+    assert( 0, "normal is defined only for nb_dim == nvi + 1" )
+#
+def jac_mat( var_inter, pos_nodes )
+    res := Mat[ type_promote(var_inter[0],pos_nodes[0][0],mul), Gen[ 2, 2 ] ]()
+    R_0 := pos_nodes[7][1]; R_1 := pos_nodes[5][1]; R_2 := pos_nodes[4][1]; R_3 := pos_nodes[3][1];
+    R_4 := pos_nodes[1][1]; R_5 := pos_nodes[0][1]; R_6 := pos_nodes[2][1]; R_7 := pos_nodes[6][1];
+    R_8 := pos_nodes[7][0]; R_9 := pos_nodes[6][0]; R_10 := pos_nodes[3][0]; R_11 := pos_nodes[0][0];
+    R_12 := pos_nodes[1][0]; R_13 := pos_nodes[2][0]; R_14 := var_inter[0]; R_15 := (-1.0)*R_14;
+    R_16 := 2.0+R_15; R_17 := 2.0*R_14; R_18 := (-1.0)+R_17; R_19 := 4.0*R_14;
+    R_20 := (-1.0)+R_14; R_21 := R_14*R_20; R_22 := R_2*R_21; R_22 = 4.0*R_22;
+    R_23 := R_7*R_21; R_23 = (-4.0)*R_23; R_24 := R_9*R_21; R_24 = (-4.0)*R_24;
+    R_25 := pos_nodes[4][0]; R_21 = R_25*R_21; R_21 = 4.0*R_21; R_26 := var_inter[1];
+    R_16 = R_26*R_16; R_27 := 4.0*R_26; R_28 := R_27+R_17; R_28 = (-3.0)+R_28;
+    R_28 = R_14*R_28; R_29 := R_6*R_28; R_28 = R_13*R_28; R_18 = R_26*R_18;
+    R_7 = R_7*R_18; R_7 = (-4.0)*R_7; R_18 = R_9*R_18; R_18 = (-4.0)*R_18;
+    R_9 = (-2.0)*R_26; R_30 := R_14+R_9; R_30 = (-2.0)*R_30; R_30 = (-1.0)+R_30;
+    R_30 = R_14*R_30; R_30 = R_4*R_30; R_31 := R_15+R_9; R_31 = 2.0*R_31;
+    R_31 = 5.0+R_31; R_31 = R_14*R_31; R_31 = R_27+R_31; R_31 = (-3.0)+R_31;
+    R_31 = R_11*R_31; R_9 = 5.0+R_9; R_9 = R_26*R_9; R_32 := (-1.0)*R_26;
+    R_33 := R_14+R_32; R_33 = R_14*R_33; R_33 = R_16+R_33; R_33 = 2.0*R_33;
+    R_33 = R_15+R_33; R_33 = (-1.0)+R_33; R_16 = R_3*R_33; R_33 = R_10*R_33;
+    R_17 = R_32+R_17; R_17 = 2.0*R_17; R_17 = (-1.0)+R_17; R_17 = R_26*R_17;
+    R_3 = R_3*R_17; R_17 = R_10*R_17; R_32 = 1.0+R_32; R_32 = R_14*R_32;
+    R_32 = 4.0*R_32; R_10 = R_9+R_32; R_10 = (-3.0)+R_10; R_10 = R_5*R_10;
+    R_34 := 2.0*R_26; R_35 := R_14+R_34; R_35 = (-2.0)*R_35; R_35 = 5.0+R_35;
+    R_35 = R_14*R_35; R_35 = R_27+R_35; R_35 = (-3.0)+R_35; R_35 = R_5*R_35;
+    R_35 = R_30+R_35; R_35 = R_29+R_35; R_35 = R_16+R_35; R_35 = R_22+R_35;
+    R_22 = R_15+R_34; R_22 = 2.0*R_22; R_22 = (-1.0)+R_22; R_22 = R_14*R_22;
+    R_22 = R_12*R_22; R_22 = R_31+R_22; R_28 = R_22+R_28; R_33 = R_28+R_33;
+    R_21 = R_33+R_21; R_33 = (-1.0)+R_34; R_28 = R_14*R_33; R_22 = R_1*R_28;
+    R_22 = (-4.0)*R_22; R_35 = R_22+R_35; R_35 = R_23+R_35; R_33 = R_26*R_33;
+    R_32 = R_32+R_33; R_32 = (-1.0)+R_32; R_32 = R_12*R_32; R_34 = R_19+R_34;
+    R_34 = (-3.0)+R_34; R_34 = R_26*R_34; R_6 = R_6*R_34; R_34 = R_13*R_34;
+    R_20 = R_26*R_20; R_13 = 2.0*R_20; R_13 = R_15+R_13; R_13 = 1.0+R_13;
+    R_15 = R_0*R_13; R_15 = 4.0*R_15; R_15 = R_35+R_15; res(1,1) = R_15;
+    R_13 = R_8*R_13; R_13 = 4.0*R_13; R_15 = (-2.0)+R_26; R_15 = R_14*R_15;
+    R_20 = R_15+R_20; R_20 = 1.0+R_20; R_2 = R_2*R_20; R_2 = 4.0*R_2;
+    R_20 = R_25*R_20; R_20 = 4.0*R_20; R_25 = (-1.0)+R_26; R_14 = R_14*R_25;
+    R_14 = (-4.0)*R_14; R_33 = R_14+R_33; R_33 = (-1.0)+R_33; R_33 = R_4*R_33;
+    R_33 = R_10+R_33; R_33 = R_6+R_33; R_3 = R_33+R_3; R_2 = R_3+R_2;
+    R_14 = R_9+R_14; R_14 = (-3.0)+R_14; R_14 = R_11*R_14; R_14 = R_32+R_14;
+    R_14 = R_34+R_14; R_17 = R_14+R_17; R_17 = R_20+R_17; R_25 = R_26*R_25;
+    R_0 = R_0*R_25; R_0 = 4.0*R_0; R_1 = R_1*R_25; R_1 = (-4.0)*R_1;
+    R_1 = R_2+R_1; R_1 = R_7+R_1; R_0 = R_1+R_0; res(0,1) = R_0;
+    R_8 = R_8*R_25; R_8 = 4.0*R_8; R_0 = pos_nodes[5][0]; R_28 = R_0*R_28;
+    R_28 = (-4.0)*R_28; R_21 = R_28+R_21; R_21 = R_24+R_21; R_21 = R_13+R_21;
+    res(1,0) = R_21; R_25 = R_0*R_25; R_25 = (-4.0)*R_25; R_17 = R_25+R_17;
+    R_18 = R_17+R_18; R_8 = R_18+R_8; res(0,0) = R_8; 
+    return res
+#
+def jac( var_inter, pos_nodes )
+    R_0 := pos_nodes[3][1]; R_1 := pos_nodes[2][1]; R_2 := pos_nodes[7][1]; R_3 := (-1.0)*R_2;
+    R_4 := pos_nodes[5][1]; R_3 = R_4+R_3; R_5 := pos_nodes[6][1]; R_6 := (-1.0)*R_5;
+    R_7 := pos_nodes[1][1]; R_8 := pos_nodes[4][1]; R_6 = R_8+R_6; R_9 := pos_nodes[0][1];
+    R_10 := pos_nodes[3][0]; R_11 := pos_nodes[7][0]; R_12 := pos_nodes[0][0]; R_13 := pos_nodes[6][0];
+    R_14 := (-1.0)*R_13; R_15 := pos_nodes[4][0]; R_14 = R_15+R_14; R_16 := pos_nodes[5][0];
+    R_17 := (-1.0)*R_16; R_17 = R_11+R_17; R_18 := pos_nodes[2][0]; R_19 := var_inter[1];
+    R_20 := (-1.0)+R_19; R_17 = R_17*R_20; R_3 = R_3*R_20; R_21 := (-2.0)+R_19;
+    R_22 := (-1.0)*R_19; R_23 := 1.0+R_22; R_24 := (-2.0)*R_19; R_25 := 5.0+R_24;
+    R_25 = R_19*R_25; R_26 := 4.0*R_19; R_27 := 2.0*R_19; R_28 := (-1.0)+R_27;
+    R_4 = R_4*R_28; R_4 = (-1.0)*R_4; R_29 := R_19*R_28; R_28 = R_16*R_28;
+    R_28 = (-1.0)*R_28; R_16 = pos_nodes[1][0]; R_30 := var_inter[0]; R_31 := R_30+R_24;
+    R_31 = (-2.0)*R_31; R_31 = (-1.0)+R_31; R_31 = R_7*R_31; R_32 := R_30+R_27;
+    R_32 = (-2.0)*R_32; R_32 = 5.0+R_32; R_32 = R_30*R_32; R_32 = R_26+R_32;
+    R_32 = (-3.0)+R_32; R_32 = R_9*R_32; R_33 := 4.0*R_30; R_33 = R_33+R_27;
+    R_33 = (-3.0)+R_33; R_34 := R_18*R_33; R_33 = R_1*R_33; R_20 = R_30*R_20;
+    R_20 = (-4.0)*R_20; R_35 := R_25+R_20; R_35 = (-3.0)+R_35; R_35 = R_12*R_35;
+    R_20 = R_20+R_29; R_20 = (-1.0)+R_20; R_20 = R_7*R_20; R_21 = R_30*R_21;
+    R_23 = R_30*R_23; R_23 = 4.0*R_23; R_29 = R_23+R_29; R_29 = (-1.0)+R_29;
+    R_29 = R_16*R_29; R_23 = R_25+R_23; R_23 = (-3.0)+R_23; R_23 = R_9*R_23;
+    R_9 = R_30+R_22; R_9 = R_30*R_9; R_25 = (-1.0)+R_30; R_6 = R_25*R_6;
+    R_6 = R_4+R_6; R_6 = 4.0*R_6; R_4 = R_19*R_25; R_21 = R_21+R_4;
+    R_21 = 1.0+R_21; R_15 = R_15*R_21; R_15 = 4.0*R_15; R_29 = R_15+R_29;
+    R_35 = R_29+R_35; R_21 = R_8*R_21; R_21 = 4.0*R_21; R_21 = R_23+R_21;
+    R_20 = R_21+R_20; R_4 = 2.0*R_4; R_25 = R_14*R_25; R_25 = R_28+R_25;
+    R_25 = 4.0*R_25; R_28 = 2.0*R_30; R_22 = R_22+R_28; R_22 = 2.0*R_22;
+    R_22 = (-1.0)+R_22; R_14 = R_10*R_22; R_34 = R_14+R_34; R_22 = R_0*R_22;
+    R_22 = R_33+R_22; R_33 = (-1.0)+R_28; R_13 = R_13*R_33; R_13 = (-1.0)*R_13;
+    R_17 = R_13+R_17; R_17 = 4.0*R_17; R_34 = R_17+R_34; R_34 = R_19*R_34;
+    R_35 = R_34+R_35; R_33 = R_5*R_33; R_3 = R_33+R_3; R_3 = (-4.0)*R_3;
+    R_22 = R_3+R_22; R_22 = R_19*R_22; R_22 = R_20+R_22; R_28 = R_26+R_28;
+    R_28 = (-3.0)+R_28; R_1 = R_1*R_28; R_31 = R_1+R_31; R_6 = R_31+R_6;
+    R_6 = R_30*R_6; R_28 = R_18*R_28; R_18 = (-1.0)*R_30; R_31 = 2.0+R_18;
+    R_31 = R_19*R_31; R_9 = R_31+R_9; R_9 = 2.0*R_9; R_9 = R_18+R_9;
+    R_9 = (-1.0)+R_9; R_0 = R_0*R_9; R_32 = R_0+R_32; R_9 = R_10*R_9;
+    R_4 = R_18+R_4; R_4 = 1.0+R_4; R_2 = R_2*R_4; R_2 = 4.0*R_2;
+    R_2 = R_32+R_2; R_6 = R_2+R_6; R_35 = R_6*R_35; R_4 = R_11*R_4;
+    R_4 = 4.0*R_4; R_24 = R_18+R_24; R_24 = 2.0*R_24; R_24 = 5.0+R_24;
+    R_24 = R_30*R_24; R_24 = R_26+R_24; R_24 = (-3.0)+R_24; R_24 = R_12*R_24;
+    R_4 = R_24+R_4; R_9 = R_4+R_9; R_27 = R_18+R_27; R_27 = 2.0*R_27;
+    R_27 = (-1.0)+R_27; R_27 = R_16*R_27; R_28 = R_27+R_28; R_25 = R_28+R_25;
+    R_25 = R_30*R_25; R_9 = R_25+R_9; R_22 = R_9*R_22; R_22 = (-1.0)*R_22;
+    R_35 = R_22+R_35; res := R_35; 
+    return res
+#
+def inv_jac_mat( var_inter, pos_nodes )
+    res := Mat[ type_promote(var_inter[0],pos_nodes[0][0],mul), Gen[ 2, 2 ] ]()
+    R_0 := pos_nodes[3][0]; R_1 := pos_nodes[7][0]; R_2 := (-1.0)*R_1; R_3 := pos_nodes[0][0];
+    R_4 := pos_nodes[6][0]; R_5 := (-1.0)*R_4; R_6 := pos_nodes[4][0]; R_7 := (-1.0)*R_6;
+    R_7 = R_4+R_7; R_5 = R_6+R_5; R_8 := pos_nodes[5][0]; R_2 = R_8+R_2;
+    R_9 := pos_nodes[2][0]; R_10 := pos_nodes[1][0]; R_11 := pos_nodes[7][1]; R_12 := (-1.0)*R_11;
+    R_13 := pos_nodes[0][1]; R_14 := pos_nodes[3][1]; R_15 := pos_nodes[4][1]; R_16 := (-1.0)*R_15;
+    R_17 := pos_nodes[6][1]; R_16 = R_17+R_16; R_18 := pos_nodes[5][1]; R_12 = R_18+R_12;
+    R_19 := pos_nodes[1][1]; R_20 := var_inter[1]; R_21 := (-1.0)+R_20; R_2 = R_2*R_21;
+    R_12 = R_12*R_21; R_22 := (-2.0)+R_20; R_23 := (-1.0)*R_20; R_24 := 1.0+R_23;
+    R_25 := 2.0*R_20; R_26 := (-1.0)+R_25; R_27 := R_20*R_26; R_8 = R_8*R_26;
+    R_28 := (-1.0)*R_8; R_26 = R_18*R_26; R_18 = (-2.0)*R_20; R_29 := 5.0+R_18;
+    R_29 = R_20*R_29; R_30 := 4.0*R_20; R_31 := pos_nodes[2][1]; R_32 := var_inter[0];
+    R_33 := 4.0*R_32; R_33 = R_33+R_25; R_33 = (-3.0)+R_33; R_34 := R_9*R_33;
+    R_33 = R_31*R_33; R_21 = R_32*R_21; R_21 = (-4.0)*R_21; R_35 := R_29+R_21;
+    R_35 = (-3.0)+R_35; R_35 = R_3*R_35; R_21 = R_21+R_27; R_21 = (-1.0)+R_21;
+    R_21 = R_19*R_21; R_22 = R_32*R_22; R_24 = R_32*R_24; R_24 = 4.0*R_24;
+    R_27 = R_24+R_27; R_27 = (-1.0)+R_27; R_27 = R_10*R_27; R_24 = R_29+R_24;
+    R_24 = (-3.0)+R_24; R_24 = R_13*R_24; R_29 = R_32+R_25; R_29 = (-2.0)*R_29;
+    R_29 = 5.0+R_29; R_29 = R_32*R_29; R_29 = R_30+R_29; R_29 = (-3.0)+R_29;
+    R_29 = R_13*R_29; R_13 = R_32+R_23; R_13 = R_32*R_13; R_36 := (-1.0)*R_32;
+    R_37 := R_36+R_18; R_37 = 2.0*R_37; R_37 = 5.0+R_37; R_37 = R_32*R_37;
+    R_37 = R_30+R_37; R_37 = (-3.0)+R_37; R_37 = R_3*R_37; R_25 = R_36+R_25;
+    R_25 = 2.0*R_25; R_25 = (-1.0)+R_25; R_25 = R_10*R_25; R_10 = 2.0+R_36;
+    R_10 = R_20*R_10; R_13 = R_10+R_13; R_13 = 2.0*R_13; R_13 = R_36+R_13;
+    R_13 = (-1.0)+R_13; R_10 = R_0*R_13; R_13 = R_14*R_13; R_29 = R_13+R_29;
+    R_13 = (-1.0)+R_32; R_7 = R_13*R_7; R_7 = R_8+R_7; R_7 = (-4.0)*R_7;
+    R_5 = R_5*R_13; R_5 = R_28+R_5; R_5 = 4.0*R_5; R_28 = R_20*R_13;
+    R_22 = R_22+R_28; R_22 = 1.0+R_22; R_6 = R_6*R_22; R_6 = 4.0*R_6;
+    R_27 = R_6+R_27; R_35 = R_27+R_35; R_22 = R_15*R_22; R_22 = 4.0*R_22;
+    R_22 = R_24+R_22; R_21 = R_22+R_21; R_28 = 2.0*R_28; R_28 = R_36+R_28;
+    R_28 = 1.0+R_28; R_1 = R_1*R_28; R_1 = 4.0*R_1; R_1 = R_37+R_1;
+    R_10 = R_1+R_10; R_28 = R_11*R_28; R_28 = 4.0*R_28; R_28 = R_29+R_28;
+    R_16 = R_13*R_16; R_16 = R_26+R_16; R_16 = (-4.0)*R_16; R_18 = R_32+R_18;
+    R_18 = (-2.0)*R_18; R_18 = (-1.0)+R_18; R_18 = R_19*R_18; R_19 = 2.0*R_32;
+    R_23 = R_23+R_19; R_23 = 2.0*R_23; R_23 = (-1.0)+R_23; R_0 = R_0*R_23;
+    R_34 = R_0+R_34; R_23 = R_14*R_23; R_23 = R_33+R_23; R_33 = (-1.0)+R_19;
+    R_4 = R_4*R_33; R_4 = R_2+R_4; R_4 = (-4.0)*R_4; R_34 = R_4+R_34;
+    R_34 = R_20*R_34; R_35 = R_34+R_35; R_33 = R_17*R_33; R_12 = R_33+R_12;
+    R_12 = (-4.0)*R_12; R_23 = R_12+R_23; R_23 = R_20*R_23; R_23 = R_21+R_23;
+    R_19 = R_30+R_19; R_19 = (-3.0)+R_19; R_9 = R_9*R_19; R_9 = R_25+R_9;
+    R_7 = R_9+R_7; R_7 = R_32*R_7; R_7 = R_10+R_7; R_5 = R_9+R_5;
+    R_5 = R_32*R_5; R_10 = R_5+R_10; R_10 = R_10*R_23; R_10 = (-1.0)*R_10;
+    R_19 = R_31*R_19; R_18 = R_19+R_18; R_16 = R_18+R_16; R_16 = R_32*R_16;
+    R_28 = R_16+R_28; R_16 = R_35*R_28; R_16 = R_10+R_16; R_16 = 1/R_16;
+    R_35 = R_35*R_16; res(1,1) = R_35; R_7 = R_7*R_16; R_7 = (-1.0)*R_7;
+    res(1,0) = R_7; R_23 = R_16*R_23; R_23 = (-1.0)*R_23; res(0,1) = R_23;
+    R_16 = R_28*R_16; res(0,0) = R_16; 
+    return res
+#
+def measure( var_inter, pos_nodes )
+    R_0 := pos_nodes[5][0]; R_1 := (-1.0)*R_0; R_2 := pos_nodes[7][0]; R_0 = R_0+R_2;
+    R_0 = (-4.0)*R_0; R_1 = R_2+R_1; R_2 = 4.0*R_1; R_3 := 8.0*R_1;
+    R_4 := pos_nodes[1][1]; R_5 := (-1.0)*R_4; R_6 := pos_nodes[0][1]; R_7 := (-1.0)*R_6;
+    R_8 := R_6+R_4; R_9 := pos_nodes[2][1]; R_4 = R_4+R_9; R_5 = R_9+R_5;
+    R_10 := R_6+R_5; R_11 := (-1.0)*R_9; R_9 = R_9+R_8; R_12 := pos_nodes[3][1];
+    R_13 := R_6+R_12; R_13 = (-1.0)*R_13; R_13 = R_13+R_4; R_13 = 4.0*R_13;
+    R_14 := (-1.0)*R_12; R_10 = R_14+R_10; R_4 = R_14+R_4; R_4 = R_7+R_4;
+    R_4 = 2.0*R_4; R_6 = R_6+R_14; R_5 = R_6+R_5; R_8 = R_14+R_8;
+    R_8 = R_11+R_8; R_11 = (-4.0)*R_8; R_8 = (-2.0)*R_8; R_9 = R_12+R_9;
+    R_9 = 2.0*R_9; R_12 = pos_nodes[6][1]; R_14 = (-1.0)*R_12; R_6 = pos_nodes[4][1];
+    R_14 = R_6+R_14; R_7 = R_14*R_1; R_15 := 8.0*R_14; R_15 = R_11+R_15;
+    R_11 = 4.0*R_14; R_8 = R_11+R_8; R_1 = R_1*R_8; R_1 = (-1.0)*R_1;
+    R_12 = R_6+R_12; R_12 = (-4.0)*R_12; R_12 = R_12+R_9; R_6 = pos_nodes[3][0];
+    R_11 = (-1.0)*R_6; R_16 := pos_nodes[2][0]; R_17 := R_16+R_11; R_17 = (-1.0)*R_17;
+    R_18 := R_16+R_6; R_19 := pos_nodes[1][0]; R_20 := R_19+R_16; R_20 = (-1.0)*R_20;
+    R_21 := (-1.0)*R_19; R_22 := R_16+R_21; R_18 = R_21+R_18; R_23 := pos_nodes[0][0];
+    R_21 = R_23+R_21; R_24 := R_21+R_11; R_24 = R_16+R_24; R_21 = R_17+R_21;
+    R_21 = (-2.0)*R_21; R_2 = R_21+R_2; R_14 = R_14*R_2; R_14 = (-1.0)*R_14;
+    R_8 = R_2*R_8; R_2 = R_23+R_6; R_20 = R_2+R_20; R_20 = (-4.0)*R_20;
+    R_20 = R_3+R_20; R_20 = R_15*R_20; R_19 = R_23+R_19; R_19 = R_16+R_19;
+    R_19 = R_6+R_19; R_19 = 2.0*R_19; R_0 = R_19+R_0; R_0 = R_10*R_0;
+    R_11 = R_23+R_11; R_11 = R_22+R_11; R_12 = R_11*R_12; R_23 = (-1.0)*R_23;
+    R_18 = R_23+R_18; R_23 = 4.0*R_18; R_18 = 2.0*R_18; R_11 = pos_nodes[6][0];
+    R_22 = (-1.0)*R_11; R_10 = pos_nodes[4][0]; R_11 = R_10+R_11; R_11 = (-4.0)*R_11;
+    R_11 = R_19+R_11; R_5 = R_11*R_5; R_5 = R_1+R_5; R_22 = R_10+R_22;
+    R_10 = 8.0*R_22; R_10 = R_23+R_10; R_23 = 4.0*R_22; R_18 = R_23+R_18;
+    R_23 = pos_nodes[7][1]; R_1 = (-1.0)*R_23; R_11 = pos_nodes[5][1]; R_23 = R_11+R_23;
+    R_23 = (-4.0)*R_23; R_9 = R_23+R_9; R_9 = R_24*R_9; R_14 = R_9+R_14;
+    R_1 = R_11+R_1; R_11 = R_22*R_1; R_7 = R_11+R_7; R_11 = (-8.0)*R_1;
+    R_13 = R_11+R_13; R_10 = R_13*R_10; R_8 = R_10+R_8; R_10 = (-4.0)*R_1;
+    R_10 = R_4+R_10; R_22 = R_22*R_10; R_22 = (-1.0)*R_22; R_0 = R_22+R_0;
+    R_0 = (-1.0)*R_0; R_14 = R_0+R_14; R_14 = (1.0/12.0)*R_14; R_14 = R_7+R_14;
+    R_10 = R_10*R_18; R_20 = R_10+R_20; R_20 = (-1.0)*R_20; R_8 = R_20+R_8;
+    R_8 = (1.0/12.0)*R_8; R_18 = R_1*R_18; R_12 = R_18+R_12; R_12 = (-1.0)*R_12;
+    R_5 = R_12+R_5; R_8 = R_5+R_8; R_8 = (1.0/12.0)*R_8; R_14 = R_8+R_14;
+    res := R_14; 
+    return res
+#
+def barycenter( var_inter, pos_nodes )
+    res := Vec[ type_promote(var_inter[0],pos_nodes[0][0],mul), 2 ]()
+    R_0 := pos_nodes[1][1]; R_1 := (-1.0)*R_0; R_2 := pos_nodes[0][1]; R_3 := (-1.0)*R_2;
+    R_4 := R_2+R_0; R_5 := pos_nodes[3][1]; R_6 := R_2+R_5; R_7 := (-1.0)*R_6;
+    R_8 := (-1.0)*R_5; R_9 := R_2+R_8; R_10 := R_8+R_4; R_11 := pos_nodes[2][1];
+    R_12 := R_11+R_8; R_12 = R_2+R_12; R_12 = R_12+R_1; R_13 := R_11+R_1;
+    R_2 = R_2+R_13; R_2 = R_8+R_2; R_9 = R_13+R_9; R_4 = R_11+R_4;
+    R_4 = R_5+R_4; R_5 = -0.25*R_4; R_13 = 2.0*R_4; R_0 = R_0+R_11;
+    R_14 := (-1.0)*R_0; R_14 = R_14+R_6; R_14 = (-4.0)*R_14; R_0 = R_7+R_0;
+    R_7 = 2.0*R_0; R_0 = 4.0*R_0; R_11 = (-1.0)*R_11; R_6 = R_11+R_6;
+    R_6 = R_1+R_6; R_6 = (-2.0)*R_6; R_10 = R_11+R_10; R_15 := 2.0*R_10;
+    R_16 := (-2.0)*R_10; R_10 = (-4.0)*R_10; R_17 := pos_nodes[3][0]; R_18 := (-1.0)*R_17;
+    R_19 := pos_nodes[0][0]; R_20 := R_19+R_18; R_21 := (-1.0)*R_19; R_22 := R_19+R_17;
+    R_23 := (-1.0)*R_22; R_24 := pos_nodes[2][0]; R_25 := (-1.0)*R_24; R_22 = R_25+R_22;
+    R_26 := R_17+R_25; R_26 = (-1.0)*R_26; R_27 := R_24+R_17; R_28 := pos_nodes[1][0];
+    R_29 := R_19+R_28; R_30 := R_25+R_29; R_30 = R_30+R_18; R_31 := (-4.0)*R_30;
+    R_30 = (-2.0)*R_30; R_29 = R_24+R_29; R_29 = R_17+R_29; R_17 = -0.25*R_29;
+    R_32 := 2.0*R_29; R_26 = R_28+R_26; R_26 = R_26+R_21; R_26 = 2.0*R_26;
+    R_33 := (-1.0)*R_28; R_22 = R_33+R_22; R_22 = (-2.0)*R_22; R_19 = R_19+R_33;
+    R_34 := R_24+R_19; R_34 = R_34+R_18; R_19 = R_19+R_18; R_19 = R_24+R_19;
+    R_35 := R_9*R_19; R_36 := R_24+R_33; R_20 = R_36+R_20; R_36 = R_2*R_20;
+    R_27 = R_33+R_27; R_27 = R_21+R_27; R_37 := 4.0*R_27; R_27 = 2.0*R_27;
+    R_24 = R_28+R_24; R_23 = R_24+R_23; R_24 = 2.0*R_23; R_23 = 4.0*R_23;
+    R_28 = pos_nodes[5][0]; R_38 := (-1.0)*R_28; R_39 := pos_nodes[7][0]; R_40 := R_28+R_39;
+    R_41 := (-2.0)*R_40; R_41 = R_41+R_29; R_40 = (-4.0)*R_40; R_40 = R_32+R_40;
+    R_42 := R_2*R_40; R_43 := (-1.0)*R_39; R_43 = R_28+R_43; R_43 = (-8.0)*R_43;
+    R_23 = R_43+R_23; R_43 = R_2*R_23; R_38 = R_39+R_38; R_44 := R_38*R_9;
+    R_44 = (-1.0)*R_44; R_45 := 4.0*R_38; R_22 = R_45+R_22; R_46 := R_22*R_9;
+    R_24 = R_24+R_45; R_45 = R_26+R_45; R_26 = R_45*R_9; R_47 := pos_nodes[6][1];
+    R_48 := (-1.0)*R_47; R_49 := pos_nodes[4][1]; R_50 := R_49+R_47; R_51 := (-2.0)*R_50;
+    R_51 = R_51+R_4; R_50 = (-4.0)*R_50; R_50 = R_50+R_13; R_52 := R_50*R_40;
+    R_53 := R_23*R_50; R_54 := R_50*R_20; R_55 := (-1.0)*R_49; R_55 = R_47+R_55;
+    R_56 := (-4.0)*R_55; R_56 = R_56+R_16; R_57 := 4.0*R_55; R_57 = R_15+R_57;
+    R_15 = (-8.0)*R_55; R_15 = R_10+R_15; R_10 = R_15*R_40; R_43 = R_10+R_43;
+    R_10 = R_20*R_15; R_58 := R_23*R_15; R_48 = R_49+R_48; R_59 := R_48*R_22;
+    R_59 = (-1.0)*R_59; R_60 := R_48*R_19; R_60 = (-1.0)*R_60; R_61 := R_45*R_48;
+    R_61 = (-1.0)*R_61; R_62 := 4.0*R_48; R_16 = R_62+R_16; R_62 = R_16*R_22;
+    R_63 := R_16*R_19; R_64 := R_38*R_16; R_64 = (-1.0)*R_64; R_65 := R_45*R_16;
+    R_66 := R_48*R_38; R_67 := pos_nodes[7][1]; R_68 := (-1.0)*R_67; R_69 := pos_nodes[5][1];
+    R_49 = R_49+R_69; R_49 = R_47+R_49; R_49 = R_67+R_49; R_47 = 0.5*R_49;
+    R_47 = R_5+R_47; R_8 = R_49+R_8; R_11 = R_8+R_11; R_3 = R_11+R_3;
+    R_1 = R_3+R_1; R_3 = (-1.0)*R_69; R_3 = R_67+R_3; R_11 = 4.0*R_3;
+    R_11 = R_7+R_11; R_67 = R_69+R_67; R_7 = (-2.0)*R_67; R_4 = R_7+R_4;
+    R_67 = (-4.0)*R_67; R_13 = R_67+R_13; R_67 = R_13*R_22; R_7 = R_13*R_38;
+    R_7 = (-1.0)*R_7; R_7 = R_60+R_7; R_60 = R_45*R_13; R_8 = R_13*R_19;
+    R_59 = R_59+R_8; R_49 = R_61+R_8; R_68 = R_69+R_68; R_69 = R_68*R_20;
+    R_5 = R_68*R_23; R_5 = R_52+R_5; R_52 = R_68*R_40; R_70 := (-8.0)*R_68;
+    R_14 = R_14+R_70; R_22 = R_14*R_22; R_71 := R_14*R_19; R_72 := R_14*R_38;
+    R_72 = (-1.0)*R_72; R_0 = R_70+R_0; R_70 = R_38*R_0; R_70 = (-1.0)*R_70;
+    R_19 = R_0*R_19; R_45 = R_45*R_0; R_73 := (-4.0)*R_68; R_6 = R_73+R_6;
+    R_20 = R_6*R_20; R_20 = R_43+R_20; R_20 = (-1.0)*R_20; R_23 = R_6*R_23;
+    R_23 = (-1.0)*R_23; R_45 = R_23+R_45; R_40 = R_6*R_40; R_40 = (-1.0)*R_40;
+    R_43 = R_40+R_63; R_73 = R_40+R_67; R_73 = R_73*R_55; R_60 = R_40+R_60;
+    R_40 = pos_nodes[6][0]; R_74 := (-1.0)*R_40; R_75 := pos_nodes[4][0]; R_28 = R_75+R_28;
+    R_28 = R_39+R_28; R_28 = R_40+R_28; R_39 = 0.5*R_28; R_17 = R_39+R_17;
+    R_28 = R_25+R_28; R_33 = R_28+R_33; R_21 = R_33+R_21; R_18 = R_21+R_18;
+    R_21 = (-1.0)*R_75; R_21 = R_40+R_21; R_33 = R_60*R_21; R_40 = R_75+R_40;
+    R_28 = (-2.0)*R_40; R_29 = R_28+R_29; R_40 = (-4.0)*R_40; R_40 = R_32+R_40;
+    R_32 = R_14*R_40; R_28 = R_40*R_48; R_28 = (-1.0)*R_28; R_28 = R_44+R_28;
+    R_44 = R_13*R_40; R_72 = R_44+R_72; R_70 = R_44+R_70; R_44 = R_40*R_0;
+    R_25 = R_40*R_16; R_39 = R_46+R_25; R_40 = R_40*R_9; R_40 = R_64+R_40;
+    R_74 = R_75+R_74; R_75 = R_74*R_50; R_75 = (-1.0)*R_75; R_75 = R_69+R_75;
+    R_75 = (-1.0)*R_75; R_28 = R_75+R_28; R_75 = R_28*R_11; R_75 = (-1.0)*R_75;
+    R_69 = R_3*R_28; R_64 = R_28*R_38; R_28 = R_24*R_28; R_76 := R_74*R_15;
+    R_76 = (-1.0)*R_76; R_76 = R_36+R_76; R_76 = R_5+R_76; R_76 = (-1.0)*R_76;
+    R_5 = R_74*R_2; R_5 = (-1.0)*R_5; R_5 = R_52+R_5; R_5 = (-1.0)*R_5;
+    R_5 = R_7+R_5; R_57 = R_5*R_57; R_7 = R_5*R_55; R_7 = (-1.0)*R_7;
+    R_7 = R_69+R_7; R_7 = (1.0/12.0)*R_7; R_69 = R_21*R_5; R_69 = (-1.0)*R_69;
+    R_69 = R_64+R_69; R_69 = (1.0/12.0)*R_69; R_64 = R_6*R_74; R_64 = (-1.0)*R_64;
+    R_64 = R_42+R_64; R_64 = (-1.0)*R_64; R_59 = R_59+R_64; R_42 = R_59*R_4;
+    R_42 = R_73+R_42; R_73 = R_59*R_51; R_73 = (-1.0)*R_73; R_59 = (-1.0)*R_59;
+    R_49 = R_64+R_49; R_52 = R_29*R_49; R_49 = R_41*R_49; R_33 = R_49+R_33;
+    R_49 = 8.0*R_74; R_31 = R_31+R_49; R_36 = R_31*R_16; R_36 = R_23+R_36;
+    R_23 = R_31*R_13; R_39 = R_23+R_39; R_39 = R_71+R_39; R_71 = R_23+R_71;
+    R_71 = R_46+R_71; R_71 = R_71+R_20; R_71 = R_3*R_71; R_57 = R_71+R_57;
+    R_71 = R_31*R_48; R_71 = (-1.0)*R_71; R_71 = R_35+R_71; R_72 = R_71+R_72;
+    R_72 = R_76+R_72; R_72 = R_12*R_72; R_72 = (-1.0)*R_72; R_57 = R_72+R_57;
+    R_57 = R_73+R_57; R_73 = R_31*R_9; R_43 = R_73+R_43; R_43 = R_32+R_43;
+    R_73 = R_63+R_73; R_32 = R_73+R_32; R_31 = R_14*R_31; R_31 = R_62+R_31;
+    R_49 = R_37+R_49; R_48 = R_48*R_49; R_48 = (-1.0)*R_48; R_35 = R_48+R_35;
+    R_70 = R_35+R_70; R_76 = R_70+R_76; R_76 = R_34*R_76; R_13 = R_13*R_49;
+    R_70 = R_13+R_19; R_70 = R_26+R_70; R_70 = R_20+R_70; R_70 = R_70*R_38;
+    R_70 = (-1.0)*R_70; R_9 = R_9*R_49; R_35 = R_9+R_63; R_35 = R_35+R_44;
+    R_9 = R_60+R_9; R_9 = R_63+R_9; R_9 = R_44+R_9; R_16 = R_16*R_49;
+    R_16 = R_45+R_16; R_49 = R_0*R_49; R_49 = R_65+R_49; R_65 = 4.0*R_74;
+    R_30 = R_30+R_65; R_0 = R_30*R_15; R_0 = (-1.0)*R_0; R_36 = R_0+R_36;
+    R_22 = R_36+R_22; R_22 = R_12*R_22; R_12 = R_30*R_50; R_12 = (-1.0)*R_12;
+    R_39 = R_12+R_39; R_39 = R_39+R_20; R_39 = R_11*R_39; R_12 = R_25+R_12;
+    R_12 = R_3*R_12; R_12 = (-1.0)*R_12; R_3 = R_30*R_2; R_3 = R_10+R_3;
+    R_3 = R_53+R_3; R_3 = (-1.0)*R_3; R_43 = R_3+R_43; R_67 = R_43+R_67;
+    R_67 = R_56*R_67; R_3 = R_32+R_3; R_55 = R_3*R_55; R_55 = (-1.0)*R_55;
+    R_57 = R_55+R_57; R_55 = R_30*R_68; R_55 = R_54+R_55; R_55 = (-1.0)*R_55;
+    R_55 = R_40+R_55; R_51 = R_55*R_51; R_51 = R_42+R_51; R_51 = R_12+R_51;
+    R_51 = (-1.0/80.0)*R_51; R_4 = R_4*R_55; R_4 = (-1.0)*R_4; R_57 = R_4+R_57;
+    R_75 = R_57+R_75; R_75 = (1.0/144.0)*R_75; R_55 = (-1.0)*R_55; R_57 = R_6*R_30;
+    R_57 = R_57+R_58; R_57 = (-1.0)*R_57; R_57 = R_31+R_57; R_31 = R_57*R_1;
+    R_31 = (-2.0)*R_31; R_67 = R_31+R_67; R_67 = R_22+R_67; R_39 = R_67+R_39;
+    R_39 = (-1.0/960.0)*R_39; R_57 = (-1.0/12.0)*R_57; R_55 = R_57+R_55; R_59 = R_55+R_59;
+    R_59 = (1.0/12.0)*R_59; R_5 = R_30*R_5; R_27 = R_65+R_27; R_2 = R_2*R_27;
+    R_10 = R_2+R_10; R_10 = R_53+R_10; R_10 = (-1.0)*R_10; R_35 = R_35+R_10;
+    R_35 = R_21*R_35; R_9 = R_10+R_9; R_9 = R_30*R_9; R_15 = R_27*R_15;
+    R_15 = (-1.0)*R_15; R_16 = R_15+R_16; R_16 = R_34*R_16; R_9 = R_16+R_9;
+    R_50 = R_50*R_27; R_50 = (-1.0)*R_50; R_25 = R_50+R_25; R_26 = R_25+R_26;
+    R_20 = R_26+R_20; R_13 = R_20+R_13; R_19 = R_13+R_19; R_19 = R_24*R_19;
+    R_38 = R_25*R_38; R_38 = (-1.0)*R_38; R_38 = R_33+R_38; R_33 = R_68*R_27;
+    R_54 = R_33+R_54; R_54 = (-1.0)*R_54; R_40 = R_54+R_40; R_41 = R_41*R_40;
+    R_28 = R_41+R_28; R_52 = R_28+R_52; R_52 = R_70+R_52; R_52 = R_35+R_52;
+    R_52 = R_76+R_52; R_52 = R_5+R_52; R_52 = (-1.0/144.0)*R_52; R_29 = R_40*R_29;
+    R_38 = R_29+R_38; R_38 = (-1.0/80.0)*R_38; R_40 = (-1.0)*R_40; R_27 = R_6*R_27;
+    R_27 = R_58+R_27; R_27 = (-1.0)*R_27; R_49 = R_27+R_49; R_27 = R_18*R_49;
+    R_27 = (-2.0)*R_27; R_27 = R_9+R_27; R_19 = R_27+R_19; R_19 = (-1.0/960.0)*R_19;
+    R_49 = (-1.0/12.0)*R_49; R_40 = R_49+R_40; R_40 = (-1.0)*R_40; R_61 = R_40+R_61;
+    R_64 = R_61+R_64; R_8 = R_64+R_8; R_8 = (-1.0/12.0)*R_8; R_68 = R_74*R_68;
+    R_66 = R_68+R_66; R_1 = R_66*R_1; R_1 = (1.0/6.0)*R_1; R_18 = R_66*R_18;
+    R_18 = (1.0/6.0)*R_18; R_66 = (-1.0)*R_66; R_59 = R_66+R_59; R_47 = R_59*R_47;
+    R_47 = R_1+R_47; R_47 = R_39+R_47; R_47 = R_51+R_47; R_47 = R_75+R_47;
+    R_47 = R_7+R_47; R_59 = 1/R_59; R_47 = R_59*R_47; res[1] = R_47;
+    R_8 = R_66+R_8; R_17 = R_8*R_17; R_18 = R_17+R_18; R_18 = R_52+R_18;
+    R_18 = R_19+R_18; R_18 = R_38+R_18; R_69 = R_18+R_69; R_8 = 1/R_8;
+    R_69 = R_8*R_69; res[0] = R_69; 
+    return res
+#
+def inertia_operator_for_barycenter( var_inter, pos_nodes )
+    R_0 := pos_nodes[5][0]; R_1 := (-1.0)*R_0; R_2 := pos_nodes[7][0]; R_3 := R_0+R_2;
+    R_4 := (-2.0)*R_3; R_3 = (-4.0)*R_3; R_5 := (-1.0)*R_2; R_5 = R_0+R_5;
+    R_6 := pow(R_5,2); R_7 := (-8.0)*R_5; R_1 = R_2+R_1; R_8 := 8.0*R_1;
+    R_9 := 4.0*R_1; R_10 := pos_nodes[1][1]; R_11 := (-1.0)*R_10; R_12 := pos_nodes[0][1];
+    R_13 := (-1.0)*R_12; R_14 := R_12+R_10; R_15 := pos_nodes[2][1]; R_16 := R_12+R_15;
+    R_17 := R_16+R_11; R_18 := R_10+R_15; R_19 := (-1.0)*R_18; R_20 := (-1.0)*R_15;
+    R_21 := R_15+R_11; R_22 := R_12+R_21; R_23 := R_15+R_14; R_24 := pos_nodes[3][1];
+    R_10 = R_10+R_24; R_10 = R_10+R_20; R_10 = R_10+R_13; R_25 := R_15+R_24;
+    R_25 = R_25+R_13; R_25 = R_25+R_11; R_25 = 4.0*R_25; R_26 := R_12+R_24;
+    R_27 := (-1.0)*R_26; R_18 = R_27+R_18; R_27 = 4.0*R_18; R_18 = 2.0*R_18;
+    R_28 := R_20+R_26; R_28 = R_11+R_28; R_28 = (-2.0)*R_28; R_26 = R_19+R_26;
+    R_26 = (-4.0)*R_26; R_19 = (-1.0)*R_24; R_16 = R_16+R_19; R_16 = R_16+R_11;
+    R_17 = R_17+R_19; R_15 = R_15+R_19; R_15 = R_12+R_15; R_15 = R_15+R_11;
+    R_29 := pow(R_15,2); R_22 = R_19+R_22; R_14 = R_19+R_14; R_14 = R_20+R_14;
+    R_30 := 2.0*R_14; R_31 := (-4.0)*R_14; R_14 = (-2.0)*R_14; R_12 = R_12+R_19;
+    R_12 = R_21+R_12; R_21 = R_1*R_12; R_21 = (-1.0)*R_21; R_23 = R_24+R_23;
+    R_24 = -0.5*R_23; R_32 := -0.25*R_23; R_33 := 2.0*R_23; R_34 := pos_nodes[6][1];
+    R_35 := (-1.0)*R_34; R_36 := pos_nodes[4][1]; R_37 := (-1.0)*R_36; R_37 = R_34+R_37;
+    R_38 := pow(R_37,2); R_39 := R_15*R_37; R_40 := (-4.0)*R_37; R_40 = R_40+R_14;
+    R_41 := pow(R_40,2); R_42 := R_40*R_37; R_43 := R_15*R_40; R_44 := 4.0*R_37;
+    R_44 = R_30+R_44; R_30 = (-8.0)*R_37; R_25 = R_25+R_30; R_30 = R_31+R_30;
+    R_35 = R_36+R_35; R_45 := 8.0*R_35; R_45 = R_31+R_45; R_31 = R_35*R_1;
+    R_46 := 4.0*R_35; R_14 = R_46+R_14; R_46 = R_1*R_14; R_46 = (-1.0)*R_46;
+    R_47 := R_36+R_34; R_48 := (-2.0)*R_47; R_48 = R_48+R_23; R_49 := R_48*R_37;
+    R_50 := R_48*R_10; R_50 = (-1.0)*R_50; R_51 := R_48*R_30; R_52 := pow(R_48,2);
+    R_53 := R_48*R_25; R_54 := R_48*R_16; R_47 = (-4.0)*R_47; R_47 = R_47+R_33;
+    R_55 := pos_nodes[6][0]; R_56 := (-1.0)*R_55; R_57 := pos_nodes[4][0]; R_58 := (-1.0)*R_57;
+    R_58 = R_55+R_58; R_59 := pow(R_58,2); R_59 = R_38+R_59; R_38 = R_58*R_5;
+    R_60 := (-4.0)*R_58; R_0 = R_57+R_0; R_0 = R_2+R_0; R_0 = R_55+R_0;
+    R_2 = 0.5*R_0; R_55 = R_57+R_55; R_61 := (-2.0)*R_55; R_55 = (-4.0)*R_55;
+    R_56 = R_57+R_56; R_57 = R_56*R_45; R_57 = (-1.0)*R_57; R_62 := R_56*R_30;
+    R_62 = (-1.0)*R_62; R_63 := R_56*R_22; R_63 = (-1.0)*R_63; R_64 := 8.0*R_56;
+    R_65 := 4.0*R_56; R_66 := R_56*R_47; R_66 = (-1.0)*R_66; R_67 := pos_nodes[3][0];
+    R_68 := (-1.0)*R_67; R_69 := pos_nodes[0][0]; R_70 := (-1.0)*R_69; R_71 := R_69+R_67;
+    R_72 := (-1.0)*R_71; R_73 := R_69+R_68; R_74 := pos_nodes[1][0]; R_75 := R_69+R_74;
+    R_76 := (-1.0)*R_74; R_77 := R_69+R_76; R_78 := R_77+R_68; R_79 := pos_nodes[2][0];
+    R_77 = R_79+R_77; R_77 = R_77+R_68; R_80 := R_79+R_67; R_80 = R_76+R_80;
+    R_80 = R_70+R_80; R_81 := 4.0*R_80; R_81 = R_81+R_64; R_82 := R_35*R_81;
+    R_82 = (-1.0)*R_82; R_83 := R_12*R_81; R_84 := R_14*R_81; R_80 = 2.0*R_80;
+    R_80 = R_65+R_80; R_85 := R_22*R_80; R_86 := R_80*R_30; R_86 = (-1.0)*R_86;
+    R_87 := R_47*R_80; R_87 = (-1.0)*R_87; R_78 = R_79+R_78; R_88 := R_12*R_78;
+    R_89 := R_82+R_88; R_90 := R_14*R_78; R_91 := R_83+R_90; R_92 := R_35*R_78;
+    R_92 = (-1.0)*R_92; R_93 := R_74+R_79; R_94 := (-1.0)*R_93; R_94 = R_71+R_94;
+    R_95 := (-4.0)*R_94; R_95 = R_8+R_95; R_8 = R_45*R_95; R_96 := R_22*R_95;
+    R_97 := R_95*R_47; R_94 = (-2.0)*R_94; R_94 = R_94+R_9; R_98 := pow(R_94,2);
+    R_99 := R_94*R_5; R_100 := R_58*R_94; R_72 = R_93+R_72; R_93 = 2.0*R_72;
+    R_93 = R_93+R_9; R_72 = 4.0*R_72; R_72 = R_7+R_72; R_7 = R_22*R_72;
+    R_101 := R_72*R_47; R_102 := R_72*R_30; R_103 := (-1.0)*R_79; R_104 := R_103+R_0;
+    R_104 = R_104+R_76; R_104 = R_104+R_70; R_104 = R_104+R_68; R_105 := R_67+R_103;
+    R_105 = (-1.0)*R_105; R_105 = R_74+R_105; R_70 = R_105+R_70; R_70 = 2.0*R_70;
+    R_70 = R_70+R_9; R_105 = R_70*R_12; R_106 := R_70*R_35; R_106 = (-1.0)*R_106;
+    R_107 := R_70*R_14; R_71 = R_103+R_71; R_71 = R_76+R_71; R_71 = (-2.0)*R_71;
+    R_71 = R_9+R_71; R_9 = R_71*R_12; R_108 := R_35*R_71; R_108 = (-1.0)*R_108;
+    R_109 := R_14*R_71; R_103 = R_103+R_75; R_103 = R_103+R_68; R_110 := (-4.0)*R_103;
+    R_64 = R_110+R_64; R_110 = R_64*R_14; R_111 := R_64*R_35; R_111 = (-1.0)*R_111;
+    R_111 = R_88+R_111; R_88 = R_64*R_12; R_112 := R_90+R_88; R_103 = (-2.0)*R_103;
+    R_60 = R_103+R_60; R_113 := pow(R_60,2); R_113 = R_41+R_113; R_41 = R_58*R_60;
+    R_41 = R_42+R_41; R_42 = R_60*R_5; R_114 := R_94*R_60; R_65 = R_103+R_65;
+    R_103 = R_65*R_45; R_103 = (-1.0)*R_103; R_103 = R_84+R_103; R_115 := R_65*R_30;
+    R_115 = (-1.0)*R_115; R_116 := R_65*R_22; R_117 := R_65*R_47; R_117 = (-1.0)*R_117;
+    R_118 := R_79+R_61; R_118 = R_74+R_118; R_118 = R_69+R_118; R_118 = R_67+R_118;
+    R_74 = R_58*R_118; R_119 := pow(R_118,2); R_119 = R_52+R_119; R_52 = R_60*R_118;
+    R_52 = 2.0*R_52; R_51 = R_52+R_51; R_53 = R_52+R_53; R_52 = R_94*R_118;
+    R_120 := R_118*R_5; R_120 = (-1.0)*R_120; R_75 = R_79+R_75; R_75 = R_67+R_75;
+    R_67 = -0.25*R_75; R_67 = R_2+R_67; R_4 = R_4+R_75; R_2 = pow(R_4,2);
+    R_121 := R_4*R_58; R_122 := R_4*R_5; R_123 := R_4*R_118; R_124 := R_4*R_94;
+    R_125 := R_4*R_60; R_61 = R_61+R_75; R_126 := -0.5*R_75; R_126 = R_0+R_126;
+    R_126 = 0.5*R_126; R_75 = 2.0*R_75; R_3 = R_75+R_3; R_0 = R_45*R_3;
+    R_96 = R_0+R_96; R_0 = R_30*R_3; R_7 = R_0+R_7; R_0 = R_47*R_3;
+    R_127 := R_22*R_3; R_55 = R_75+R_55; R_75 = R_55*R_12; R_75 = R_46+R_75;
+    R_46 = R_55*R_14; R_87 = R_87+R_46; R_128 := R_87+R_105; R_87 = R_87*R_1;
+    R_87 = (-1.0)*R_87; R_129 := R_9+R_46; R_46 = R_46+R_117; R_130 := R_55*R_35;
+    R_130 = (-1.0)*R_130; R_130 = R_21+R_130; R_76 = R_79+R_76; R_69 = R_69+R_76;
+    R_68 = R_69+R_68; R_69 = R_68*R_5; R_69 = R_74+R_69; R_35 = R_68*R_35;
+    R_35 = (-1.0)*R_35; R_74 = R_58*R_68; R_74 = R_39+R_74; R_39 = pow(R_68,2);
+    R_39 = R_29+R_39; R_29 = R_68*R_118; R_42 = R_29+R_42; R_50 = R_42+R_50;
+    R_50 = 2.0*R_50; R_54 = R_42+R_54; R_54 = 2.0*R_54; R_42 = R_60*R_68;
+    R_42 = R_43+R_42; R_12 = R_68*R_12; R_12 = R_82+R_12; R_82 = R_94*R_68;
+    R_125 = R_82+R_125; R_14 = R_68*R_14; R_14 = R_83+R_14; R_82 = R_4*R_68;
+    R_82 = R_100+R_82; R_73 = R_76+R_73; R_45 = R_45*R_73; R_45 = R_116+R_45;
+    R_45 = R_97+R_45; R_45 = (-1.0)*R_45; R_22 = R_22*R_73; R_57 = R_22+R_57;
+    R_62 = R_22+R_62; R_22 = R_73*R_30; R_85 = R_85+R_22; R_85 = R_101+R_85;
+    R_85 = (-1.0)*R_85; R_116 = R_22+R_116; R_116 = R_101+R_116; R_116 = (-1.0)*R_116;
+    R_47 = R_47*R_73; R_101 = pos_nodes[7][1]; R_22 = (-1.0)*R_101; R_97 = pos_nodes[5][1];
+    R_36 = R_36+R_97; R_36 = R_34+R_36; R_36 = R_101+R_36; R_24 = R_36+R_24;
+    R_24 = 0.5*R_24; R_34 = 0.5*R_36; R_34 = R_32+R_34; R_19 = R_36+R_19;
+    R_20 = R_19+R_20; R_13 = R_20+R_13; R_11 = R_13+R_11; R_13 = R_97+R_101;
+    R_20 = (-2.0)*R_13; R_23 = R_20+R_23; R_20 = pow(R_23,2); R_2 = R_20+R_2;
+    R_20 = R_23*R_37; R_121 = R_20+R_121; R_20 = R_23*R_48; R_19 = R_40*R_23;
+    R_36 = R_23*R_17; R_13 = (-4.0)*R_13; R_33 = R_13+R_33; R_13 = R_68*R_33;
+    R_13 = R_108+R_13; R_32 = R_33*R_81; R_76 = R_70*R_33; R_100 = R_33*R_71;
+    R_43 = R_64*R_33; R_129 = R_43+R_129; R_29 = R_33*R_55; R_79 = R_33*R_1;
+    R_79 = (-1.0)*R_79; R_35 = R_79+R_35; R_79 = R_92+R_79; R_33 = R_33*R_78;
+    R_92 = R_106+R_33; R_108 = R_108+R_33; R_21 = (-1.0)*R_97; R_21 = R_101+R_21;
+    R_101 = R_21*R_16; R_101 = (-1.0)*R_101; R_131 := R_21*R_10; R_132 := R_21*R_30;
+    R_132 = (-1.0)*R_132; R_50 = R_132+R_50; R_132 = pow(R_21,2); R_6 = R_132+R_6;
+    R_132 = R_21*R_23; R_132 = (-1.0)*R_132; R_133 := R_21*R_37; R_133 = (-1.0)*R_133;
+    R_134 := R_21*R_25; R_134 = (-1.0)*R_134; R_54 = R_134+R_54; R_134 = 8.0*R_21;
+    R_134 = R_26+R_134; R_135 := R_134*R_81; R_135 = R_109+R_135; R_136 := R_134*R_71;
+    R_137 := R_68*R_134; R_137 = R_137+R_32; R_137 = R_9+R_137; R_138 := R_134*R_1;
+    R_138 = (-1.0)*R_138; R_138 = R_29+R_138; R_138 = R_12+R_138; R_134 = R_134*R_55;
+    R_134 = R_14+R_134; R_134 = R_45+R_134; R_45 = R_134*R_121; R_14 = R_21*R_46;
+    R_14 = (-1.0)*R_14; R_12 = 4.0*R_21; R_12 = R_18+R_12; R_139 := R_21*R_48;
+    R_120 = R_139+R_120; R_22 = R_97+R_22; R_97 = R_22*R_95; R_97 = R_0+R_97;
+    R_57 = R_97+R_57; R_57 = (-1.0)*R_57; R_138 = R_57+R_138; R_50 = R_138*R_50;
+    R_57 = R_22*R_80; R_57 = R_57+R_47; R_57 = (-1.0)*R_57; R_57 = R_57+R_75;
+    R_97 = R_4*R_57; R_139 = R_57*R_61; R_57 = (-1.0)*R_57; R_140 := R_22*R_72;
+    R_140 = R_0+R_140; R_62 = R_140+R_62; R_62 = (-1.0)*R_62; R_140 = R_22*R_3;
+    R_63 = R_140+R_63; R_63 = (-1.0)*R_63; R_35 = R_63+R_35; R_121 = R_35*R_121;
+    R_51 = R_35*R_51; R_63 = R_79+R_63; R_79 = R_58*R_63; R_79 = (-1.0)*R_79;
+    R_140 = R_65*R_63; R_44 = R_63*R_44; R_63 = R_63*R_37; R_63 = (-1.0)*R_63;
+    R_0 = R_65*R_22; R_0 = R_47+R_0; R_0 = (-1.0)*R_0; R_0 = R_75+R_0;
+    R_75 = R_0*R_2; R_47 = R_0*R_48; R_141 := R_23*R_0; R_141 = (-1.0)*R_141;
+    R_142 := (-1.0)*R_0; R_143 := (-4.0)*R_22; R_18 = R_18+R_143; R_144 := pow(R_18,2);
+    R_98 = R_144+R_98; R_144 = R_0*R_98; R_145 := R_21*R_18; R_145 = (-1.0)*R_145;
+    R_41 = R_145+R_41; R_41 = R_20+R_41; R_41 = R_123+R_41; R_41 = R_99+R_41;
+    R_41 = 2.0*R_41; R_41 = R_39+R_41; R_39 = R_0*R_41; R_99 = R_48*R_18;
+    R_42 = R_99+R_42; R_42 = R_52+R_42; R_52 = R_23*R_18; R_124 = R_52+R_124;
+    R_52 = R_46*R_124; R_99 = R_40*R_18; R_114 = R_99+R_114; R_114 = R_138*R_114;
+    R_17 = R_18*R_17; R_17 = R_19+R_17; R_125 = R_17+R_125; R_17 = R_35*R_125;
+    R_125 = R_134*R_125; R_19 = R_18*R_37; R_19 = R_36+R_19; R_82 = R_19+R_82;
+    R_19 = R_138*R_82; R_82 = R_103*R_82; R_28 = R_143+R_28; R_95 = R_28*R_95;
+    R_95 = (-1.0)*R_95; R_136 = R_95+R_136; R_54 = R_136*R_54; R_80 = R_28*R_80;
+    R_80 = R_102+R_80; R_80 = (-1.0)*R_80; R_72 = R_28*R_72; R_72 = (-1.0)*R_72;
+    R_110 = R_72+R_110; R_110 = R_115+R_110; R_3 = R_28*R_3; R_3 = (-1.0)*R_3;
+    R_76 = R_3+R_76; R_83 = R_76+R_83; R_83 = R_90+R_83; R_76 = R_76*R_58;
+    R_90 = R_3+R_90; R_90 = R_88+R_90; R_3 = R_3+R_100; R_53 = R_3*R_53;
+    R_88 = R_3*R_37; R_115 = R_28*R_73; R_96 = R_96+R_115; R_96 = (-1.0)*R_96;
+    R_96 = R_137+R_96; R_137 = R_96*R_120; R_137 = (-1.0)*R_137; R_95 = R_96*R_42;
+    R_95 = R_52+R_95; R_95 = R_114+R_95; R_95 = R_125+R_95; R_95 = R_82+R_95;
+    R_95 = 2.0*R_95; R_115 = R_7+R_115; R_115 = (-1.0)*R_115; R_128 = R_128+R_115;
+    R_128 = R_128+R_32; R_7 = R_28*R_56; R_7 = (-1.0)*R_7; R_7 = R_127+R_7;
+    R_7 = (-1.0)*R_7; R_13 = R_13+R_7; R_127 = R_13*R_41; R_82 = R_13*R_119;
+    R_125 = R_13*R_113; R_125 = R_144+R_125; R_92 = R_7+R_92; R_61 = R_61*R_92;
+    R_92 = R_4*R_92; R_76 = R_92+R_76; R_87 = R_76+R_87; R_87 = R_139+R_87;
+    R_87 = (-1.0/80.0)*R_87; R_108 = R_108+R_7; R_139 = R_108*R_23; R_139 = R_88+R_139;
+    R_47 = R_139+R_47; R_47 = R_14+R_47; R_47 = (-1.0/80.0)*R_47; R_14 = R_108*R_48;
+    R_14 = (-1.0)*R_14; R_108 = (-1.0)*R_108; R_28 = R_28*R_65; R_8 = R_28+R_8;
+    R_8 = (-1.0)*R_8; R_8 = R_135+R_8; R_135 = R_8*R_41; R_125 = R_135+R_125;
+    R_125 = R_53+R_125; R_125 = R_54+R_125; R_125 = R_95+R_125; R_125 = (1.0/80.0)*R_125;
+    R_102 = R_28+R_102; R_102 = (-1.0)*R_102; R_28 = (-8.0)*R_22; R_27 = R_28+R_27;
+    R_95 = R_1*R_27; R_95 = (-1.0)*R_95; R_95 = R_29+R_95; R_95 = R_89+R_95;
+    R_95 = R_95+R_62; R_95 = R_77*R_95; R_89 = R_27*R_78; R_32 = R_32+R_89;
+    R_32 = R_105+R_32; R_32 = R_115+R_32; R_32 = R_32*R_1; R_32 = (-1.0)*R_32;
+    R_89 = R_128+R_89; R_89 = R_93*R_89; R_128 = R_55*R_27; R_91 = R_91+R_128;
+    R_91 = R_91+R_85; R_91 = R_58*R_91; R_83 = R_128+R_83; R_83 = R_85+R_83;
+    R_83 = R_65*R_83; R_70 = R_70*R_27; R_70 = R_72+R_70; R_84 = R_70+R_84;
+    R_84 = R_86+R_84; R_84 = R_77*R_84; R_83 = R_84+R_83; R_81 = R_27*R_81;
+    R_81 = R_107+R_81; R_81 = R_80+R_81; R_80 = R_104*R_81; R_80 = (-2.0)*R_80;
+    R_80 = R_83+R_80; R_89 = R_80+R_89; R_89 = (-1.0/960.0)*R_89; R_81 = (-1.0/12.0)*R_81;
+    R_57 = R_81+R_57; R_57 = (-1.0)*R_57; R_106 = R_57+R_106; R_7 = R_106+R_7;
+    R_33 = R_7+R_33; R_33 = (-1.0/12.0)*R_33; R_28 = R_26+R_28; R_71 = R_28*R_71;
+    R_71 = R_110+R_71; R_71 = R_15*R_71; R_78 = R_28*R_78; R_129 = R_78+R_129;
+    R_129 = R_117+R_129; R_129 = R_129+R_115; R_129 = R_12*R_129; R_78 = R_43+R_78;
+    R_78 = R_9+R_78; R_115 = R_78+R_115; R_115 = R_21*R_115; R_44 = R_115+R_44;
+    R_115 = R_28*R_1; R_115 = (-1.0)*R_115; R_115 = R_29+R_115; R_115 = R_111+R_115;
+    R_115 = R_62+R_115; R_115 = R_15*R_115; R_115 = (-1.0)*R_115; R_44 = R_115+R_44;
+    R_44 = R_14+R_44; R_55 = R_28*R_55; R_90 = R_55+R_90; R_90 = R_116+R_90;
+    R_100 = R_90+R_100; R_100 = R_40*R_100; R_55 = R_112+R_55; R_116 = R_55+R_116;
+    R_116 = R_116*R_37; R_116 = (-1.0)*R_116; R_44 = R_116+R_44; R_44 = R_141+R_44;
+    R_64 = R_28*R_64; R_64 = R_109+R_64; R_102 = R_64+R_102; R_64 = R_102*R_11;
+    R_64 = (-2.0)*R_64; R_100 = R_64+R_100; R_100 = R_71+R_100; R_129 = R_100+R_129;
+    R_129 = (-1.0/960.0)*R_129; R_102 = (-1.0/12.0)*R_102; R_142 = R_102+R_142; R_108 = R_142+R_108;
+    R_108 = (1.0/12.0)*R_108; R_56 = R_56*R_22; R_31 = R_56+R_31; R_2 = R_31*R_2;
+    R_41 = R_31*R_41; R_98 = R_31*R_98; R_75 = R_98+R_75; R_119 = R_31*R_119;
+    R_113 = R_31*R_113; R_113 = R_39+R_113; R_104 = R_31*R_104; R_104 = (1.0/6.0)*R_104;
+    R_11 = R_31*R_11; R_11 = (1.0/6.0)*R_11; R_39 = (-1.0)*R_31; R_33 = R_39+R_33;
+    R_67 = R_33*R_67; R_104 = R_67+R_104; R_33 = 1/R_33; R_108 = R_39+R_108;
+    R_34 = R_108*R_34; R_34 = R_11+R_34; R_34 = R_129+R_34; R_34 = R_47+R_34;
+    R_108 = 1/R_108; R_73 = R_22*R_73; R_66 = R_73+R_66; R_66 = (-1.0)*R_66;
+    R_130 = R_66+R_130; R_124 = R_130*R_124; R_42 = R_130*R_42; R_1 = R_130*R_1;
+    R_79 = R_1+R_79; R_79 = (1.0/12.0)*R_79; R_93 = R_93*R_130; R_93 = R_97+R_93;
+    R_61 = R_93+R_61; R_61 = R_32+R_61; R_61 = R_91+R_61; R_61 = R_95+R_61;
+    R_61 = R_140+R_61; R_61 = (-1.0/144.0)*R_61; R_104 = R_61+R_104; R_104 = R_89+R_104;
+    R_104 = R_87+R_104; R_79 = R_104+R_79; R_79 = R_33*R_79; R_79 = (-1.0)*R_79;
+    R_79 = R_126+R_79; R_126 = pow(R_79,2); R_58 = R_58*R_79; R_4 = R_4*R_79;
+    R_60 = R_60*R_79; R_60 = R_69+R_60; R_49 = R_60+R_49; R_101 = R_101+R_49;
+    R_101 = 2.0*R_101; R_131 = R_49+R_131; R_131 = 2.0*R_131; R_118 = R_118*R_79;
+    R_94 = R_94*R_79; R_68 = R_68*R_79; R_68 = R_38+R_68; R_38 = R_68+R_133;
+    R_5 = R_79*R_5; R_5 = (-1.0)*R_5; R_12 = R_130*R_12; R_12 = (-1.0)*R_12;
+    R_12 = R_44+R_12; R_12 = (1.0/144.0)*R_12; R_34 = R_12+R_34; R_12 = R_21*R_130;
+    R_63 = R_12+R_63; R_63 = (1.0/12.0)*R_63; R_34 = R_63+R_34; R_34 = R_108*R_34;
+    R_34 = (-1.0)*R_34; R_24 = R_34+R_24; R_34 = pow(R_24,2); R_126 = R_34+R_126;
+    R_34 = R_31*R_126; R_108 = R_13*R_126; R_63 = R_0*R_126; R_126 = R_8*R_126;
+    R_37 = R_24*R_37; R_37 = R_58+R_37; R_58 = R_37*R_35; R_58 = 2.0*R_58;
+    R_108 = R_58+R_108; R_58 = R_3*R_37; R_121 = R_58+R_121; R_121 = 2.0*R_121;
+    R_37 = R_37*R_134; R_23 = R_23*R_24; R_4 = R_23+R_4; R_4 = 2.0*R_4;
+    R_4 = R_59+R_4; R_59 = R_31*R_4; R_108 = R_59+R_108; R_108 = (1.0/12.0)*R_108;
+    R_34 = R_108+R_34; R_108 = R_13*R_4; R_108 = R_2+R_108; R_121 = R_108+R_121;
+    R_121 = (1.0/80.0)*R_121; R_34 = R_121+R_34; R_121 = R_0*R_4; R_41 = R_121+R_41;
+    R_4 = R_8*R_4; R_75 = R_4+R_75; R_75 = R_127+R_75; R_25 = R_24*R_25;
+    R_101 = R_25+R_101; R_101 = R_3*R_101; R_75 = R_101+R_75; R_16 = R_24*R_16;
+    R_16 = R_68+R_16; R_16 = R_133+R_16; R_16 = R_136*R_16; R_30 = R_24*R_30;
+    R_131 = R_30+R_131; R_35 = R_35*R_131; R_41 = R_35+R_41; R_131 = R_134*R_131;
+    R_113 = R_131+R_113; R_113 = R_50+R_113; R_113 = R_51+R_113; R_113 = R_82+R_113;
+    R_48 = R_48*R_24; R_118 = R_48+R_118; R_118 = 2.0*R_118; R_118 = R_6+R_118;
+    R_31 = R_31*R_118; R_13 = R_13*R_118; R_41 = R_13+R_41; R_41 = R_126+R_41;
+    R_0 = R_0*R_118; R_118 = R_8*R_118; R_113 = R_118+R_113; R_18 = R_18*R_24;
+    R_74 = R_18+R_74; R_74 = R_132+R_74; R_74 = R_122+R_74; R_74 = R_94+R_74;
+    R_94 = R_130*R_74; R_37 = R_94+R_37; R_94 = R_96*R_74; R_94 = R_124+R_94;
+    R_94 = R_16+R_94; R_94 = R_17+R_94; R_94 = R_19+R_94; R_94 = R_45+R_94;
+    R_94 = 2.0*R_94; R_75 = R_94+R_75; R_75 = (1.0/80.0)*R_75; R_74 = R_46*R_74;
+    R_42 = R_74+R_42; R_10 = R_24*R_10; R_10 = (-1.0)*R_10; R_10 = R_38+R_10;
+    R_138 = R_138*R_10; R_37 = R_138+R_37; R_10 = R_103*R_10; R_42 = R_10+R_42;
+    R_42 = R_137+R_42; R_42 = 2.0*R_42; R_113 = R_42+R_113; R_113 = (1.0/12.0)*R_113;
+    R_113 = R_125+R_113; R_119 = R_113+R_119; R_0 = R_119+R_0; R_24 = R_21*R_24;
+    R_5 = R_24+R_5; R_24 = R_130*R_5; R_24 = (-2.0)*R_24; R_31 = R_24+R_31;
+    R_63 = R_31+R_63; R_96 = R_96*R_5; R_96 = (-1.0)*R_96; R_96 = R_37+R_96;
+    R_96 = 2.0*R_96; R_41 = R_96+R_41; R_41 = (1.0/12.0)*R_41; R_63 = R_41+R_63;
+    R_63 = R_75+R_63; R_63 = (1.0/12.0)*R_63; R_34 = R_63+R_34; R_5 = R_46*R_5;
+    R_120 = R_130*R_120; R_5 = R_120+R_5; R_5 = (-2.0)*R_5; R_0 = R_5+R_0;
+    R_0 = (1.0/80.0)*R_0; R_34 = R_0+R_34; res := R_34; 
+    return res
