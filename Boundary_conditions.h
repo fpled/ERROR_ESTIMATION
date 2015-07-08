@@ -910,8 +910,8 @@ void create_load_conditions( TM &m_adjoint, const TF &f_adjoint, const TM &m, co
 /// Verification des contraintes cinematiques
 ///------------------------------------------
 template<class TF>
-void check_constraints( const TF &f, const bool &verif_constraints ) {
-    if ( verif_constraints ) {
+void check_constraints( const TF &f, const bool &display_constraints ) {
+    if ( display_constraints ) {
         
         cout << "Verification des contraintes cinematiques" << endl << endl;
         

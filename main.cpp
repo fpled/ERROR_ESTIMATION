@@ -33,7 +33,7 @@ int main( int argc, char **argv ) {
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF; // definit un synonyme du type Formulation<TM,FormulationElasticity>
     typedef TM::Pvec Pvec; // definit un synonyme du type TM::Pvec servant a representer la position d'un point
     typedef TM::TNode::T T;
-    static const string structure = "square_32"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circle
+    static const string structure = "square_256"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circle
                                                      // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, sphere, sphere_center, sphere_hollow
     static const string mesh_size = "fine"; // mesh_size pour les structures plate_hole (2D ou  3D), plate_crack, structure_crack, test_specimen, weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
     static const string loading = "pre_epsilon"; // loading pour la structure spot_weld (3D) : pull, shear, peeling et pour la structure plate_crack (2D) : pull, shear
@@ -41,7 +41,7 @@ int main( int argc, char **argv ) {
     static const unsigned deg_p = 1; // degre de l'analyse elements finis : 1, 2, ...
     static const unsigned deg_k = 3; // degre supplementaire : 1, 2 , 3, ...
     static const string boundary_condition_D = "penalisation"; // methodes de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalisation
-    static const bool verif_constraints = 0; // verification des contraintes cinematiques
+    static const bool display_constraints = 0; // affichage des contraintes cinematiques
     
     /// Global discretization error
     ///----------------------------
@@ -232,19 +232,18 @@ int main( int argc, char **argv ) {
     
     /// Verification des contraintes cinematiques
     ///------------------------------------------
-    check_constraints( f, verif_constraints );
+    check_constraints( f, display_constraints );
     
     /// Resolution du pb direct
     ///------------------------
-    if ( structure.find("square") != string::npos ) {
+//    if ( structure.find("square") != string::npos ) {
 //        f.allocate_matrices();
 //        f.shift();
 //        f.assemble();
 //        f.update_variables();
 //        f.call_after_solve();
-        f.solve();
     }
-    else {
+//    else {
         TicToc t;
         t.start();
         if ( want_iterative_solver == 0 )
@@ -253,7 +252,7 @@ int main( int argc, char **argv ) {
             f.solve( criterium_iterative_solver );
         t.stop();
         cout << "Temps de calcul du pb direct : " << t.res << endl << endl;
-    }
+//    }
     
     /// Verification de l'equilibre du pb direct
     ///-----------------------------------------
@@ -416,7 +415,7 @@ int main( int argc, char **argv ) {
             
             /// Verification des contraintes cinematiques
             ///------------------------------------------
-            check_constraints( f_adjoint, verif_constraints );
+            check_constraints( f_adjoint, display_constraints );
             
             /// Resolution du pb adjoint
             ///-------------------------

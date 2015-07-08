@@ -47,7 +47,7 @@ int main( int argc, char **argv ) {
     static const unsigned deg_p = 1; // degre de l'analyse elements finis : 1, 2, ...
     static const unsigned deg_k = 3; // degre supplementaire : 1, 2 , 3, ...
     static const string boundary_condition_D = "penalisation"; // methodes de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalisation
-    static const bool verif_constraints = 0; // verification des contraintes cinematiques
+    static const bool display_constraints = 0; // affichage des contraintes cinematiques
     
     /// Global discretization error
     ///----------------------------
@@ -717,7 +717,7 @@ int main( int argc, char **argv ) {
             
             /// Verification des contraintes cinematiques
             ///------------------------------------------
-            check_constraints( f_adjoint, verif_constraints );
+            check_constraints( f_adjoint, display_constraints );
             
             /// Resolution du pb adjoint
             ///-------------------------
