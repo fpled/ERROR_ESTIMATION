@@ -28,7 +28,6 @@
 #include <fstream>
 #include <string>
 #include <hdf5.h>
-#include <H5Cpp.h>
 #include "LMT/include/util/Hdf.h"
 #include "LMT/include/containers/Tens3.h"
 

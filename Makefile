@@ -23,6 +23,8 @@ LMT_Dir   = git://gitosis.lmt.ens-cachan.fr/LMTpp-test.git
 METIL_Dir = git://gitosis.lmt.ens-cachan.fr/METIL.git
 DIC_Dir = git://gitosis.lmt.ens-cachan.fr/dic.git
 qsub_Dir = /usr/local/torque-current/bin/
+scons_file = SConstruct
+scons_PGD_file = SConstruct_PGD
 # Options for the compilation
 debug = 0 
 opt = 0
@@ -42,14 +44,14 @@ Pb_Name_Parameter = parameter
 default:
 # 	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation.met
 	cd LMT/include/codegen; scons -j 1
-	scons --sconstruct=SConstruct -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
+	scons --sconstruct=$(scons_file) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
 	time ./main
 	
 PGD:
 # 	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation_PGD.met
 	cd LMT/include/codegen; scons -j 1
-	scons --sconstruct=SConstruct_PGD -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
-	time ./main
+	scons --sconstruct=$(scons_PGD_file) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
+	time ./main_PGD
 
 # Codegen ---------------------------
 codegen:
