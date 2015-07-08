@@ -21,6 +21,8 @@
 #include "LMT/include/mesh/read_vtk.h" // sert a definir la fonction read_vtk() pour charger un maillage a partir d'un fichier .vtk
 #include "LMT/include/mesh/remove_lonely_nodes.h" // sert a retirer les noeuds seuls d'un maillage
 #include "LMT/include/mesh/refinement.h" // sert a raffiner un maillage selon un critere donne
+#include "LMT/include/util/Hdf.h"
+#include "LMT/include/containers/Tens3.h"
 #include "GEOMETRY/Calcul_geometry.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,8 +30,6 @@
 #include <fstream>
 #include <string>
 #include <hdf5.h>
-#include "LMT/include/util/Hdf.h"
-#include "LMT/include/containers/Tens3.h"
 
 using namespace LMT;
 using namespace std;
