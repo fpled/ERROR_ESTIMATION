@@ -13,6 +13,7 @@
 #define Calcul_global_error_estimation_h
 
 #include "EET/Construct_standard_force_fluxes_EET.h"
+#include "EET/Construct_standard_force_fluxes_EET_PGD.h"
 #include "EESPT/Construct_standard_force_fluxes_EESPT.h"
 #include "ENHANCEMENT/Construct_enhanced_force_fluxes_EET_EESPT.h"
 #include "ECRE/Construct_K_hat.h"
