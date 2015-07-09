@@ -218,9 +218,9 @@ install_METIL_on_all_machines:
 all_to_cluster:
 	rsync -auv /utmp/$(Machine_Name)/$(USER)/LMTpp        $(Cluster_Name):$(Cluster_Dir) $(exclude_LMT)
 	rsync -auv /utmp/$(Machine_Name)/$(USER)/METIL      $(Cluster_Name):$(Cluster_Dir) $(exclude_METIL)
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/*     $(Cluster_Name):$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation) $(exclude) $(exclude_main_formulation)
-# 	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/main.cpp     $(Cluster_Name):$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation) $(exclude) $(exclude_main_formulation)
-# 	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/$(Script_Name)     $(Cluster_Name):$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation) $(exclude) $(exclude_main_formulation)
+	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/*     $(Cluster_Name):$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation) $(exclude)
+# 	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/main.cpp     $(Cluster_Name):$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation) $(exclude)
+# 	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/$(Script_Name)     $(Cluster_Name):$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation) $(exclude)
 	ssh $(Cluster_Name) "cd $(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/; rm -fr LMT"
 	ssh $(Cluster_Name) "cd $(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/; ln -s $(Cluster_Dir)/LMTpp LMT"
 #	ssh $(Cluster_Name) "mv $(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/$(Script_Name) ./"
@@ -283,7 +283,7 @@ results_from_cluster:
 all_to_gnode:
 	rsync -auv /utmp/$(Machine_Name)/$(USER)/LMTpp        $(Cluster_GNode):$(Node_Dir) $(exclude_LMT)
 	rsync -auv /utmp/$(Machine_Name)/$(USER)/METIL      $(Cluster_GNode):$(Node_Dir) $(exclude_METIL)
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION     $(Cluster_GNode):$(Node_Dir) $(exclude) $(exclude_main_formulation)
+	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION     $(Cluster_GNode):$(Node_Dir) $(exclude)
 # 	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/main.cpp     $(Cluster_GNode):$(Node_Dir)/ERROR_ESTIMATION
 	ssh $(Cluster_GNode) "cd $(Node_Dir)/ERROR_ESTIMATION/; rm -fr LMT"
 	ssh $(Cluster_GNode) "cd $(Node_Dir)/ERROR_ESTIMATION/; ln -s $(Node_Dir)/LMTpp LMT"
@@ -313,13 +313,13 @@ install_METIL_on_all_gnodes:
 	ssh gnode$(i) "cd $(Node_Dir)/METIL-build; make -j4 install";)
 
 EE_to_gnode:
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION     $(Cluster_GNode):$(Node_Dir) $(exclude) $(exclude_main_formulation)
+	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION     $(Cluster_GNode):$(Node_Dir) $(exclude)
 	ssh $(Cluster_GNode) "cd $(Node_Dir)/ERROR_ESTIMATION/; rm -fr LMT"
 	ssh $(Cluster_GNode) "cd $(Node_Dir)/ERROR_ESTIMATION/; ln -s $(Node_Dir)/LMTpp LMT"
 
 EE_to_all_gnodes:
 	$(foreach i, $(Cluster_List_Gnodes), \
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION     gnode$(i):$(Node_Dir) $(exclude) $(exclude_main_formulation); \
+	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION     gnode$(i):$(Node_Dir) $(exclude); \
 	ssh gnode$(i) "cd $(Node_Dir)/ERROR_ESTIMATION/; rm -fr LMT"; \
 	ssh gnode$(i) "cd $(Node_Dir)/ERROR_ESTIMATION/; ln -s $(Node_Dir)/LMTpp LMT";)
 
