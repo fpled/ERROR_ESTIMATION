@@ -35,6 +35,8 @@ machine_arch = ''
 List_Machine_Names = pommard chablis
 Machine_Name = pommard
 Machine_Name_Results = pommard
+# Name of station
+Station_Name = stationmeca18
 # Name of problem
 Pb_Name = error_estimation
 Pb_Name_Space = space
@@ -143,12 +145,45 @@ install_METIL:
 	cd ../METIL-build; make -j4 install
 
 # excludes for rsync
-exclude = --exclude '*.o' --exclude 'core' --exclude '*.log' --exclude '*.eps' --exclude '*.dvi' --exclude '*.pdf' --exclude '*.tex' --exclude '*.aux' --exclude '*.patch' --exclude '*.kdevelop' --exclude '*.kdev4' --exclude '*.filelist' --exclude '*.pcs' --exclude '*.kdevses' --exclude '*.m' --exclude '*.pyc' --exclude '*.cc' --exclude '*.bz2' --exclude '*.cache' --exclude '*.dblite' --exclude '*.git' --exclude '.sconsign' --exclude 'LMT/.git' --exclude 'Doxyfile' --exclude 'build' --exclude 'TMP' --exclude 'TESTS' --exclude 'RESULTS' --exclude 'i686.tok' 
+exclude = --exclude '*.o' --exclude 'core' --exclude '*.log' --exclude '*.eps' --exclude '*.dvi' --exclude '*.pdf' --exclude '*.tex' --exclude '*.aux' --exclude '*.patch' --exclude '*.kdevelop' --exclude '*.kdev4' --exclude '*.filelist' --exclude '*.pcs' --exclude '*.kdevses' --exclude '*.m' --exclude '*.pyc' --exclude '*.cc' --exclude '*.bz2' --exclude '*.cache' --exclude '*.dblite' --exclude '*.git' --exclude '.sconsign' --exclude 'LMT/.git' --exclude 'Doxyfile' --exclude 'build' --exclude 'TESTS' --exclude 'RESULTS' --exclude 'i686.tok'
 exclude_main_formulation = --exclude 'main.cpp' --exclude 'formulation.met'
 exclude_Makefile = --exclude 'Makefile'
 exclude_LMT = --exclude '*.o' --exclude '*.patch' --exclude '*.git' --exclude 'i686.tok' --exclude '*.cache'
 exclude_METIL = --exclude '*.patch' --exclude '*.git' --exclude 'i686.tok' --exclude '*.cache' --exclude '*.bz2'
 exclude_generated = --exclude 'i686.tok'
+
+# Station ---------------------------
+
+all_to_station:
+	rsync -auv ../LMTpp        $(Station_Name): $(exclude_LMT)
+	rsync -auv ../METIL      $(Station_Name): $(exclude_METIL)
+	rsync -auv ../ERROR_ESTIMATION     $(Station_Name): $(exclude)
+# 	rsync -auv ../ERROR_ESTIMATION/main.cpp     $(Cluster_GNode):$(Node_Dir)/ERROR_ESTIMATION
+	ssh $(Station_Name) "cd ~/ERROR_ESTIMATION/; rm -fr LMT"
+	ssh $(Station_Name) "cd ~/ERROR_ESTIMATION/; ln -s ../LMTpp LMT"
+
+LMT_to_station:
+	rsync -auv ../LMTpp        $(Station_Name): $(exclude_LMT)
+
+METIL_to_station:
+	rsync -auv ../METIL        $(Station_Name): $(exclude_METIL)
+
+EE_to_station:
+	rsync -auv ../ERROR_ESTIMATION     $(Station_Name): $(exclude)
+	ssh $(Station_Name) "cd ~/ERROR_ESTIMATION/; rm -fr LMT"
+	ssh $(Station_Name) "cd ~/ERROR_ESTIMATION/; ln -s ../LMTpp LMT"
+
+generated_to_station:
+	rsync -auv ../ERROR_ESTIMATION/generated     $(Station_Name):~/ERROR_ESTIMATION $(exclude_generated)
+
+main_to_station:
+	rsync -auv ../ERROR_ESTIMATION/main.cpp     $(Station_Name):~/ERROR_ESTIMATION
+
+formulation_to_station:
+	rsync -auv ../ERROR_ESTIMATION/formulation.met     $(Station_Name):~/ERROR_ESTIMATION
+
+install_METIL_on_station:
+	ssh $(Station_Name) "cd ~/METIL-build; make -j4 install"
 
 # Machine ---------------------------
 
@@ -162,7 +197,7 @@ METIL_to_all_machines:
 
 EE_to_all_machines:
 	$(foreach i, $(List_Machine_Names), \
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION        $(i):$(Node_Dir) $(exclude) $(exclude_main_formulation) $(exclude_Makefile); \
+	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION        $(i):$(Node_Dir) $(exclude); \
 	ssh $(i) "cd $(Node_Dir)/ERROR_ESTIMATION/; rm -fr LMT"; \
 	ssh $(i) "cd $(Node_Dir)/ERROR_ESTIMATION/; ln -s $(Node_Dir)/LMTpp LMT";)
 
@@ -217,7 +252,7 @@ install_METIL_on_all_cluster:
 	ssh $(Cluster_GNode) "cd /data$(i)/$(USER)/METIL-build; make -j4 install";)
 
 EE_to_cluster:
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/*     $(Cluster_Name):$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/ $(exclude) $(exclude_main_formulation)
+	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/*     $(Cluster_Name):$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/ $(exclude)
 	ssh $(Cluster_Name) "cd $(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/; rm -fr LMT"
 	ssh $(Cluster_Name) "cd $(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/; ln -s $(Cluster_Dir)/LMTpp LMT"
 
