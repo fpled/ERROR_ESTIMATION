@@ -33,7 +33,7 @@ int main( int argc, char **argv ) {
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF; // definit un synonyme du type Formulation<TM,FormulationElasticity>
     typedef TM::Pvec Pvec; // definit un synonyme du type TM::Pvec servant a representer la position d'un point
     typedef TM::TNode::T T;
-    static const string structure = "square_256"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circle
+    static const string structure = "square_32"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circle
                                                      // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, sphere, sphere_center, sphere_hollow
     static const string mesh_size = "fine"; // mesh_size pour les structures plate_hole (2D ou  3D), plate_crack, structure_crack, test_specimen, weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
     static const string loading = "pre_epsilon"; // loading pour la structure spot_weld (3D) : pull, shear, peeling et pour la structure plate_crack (2D) : pull, shear
@@ -242,7 +242,7 @@ int main( int argc, char **argv ) {
 //        f.assemble();
 //        f.update_variables();
 //        f.call_after_solve();
-    }
+//    }
 //    else {
         TicToc t;
         t.start();
