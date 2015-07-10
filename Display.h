@@ -61,7 +61,7 @@ void display_structure( TM &m, TM &m_ref, const string &pb, const string &struct
 /// Display quantity of interest and zone of interest
 ///--------------------------------------------------
 template<class T, class Pvec>
-void display_interest_quantity( const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &list_elems, const unsigned &node, const Pvec &pos, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_R1, const T &radius_R2 ) {
+void display_interest_quantity( const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &list_elems, const unsigned &node, const Pvec &pos, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re ) {
 
     cout << "-------------------------------------------------------" << endl;
     cout << "Quantite d'interet : " << interest_quantity << " dans la direction " << direction_extractor << endl;
@@ -84,8 +84,8 @@ void display_interest_quantity( const string &interest_quantity, const string &d
     else if ( interest_quantity == "SIF" or interest_quantity == "stress_intensity_factor" ) {
         cout << "position de la pointe de fissure :" << endl << pos_crack_tip << endl;
         cout << "angle de la fissure :" << endl << angle_crack << " rad = " << angle_crack * 180 / M_PI << " deg" << endl;
-        cout << "rayon du cercle C_1 interieur a la couronne omega (qui entoure la pointe de fissure) :" << endl << "R_1 = " << radius_R1 << endl;
-        cout << "rayon du cercle C_2 interieur a la couronne omega (qui entoure la pointe de fissure) :" << endl << "R_2 = " << radius_R2 << endl << endl;
+        cout << "rayon du cercle interieur a la couronne omega (qui entoure la pointe de fissure) :" << endl << "Ri = " << radius_Ri << endl;
+        cout << "rayon du cercle interieur a la couronne omega (qui entoure la pointe de fissure) :" << endl << "Re = " << radius_Re << endl << endl;
     }
 }
 
@@ -122,10 +122,10 @@ void display_params_adjoint( const bool &want_local_refinement_adjoint, const T 
         cout << "------------------------------------------------------" << endl << endl;
         cout << "forme geometrique des domaines homothetiques : " << shape << endl << endl;
         if ( local_improvement == "steklov" ) {
-            cout << "parametres associes aux domaines homothetiques : " << k_min << " et " << k_max << endl << endl;
+            cout << "parametres des domaines homothetiques : " << k_min << " et " << k_max << endl << endl;
         }
         else if ( local_improvement == "rayleigh" ) {
-            cout << "parametre associe au domaine homothetique : " << k_opt << endl << endl;
+            cout << "parametre du domaine homothetique : " << k_opt << endl << endl;
         }
     }
 }
@@ -168,7 +168,7 @@ string define_prefix( TM &m, const string &pb, const string &structure, const st
 }
 
 template<class TM, class T, class Pvec>
-void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &m_lambda_opt, TM &m_crown, const string &pb, const string &method, const string &structure, const string &loading, const string &mesh_size, const unsigned &cost_function, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, const string &geometric_criterium, const unsigned &deg_k, const unsigned &refinement_deg_ref, const bool &want_global_discretization_error, const bool &want_local_discretization_error, const bool &want_global_estimation, const bool &want_local_estimation, const bool &want_local_improvement, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &list_elems_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_R1, const T &radius_R2, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, const bool &save_vtu, const bool &display_vtu, const bool &save_pvd, const bool &display_pvd, const bool &save_vtu_ref, const bool &display_vtu_ref, const bool &save_vtu_lambda, const bool &display_vtu_lambda, const bool &save_vtu_crown, const bool &display_vtu_crown ) {
+void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &m_lambda_opt, TM &m_crown, const string &pb, const string &method, const string &structure, const string &loading, const string &mesh_size, const unsigned &cost_function, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, const string &geometric_criterium, const unsigned &deg_k, const unsigned &refinement_deg_ref, const bool &want_global_discretization_error, const bool &want_local_discretization_error, const bool &want_global_estimation, const bool &want_local_estimation, const bool &want_local_improvement, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &list_elems_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, const bool &save_vtu, const bool &display_vtu, const bool &save_pvd, const bool &display_pvd, const bool &save_vtu_ref, const bool &display_vtu_ref, const bool &save_vtu_lambda, const bool &display_vtu_lambda, const bool &save_vtu_crown, const bool &display_vtu_crown ) {
     
     static const unsigned dim = TM::dim;
     
@@ -224,8 +224,8 @@ void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &
                 prefix += "_" + to_string( pos_crack_tip[ d ] );
                 prefix_ref += "_" + to_string( pos_crack_tip[ d ] );
             }
-            prefix += "_R1_" + to_string( radius_R1 ) + "_R2_" + to_string( radius_R2 );
-            prefix_ref += "_R1_" + to_string( radius_R1 ) + "_R2_" + to_string( radius_R2 );
+            prefix += "_Ri_" + to_string( radius_Ri ) + "_Re_" + to_string( radius_Re );
+            prefix_ref += "_Ri_" + to_string( radius_Ri ) + "_Re_" + to_string( radius_Re );
         }
         if ( pb == "adjoint" )
             prefix += "_" + to_string( m.node_list.size() ) + "_nodes_" + to_string( m.elem_list.size() ) + "_elems";

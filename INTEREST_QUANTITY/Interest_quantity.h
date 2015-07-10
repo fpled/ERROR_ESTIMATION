@@ -22,7 +22,7 @@ using namespace std;
 /// Definition de l'extracteur associe a une quantite d'interet = facteur d'intensite de contrainte (SIF)
 ///------------------------------------------------------------------------------------------------------
 template<class TE, class TM, class TF, class S, class TTV, class TT>
-void def_extractor_SIF( TE &elem, const TM &m, const TF &f, const S &interest_quantity, const S &direction_extractor, const TTV &pos_crack_tip, const TT &angle_crack, const TT &radius_R1, const TT &radius_R2 ) {}
+void def_extractor_SIF( TE &elem, const TM &m, const TF &f, const S &interest_quantity, const S &direction_extractor, const TTV &pos_crack_tip, const TT &angle_crack, const TT &radius_Ri, const TT &radius_Re ) {}
 
 template<class T, class Pvec>
 struct Define_Extractor_SIF {
@@ -30,10 +30,10 @@ struct Define_Extractor_SIF {
     const string* direction_extractor;
     const Pvec* pos_crack_tip;
     const T* angle_crack;
-    const T* radius_R1;
-    const T* radius_R2;
+    const T* radius_Ri;
+    const T* radius_Re;
     template<class TE, class TM, class TF> void operator()( TE &elem, const TM &m, const TF &f ) const {
-        def_extractor_SIF( elem, m, f, *interest_quantity, *direction_extractor, *pos_crack_tip, *angle_crack, *radius_R1, *radius_R2 );
+        def_extractor_SIF( elem, m, f, *interest_quantity, *direction_extractor, *pos_crack_tip, *angle_crack, *radius_Ri, *radius_Re );
     }
 };
 
@@ -197,18 +197,18 @@ struct Calcul_Interest_Quantity_Pointwise_Dep_Sigma_Epsilon {
 /// Calcul d'une quantite d'interet = facteur d'intensite de contrainte (SIF)
 ///--------------------------------------------------------------------------
 template<class TE, class TM, class TF, class S, class TTV, class TT, class TTWW>
-void calc_interest_quantity_SIF( const TE &elem, const TM &m_crown, const TF &f_crown, const S &direction_extractor, const TTV &pos_crack_tip, const TT &angle_crack, const TT &radius_R1, const TT &radius_R2, const TTWW &vectors, const Vec<unsigned> &indices, TT &I ) {}
+void calc_interest_quantity_SIF( const TE &elem, const TM &m_crown, const TF &f_crown, const S &direction_extractor, const TTV &pos_crack_tip, const TT &angle_crack, const TT &radius_Ri, const TT &radius_Re, const TTWW &vectors, const Vec<unsigned> &indices, TT &I ) {}
 
 template<class T, class Pvec>
 struct Calcul_Interest_Quantity_SIF {
     const string* direction_extractor;
     const Pvec* pos_crack_tip;
     const T* angle_crack;
-    const T* radius_R1;
-    const T* radius_R2;
+    const T* radius_Ri;
+    const T* radius_Re;
     template<class TE, class TM, class TF> void operator()( const TE &elem, const TM &m_crown, const TF &f_crown, T &I ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f_crown.indices_for_element( elem );
-        calc_interest_quantity_SIF( elem, m_crown, f_crown, *direction_extractor, *pos_crack_tip, *angle_crack, *radius_R1, *radius_R2, f_crown.vectors, ind, I );
+        calc_interest_quantity_SIF( elem, m_crown, f_crown, *direction_extractor, *pos_crack_tip, *angle_crack, *radius_Ri, *radius_Re, f_crown.vectors, ind, I );
     }
 };
 
@@ -324,7 +324,7 @@ struct Calcul_Correction_Interest_Quantity_w_sigma_hat_m {
 /// Construction du centre et de la taille du domaine Omega_lambda selon la forme et la quantite d'interet
 ///-------------------------------------------------------------------------------------------------------
 template<class TM, class T, class Pvec>
-void construct_center_length_domain( TM &m, const unsigned &deg_p, const string &shape, const string &interest_quantity, const Vec<unsigned> &list_elems, const unsigned &node, const Pvec &pos_crack_tip, const T &radius_R2, Pvec &domain_center, Vec<T> &domain_length ) {
+void construct_center_length_domain( TM &m, const unsigned &deg_p, const string &shape, const string &interest_quantity, const Vec<unsigned> &list_elems, const unsigned &node, const Pvec &pos_crack_tip, const T &radius_Re, Pvec &domain_center, Vec<T> &domain_length ) {
     
     static const unsigned dim = TM::dim;
     
@@ -397,7 +397,7 @@ void construct_center_length_domain( TM &m, const unsigned &deg_p, const string 
         }
         else if ( interest_quantity == "SIF" or interest_quantity == "stress_intensity_factor" ) {
             domain_center = pos_crack_tip;
-            domain_size = radius_R2;
+            domain_size = radius_Re;
         }
         if ( shape == "circle" or shape == "half_circle" or shape == "circle_crack" or shape == "sphere" )
             domain_length[ 0 ] = domain_size;

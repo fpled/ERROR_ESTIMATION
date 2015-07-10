@@ -980,7 +980,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
 /// Creation de la structure adjoint
 ///---------------------------------
 template<class TM, class T, class Pvec>
-void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, const string &interest_quantity, const string &direction_extractor, const bool &want_local_refinement_adjoint, const T &l_min, const T &k, const string &pointwise_interest_quantity, const Vec<unsigned> &list_elems, Vec<unsigned> &list_elems_adjoint, const unsigned &node, unsigned &node_adjoint, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_R1, const T &radius_R2, const bool &spread_cut, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, Vec<unsigned> &list_elems_adjoint_enrichment_zone_1, Vec<unsigned> &list_elems_adjoint_enrichment_zone_2, Vec<unsigned> &list_faces_adjoint_enrichment_zone_12, Vec<unsigned> &list_nodes_adjoint_enrichment, const bool &debug_geometry, const bool &debug_geometry_adjoint ) {
+void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, const string &interest_quantity, const string &direction_extractor, const bool &want_local_refinement_adjoint, const T &l_min, const T &k, const string &pointwise_interest_quantity, const Vec<unsigned> &list_elems, Vec<unsigned> &list_elems_adjoint, const unsigned &node, unsigned &node_adjoint, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool &spread_cut, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, Vec<unsigned> &list_elems_adjoint_enrichment_zone_1, Vec<unsigned> &list_elems_adjoint_enrichment_zone_2, Vec<unsigned> &list_faces_adjoint_enrichment_zone_12, Vec<unsigned> &list_nodes_adjoint_enrichment, const bool &debug_geometry, const bool &debug_geometry_adjoint ) {
 
     static const unsigned dim = TM::dim;
 
@@ -1034,12 +1034,12 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
                 Local_refinement_point_w_id<T, Pvec> ref_crack_tip( l_min, k, pos_crack_tip );
                 while( refinement( m_adjoint, ref_crack_tip, spread_cut ) )
                     ref_crack_tip.id++;
-                Local_refinement_circle_w_id<T, Pvec> ref_circle_R1( l_min, k, pos_crack_tip, radius_R1 );
-                while( refinement( m_adjoint, ref_circle_R1, spread_cut ) )
-                    ref_circle_R1.id++;
-                Local_refinement_circle_w_id<T, Pvec> ref_circle_R2( l_min, k, pos_crack_tip, radius_R2 );
-                while( refinement( m_adjoint, ref_circle_R2, spread_cut ) )
-                    ref_circle_R2.id++;
+                Local_refinement_circle_w_id<T, Pvec> ref_circle_int( l_min, k, pos_crack_tip, radius_Ri );
+                while( refinement( m_adjoint, ref_circle_int, spread_cut ) )
+                    ref_circle_int.id++;
+                Local_refinement_circle_w_id<T, Pvec> ref_circle_ext( l_min, k, pos_crack_tip, radius_Re );
+                while( refinement( m_adjoint, ref_circle_ext, spread_cut ) )
+                    ref_circle_ext.id++;
             }
         }
         else
@@ -1348,11 +1348,11 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
 /// Creation de la structure couronne pour le calcul de la quantite d'interet SIF
 ///------------------------------------------------------------------------------
 template<class TM, class T, class Pvec>
-void create_structure_crown( TM &m, TM &m_crown, const Pvec &pos_crack_tip, const T &radius_R1, const T &radius_R2, const bool &spread_cut ) {
+void create_structure_crown( TM &m, TM &m_crown, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool &spread_cut ) {
     
     for (unsigned i=0;i<m.node_list.size();++i) {
-        m.node_list[i].phi_SIF_crown_1 = length( m.node_list[ i ].pos - pos_crack_tip ) - radius_R1;
-        m.node_list[i].phi_SIF_crown_2 = radius_R2 - length( m.node_list[ i ].pos - pos_crack_tip );
+        m.node_list[i].phi_SIF_crown_1 = length( m.node_list[ i ].pos - pos_crack_tip ) - radius_Ri;
+        m.node_list[i].phi_SIF_crown_2 = radius_Re - length( m.node_list[ i ].pos - pos_crack_tip );
     }
     m_crown = m;
     if ( level_set_cut( m_crown, ExtractDM< phi_SIF_crown_1_DM >(), spread_cut ) and level_set_cut( m_crown, ExtractDM< phi_SIF_crown_2_DM >(), spread_cut ) )
@@ -1362,7 +1362,7 @@ void create_structure_crown( TM &m, TM &m_crown, const Pvec &pos_crack_tip, cons
 /// Creation de la structure de reference locale
 ///---------------------------------------------
 template<class TM, class T, class Pvec>
-void create_structure_local_ref( TM &m, TM &m_local_ref, const unsigned &deg_p, const unsigned &refinement_deg_ref, const string &interest_quantity, const Vec<unsigned> &list_elems, Vec<unsigned> &list_elems_local_ref, const unsigned &node, unsigned &node_local_ref, const Pvec &pos_crack_tip, const T &radius_R1, const T &radius_R2, const bool &spread_cut ) {
+void create_structure_local_ref( TM &m, TM &m_local_ref, const unsigned &deg_p, const unsigned &refinement_deg_ref, const string &interest_quantity, const Vec<unsigned> &list_elems, Vec<unsigned> &list_elems_local_ref, const unsigned &node, unsigned &node_local_ref, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool &spread_cut ) {
 
     static const unsigned dim = TM::dim;
     
@@ -1390,12 +1390,12 @@ void create_structure_local_ref( TM &m, TM &m_local_ref, const unsigned &deg_p, 
 //            Local_refinement_point_w_id<T, Pvec> ref_crack_tip( 0.2, 0.2, pos_crack_tip );
 //            while( refinement( m_local_ref, ref_crack_tip, spread_cut ) )
 //                ref_crack_tip.id++;
-//            Local_refinement_circle_w_id<T, Pvec> ref_circle_R1( 0.2, 0.2, pos_crack_tip, radius_R1 );
-//            while( refinement( m_local_ref, ref_circle_R1, spread_cut ) )
-//                ref_circle_R1.id++;
-//            Local_refinement_circle_w_id<T, Pvec> ref_circle_R2( 0.2, 0.2, pos_crack_tip, radius_R2 );
-//            while( refinement( m_local_ref, ref_circle_R2, spread_cut ) )
-//                ref_circle_R2.id++;
+//            Local_refinement_circle_w_id<T, Pvec> ref_circle_int( 0.2, 0.2, pos_crack_tip, radius_Ri );
+//            while( refinement( m_local_ref, ref_circle_int, spread_cut ) )
+//                ref_circle_int.id++;
+//            Local_refinement_circle_w_id<T, Pvec> ref_circle_ext( 0.2, 0.2, pos_crack_tip, radius_Re );
+//            while( refinement( m_local_ref, ref_circle_ext, spread_cut ) )
+//                ref_circle_ext.id++;
 //        }
     }
     else

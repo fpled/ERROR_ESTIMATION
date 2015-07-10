@@ -30,7 +30,7 @@ using namespace std;
 /// Definition de l'extracteur
 ///---------------------------
 template<class TM, class TF, class T, class Pvec>
-void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &list_elems_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_R1, const T &radius_R2, const bool &want_local_enrichment ) {
+void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &list_elems_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re, const bool &want_local_enrichment ) {
     
     static const unsigned dim = TM::dim;
     
@@ -143,8 +143,8 @@ void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const strin
             define_extractor_SIF.direction_extractor = &direction_extractor;
             define_extractor_SIF.pos_crack_tip = &pos_crack_tip;
             define_extractor_SIF.angle_crack = &angle_crack;
-            define_extractor_SIF.radius_R1 = &radius_R1;
-            define_extractor_SIF.radius_R2 = &radius_R2;
+            define_extractor_SIF.radius_Ri = &radius_Ri;
+            define_extractor_SIF.radius_Re = &radius_Re;
             
             apply( m_crown.elem_list, define_extractor_SIF, m_crown, f_crown );
         }
@@ -165,7 +165,7 @@ void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const strin
 /// Calcul de la quantite d'interet locale I
 ///-----------------------------------------
 template<class TM, class TF, class T, class Pvec>
-void calcul_interest_quantity( const TM &m, const TM &m_crown, const TF &f, const TF &f_crown, const string &pb, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &list_elems_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_R1, const T &radius_R2, T &I_h ) {
+void calcul_interest_quantity( const TM &m, const TM &m_crown, const TF &f, const TF &f_crown, const string &pb, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &list_elems_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re, T &I_h ) {
     I_h = 0.;
     
     static const unsigned dim = TM::dim;
@@ -215,8 +215,8 @@ void calcul_interest_quantity( const TM &m, const TM &m_crown, const TF &f, cons
         calcul_interest_quantity_SIF.direction_extractor = &direction_extractor;
         calcul_interest_quantity_SIF.pos_crack_tip = &pos_crack_tip;
         calcul_interest_quantity_SIF.angle_crack = &angle_crack;
-        calcul_interest_quantity_SIF.radius_R1 = &radius_R1;
-        calcul_interest_quantity_SIF.radius_R2 = &radius_R2;
+        calcul_interest_quantity_SIF.radius_Ri = &radius_Ri;
+        calcul_interest_quantity_SIF.radius_Re = &radius_Re;
         
         apply( m_crown.elem_list, calcul_interest_quantity_SIF, m_crown, f_crown, I_h );
     }
@@ -507,7 +507,7 @@ void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF 
 /// Calcul du terme gamma pour le calcul des bornes locales ameliorees
 ///-------------------------------------------------------------------
 template<class TM, class TF, class T, class Pvec>
-void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, const TF &f_adjoint, TF &f_adjoint_lambda_, const unsigned &deg_p, const string &method, const string &structure, const string &loading, const string &mesh_size, const unsigned &cost_function, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, const string &geometric_criterium, const unsigned &deg_k, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const T &theta_lambda_min, const T &theta_lambda_max, const T &h, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &list_elems_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_R1, const T &radius_R2, const Pvec &domain_center, const Vec<T> &domain_length, const bool &spread_cut, const Vec< Vec<T> > &dep_hat, const Vec< Vec<T> > &dep_adjoint_hat, const string &integration_k, const unsigned &integration_nb_steps, const bool &debug_method, const bool &debug_method_enhancement, const bool &debug_geometry, const bool &debug_error_estimate, T &gamma ) {
+void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, const TF &f_adjoint, TF &f_adjoint_lambda_, const unsigned &deg_p, const string &method, const string &structure, const string &loading, const string &mesh_size, const unsigned &cost_function, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, const string &geometric_criterium, const unsigned &deg_k, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const T &theta_lambda_min, const T &theta_lambda_max, const T &h, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &list_elems_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const Pvec &domain_center, const Vec<T> &domain_length, const bool &spread_cut, const Vec< Vec<T> > &dep_hat, const Vec< Vec<T> > &dep_adjoint_hat, const string &integration_k, const unsigned &integration_nb_steps, const bool &debug_method, const bool &debug_method_enhancement, const bool &debug_geometry, const bool &debug_error_estimate, T &gamma ) {
     
     static const unsigned dim = TM::dim;
     

@@ -254,8 +254,8 @@ def calc_interest_quantity_SIF( list_f, rep )
         sigma_tilde_II = mat * sigma_tilde_II_ * trans( mat )
         # sigma_tilde_II := sigma_hooke_iso( e->grad_sym( u_tilde_II ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
         # sigma_tilde_II.display_tex( "sigma_tilde_II" )
-        R_1 := symbol( "radius_R1" )
-        R_2 := symbol( "radius_R2" )
+        R_1 := symbol( "radius_Ri" )
+        R_2 := symbol( "radius_Re" )
         phi := ( R_2 - r ) / ( R_2 - R_1 )
         epsilon_tilde_I := e->grad_sym( phi * u_tilde_I )
         extractor_pre_sigma_I := sigma_hooke_iso( epsilon_tilde_I, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) - phi * sigma_tilde_I
@@ -276,7 +276,7 @@ def calc_interest_quantity_SIF( list_f, rep )
         file_ <<< "#define def_extractor_SIF_$(f->name)_$(e->dim)_$(e->name)_h"
         file_ <<< "namespace LMT {"
         file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class S, class T, class Pvec>"
-        file_ <<< "void def_extractor_SIF( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const S &interest_quantity, const S &direction_extractor, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_R1, const T &radius_R2 ) {"
+        file_ <<< "void def_extractor_SIF( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const S &interest_quantity, const S &direction_extractor, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re ) {"
         file_ <<< "    #define PNODE(N) elem.node(N)"
         cw_0 := CodeWriterAlt( "T" )
         cw_0.add( "extractor_pre_sigma_I", extractor_pre_sigma_I_const_in_elem, reassign )
@@ -326,7 +326,7 @@ def calc_interest_quantity_SIF( list_f, rep )
         file__ <<< "#define calc_interest_quantity_SIF_$(f->name)_$(e->dim)_$(e->name)_h"
         file__ <<< "namespace LMT {"
         file__ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class S, class TTVV, class T, class Pvec>"
-        file__ <<< "void calc_interest_quantity_SIF( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const S &direction_extractor, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_R1, const T &radius_R2, const TTVV &vectors, const Vec<unsigned> &indices, T &I ) {"
+        file__ <<< "void calc_interest_quantity_SIF( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const S &direction_extractor, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re, const TTVV &vectors, const Vec<unsigned> &indices, T &I ) {"
         file__ <<< "    #define PNODE(N) elem.node(N)"
         file__ <<< "    if ( direction_extractor == \"I\" ) {"
         cw_1 := CodeWriterAlt( "T" )
