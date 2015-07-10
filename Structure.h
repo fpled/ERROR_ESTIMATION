@@ -358,22 +358,22 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             switch ( refinement_deg_ref ) {
             case 1 :
                 if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_solve_ref and ( want_global_discretization_error or want_local_discretization_error ) ) )
-                    read_msh_2( m, "MESH_GMSH/CIRCULAR_INCLUSIONS_3D/circular_inclusions_Triangle.msh" );
+                    read_msh_2( m, "MESH_GMSH/CIRCULAR_INCLUSIONS_2D/circular_inclusions_Triangle.msh" );
                 else
-                    read_vtu( m, "MESH_GMSH/CIRCULAR_INCLUSIONS_3D/circular_inclusions_Triangle_direct_global_local_discretization_error_ref_1.vtu" );
+                    read_vtu( m, "MESH_GMSH/CIRCULAR_INCLUSIONS_2D/circular_inclusions_Triangle_direct_global_local_discretization_error_ref_1.vtu" );
                 break;
             case 2 :
                 if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_solve_ref and ( want_global_discretization_error or want_local_discretization_error ) ) )
-                    read_msh_2( m, "MESH_GMSH/CIRCULAR_INCLUSIONS_3D/circular_inclusions_Triangle.msh" );
+                    read_msh_2( m, "MESH_GMSH/CIRCULAR_INCLUSIONS_2D/circular_inclusions_Triangle.msh" );
                 else
-                    read_vtu( m, "MESH_GMSH/CIRCULAR_INCLUSIONS_3D/circular_inclusions_Triangle_direct_global_local_discretization_error_ref_2.vtu" );
+                    read_vtu( m, "MESH_GMSH/CIRCULAR_INCLUSIONS_2D/circular_inclusions_Triangle_direct_global_local_discretization_error_ref_2.vtu" );
                 break;
             default :
-                read_msh_2( m, "MESH_GMSH/CIRCULAR_INCLUSIONS_3D/circular_inclusions_Triangle.msh" );
+                read_msh_2( m, "MESH_GMSH/CIRCULAR_INCLUSIONS_2D/circular_inclusions_Triangle.msh" );
                 break;
             }
             if ( want_solve_ref ) {
-                read_msh_2( m_ref, "MESH_GMSH/CIRCULAR_INCLUSIONS_3D/circular_inclusions_Triangle.msh" );
+                read_msh_2( m_ref, "MESH_GMSH/CIRCULAR_INCLUSIONS_2D/circular_inclusions_Triangle.msh" );
                 for (unsigned n=0;n<refinement_deg_ref;++n) {
                     divide_element( m_ref );
                 }
@@ -385,22 +385,22 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             switch ( refinement_deg_ref ) {
             case 1 :
                 if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_solve_ref and ( want_global_discretization_error or want_local_discretization_error ) ) )
-                    read_msh_2( m, "MESH_GMSH/CIRCULAR_HOLES_3D/circular_holes_Triangle.msh" );
+                    read_msh_2( m, "MESH_GMSH/CIRCULAR_HOLES_2D/circular_holes_Triangle.msh" );
                 else
-                    read_vtu( m, "MESH_GMSH/CIRCULAR_HOLES_3D/circular_holes_Triangle_direct_global_local_discretization_error_ref_1.vtu" );
+                    read_vtu( m, "MESH_GMSH/CIRCULAR_HOLES_2D/circular_holes_Triangle_direct_global_local_discretization_error_ref_1.vtu" );
                 break;
             case 2 :
                 if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_solve_ref and ( want_global_discretization_error or want_local_discretization_error ) ) )
-                    read_msh_2( m, "MESH_GMSH/CIRCULAR_HOLES_3D/circular_holes_Triangle.msh" );
+                    read_msh_2( m, "MESH_GMSH/CIRCULAR_HOLES_2D/circular_holes_Triangle.msh" );
                 else
-                    read_vtu( m, "MESH_GMSH/CIRCULAR_HOLES_3D/circular_holes_Triangle_direct_global_local_discretization_error_ref_2.vtu" );
+                    read_vtu( m, "MESH_GMSH/CIRCULAR_HOLES_2D/circular_holes_Triangle_direct_global_local_discretization_error_ref_2.vtu" );
                 break;
             default :
-                read_msh_2( m, "MESH_GMSH/CIRCULAR_HOLES_3D/circular_holes_Triangle.msh" );
+                read_msh_2( m, "MESH_GMSH/CIRCULAR_HOLES_2D/circular_holes_Triangle.msh" );
                 break;
             }
             if ( want_solve_ref ) {
-                read_msh_2( m_ref, "MESH_GMSH/CIRCULAR_HOLES_3D/circular_holes_Triangle.msh" );
+                read_msh_2( m_ref, "MESH_GMSH/CIRCULAR_HOLES_2D/circular_holes_Triangle.msh" );
                 for (unsigned n=0;n<refinement_deg_ref;++n) {
                     divide_element( m_ref );
                 }
