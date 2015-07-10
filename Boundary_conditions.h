@@ -202,6 +202,18 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                     }
                 }
             }
+            /// Inclusions/Trous circulaires 2D
+            /// blocage des noeuds situes en x = 0 dans toutes les directions
+            ///--------------------------------------------------------------
+            else if ( structure == "circular_inclusions" or structure == "circular_holes" ) {
+                for (unsigned i=0;i<m.node_list.size();++i) {
+                    if ( m.node_list[i].pos[0] < 1e-6 ) {
+                        for (unsigned d=0;d<dim;++d) {
+                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+                        }
+                    }
+                }
+            }
             /// Carre 2D
             /// application du champ de deplacement u a tous les noeuds
             /// condition de periodicite
@@ -366,6 +378,16 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
                         if ( center( *m.sub_mesh(Number<1>()).elem_list[i] )[1] > 15. - 1e-1 ) {
                             m.sub_mesh(Number<1>()).elem_list[i]->set_field( "f_surf", Vec<T,dim>( 0., -1. ) );
+                        }
+                    }
+                }
+                /// Inclusions/Trous circulaires 2D
+                /// effort surfacique applique sur les bords des elements situes en x = 1 (F_d = +x)
+                ///---------------------------------------------------------------------------------
+                else if ( structure == "circular_inclusions" or structure == "circular_holes" ) {
+                    for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
+                        if ( center( *m.sub_mesh(Number<1>()).elem_list[i] )[0] > 1. - 1e-6 ) {
+                            m.sub_mesh(Number<1>()).elem_list[i]->set_field( "f_surf", Vec<T,dim>( 1., 0. ) );
                         }
                     }
                 }
@@ -624,10 +646,10 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                     }
                 }
             }
-            /// Inclusions spheriques 3D
+            /// Inclusions/Trous spheriques 3D
             /// blocage des noeuds situes en x = 0 dans toutes les directions
             ///--------------------------------------------------------------
-            else if ( structure == "spherical_inclusions" ) {
+            else if ( structure == "spherical_inclusions" or structure == "spherical_holes" ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 1e-6 ) {
                         for (unsigned d=0;d<dim;++d) {
@@ -842,10 +864,10 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                         }
                     }
                 }
-                /// Inclusions_spheriques 3D
+                /// Inclusions/Trous spheriques 3D
                 /// effort surfacique applique sur les bords des elements situes en x = 1 (F_d = +x)
                 ///---------------------------------------------------------------------------------
-                else if ( structure == "spherical_inclusions" ) {
+                else if ( structure == "spherical_inclusions" or structure == "spherical_holes" ) {
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
                         if ( center( *m.sub_mesh(Number<1>()).elem_list[i] )[0] > 1. - 1e-6 ) {
                             m.sub_mesh(Number<1>()).elem_list[i]->set_field( "f_surf", Vec<T,dim>( 1., 0., 0. ) );
