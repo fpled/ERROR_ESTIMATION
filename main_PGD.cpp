@@ -53,7 +53,7 @@ int main( int argc, char **argv ) {
     ///----------------------------
     static const bool want_global_discretization_error = 0; // calcul de l'erreur de discretisation globale associee au pb direct
     static const bool want_local_discretization_error = 0; // calcul de l'erreur de discretisation locale associee au pb direct
-    static const bool want_compute_ref = 0; // calcul d'une solution de reference sur un maillage de reference (tres fin)
+    static const bool want_solve_ref = 0; // calcul d'une solution de reference sur un maillage de reference (tres fin)
     static const unsigned refinement_degree_ref = 2; // degre du h-refinement pour la construction du maillage de reference associe au pb de reference :
                                                      // 1 -> sous-decoupage en 4/8 elements en 2D/3D
                                                      // 2 -> sous-decoupage en 16/64 elements en 2D/3D
@@ -246,8 +246,8 @@ int main( int argc, char **argv ) {
     ///----------------------
     TM m; // declaration d'un maillage de type TM
     TM m_ref;
-    create_structure( m, m_ref, "direct", structure, mesh_size, loading, deg_p, want_global_discretization_error, want_local_discretization_error, refinement_degree_ref, want_compute_ref );
-    display_structure( m, m_ref, "direct", structure, deg_p, want_compute_ref );
+    create_structure( m, m_ref, "direct", structure, mesh_size, loading, deg_p, want_global_discretization_error, want_local_discretization_error, refinement_degree_ref, want_solve_ref );
+    display_structure( m, m_ref, "direct", structure, deg_p, want_solve_ref );
     TM_param m_param;
     create_structure_param( m_param, initial_val_param, final_val_param, nb_steps_param );
     
@@ -263,7 +263,7 @@ int main( int argc, char **argv ) {
     create_material_properties( f, m, structure, loading );
     create_boundary_conditions( f, m, boundary_condition_D, "direct", structure, loading, mesh_size );
     define_unknown_parameter_zone( f, m, structure, list_elems_PGD_unknown_parameter );
-    if ( want_compute_ref ) {
+    if ( want_solve_ref ) {
         create_material_properties( f_ref, m_ref, structure, loading );
         create_boundary_conditions( f_ref, m_ref, boundary_condition_D, "direct", structure, loading, mesh_size );
     }
@@ -557,7 +557,7 @@ int main( int argc, char **argv ) {
     ///-----------------------------------------
     check_equilibrium( f, "direct", verif_eq );
     
-    if ( want_compute_ref and want_PGD == 0 ) {
+    if ( want_solve_ref and want_PGD == 0 ) {
         /// Resolution du pb de reference associe au pb direct
         ///---------------------------------------------------
         TicToc t_ref;
@@ -585,7 +585,7 @@ int main( int argc, char **argv ) {
     ///---------------------------------------------------------------------------///
     
     if ( want_PGD == 0 )
-        calcul_discretization_error( m, m_ref, f, f_ref, debug_discretization_error, want_global_discretization_error, want_local_discretization_error, want_compute_ref );
+        calcul_discretization_error( m, m_ref, f, f_ref, debug_discretization_error, want_global_discretization_error, want_local_discretization_error, want_solve_ref );
     
     T theta = 0.;
     Vec<T> theta_elem;

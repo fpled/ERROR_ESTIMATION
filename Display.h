@@ -18,7 +18,7 @@ using namespace std;
 /// Display dimension, degree, structure and mesh parameters
 ///---------------------------------------------------------
 template<class TM>
-void display_structure( TM &m, TM &m_ref, const string &pb, const string &structure, const unsigned &deg_p, const bool &want_compute_ref ) {
+void display_structure( TM &m, TM &m_ref, const string &pb, const string &structure, const unsigned &deg_p, const bool &want_solve_ref ) {
     
     static const unsigned dim = TM::dim;
     typedef typename TM::Pvec Pvec;
@@ -47,7 +47,7 @@ void display_structure( TM &m, TM &m_ref, const string &pb, const string &struct
         cout << "nb d'elements du pb " << pb << " : " << m.elem_list.size() << endl << endl;
     }
     
-    if ( want_compute_ref ) {
+    if ( want_solve_ref ) {
         if ( m_ref.node_list.size() ) {
             if ( remove_lonely_nodes( m_ref ) )
                 cerr << "Des noeuds seuls ont ete retires du maillage de reference associe au pb " << pb << "..." << endl << endl;

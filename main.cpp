@@ -47,7 +47,7 @@ int main( int argc, char **argv ) {
     ///----------------------------
     static const bool want_global_discretization_error = 0; // calcul de l'erreur de discretisation globale associee au pb direct
     static const bool want_local_discretization_error = 0; // calcul de l'erreur de discretisation locale associee au pb direct
-    static const bool want_compute_ref = 0; // calcul d'une solution de reference sur un maillage de reference (tres fin)
+    static const bool want_solve_ref = 0; // calcul d'une solution de reference sur un maillage de reference (tres fin)
     static const unsigned refinement_degree_ref = 2; // degre du h-refinement pour la construction du maillage de reference associe au pb de reference :
                                                      // 1 -> sous-decoupage en 4/8 elements en 2D/3D
                                                      // 2 -> sous-decoupage en 16/64 elements en 2D/3D
@@ -61,7 +61,7 @@ int main( int argc, char **argv ) {
     /// Global error estimation method
     ///-------------------------------
     static const bool want_global_estimation = 1; // calcul de l'erreur globale au sens de la norme energetique usuelle
-    static const string method = "EET_SPET_EESPT"; // methodes de construction de champs admissibles pour le pb direct : EET, EESPT, SPET, EET_SPET_EESPT, EET_SPET, EET_EESPT, SPET_EESPT
+    static const string method = "EET"; // methodes de construction de champs admissibles pour le pb direct : EET, EESPT, SPET, EET_SPET_EESPT, EET_SPET, EET_EESPT, SPET_EESPT
     static const string method_adjoint = "EET"; // methodes de construction de champs admissibles pour le pb adjoint : EET, EESPT, SPET, EET_SPET_EESPT, EET_SPET, EET_EESPT, SPET_EESPT
 
     static const unsigned cost_function = 0; // fonction-cout pour les methodes EET, EESPT :
@@ -213,8 +213,8 @@ int main( int argc, char **argv ) {
     ///----------------------
     TM m; // declaration d'un maillage de type TM
     TM m_ref;
-    create_structure( m, m_ref, "direct", structure, mesh_size, loading, deg_p, want_global_discretization_error, want_local_discretization_error, refinement_degree_ref, want_compute_ref );
-    display_structure( m, m_ref, "direct", structure, deg_p, want_compute_ref );
+    create_structure( m, m_ref, "direct", structure, mesh_size, loading, deg_p, want_global_discretization_error, want_local_discretization_error, refinement_degree_ref, want_solve_ref );
+    display_structure( m, m_ref, "direct", structure, deg_p, want_solve_ref );
     
     /// Formulation du pb direct
     ///-------------------------
@@ -225,7 +225,7 @@ int main( int argc, char **argv ) {
     ///------------------------------------------------------------
     create_material_properties( f, m, structure, loading );
     create_boundary_conditions( f, m, boundary_condition_D, "direct", structure, loading, mesh_size );
-    if ( want_compute_ref ) {
+    if ( want_solve_ref ) {
         create_material_properties( f_ref, m_ref, structure, loading );
         create_boundary_conditions( f_ref, m_ref, boundary_condition_D, "direct", structure, loading, mesh_size );
     }
@@ -236,14 +236,10 @@ int main( int argc, char **argv ) {
     
     /// Resolution du pb direct
     ///------------------------
-//    if ( structure.find("square") != string::npos ) {
-//        f.allocate_matrices();
-//        f.shift();
-//        f.assemble();
-//        f.update_variables();
-//        f.call_after_solve();
-//    }
-//    else {
+    if ( structure.find("square") != string::npos ) {
+
+    }
+    else {
         TicToc t;
         t.start();
         if ( want_iterative_solver == 0 )
@@ -258,7 +254,7 @@ int main( int argc, char **argv ) {
     ///-----------------------------------------
     check_equilibrium( f, "direct", verif_eq );
     
-    if ( want_compute_ref ) {
+    if ( want_solve_ref ) {
         /// Resolution du pb de reference associe au pb direct
         ///---------------------------------------------------
         TicToc t_ref;
@@ -285,7 +281,7 @@ int main( int argc, char **argv ) {
     /// Mesure de l'erreur de discretisation globale et locale associee pb direct ///
     ///---------------------------------------------------------------------------///
     
-    calcul_discretization_error( m, m_ref, f, f_ref, debug_discretization_error, want_global_discretization_error, want_local_discretization_error, want_compute_ref );
+    calcul_discretization_error( m, m_ref, f, f_ref, debug_discretization_error, want_global_discretization_error, want_local_discretization_error, want_solve_ref );
     
     T theta = 0.;
     Vec<T> theta_elem;

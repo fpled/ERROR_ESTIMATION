@@ -21,7 +21,7 @@ using namespace std;
 /// Calcul de la mesure de l'erreur de discretisation globale et locale
 ///--------------------------------------------------------------------
 template<class TM, class TF>
-void calcul_discretization_error( TM &m, const TM &m_ref, const TF &f, const TF &f_ref, const bool &debug_discretization_error, const bool &want_global_discretization_error, const bool &want_local_discretization_error, const bool &want_compute_ref ) {
+void calcul_discretization_error( TM &m, const TM &m_ref, const TF &f, const TF &f_ref, const bool &debug_discretization_error, const bool &want_global_discretization_error, const bool &want_local_discretization_error, const bool &want_solve_ref ) {
     
     typedef typename TM::Pvec Pvec;
     typedef typename TM::TNode::T T;
@@ -37,7 +37,7 @@ void calcul_discretization_error( TM &m, const TM &m_ref, const TF &f, const TF 
         cout << "Mesure de l'erreur de discretisation" << endl;
         cout << "------------------------------------" << endl << endl;
 
-        if ( want_compute_ref ) {
+        if ( want_solve_ref ) {
             
             bool all_Dirichlet_boundary_conditions_equal_to_zero = 1;
 
