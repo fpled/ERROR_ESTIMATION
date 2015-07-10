@@ -146,8 +146,8 @@ int main( int argc, char **argv ) {
     static const T initial_val_param = 0.0; // valeur initiale sur l'intervalle des parametres
     static const T final_val_param = 9.0; // valeur finale sur l'intervalle des parametres
     static const unsigned nb_steps_param = 100; // nb d'elements du maillage parametrique
-    static const bool want_verif_kinematic_PGD = 1; // verification de la decomposition PGD cinematique
-    static const unsigned nb_vals_param_verif = 5; // nb de valeurs des parametres pris aleatoirement pour la verification de la decomposition PGD
+    static const bool want_verif_kinematic_PGD = 0; // verification de la decomposition PGD cinematique
+    static const unsigned nb_vals_param_verif = 1; // nb de valeurs des parametres pris aleatoirement pour la verification de la decomposition PGD
     
     /// Parameters for iterative solver
     ///--------------------------------
@@ -336,7 +336,7 @@ int main( int argc, char **argv ) {
         K_k_p = f_known_param.matrices(Number<0>());
         unsigned n = 0;
         while ( true ) {
-//             cout << "Mode n = " << n << endl << endl;
+            cout << "Mode n = " << n << endl << endl;
             string prefix_mode = "mode_" + to_string( n );
             
             /// Initialisation
@@ -363,7 +363,7 @@ int main( int argc, char **argv ) {
             
             while ( true ) {
                 k++;
-//                cout << "Iteration k = " << k << endl << endl;
+                cout << "Iteration k = " << k << endl << endl;
                 string prefix_iteration = "iteration_" + to_string( k );
                 psi[ n ][ k ].resize( f.vectors[0].size() );
                 lambda[ n ][ k ].resize( f_unknown_param.vectors[0].size() );

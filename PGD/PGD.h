@@ -41,7 +41,7 @@ void define_unknown_parameter_zone( TF &f, TM &m, const string &structure, TV &l
             ///--------------------------
             if (structure == "circular_inclusions") {
                 for (unsigned i=0;i<m.elem_list.size();++i) {
-                    if ( pow(center( *m.elem_list[i] )[0] - 0.2, 2) + pow(center( *m.elem_list[i] )[1] - 0.2, 2) < pow(0.1 + 1e-6, 2) or pow(center( *m.elem_list[i] )[0] - 0.6, 2) + pow(center( *m.elem_list[i] )[1] - 0.3, 2) + pow(center( *m.elem_list[i] )[2] - 0.5, 2) < pow(0.1 + 1e-6, 2) or pow(center( *m.elem_list[i] )[0] - 0.4, 2) + pow(center( *m.elem_list[i] )[1] - 0.7, 2) + pow(center( *m.elem_list[i] )[2] - 0.8, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.2 )^2 + ( y - 0.2 )^2 + ( z - 0.2 )^2 = (0.1)^2 or ( x - 0.6 )^2 + ( y - 0.3 )^2 + ( z - 0.5 )^2 = (0.1)^2 or ( x - 0.4 )^2 + ( y - 0.7 )^2 + ( z - 0.8 )^2 = (0.1)^2
+                    if ( pow(center( *m.elem_list[i] )[0] - 0.2, 2) + pow(center( *m.elem_list[i] )[1] - 0.2, 2) < pow(0.1 + 1e-6, 2) or pow(center( *m.elem_list[i] )[0] - 0.6, 2) + pow(center( *m.elem_list[i] )[1] - 0.3, 2) < pow(0.1 + 1e-6, 2) or pow(center( *m.elem_list[i] )[0] - 0.4, 2) + pow(center( *m.elem_list[i] )[1] - 0.7, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.2 )^2 + ( y - 0.2 )^2 = (0.1)^2 or ( x - 0.6 )^2 + ( y - 0.3 )^2 = (0.1)^2 or ( x - 0.4 )^2 + ( y - 0.7 )^2 = (0.1)^2
                         list_elems_PGD_unknown_parameter.push_back( m.elem_list[i]->number );
                 }
             }
