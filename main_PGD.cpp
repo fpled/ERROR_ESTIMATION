@@ -38,8 +38,8 @@ int main( int argc, char **argv ) {
     typedef Formulation<TM_param,FormulationUnknownParam,DefaultBehavior,double,wont_add_nz> TF_unknown_param;
     typedef Formulation<TM_param,FormulationKnownParam,DefaultBehavior,double,wont_add_nz> TF_known_param;
     typedef TM_param::Pvec Pvec_param;
-    static const string structure = "weight_sensor"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circle
-                                                     // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, sphere, sphere_center, sphere_hollow
+    static const string structure = "circular_inclusions"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circle, circular_inclusions, circular_holes
+                                                     // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes
     static const string mesh_size = "fine"; // mesh_size pour les structures plate_hole (2D ou  3D), plate_crack, structure_crack, test_specimen, weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
     static const string loading = "pull"; // chargement pour la structure spot_weld (3D) : pull, shear, peeling et pour la structure plate_crack (2D) : pull, shear
                                           // chargement pour la structure square_... (2D) : pre_epsilon, pre_sigma
@@ -65,7 +65,7 @@ int main( int argc, char **argv ) {
 
     /// Global error estimation method
     ///-------------------------------
-    static const bool want_global_estimation = 1; // calcul d'un estimateur d'erreur globale (au sens de la norme energetique)
+    static const bool want_global_estimation = 0; // calcul d'un estimateur d'erreur globale (au sens de la norme energetique)
     static const string method = "EET"; //methode de construction de champs admissibles pour le pb direct : EET, SPET, EESPT
     static const string method_adjoint = "EET"; // methode de construction de champs admissibles pour le pb adjoint : EET, SPET, EESPT
 
