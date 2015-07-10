@@ -83,7 +83,7 @@ template<unsigned dim_,class TT_> class Box
                 flag=true;
             return flag;
         }
-        bool pt_in_box ( const Vec<TT_,3> &pt,  const double eps=1e-6 ) const
+        bool pt_in_box ( const Vec<TT_,3> &pt, const double eps=1e-6 ) const
         {
             bool flag=false;
             Vec<TT_,3> x ( 1.,0.,0. ),y ( 0.,1.,0. ),z ( 0.,0.,1. );

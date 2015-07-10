@@ -321,7 +321,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     }
     
     Calcul_Elem_Vector_E calcul_elem_vector_E;
-    calcul_elem_vector_E.list_elems_vertex_node =  &list_elems_vertex_node;
+    calcul_elem_vector_E.list_elems_vertex_node = &list_elems_vertex_node;
     calcul_elem_vector_E.connect_node_to_vertex_node = &connect_node_to_vertex_node;
     calcul_elem_vector_E.patch_elem = &patch_elem;
     

@@ -21,7 +21,7 @@ Vec<typename TM::Pvec,dim_> create_box_mesh( TM &m ) {
     return box;
 }
 
-template<class TV, class T,class STO, class STR> void tens( TV &n1, TV &n2, Mat<T, STO , STR>  &M ) {
+template<class TV, class T,class STO, class STR> void tens( TV &n1, TV &n2, Mat<T, STO , STR> &M ) {
     M.resize(n1.size(), n2.size());
     for (unsigned i=0;i<n1.size();i++)
         for (unsigned j=0;j<n2.size();j++)
@@ -74,9 +74,9 @@ bool inCL( Vec<T,4> &box1, Vec<T,4> &box2 ) {
 
     // verification si P1 et P2 sont dans la boite box2
     //verification si P1 est dans box2
-    if ( (Q1[0]-eps<= P1[0]) && (P1[0]<=Q2[0]+eps )  && (Q1[1]-eps<= P1[1]) && (P1[1]<=Q2[1]+eps ) ) {
+    if ( (Q1[0]-eps<= P1[0]) && (P1[0]<=Q2[0]+eps ) && (Q1[1]-eps<= P1[1]) && (P1[1]<=Q2[1]+eps ) ) {
         //verification si P2 est dans box2
-        if ( (Q1[0]-eps<= P2[0]) && (P2[0]<=Q2[0]+eps )  && (Q1[1]-eps<= P2[1]) && (P2[1]<=Q2[1]+eps ) )
+        if ( (Q1[0]-eps<= P2[0]) && (P2[0]<=Q2[0]+eps ) && (Q1[1]-eps<= P2[1]) && (P2[1]<=Q2[1]+eps ) )
             testin=1;
     }
     return testin;
@@ -93,9 +93,9 @@ bool inCL( Vec<T,6> &box1, Vec<T,6> &box2 ) {
     bool testin=0;
     // verification si P1 et P2 sont dans la boite box2
     //verification si P1 est dans box2
-    if ( (Q1[0]-eps<= P1[0]) && (P1[0]<=Q2[0]+eps )  && (Q1[1]-eps<= P1[1]) && (P1[1]<=Q2[1]+eps ) && (Q1[2]-eps<= P1[2]) && (P1[2]<=Q2[2]+eps ) ) {
+    if ( (Q1[0]-eps<= P1[0]) && (P1[0]<=Q2[0]+eps ) && (Q1[1]-eps<= P1[1]) && (P1[1]<=Q2[1]+eps ) && (Q1[2]-eps<= P1[2]) && (P1[2]<=Q2[2]+eps ) ) {
         //verification si P2 est dans box2
-        if ( (Q1[0]-eps<= P2[0]) && (P2[0]<=Q2[0]+eps )  && (Q1[1]-eps<= P2[1]) && (P2[1]<=Q2[1]+eps )  && (Q1[2]-eps<= P2[2]) && (P2[2]<=Q2[2]+eps ) )
+        if ( (Q1[0]-eps<= P2[0]) && (P2[0]<=Q2[0]+eps ) && (Q1[1]-eps<= P2[1]) && (P2[1]<=Q2[1]+eps ) && (Q1[2]-eps<= P2[2]) && (P2[2]<=Q2[2]+eps ) )
             testin=1;
     }
     return testin;
@@ -147,7 +147,7 @@ void penalisation( TV1 &v, TV2 &rep, typename TV1::T &coef ) {
 
 template<class TT,int static_size_>
 Vec<TT,static_size_,void> ProjT( Vec<TT,static_size_,void> &v1, Vec<TT,static_size_,void> &n ) {
-    Vec<TT,static_size_,void>  res;
+    Vec<TT,static_size_,void> res;
     res=v1-dot(v1,n)*n;
     return res;
 }
@@ -203,7 +203,7 @@ void reordering_nodes( TM &m ) {
         indices.push_back( K.data[i].indices );
     #ifndef INCOMPLETE
     Vec<unsigned> res = symrcm( indices );
-    #else  
+    #else
     Vec<unsigned> res = symamd( indices );
     #endif
    
@@ -265,7 +265,7 @@ template<class T> bool pt_in_box( Vec<T,2> &pt, Vec<Vec<T,2>,2> &box, Vec<Vec<T,
 template<class T> bool pt_in_box( Vec<T,3> &pt, Vec<Vec<T,3>,2> &box, Vec<Vec<T,3>,3> &base, const double eps=1e-6 ) {
     bool flag=0;
     if ( (dot(pt-box[0],base[2])*dot(pt-box[1],base[2])<=eps) and (dot(pt-box[0],base[0])*dot(pt-box[1],base[0])<=eps) and (dot(pt-box[0],base[1])*dot(pt-box[1],base[1])<=eps) )
-        flag=1;     
+        flag=1;
     return flag;
 }
 
@@ -285,11 +285,11 @@ template<class T> bool pt_in_box( Vec<T,2> &pt, Vec<Vec<T,2>,2> &box, const doub
         flag=1;
     return flag;
 }
-template<class T> bool pt_in_box( Vec<T,3> &pt, Vec<Vec<T,3>,2> &box,  const double eps=1e-6 ) {
+template<class T> bool pt_in_box( Vec<T,3> &pt, Vec<Vec<T,3>,2> &box, const double eps=1e-6 ) {
     bool flag=0;
-    Vec<T,3> x(1.,0.,0.),y(0.,1.,0.),z(0.,0.,1.);   
+    Vec<T,3> x(1.,0.,0.),y(0.,1.,0.),z(0.,0.,1.);
     if ( (dot(pt-box[0],x)*dot(pt-box[1],x)<=eps) and (dot(pt-box[0],y)*dot(pt-box[1],y)<=eps) and (dot(pt-box[0],z)*dot(pt-box[1],z)<=eps) )
-        flag=1;     
+        flag=1;
     return flag;
 }
 template<class T> bool pt_in_box( const Vec<T,2> &pt, Vec<Vec<T,2>,2> &box, const double eps=1e-6 ) {
@@ -299,11 +299,11 @@ template<class T> bool pt_in_box( const Vec<T,2> &pt, Vec<Vec<T,2>,2> &box, cons
         flag=1;
     return flag;
 }
-template<class T> bool pt_in_box( const Vec<T,3> &pt, Vec<Vec<T,3>,2> &box,  const double eps=1e-6 ) {
+template<class T> bool pt_in_box( const Vec<T,3> &pt, Vec<Vec<T,3>,2> &box, const double eps=1e-6 ) {
     bool flag=0;
-    Vec<T,3> x(1.,0.,0.),y(0.,1.,0.),z(0.,0.,1.);   
+    Vec<T,3> x(1.,0.,0.),y(0.,1.,0.),z(0.,0.,1.);
     if ( (dot(pt-box[0],x)*dot(pt-box[1],x)<=eps) and (dot(pt-box[0],y)*dot(pt-box[1],y)<=eps) and (dot(pt-box[0],z)*dot(pt-box[1],z)<=eps) )
-        flag=1;     
+        flag=1;
     return flag;
 }
 

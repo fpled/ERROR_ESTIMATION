@@ -420,7 +420,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         cout << "degre du premier element : " << degre_p[ 0 ] << endl;
     }
 
-    if ( degre_p[ 0 ] == 1  ) {
+    if ( degre_p[ 0 ] == 1 ) {
         
         /// Cas p = 1
         ///----------
@@ -705,8 +705,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
                 Vec<unsigned> vec_unk = range( nb_unk[ j ][ d ] );
                 Vec<unsigned> vec_eq_indep = range( nb_eq_indep[ j ][ d ] );
                 Mat<T, Gen<>, SparseLine<> > trans_A_tilde = trans( A_tilde[ j ][ d ] );
-                K[ j ][ d ]( vec_eq_indep, vec_unk ) = trans_A_tilde( vec_eq_indep, vec_unk )  * 1.;
-                F[ j ][ d ][ vec_eq_indep ] = R_tilde[ j ][ d ][ vec_eq_indep ]  * 1.;
+                K[ j ][ d ]( vec_eq_indep, vec_unk ) = trans_A_tilde( vec_eq_indep, vec_unk ) * 1.;
+                F[ j ][ d ][ vec_eq_indep ] = R_tilde[ j ][ d ][ vec_eq_indep ] * 1.;
             }
             else {
                 Vec<unsigned> vec_unk = range( nb_unk[ j ][ d ] );
@@ -714,10 +714,10 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
                 Vec<unsigned> vec_unk_to_unk_plus_eq_indep = range( nb_unk[ j ][ d ], nb_unk[ j ][ d ] + nb_eq_indep[ j ][ d ] );
                 Mat<T, Gen<>, SparseLine<> > trans_A_tilde = trans( A_tilde[ j ][ d ] );
                 K[ j ][ d ]( vec_unk, vec_unk ) = M[ j ][ d ][ vec_unk ] * 1.;
-                K[ j ][ d ]( vec_unk_to_unk_plus_eq_indep, vec_unk ) = trans_A_tilde( vec_eq_indep, vec_unk )  * 1.;
-                K[ j ][ d ]( vec_unk, vec_unk_to_unk_plus_eq_indep ) = A_tilde[ j ][ d ]( vec_unk, vec_eq_indep )  * 1.;
-                F[ j ][ d ][ vec_unk ] = ( M[ j ][ d ] * lambda_F[ j ][ d ] )[ vec_unk ]  * 1.;
-                F[ j ][ d ][ vec_unk_to_unk_plus_eq_indep ] = R_tilde[ j ][ d ][ vec_eq_indep ]  * 1.;
+                K[ j ][ d ]( vec_unk_to_unk_plus_eq_indep, vec_unk ) = trans_A_tilde( vec_eq_indep, vec_unk ) * 1.;
+                K[ j ][ d ]( vec_unk, vec_unk_to_unk_plus_eq_indep ) = A_tilde[ j ][ d ]( vec_unk, vec_eq_indep ) * 1.;
+                F[ j ][ d ][ vec_unk ] = ( M[ j ][ d ] * lambda_F[ j ][ d ] )[ vec_unk ] * 1.;
+                F[ j ][ d ][ vec_unk_to_unk_plus_eq_indep ] = R_tilde[ j ][ d ][ vec_eq_indep ] * 1.;
             }
         }
     }

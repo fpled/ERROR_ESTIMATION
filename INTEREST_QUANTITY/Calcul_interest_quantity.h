@@ -86,7 +86,7 @@ void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const strin
                         extractor[2] = 1. / mes;
                     else if ( direction_extractor == "xz" or direction_extractor == "zx" )
                         extractor[3] = 1. / ( 2 * mes );
-                    else if ( direction_extractor == "yz" or direction_extractor == "zy"  )
+                    else if ( direction_extractor == "yz" or direction_extractor == "zy" )
                         extractor[4] = 1. / ( 2 * mes );
                     else if ( direction_extractor == "zz" )
                         extractor[5] = 1. / mes;

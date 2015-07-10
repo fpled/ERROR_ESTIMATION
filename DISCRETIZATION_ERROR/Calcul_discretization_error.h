@@ -164,7 +164,7 @@ void calcul_discretization_error( TM &m, const TM &m_ref, const TF &f, const TF 
             
             T sum_discretization_error_elem = 0.;
             for (unsigned n=0;n<m.elem_list.size();++n) {
-                discretization_error_elem[ n ]  = m.elem_list[ n ]->get_field( "discretization_error_elem", StructForType<T>() );
+                discretization_error_elem[ n ] = m.elem_list[ n ]->get_field( "discretization_error_elem", StructForType<T>() );
                 sum_discretization_error_elem += discretization_error_elem[ n ];
             }
             cout << "somme des mesures (elementaires) de l'erreur de discretisation locale au carre :" << endl;

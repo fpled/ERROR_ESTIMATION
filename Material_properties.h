@@ -91,7 +91,7 @@ void create_material_properties( TF &f, TM &m, const string &structure, const st
         ///--------------------------
         if ( structure == "circular_inclusions" ) {
             for (unsigned n=0;n<m.elem_list.size();++n) {
-                if ( pow(center( *m.elem_list[n] )[0] - 0.2, 2) + pow(center( *m.elem_list[n] )[1] - 0.2, 2) < pow(0.1 + 1e-6, 2)  or pow(center( *m.elem_list[n] )[0] - 0.6, 2) + pow(center( *m.elem_list[n] )[1] - 0.3, 2) < pow(0.1 + 1e-6, 2) or pow(center( *m.elem_list[n] )[0] - 0.4, 2) + pow(center( *m.elem_list[n] )[1] - 0.7, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.2 )^2 + ( y - 0.2 )^2 = (0.1)^2 or ( x - 0.6 )^2 + ( y - 0.3 )^2 = (0.1)^2 or ( x - 0.4 )^2 + ( y - 0.7 )^2 = (0.1)^2
+                if ( pow(center( *m.elem_list[n] )[0] - 0.2, 2) + pow(center( *m.elem_list[n] )[1] - 0.2, 2) < pow(0.1 + 1e-6, 2) or pow(center( *m.elem_list[n] )[0] - 0.6, 2) + pow(center( *m.elem_list[n] )[1] - 0.3, 2) < pow(0.1 + 1e-6, 2) or pow(center( *m.elem_list[n] )[0] - 0.4, 2) + pow(center( *m.elem_list[n] )[1] - 0.7, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.2 )^2 + ( y - 0.2 )^2 = (0.1)^2 or ( x - 0.6 )^2 + ( y - 0.3 )^2 = (0.1)^2 or ( x - 0.4 )^2 + ( y - 0.7 )^2 = (0.1)^2
                     m.elem_list[n]->set_field( "young", 10. );
                 else
                     m.elem_list[n]->set_field( "young", 1. );
@@ -101,7 +101,7 @@ void create_material_properties( TF &f, TM &m, const string &structure, const st
         ///-------------------------
         else if ( structure == "spherical_inclusions" ) {
             for (unsigned n=0;n<m.elem_list.size();++n) {
-                if ( pow(center( *m.elem_list[n] )[0] - 0.2, 2) + pow(center( *m.elem_list[n] )[1] - 0.2, 2) + pow(center( *m.elem_list[n] )[2] - 0.2, 2) < pow(0.1 + 1e-6, 2)  or pow(center( *m.elem_list[n] )[0] - 0.6, 2) + pow(center( *m.elem_list[n] )[1] - 0.3, 2) + pow(center( *m.elem_list[n] )[2] - 0.5, 2) < pow(0.1 + 1e-6, 2) or pow(center( *m.elem_list[n] )[0] - 0.4, 2) + pow(center( *m.elem_list[n] )[1] - 0.7, 2) + pow(center( *m.elem_list[n] )[2] - 0.8, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.2 )^2 + ( y - 0.2 )^2 + ( z - 0.2 )^2 = (0.1)^2 or ( x - 0.6 )^2 + ( y - 0.3 )^2 + ( z - 0.5 )^2 = (0.1)^2 or ( x - 0.4 )^2 + ( y - 0.7 )^2 + ( z - 0.8 )^2 = (0.1)^2
+                if ( pow(center( *m.elem_list[n] )[0] - 0.2, 2) + pow(center( *m.elem_list[n] )[1] - 0.2, 2) + pow(center( *m.elem_list[n] )[2] - 0.2, 2) < pow(0.1 + 1e-6, 2) or pow(center( *m.elem_list[n] )[0] - 0.6, 2) + pow(center( *m.elem_list[n] )[1] - 0.3, 2) + pow(center( *m.elem_list[n] )[2] - 0.5, 2) < pow(0.1 + 1e-6, 2) or pow(center( *m.elem_list[n] )[0] - 0.4, 2) + pow(center( *m.elem_list[n] )[1] - 0.7, 2) + pow(center( *m.elem_list[n] )[2] - 0.8, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.2 )^2 + ( y - 0.2 )^2 + ( z - 0.2 )^2 = (0.1)^2 or ( x - 0.6 )^2 + ( y - 0.3 )^2 + ( z - 0.5 )^2 = (0.1)^2 or ( x - 0.4 )^2 + ( y - 0.7 )^2 + ( z - 0.8 )^2 = (0.1)^2
                     m.elem_list[n]->set_field( "young", 10. );
                 else
                     m.elem_list[n]->set_field( "young", 1. );
@@ -109,7 +109,7 @@ void create_material_properties( TF &f, TM &m, const string &structure, const st
         }
         /// Carre 2D
         ///---------
-        else if ( structure.find("square") != string::npos  ) {
+        else if ( structure.find("square") != string::npos ) {
             if ( loading == "pre_sigma" ) {
                 for (unsigned n=0;n<m.elem_list.size();++n) {
                     m.elem_list[n]->set_field( "young", 2*(1+0.3)*0.9 );
@@ -129,7 +129,7 @@ void create_material_properties( TF &f, TM &m, const string &structure, const st
 
         /// Carre 2D
         ///---------
-        if ( structure.find("square") != string::npos  ) {
+        if ( structure.find("square") != string::npos ) {
             if ( loading == "pre_sigma" ) {
                 for (unsigned n=0;n<m.elem_list.size();++n) {
                     m.elem_list[n]->set_field( "poisson", 0.3 );

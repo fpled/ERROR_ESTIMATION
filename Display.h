@@ -163,7 +163,7 @@ string define_prefix( TM &m, const string &pb, const string &structure, const st
         prefix += "_" + loading;
     if ( structure == "plate_hole" or structure == "plate_crack" or structure == "structure_crack" or structure == "test_specimen" or structure == "weight_sensor" or structure == "circle" or structure == "beam_hole" or structure == "plate_hole_full" or structure == "spot_weld" or structure == "reactor_head" or structure == "door_seal" or structure == "sphere" or structure == "sphere_center" or structure == "SAP" )
         prefix += "_" + mesh_size;
-    prefix +=  "_" + m.type_elements()[0] + "_" + pb;
+    prefix += "_" + m.type_elements()[0] + "_" + pb;
     return prefix;
 }
 
@@ -176,7 +176,7 @@ void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &
     string prefix_ref = define_prefix( m_ref, pb, structure, loading, mesh_size );
     
     if ( ( want_global_estimation or want_local_estimation ) and ( method.find("EET") != string::npos or method.find("SPET") != string::npos or method.find("EESPT") != string::npos ) ) {
-        prefix +=  "_" + method + "_k_" + to_string( deg_k ) + "_J" + to_string( cost_function );
+        prefix += "_" + method + "_k_" + to_string( deg_k ) + "_J" + to_string( cost_function );
         if ( ( enhancement_with_geometric_criterium or enhancement_with_estimator_criterium ) and ( method.find("EET") != string::npos or method.find("EESPT") != string::npos ) ) {
             prefix += "_enhancement";
             if ( enhancement_with_estimator_criterium )

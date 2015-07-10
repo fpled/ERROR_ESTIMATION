@@ -23,7 +23,7 @@ using namespace LMT;
 using namespace std;
 
 /// Compteur du nb de faces connectees a l'element n du maillage : cpt
-/// Liste des faces connectees a l'element n du maillage  : list
+/// Liste des faces connectees a l'element n du maillage : list
 ///-------------------------------------------------------------------
 struct Counter_Children {
     template<class TE, class TM> void operator()( const TE &elem, const TM &m, Vec<unsigned> &cpt, Vec< Vec<unsigned> > &list ) const {
@@ -35,7 +35,7 @@ struct Counter_Children {
 };
 
 /// Compteur du nb d'elements ( ou de faces ) connectes au noeud i du maillage : cpt
-/// Liste des elements (ou des face ) connectes au noeud i du maillage  : list
+/// Liste des elements (ou des face ) connectes au noeud i du maillage : list
 ///---------------------------------------------------------------------------------
 struct Counter {
     template<class TE> void operator()( const TE &elem, Vec<unsigned> &cpt, Vec< Vec<unsigned> > &list ) const {
@@ -58,7 +58,7 @@ struct Construct_Correspondance_Node_To_Vertex_Node {
 };
 
 /// Compteur du nb d'elements ( ou de faces ) connectes au noeud sommet j du maillage : cpt
-/// Liste des elements (ou des face ) connectes au noeud sommet j du maillage  : list
+/// Liste des elements (ou des face ) connectes au noeud sommet j du maillage : list
 ///----------------------------------------------------------------------------------------
 struct Counter_Vertex {
     const Vec<bool>* correspondance_node_to_vertex_node;
@@ -73,7 +73,7 @@ struct Counter_Vertex {
 };
 
 /// Compteur du nb de noeuds sommets connectes a l'element e ( ou a la face face ) du maillage : cpt
-/// Liste des noeuds sommets connectes a l'element e ( ou a la face face ) du maillage  : list
+/// Liste des noeuds sommets connectes a l'element e ( ou a la face face ) du maillage : list
 ///-------------------------------------------------------------------------------------------------
 struct Counter_Vertex_Nodes {
     const Vec<bool>* correspondance_node_to_vertex_node;
@@ -89,7 +89,7 @@ struct Counter_Vertex_Nodes {
 };
 
 /// Compteur du nb de noeuds connectes a l'element e ( ou a la face face ) du maillage : cpt
-/// Liste des noeuds connectes a l'element e ( ou a la face face ) du maillage  : list
+/// Liste des noeuds connectes a l'element e ( ou a la face face ) du maillage : list
 ///-----------------------------------------------------------------------------------------
 struct Counter_Nodes {
     template<class TE> void operator()( const TE &elem, Vec<unsigned> &cpt, Vec< Vec<unsigned> > &list ) const {
@@ -921,7 +921,7 @@ struct Local_refinement_point_w_id {
         T v = length( center( e ) - c ) * k + l_min;
         if ( l > v ) {
             e.node( 0 )->tag_refinement = id;
-            e.node( 1 )->tag_refinement = id;  
+            e.node( 1 )->tag_refinement = id;
             return true;
         } else
             return false;
@@ -956,7 +956,7 @@ struct Local_refinement_circle_w_id {
         T v = fabs( R - length( center( e ) - c ) ) * k + l_min;
         if ( l > v ) {
             e.node( 0 )->tag_refinement = id;
-            e.node( 1 )->tag_refinement = id;  
+            e.node( 1 )->tag_refinement = id;
             return true;
         } else
             return false;

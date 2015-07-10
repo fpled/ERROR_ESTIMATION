@@ -195,7 +195,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
 
     if ( debug_method_enhancement ) {
         for (unsigned n=0;n<list_elems_enh.size();++n) {
-            cout << "dimension de la matrice A_local_enh de l'element " << list_elems_enh[ n ] << " : ( " << nb_unk_local_enh[ n ] << ", " << nb_unk_local_enh[ n ] << " )"  << endl;
+            cout << "dimension de la matrice A_local_enh de l'element " << list_elems_enh[ n ] << " : ( " << nb_unk_local_enh[ n ] << ", " << nb_unk_local_enh[ n ] << " )" << endl;
             cout << "matrice A_local_enh de l'element " << list_elems_enh[ n ] << " :" << endl;
             cout << A_local_enh[ n ] << endl << endl;
         }
@@ -253,7 +253,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     C_enh.resize( nb_eq_f_surf_enh, nb_unk_enh );
 
     Calcul_Global_Matrix_C_enh calcul_global_matrix_C_enh;
-    calcul_global_matrix_C_enh.type_face  = &type_face;
+    calcul_global_matrix_C_enh.type_face = &type_face;
     calcul_global_matrix_C_enh.flag_face_enh = &flag_face_enh;
     calcul_global_matrix_C_enh.list_faces_enh = &list_faces_enh;
 
@@ -277,7 +277,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     cpt_eq_f_surf_enh = 0;
 
     Calcul_Global_Vector_q_enh calcul_global_vector_q_enh;
-    calcul_global_vector_q_enh.type_face  = &type_face;
+    calcul_global_vector_q_enh.type_face = &type_face;
     calcul_global_vector_q_enh.flag_elem_enh = &flag_elem_enh;
     calcul_global_vector_q_enh.cpt_eq_f_surf_enh = &cpt_eq_f_surf_enh;
 
@@ -318,7 +318,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
 
     if ( debug_method_enhancement ) {
         for (unsigned n=0;n<list_elems_bal.size();++n) {
-            cout << "dimension de la matrice L_local_enh de l'element " << list_elems_bal[ n ] << " : ( " << nb_eq_f_vol_local_enh[ n ] << ", " << nb_unk_local_bal[ n ] << " )"  << endl;
+            cout << "dimension de la matrice L_local_enh de l'element " << list_elems_bal[ n ] << " : ( " << nb_eq_f_vol_local_enh[ n ] << ", " << nb_unk_local_bal[ n ] << " )" << endl;
             cout << "matrice L_local_enh de l'element " << list_elems_bal[ n ] << " :" << endl;
             cout << L_local_enh[ n ] << endl << endl;
         }

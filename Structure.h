@@ -74,7 +74,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
                 }
                 break;
             default :
-                cerr << "deg " << deg_p << "  > 2 not implemented..." << endl << endl;
+                cerr << "deg " << deg_p << " > 2 not implemented..." << endl << endl;
                 break;
             }
         }
@@ -141,7 +141,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
                 if ( want_solve_ref )
                     read_msh_2( m_ref, "MESH_GMSH/PLATE_HOLE_2D/plate_hole_very_fine_Triangle_6.msh" );
             default :
-                cerr << "deg " << deg_p << "  > 2 not implemented..." << endl << endl;
+                cerr << "deg " << deg_p << " > 2 not implemented..." << endl << endl;
                 break;
             }
         }
@@ -223,7 +223,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
                     read_msh_2( m_ref, "MESH_GMSH/STRUCTURE_CRACK_2D/structure_crack_very_fine_Triangle_6.msh" );
                 break;
             default :
-                cerr << "deg " << deg_p << "  > 2 not implemented..." << endl << endl;
+                cerr << "deg " << deg_p << " > 2 not implemented..." << endl << endl;
                 break;
             }
         }
@@ -281,7 +281,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
                 }
                 break;
             default :
-                cerr << "deg " << deg_p << "  > 2 not implemented..." << endl << endl;
+                cerr << "deg " << deg_p << " > 2 not implemented..." << endl << endl;
                 break;
             }
         }
@@ -334,7 +334,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
                     read_msh_2( m_ref, "MESH_GMSH/WEIGHT_SENSOR_2D/weight_sensor_very_fine_Triangle_6.msh" );
                 break;
             default :
-                cerr << "deg " << deg_p << "  > 2 not implemented..." << endl << endl;
+                cerr << "deg " << deg_p << " > 2 not implemented..." << endl << endl;
                 break;
             }
         }
@@ -448,7 +448,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
                 }
                 break;
             default :
-                cerr << "deg " << deg_p << "  > 2 not implemented..." << endl << endl;
+                cerr << "deg " << deg_p << " > 2 not implemented..." << endl << endl;
                 break;
             }
         }
@@ -840,7 +840,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             case 1 :
                 if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_solve_ref and ( want_global_discretization_error or want_local_discretization_error ) ) ) {
                     read_avs( m, "MESH_AVS/BLADE_SUPPORT_3D/blade_Tetra.avs" );
-//                    ReaderINP<TM> RI( m , "MESH_AVS/BLADE_SUPPORT_3D/blade_Tetra.inp"  );
+//                    ReaderINP<TM> RI( m , "MESH_AVS/BLADE_SUPPORT_3D/blade_Tetra.inp" );
                 }
                 else
                     read_vtu( m, "MESH_AVS/BLADE_SUPPORT_3D/blade_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
@@ -848,14 +848,14 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             case 2 :
                 if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_solve_ref and ( want_global_discretization_error or want_local_discretization_error ) ) ) {
                     read_avs( m, "MESH_AVS/BLADE_SUPPORT_3D/blade_Tetra.avs" );
-//                    ReaderINP<TM> RI( m , "MESH_AVS/BLADE_SUPPORT_3D/blade_Tetra.inp"  );
+//                    ReaderINP<TM> RI( m , "MESH_AVS/BLADE_SUPPORT_3D/blade_Tetra.inp" );
                 }
                 else
                     read_vtu( m, "MESH_AVS/BLADE_SUPPORT_3D/blade_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
                 break;
             default :
                 read_avs( m, "MESH_AVS/BLADE_SUPPORT_3D/blade_Tetra.avs" );
-//                ReaderINP<TM> RI( m , "MESH_AVS/BLADE_SUPPORT_3D/blade_Tetra.inp"  );
+//                ReaderINP<TM> RI( m , "MESH_AVS/BLADE_SUPPORT_3D/blade_Tetra.inp" );
                 break;
             }
             if ( want_solve_ref ) {
@@ -872,7 +872,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             case 1 :
                 if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_solve_ref and ( want_global_discretization_error or want_local_discretization_error ) ) ) {
                     read_avs( m, "MESH_AVS/PIPE_3D/pipe_Tetra.avs" );
-//                    ReaderINP<TM> RI( m , "MESH_AVS/PIPE_3D/pipe_Tetra.inp"  );
+//                    ReaderINP<TM> RI( m , "MESH_AVS/PIPE_3D/pipe_Tetra.inp" );
                 }
                 else
                     read_vtu( m, "MESH_AVS/PIPE_3D/pipe_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
@@ -880,14 +880,14 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             case 2 :
                 if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_solve_ref and ( want_global_discretization_error or want_local_discretization_error ) ) ) {
                     read_avs( m, "MESH_AVS/PIPE_3D/pipe_Tetra.avs" );
-//                    ReaderINP<TM> RI( m , "MESH_AVS/PIPE_3D/pipe_Tetra.inp"  );
+//                    ReaderINP<TM> RI( m , "MESH_AVS/PIPE_3D/pipe_Tetra.inp" );
                 }
                 else
                     read_vtu( m, "MESH_AVS/PIPE_3D/pipe_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
             break;
             default :
                 read_avs( m, "MESH_AVS/PIPE_3D/pipe_Tetra.avs" );
-//                ReaderINP<TM> RI( m , "MESH_AVS/PIPE_3D/pipe_Tetra.inp"  );
+//                ReaderINP<TM> RI( m , "MESH_AVS/PIPE_3D/pipe_Tetra.inp" );
                 break;
             }
             if ( want_solve_ref ) {
@@ -1124,7 +1124,7 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
             }
         }
         else
-            cerr << "deg " << deg_p << "  > 1 not implemented..." << endl << endl;
+            cerr << "deg " << deg_p << " > 1 not implemented..." << endl << endl;
     }
     
     /// Zone d'interet du maillage adjoint
@@ -1166,7 +1166,7 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
             }
         }
         else if ( interest_quantity.find("pointwise") != string::npos ) {
-            if ( pointwise_interest_quantity ==  "node" ) {
+            if ( pointwise_interest_quantity == "node" ) {
                 unsigned cpt_layers_nodes_enrichment = 1;
                 for (unsigned n=0;n<m.get_node_parents( node ).size();++n)
                     list_elems_enrichment_zone_1.push_back( m.get_node_parents( node )[ n ]->number );
@@ -1480,7 +1480,7 @@ void create_structure_local_ref( TM &m, TM &m_local_ref, const unsigned &deg_p, 
 //        }
     }
     else
-        cerr << "deg " << deg_p << "  > 1 not implemented..." << endl << endl;
+        cerr << "deg " << deg_p << " > 1 not implemented..." << endl << endl;
 
     if ( m_local_ref.node_list.size() ) {
         if ( remove_lonely_nodes( m_local_ref ) )
@@ -1511,7 +1511,7 @@ void create_structure_cut( TM &m, TM &m_lambda, const unsigned &deg_p, const str
         }
     }
     else
-        cerr << "deg " << deg_p << "  > 1 not implemented..." << endl << endl;
+        cerr << "deg " << deg_p << " > 1 not implemented..." << endl << endl;
 }
 
 /// Creation de la structure parametrique

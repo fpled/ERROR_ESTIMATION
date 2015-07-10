@@ -118,8 +118,8 @@ struct Construct_Extractor_SIF {
     }
 };
 
-/// Calcul d'une quantite d'interet  = valeur moyenne d'une composante du champ de contrainte (mean_sigma) ou de deformation (mean_epsilon)
-///----------------------------------------------------------------------------------------------------------------------------------------
+/// Calcul d'une quantite d'interet = valeur moyenne d'une composante du champ de contrainte (mean_sigma) ou de deformation (mean_epsilon)
+///---------------------------------------------------------------------------------------------------------------------------------------
 template<class TE, class TM, class TF, class TTWW, class TT>
 void calc_interest_quantity_mean_sigma_epsilon( const TE &elem, const TM &m, const TF &f, const TTWW &vectors, const Vec<unsigned> &indices, TT &I ) {}
 
@@ -266,7 +266,7 @@ struct Calcul_Correction_Interest_Quantity_wo_sigma_hat_m {
 /// Calcul de la correction I_hh sur la quantite d'interet (avec introduction de sigma_hat_m)
 ///------------------------------------------------------------------------------------------
 template<class TE, class TE_adjoint, class TM, class TF, class TTWW, class S, class B, class TTVV, class TT>
-void calc_elem_correction_interest_quantity_w_sigma_hat_m( const TE &elem, const TE_adjoint &elem_adjoint, const TM &m, const TM &m_adjoint, const TF &f, const TF &f_adjoint, const TTWW &vectors, const TTWW &adjoint_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &adjoint_indices, const S &method, const S &method_adjoint, const B &want_local_enrichment, const TTVV &dep_hat, const TTVV &dep_adjoint_hat, TT &I_hh  ) {}
+void calc_elem_correction_interest_quantity_w_sigma_hat_m( const TE &elem, const TE_adjoint &elem_adjoint, const TM &m, const TM &m_adjoint, const TF &f, const TF &f_adjoint, const TTWW &vectors, const TTWW &adjoint_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &adjoint_indices, const S &method, const S &method_adjoint, const B &want_local_enrichment, const TTVV &dep_hat, const TTVV &dep_adjoint_hat, TT &I_hh ) {}
 
 template<class TM, class TF,class T>
 struct Calcul_Elem_Correction_Interest_Quantity_w_sigma_hat_m {
@@ -577,7 +577,7 @@ struct Calcul_Error_Estimate_Lambda_Boundary {
 /// Calcul de la correction I_hhh sur la quantite d'interet locale I
 ///-----------------------------------------------------------------
 template<class TE, class TE_adjoint, class TM, class TF, class TTWW, class S, class TTVV, class TT>
-void calc_elem_correction_interest_quantity_lambda( const TE &elem, const TE_adjoint &elem_adjoint, const TM &m, const TM &m_adjoint, const TF &f, const TF &f_adjoint, const TTWW &vectors, const TTWW &adjoint_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &adjoint_indices, const S &method, const S &method_adjoint, const TTVV &dep_hat, const TTVV &dep_adjoint_hat, TT &I_hhh  ) {}
+void calc_elem_correction_interest_quantity_lambda( const TE &elem, const TE_adjoint &elem_adjoint, const TM &m, const TM &m_adjoint, const TF &f, const TF &f_adjoint, const TTWW &vectors, const TTWW &adjoint_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &adjoint_indices, const S &method, const S &method_adjoint, const TTVV &dep_hat, const TTVV &dep_adjoint_hat, TT &I_hhh ) {}
 
 template<class TM, class TF, class T>
 struct Calcul_Correction_Interest_Quantity_Lambda {

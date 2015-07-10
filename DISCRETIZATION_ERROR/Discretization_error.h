@@ -31,7 +31,7 @@ struct Add_Elem_Norm_Dep {
 /// Calcul de l'erreur de discretisation au carre
 ///----------------------------------------------
 template<class TE, class TE_REF, class TM, class TF, class TTVV, class TTV>
-void calc_elem_discretization_error( const TE &elem, const TE_REF &elem_ref, const TM &m, const TM &m_ref, const TF &f, const TF &f_ref, const TTVV &vectors, const TTVV &ref_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &ref_indices, TTV &discretization_error_elem  ) {}
+void calc_elem_discretization_error( const TE &elem, const TE_REF &elem_ref, const TM &m, const TM &m_ref, const TF &f, const TF &f_ref, const TTVV &vectors, const TTVV &ref_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &ref_indices, TTV &discretization_error_elem ) {}
 
 template<class TM, class TF, class T>
 struct Calcul_Elem_Discretization_Error {

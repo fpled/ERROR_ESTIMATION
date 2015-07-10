@@ -18,7 +18,7 @@ using namespace LMT;
 using namespace std;
 
 /// Compteur du nb de faces connectees a l'element n du maillage : cpt_children[ n ]
-/// Liste des faces connectees a l'element n du maillage  : list_children[ n ]
+/// Liste des faces connectees a l'element n du maillage : list_children[ n ]
 ///---------------------------------------------------------------------------------
 template<class TM>
 void construct_children( TM &m, Vec<unsigned> &cpt_children, Vec< Vec<unsigned> > &list_children, const bool &debug_geometry ) {
@@ -39,7 +39,7 @@ void construct_children( TM &m, Vec<unsigned> &cpt_children, Vec< Vec<unsigned> 
 }
 
 /// Compteur du nb d'elements connectes au noeud i du maillage : cpt_elems_node[ i ]
-/// Liste des elements connectes au noeud i du maillage  : list_elems_node[ i ]
+/// Liste des elements connectes au noeud i du maillage : list_elems_node[ i ]
 ///---------------------------------------------------------------------------------
 template<class TM>
 void construct_elems_connected_to_node( const TM &m, Vec<unsigned> &cpt_elems_node, Vec< Vec<unsigned> > &list_elems_node, const bool &debug_geometry ) {
@@ -59,7 +59,7 @@ void construct_elems_connected_to_node( const TM &m, Vec<unsigned> &cpt_elems_no
 }
 
 /// Compteur du nb de faces connectees au noeud i du maillage : cpt_faces_node[ i ]
-/// Liste des faces connectees au noeud i du maillage  : list_faces_node[ i ]
+/// Liste des faces connectees au noeud i du maillage : list_faces_node[ i ]
 ///--------------------------------------------------------------------------------
 template<class TM>
 void construct_faces_connected_to_node( TM &m, Vec<unsigned> &cpt_faces_node, Vec< Vec<unsigned> > &list_faces_node, const bool &debug_geometry ) {
@@ -80,7 +80,7 @@ void construct_faces_connected_to_node( TM &m, Vec<unsigned> &cpt_faces_node, Ve
 }
 
 /// Compteur du nb de noeuds connectes a l'element n du maillage : cpt_nodes_elem[ n ]
-/// Liste des noeuds connectes a l'element n du maillage  : list_nodes_elem[ n ]
+/// Liste des noeuds connectes a l'element n du maillage : list_nodes_elem[ n ]
 ///-----------------------------------------------------------------------------------
 template<class TM>
 void construct_nodes_connected_to_elem( const TM &m, Vec<unsigned> &cpt_nodes_elem, Vec< Vec<unsigned> > &list_nodes_elem, const bool &debug_geometry ) {
@@ -100,7 +100,7 @@ void construct_nodes_connected_to_elem( const TM &m, Vec<unsigned> &cpt_nodes_el
 }
 
 /// Compteur du nb de noeuds connectes a la face k du maillage : cpt_nodes_face[ k ]
-/// Liste des noeuds connectes a la face k du maillage  : list_nodes_face[ k ]
+/// Liste des noeuds connectes a la face k du maillage : list_nodes_face[ k ]
 ///---------------------------------------------------------------------------------
 template<class TM>
 void construct_nodes_connected_to_face( TM &m, Vec<unsigned> &cpt_nodes_face, Vec< Vec<unsigned> > &list_nodes_face, const bool &debug_geometry ) {
@@ -148,7 +148,7 @@ unsigned match_node_to_vertex_node( const TM &m, Vec<bool> &correspondance_node_
 }
 
 /// Compteur du nb d'elements connectes au noeud sommet j du maillage : cpt_elems_vertex_node[ j ]
-/// Liste des elements connectes au noeud i du maillage  : list_elems_vertex_node[ j ]
+/// Liste des elements connectes au noeud i du maillage : list_elems_vertex_node[ j ]
 ///-----------------------------------------------------------------------------------------------
 template<class TM>
 void construct_elems_connected_to_vertex_node( const TM &m, const unsigned &nb_vertex_nodes, const Vec<bool> &correspondance_node_to_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, Vec<unsigned> &cpt_elems_vertex_node, Vec< Vec<unsigned> > &list_elems_vertex_node, const bool &debug_geometry ) {
@@ -171,7 +171,7 @@ void construct_elems_connected_to_vertex_node( const TM &m, const unsigned &nb_v
 }
 
 /// Compteur du nb de faces connectees au noeud sommet j du maillage : cpt_faces_vertex_node[ j ]
-/// Liste des faces connectees au noeud i du maillage  : list_faces_vertex_node[ j ]
+/// Liste des faces connectees au noeud i du maillage : list_faces_vertex_node[ j ]
 ///----------------------------------------------------------------------------------------------
 template<class TM>
 void construct_faces_connected_to_vertex_node( TM &m, const unsigned &nb_vertex_nodes, const Vec<bool> &correspondance_node_to_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, Vec<unsigned> &cpt_faces_vertex_node, Vec< Vec<unsigned> > &list_faces_vertex_node, const bool &debug_geometry ) {
@@ -195,7 +195,7 @@ void construct_faces_connected_to_vertex_node( TM &m, const unsigned &nb_vertex_
 }
 
 /// Compteur du nb de noeuds sommets connectes a l'element n du maillage : cpt_vertex_nodes_elem[ n ]
-/// Liste des noeuds sommets connectes a l'element n du maillage  : list_vertex_nodes_elem[ n ]
+/// Liste des noeuds sommets connectes a l'element n du maillage : list_vertex_nodes_elem[ n ]
 ///--------------------------------------------------------------------------------------------------
 template<class TM>
 void construct_vertex_nodes_connected_to_elem( const TM &m, const Vec<bool> &correspondance_node_to_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, Vec<unsigned> &cpt_vertex_nodes_elem, Vec< Vec<unsigned> > &list_vertex_nodes_elem, const bool &debug_geometry ) {
@@ -218,7 +218,7 @@ void construct_vertex_nodes_connected_to_elem( const TM &m, const Vec<bool> &cor
 }
 
 /// Compteur du nb de noeuds sommets connectes a la face k du maillage : cpt_vertex_nodes_face[ k ]
-/// Liste des noeuds sommets connectes a la face k du maillage  : list_vertex_nodes_face[ k ]
+/// Liste des noeuds sommets connectes a la face k du maillage : list_vertex_nodes_face[ k ]
 ///------------------------------------------------------------------------------------------------
 template<class TM>
 void construct_vertex_nodes_connected_to_face( TM &m, const Vec<bool> &correspondance_node_to_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, Vec<unsigned> &cpt_vertex_nodes_face, Vec< Vec<unsigned> > &list_vertex_nodes_face, const bool &debug_geometry ) {

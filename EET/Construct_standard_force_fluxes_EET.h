@@ -137,7 +137,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
         cout << endl;
         for (unsigned n=0;n<m.elem_list.size();++n) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "indice de debut de ligne de l'element " << n << " dans la direction " << d << " dans les vecteurs r[ noeud connecte a l'element " << n << " ][ " << d << " ]  et dans les matrices B[ noeud connecte a l'element " << n << " ][ " << d << " ] : " << elem_ind[ n ][ d ] << endl;
+                cout << "indice de debut de ligne de l'element " << n << " dans la direction " << d << " dans les vecteurs r[ noeud connecte a l'element " << n << " ][ " << d << " ] et dans les matrices B[ noeud connecte a l'element " << n << " ][ " << d << " ] : " << elem_ind[ n ][ d ] << endl;
             }
             cout << endl << endl;
         }
@@ -287,10 +287,10 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
                 cout << "nb d'equations imposees associees au noeud " << i << " dans la direction " << d << " : " << nb_eq_imp[ i ][ d ] << endl;
-                if ( type_node[ i ][ d ] ==  2 or type_node[ i ][ d ] == 12 ) {
+                if ( type_node[ i ][ d ] == 2 or type_node[ i ][ d ] == 12 ) {
                     for (unsigned k=0;k<cpt_faces_node[ i ];++k) {
                         if ( type_face[ list_faces_node[ i ][ k ] ][ d ] == 2 ) {
-                            cout << "indice de debut de ligne de la face " << list_faces_node[ i ][ k ] << " dans la direction " << d << " dans la matrice C[ " << i << " ][ " << d <<  " ] : " << nodal_ind[ i ][ d ][ k ] << endl;
+                            cout << "indice de debut de ligne de la face " << list_faces_node[ i ][ k ] << " dans la direction " << d << " dans la matrice C[ " << i << " ][ " << d << " ] : " << nodal_ind[ i ][ d ][ k ] << endl;
                         }
                     }
                 }
@@ -325,8 +325,8 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     if ( debug_method ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                if ( type_node[ i ][ d ] ==  2 or type_node[ i ][ d ] == 12 ) {
-                    cout << "dimension de la matrice C associe au noeud " << i << " dans la direction " << d <<  " : ( " << nb_eq_imp[ i ][ d ] << ", " << nb_unk[ i ][ d ] << " )" << endl;
+                if ( type_node[ i ][ d ] == 2 or type_node[ i ][ d ] == 12 ) {
+                    cout << "dimension de la matrice C associe au noeud " << i << " dans la direction " << d << " : ( " << nb_eq_imp[ i ][ d ] << ", " << nb_unk[ i ][ d ] << " )" << endl;
                     cout << "matrice C associe au noeud " << i << " dans la direction " << d << " :" << endl;
                     cout << C[ i ][ d ] << endl << endl;
                 }
@@ -361,7 +361,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     if ( debug_method ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                if ( type_node[ i ][ d ] ==  2 or type_node[ i ][ d ] == 12 ) {
+                if ( type_node[ i ][ d ] == 2 or type_node[ i ][ d ] == 12 ) {
                     cout << "dimension du vecteur q associe au noeud " << i << " dans la direction " << d << " : " << nb_eq_imp[ i ][ d ] << endl;
                     cout << "vecteur q associe au noeud " << i << " dans la direction " << d << " :" << endl;
                     cout << q[ i ][ d ] << endl << endl;
@@ -705,7 +705,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
                     K[ i ][ d ]( vec_unk, vec_unk ) = M[ i ][ d ][ vec_unk ] * 1.;
                     K[ i ][ d ]( vec_unk_to_unk_plus_eq_imp, vec_unk ) = C[ i ][ d ]( vec_eq_imp, vec_unk ) * 1.;
                     K[ i ][ d ]( vec_unk_plus_eq_imp_to_unk_plus_eq_imp_plus_eq_indep, vec_unk ) = B[ i ][ d ]( vec_eq_indep, vec_unk ) * 1.;
-                    K[ i ][ d ]( vec_unk, vec_unk_to_unk_plus_eq_imp ) = trans_C( vec_unk, vec_eq_imp )  * 1.;
+                    K[ i ][ d ]( vec_unk, vec_unk_to_unk_plus_eq_imp ) = trans_C( vec_unk, vec_eq_imp ) * 1.;
                     K[ i ][ d ]( vec_unk, vec_unk_plus_eq_imp_to_unk_plus_eq_imp_plus_eq_indep ) = trans_B( vec_unk, vec_eq_indep ) * 1.;
                     F[ i ][ d ][ vec_unk ] = ( M[ i ][ d ] * b[ i ][ d ] )[ vec_unk ] * 1.;
                     F[ i ][ d ][ vec_unk_to_unk_plus_eq_imp ] = q[ i ][ d ][ vec_eq_imp ] * 1.;
@@ -731,7 +731,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
                 Vec<unsigned> vec_unk_plus_eq_imp_to_unk_plus_eq_imp_plus_eq_indep = range( nb_unk[ i ][ d ] + nb_eq_imp[ i ][ d ], nb_unk[ i ][ d ] + nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] );
                 Mat<T, Gen<>, SparseLine<> > trans_B = trans( B[ i ][ d ] );
                 Mat<T, Gen<>, SparseLine<> > trans_C = trans( C[ i ][ d ] );
-                K[ i ][ d ]( vec_unk, vec_unk ) = M[ i ][ d ][ vec_unk ]  * 1.;
+                K[ i ][ d ]( vec_unk, vec_unk ) = M[ i ][ d ][ vec_unk ] * 1.;
                 K[ i ][ d ]( vec_unk_to_unk_plus_eq_imp, vec_unk ) = C[ i ][ d ]( vec_eq_imp, vec_unk ) * 1.;
                 K[ i ][ d ]( vec_unk_plus_eq_imp_to_unk_plus_eq_imp_plus_eq_indep, vec_unk ) = B[ i ][ d ]( vec_eq_indep, vec_unk ) * 1.;
                 K[ i ][ d ]( vec_unk, vec_unk_to_unk_plus_eq_imp ) = trans_C( vec_unk, vec_eq_imp ) * 1.;

@@ -64,7 +64,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
 //                }
 //            }
 //            for (unsigned i=0;i<m.node_list.size();++i) {
-//                if ( 0.5 - 1e-6 < m.node_list[i].pos[0]  and m.node_list[i].pos[0] < 0.5 + 1e-6 and m.node_list[i].pos[1] > 1. - 1e-6 ) {
+//                if ( 0.5 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.5 + 1e-6 and m.node_list[i].pos[1] > 1. - 1e-6 ) {
 //                    f.add_constraint( "node["+to_string(i)+"].dep[0]", pen );
 //                }
 //            }
@@ -78,7 +78,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
 //                }
 //            }
 //            for (unsigned i=0;i<m.node_list.size();++i) {
-//                if ( 0.5 - 1e-6 < m.node_list[i].pos[0]  and m.node_list[i].pos[0] < 0.5 + 1e-6 and m.node_list[i].pos[1] > 1. - 1e-6 ) {
+//                if ( 0.5 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.5 + 1e-6 and m.node_list[i].pos[1] > 1. - 1e-6 ) {
 //                    f.add_constraint( "node["+to_string(i)+"].dep[0]", pen );
 //                }
 //            }
@@ -98,7 +98,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
             /// Quart de plaque rectangulaire trouee 2D
             /// blocage des noeuds situes en x = 0 dans la direction x, blocage des noeuds situes en y = 0 dans la direction y
             ///---------------------------------------------------------------------------------------------------------------
-            else if ( structure ==  "plate_hole" ) {
+            else if ( structure == "plate_hole" ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 1e-6 ) {
                         f.add_constraint( "node["+to_string(i)+"].dep[0]", pen );
@@ -117,12 +117,12 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                 m.update_node_neighbours();
                 if ( loading == "pull" ) {
                     for (unsigned i=0;i<m.node_list.size();++i) {
-                        if ( -1e-6 < m.node_list[i].pos[1]  and m.node_list[i].pos[1] < 1e-6 and m.node_list[i].pos[0] > 7. - 1e-6 ) {
+                        if ( -1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 1e-6 and m.node_list[i].pos[0] > 7. - 1e-6 ) {
                             for (unsigned d=0;d<dim;++d) {
                                 f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
                             }
                             for (unsigned j=0;j<m.get_node_neighbours( i ).size();++j) {
-                                if ( m.get_node_neighbours( i )[ j ]->pos[0] < m.node_list[i].pos[0] and -1e-6 < m.get_node_neighbours( i )[ j ]->pos[1]  and m.get_node_neighbours( i )[ j ]->pos[1] < 1e-6 ) {
+                                if ( m.get_node_neighbours( i )[ j ]->pos[0] < m.node_list[i].pos[0] and -1e-6 < m.get_node_neighbours( i )[ j ]->pos[1] and m.get_node_neighbours( i )[ j ]->pos[1] < 1e-6 ) {
                                     f.add_constraint( "node["+to_string(m.get_node_neighbours( i )[ j ]->number)+"].dep[1]", pen );
                                 }
                             }
@@ -142,7 +142,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
             /// Structure fissuree 2D
             /// blocage des noeuds du trou bas ( pour Quad, noeuds 105 a 121 ; pour Quad_8 et Quad_9, noeuds 105 a 121 et 330, 328, 326, 477, 474, 204, 201, 366, 364, 357, 354, 347, 344, 341, 338, 335, 331  ) dans toutes les directions
             ///----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-            else if ( structure ==  "structure_crack" ) {
+            else if ( structure == "structure_crack" ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( pow(m.node_list[i].pos[0] - 66.5, 2) + pow(m.node_list[i].pos[1] - 69., 2) < pow(37.8 + 1e-6, 2) ) { // ( x - 66.5 )^2 + ( y - 69 )^2 = 37.8^2
                         for (unsigned d=0;d<dim;++d) {
@@ -525,12 +525,12 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                 }
             }
             /// Moyeu-rotor 3D de l'helicoptere NH90
-            // blocage des noeuds situes en x = -123 et z < 81.1 et z > -81.1  dans toutes les directions
-            /// blocage des noeuds situes en x < -124 et z = 70.1 et z = -70.1  dans toutes les directions
-            ///-------------------------------------------------------------------------------------------
+            // blocage des noeuds situes en x = -123 et z < 81.1 et z > -81.1 dans toutes les directions
+            /// blocage des noeuds situes en x < -124 et z = 70.1 et z = -70.1 dans toutes les directions
+            ///------------------------------------------------------------------------------------------
             else if ( structure == "hub_rotor_helico" ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
-//                    if ( m.node_list[i].pos[0] > -123.1 and m.node_list[i].pos[0] < -122.9 and m.node_list[i].pos[2] > -81.1  and m.node_list[i].pos[2] < 81.1 ) {
+//                    if ( m.node_list[i].pos[0] > -123.1 and m.node_list[i].pos[0] < -122.9 and m.node_list[i].pos[2] > -81.1 and m.node_list[i].pos[2] < 81.1 ) {
 //                        for (unsigned d=0;d<dim;++d) {
 //                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
 //                        }
@@ -732,8 +732,8 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                     }
                 }
                 /// Moyeu-rotor 3D de l'helicoptere NH90
-                /// effort surfacique applique sur les bords des elements situes  a l'exterieur du plan P : P(x,y,z) = 0.993771220888593 * (x - 505.668689385943) - 0.00145804725003041 * (y + 1.04229616690589) + 0.111429953925374 * (z + 6.713826134760) (F_d = +x)
-                ///---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                /// effort surfacique applique sur les bords des elements situes a l'exterieur du plan P : P(x,y,z) = 0.993771220888593 * (x - 505.668689385943) - 0.00145804725003041 * (y + 1.04229616690589) + 0.111429953925374 * (z + 6.713826134760) (F_d = +x)
+                ///--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
                 else if ( structure == "hub_rotor_helico" ) {
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
                         if ( 0.993771220888593 * (center( *m.sub_mesh(Number<1>()).elem_list[i] )[0] - 505.668689385943) - 0.00145804725003041 * (center( *m.sub_mesh(Number<1>()).elem_list[i] )[1] + 1.04229616690589) + 0.111429953925374 * (center( *m.sub_mesh(Number<1>()).elem_list[i] )[2] + 6.713826134760)  > 0. ) {
@@ -804,8 +804,8 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                     }
                 }
                 /// Joint de porte 3D de vehicule auto
-                /// effort surfacique applique sur les bords des elements situes  a l'exterieur du plan P : P(x,y,z) = 0.999275522826568 * x + 0.038058238000309 * y - 0.469486267231102 (F_d = -x)
-                ///--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                /// effort surfacique applique sur les bords des elements situes a l'exterieur du plan P : P(x,y,z) = 0.999275522826568 * x + 0.038058238000309 * y - 0.469486267231102 (F_d = -x)
+                ///-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
                 else if ( structure == "door_seal" ) {
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
                         if ( 0.999275522826568 * center( *m.sub_mesh(Number<1>()).elem_list[i] )[0] + 0.038058238000309 * center( *m.sub_mesh(Number<1>()).elem_list[i] )[1] - 0.469486267231102 > 0. ) {

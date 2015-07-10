@@ -126,7 +126,7 @@ template<class TT > void orthonormalisation_schmidt( Vec<Vec<TT> > &V ) {
 };
 
 template<class TV1> void orthonormalisation_schmidt( TV1 &V ) {
-    typedef typename TV1::template SubType<0>::T  TV;
+    typedef typename TV1::template SubType<0>::T TV;
     unsigned n=V.size();
     for (unsigned i=0;i<n;++i) {
         for (unsigned j=0;j<i;++j) {
@@ -173,7 +173,7 @@ template<class TT, class STO, class TYP, class T > void orthonormalisation_schmi
 
 template<class TM> void affichsparse( TM &M ) {
     for (unsigned i=0;i<M.nb_rows();++i) {
-//         cout <<M.data[i].indices.size()  << endl;
+//         cout <<M.data[i].indices.size() << endl;
         for (unsigned j=0;j<M.data[i].indices.size();++j) {
             cout << "("<< i << ","<< M.data[i].indices[j] << ") "<< M.data[i].data[j]<< endl;
         }
