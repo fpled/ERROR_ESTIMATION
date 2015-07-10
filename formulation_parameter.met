@@ -1,4 +1,45 @@
-import "formulation.met"
+import "LMT/LmtppFormulation.met"
+import "PGD/PGD.met"
 
-write_legacy_lmtpp_code( pb_name_parameter, formListParam, elemListParam, typeList = typeList, assume_const_jac_in_elems = true, integration_type = integration_type )
+# Formulation associee a l'espace des parametres inconnus
+#--------------------------------------------------------
+class FormulationUnknownParam[ dim ] inherits LmtppFormulation[ dim ]
+    dep     := Variable[[dim]]( interpolation="nodal", interpolation_base="lagrange", default_value=0, unit="m", unknown=true, tex_name = "U" )
 
+    # Definition de la formulation
+    # ----------------------------
+    def formulation( e )
+
+        pos := e.pos
+        function_parameter := 1 + parameter_function( pos[0] )
+
+        residual := function_parameter * dot( dep.expr, dep.test ) * dV - dep.test[0] * dV
+
+        return residual
+
+# Formulation associee a l'espace des parametres connus
+#------------------------------------------------------
+class FormulationKnownParam[ dim ] inherits LmtppFormulation[ dim ]
+    dep     := Variable[[dim]]( interpolation="nodal", interpolation_base="lagrange", default_value=0, unit="m", unknown=true, tex_name = "U" )
+
+    # Definition de la formulation
+    # ----------------------------
+    def formulation( e )
+
+        residual := dot( dep.expr, dep.test ) * dV - dep.test[0] * dV
+
+        return residual
+
+# Nom du probleme
+#----------------
+pb_name := "parameter"
+
+# Liste de formulations
+#----------------------
+formList := [ FormulationUnknownParam, FormulationKnownParam ]
+
+# Liste d'elements
+#-----------------
+elemList := [ Bar ]
+
+write_legacy_lmtpp_code( pb_name, formList, elemList )

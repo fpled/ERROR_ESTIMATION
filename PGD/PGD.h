@@ -56,7 +56,7 @@ void define_unknown_parameter_zone( TF &f, TM &m, const string &structure, TV &l
 /// Construction et resolution du pb en espace
 ///-------------------------------------------
 template<class TM, class TF, class T, class TV, class TMAT, class TVVV>
-void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_s, const TV &F_p, const TMAT &K_unk_p, const TMAT &K_k_p, const bool &want_iterative_solver_EF, const T &criterium_iterative_solver_EF, const Vec<unsigned> &list_elems_PGD_unknown_parameter, const TVVV &lambda, TVVV &psi ) {
+void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_s, const TV &F_p, const TMAT &K_unk_p, const TMAT &K_k_p, const bool &want_iterative_solver, const T &iterative_criterium, const Vec<unsigned> &list_elems_PGD_unknown_parameter, const TVVV &lambda, TVVV &psi ) {
     /// Construction du pb en espace
     ///-----------------------------
     T gamma_s = dot( F_p, lambda[ n ][ k ] );
@@ -85,10 +85,10 @@ void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const 
     
     /// Resolution du pb en espace
     ///---------------------------
-    if ( want_iterative_solver_EF == 0 )
+    if ( want_iterative_solver == 0 )
         f.solve_system();
     else
-        f.solve_system( criterium_iterative_solver_EF );
+        f.solve_system( iterative_criterium );
     f.update_variables();
     f.call_after_solve();
     

@@ -83,6 +83,7 @@ move_results:
 	-mv *.vtu RESULTS
 	-mv *.pvd RESULTS
 	-mv *.log RESULTS
+	-mv *.eps RESULTS
 
 # Clean ---------------------------
 clean:

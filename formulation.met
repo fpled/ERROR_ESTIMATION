@@ -40,7 +40,7 @@ if not want_local_estimation
 
 # Choix du type d'hypothese en 2D : plane stress, plane strain
 #-------------------------------------------------------------
-type_stress_2D := "plane strain"
+type_stress_2D := "plane stress"
 
 # Choix de la methode de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalisation
 #-------------------------------------------------------------------------------------------------------------------------------------------
@@ -251,11 +251,7 @@ formList := [ FormulationElasticity ]
 
 # Liste d'elements
 #-----------------
-elemList := [ Quad, Triangle ]
-
-# Liste de types
-#---------------
-typeList := [ "double" ]
+elemList := [ Triangle ]
 
 # Liste de fonctions
 #-------------------
@@ -313,4 +309,4 @@ for func_name in funcList
     if not ( func_name in funcList_all_in_one )
         funcList_all_in_one.push_back( func_name )
 
-write_legacy_lmtpp_code( pb_name, formList, elemList, typeList = typeList, assume_const_jac_in_elems = hyp_const_jac, funcList = funcList_all_in_one, want_eig = want_compute_eig, integration_type = integration_type, degre_poly_handbook = degre_poly_handbook )
+write_legacy_lmtpp_code( pb_name, formList, elemList, assume_const_jac_in_elems = hyp_const_jac, funcList = funcList_all_in_one, want_eig = want_compute_eig, integration_type = integration_type, degre_poly_handbook = degre_poly_handbook )

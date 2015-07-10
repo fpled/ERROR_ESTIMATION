@@ -1052,7 +1052,6 @@ Calcul_goal_oriented_error_estimation.h
 Display.h
 formulation.met
 formulation_parameter.met
-formulation_PGD.met
 formulation_space.met
 Handbook_functions.met
 main.cpp

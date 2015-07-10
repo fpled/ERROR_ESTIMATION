@@ -809,23 +809,23 @@ def calc_vertex_nodal_matrix_M( list_f, rep )
         file_ <<< "#endif"
     return file_names
 
-# Methode qui genere un fichier calc_vertex_nodal_marix_C_$(f->name).$(e->dim).$(e->name).h pour ajouter la contribution des noeuds sommets d'une face aux matrices C[ j ][ d ]
-#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-def calc_vertex_nodal_marix_C( list_f, rep )
+# Methode qui genere un fichier calc_vertex_nodal_matrix_C_$(f->name).$(e->dim).$(e->name).h pour ajouter la contribution des noeuds sommets d'une face aux matrices C[ j ][ d ]
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_vertex_nodal_matrix_C( list_f, rep )
     file_names := Vec[String]()
     for f in list_f
         e := child_cast( f->pe )
         name_face := e->children( 1 )[ 0 ]->name
         face := SymbolicElement[ name_face, e->dim ]()
-        file_name := "calc_vertex_nodal_marix_C_$(f->name).$(face.dim).$(face.name).h"
+        file_name := "calc_vertex_nodal_matrix_C_$(f->name).$(face.dim).$(face.name).h"
         file_names.push_back( file_name )
-        file_ := File( rep + "/calc_vertex_nodal_marix_C_$(f->name).$(face.dim).$(face.name).h", "w" )
-        file_ <<< "#ifndef calc_vertex_nodal_marix_C_$(f->name)_$(face.dim)_$(face.name)_h"
-        file_ <<< "#define calc_vertex_nodal_marix_C_$(f->name)_$(face.dim)_$(face.name)_h"
+        file_ := File( rep + "/calc_vertex_nodal_matrix_C_$(f->name).$(face.dim).$(face.name).h", "w" )
+        file_ <<< "#ifndef calc_vertex_nodal_matrix_C_$(f->name)_$(face.dim)_$(face.name)_h"
+        file_ <<< "#define calc_vertex_nodal_matrix_C_$(f->name)_$(face.dim)_$(face.name)_h"
         file_ <<< "namespace LMT {"
         file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class S, class T>"
-        file_ <<< "void calc_vertex_nodal_marix_C( const Element<$(face.name),TN,TNG,TD,NET> &child_elem, const TM &m, const Vec<unsigned> &connect_node_to_vertex_node, const Vec< Vec<unsigned> > &type_face, const Vec< Vec< Vec<unsigned> > > &vertex_nodal_ind, const Vec< Vec< Vec<unsigned> > > &face_ind, const S &boundary_condition_force_EESPT, Vec< Vec< Mat<T, Gen<>, SparseLine<> > > > &C ) {"
-        file_ <<< "    if ( boundary_condition_force_EESPT == \"lagrange\" ) {"
+        file_ <<< "void calc_vertex_nodal_matrix_C( const Element<$(face.name),TN,TNG,TD,NET> &child_elem, const TM &m, const Vec<unsigned> &connect_node_to_vertex_node, const Vec< Vec<unsigned> > &type_face, const Vec< Vec< Vec<unsigned> > > &vertex_nodal_ind, const Vec< Vec< Vec<unsigned> > > &face_ind, const S &boundary_condition, Vec< Vec< Mat<T, Gen<>, SparseLine<> > > > &C ) {"
+        file_ <<< "    if ( boundary_condition == \"lagrange\" ) {"
         face_node_numbers_to_vertex_node_numbers := face.node_numbers_to_vertex_node_numbers
         for d in 0 .. face.dim
             file_ <<< "        if ( type_face[ child_elem.number ][ $d ] == 2 ) {"
