@@ -507,7 +507,7 @@ void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF 
 /// Calcul du terme gamma pour le calcul des bornes locales ameliorees
 ///-------------------------------------------------------------------
 template<class TM, class TF, class T, class Pvec>
-void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, const TF &f_adjoint, TF &f_adjoint_lambda_, const unsigned &deg_p, const string &method, const string &structure, const string &loading, const string &mesh_size, const unsigned &cost_function, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, const string &geometric_criterium, const unsigned &deg_k, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const T &theta_lambda_min, const T &theta_lambda_max, const T &h, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const Pvec &domain_center, const Vec<T> &domain_length, const bool &spread_cut, const Vec< Vec<T> > &dep_hat, const Vec< Vec<T> > &dep_adjoint_hat, const string &integration_k, const unsigned &integration_nb_steps, const bool &debug_method, const bool &debug_method_enhancement, const bool &debug_geometry, const bool &debug_error_estimate, T &gamma ) {
+void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, const TF &f_adjoint, TF &f_adjoint_lambda_, const unsigned &deg_p, const string &method, const string &structure, const string &loading, const string &mesh_size, const unsigned &cost_function, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, const string &geometric_criterium, const unsigned &deg_k, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const T &theta_lambda_min, const T &theta_lambda_max, const T &h, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const Pvec &domain_center, const Vec<T> &domain_length, const bool &spread_cut, const Vec< Vec<T> > &dep_hat, const Vec< Vec<T> > &dep_adjoint_hat, const string &integration_k, const unsigned &integration_nb_points, const bool &debug_method, const bool &debug_method_enhancement, const bool &debug_geometry, const bool &debug_error_estimate, T &gamma ) {
     
     static const unsigned dim = TM::dim;
     
@@ -531,8 +531,8 @@ void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, cons
         Vec<T> func_lambda;
         Vec<T> lambda;
         if ( integration_k == "trapeze" ) {
-            for (unsigned i=0; i<integration_nb_steps; ++i) {
-                T k = ( k_max - k_min ) * i / ( integration_nb_steps - 1 ) + k_min;
+            for (unsigned i=0; i<integration_nb_points; ++i) {
+                T k = ( k_max - k_min ) * i / ( integration_nb_points - 1 ) + k_min;
                 TM m_lambda;
                 create_structure_cut( m, m_lambda, deg_p, shape, k, domain_length, domain_center, spread_cut );
                 TF f_lambda( m_lambda );
@@ -544,7 +544,7 @@ void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, cons
                 func_lambda.push_back( pow( k / k_min, -1./h ) * pow( theta_k, 2 ) / ( h * k ) );
                 lambda.push_back( k );
             }
-            for (unsigned i=0; i<integration_nb_steps-1; ++i)
+            for (unsigned i=0; i<integration_nb_points-1; ++i)
                 gamma += ( lambda[ i + 1 ] - lambda[ i ] ) * ( func_lambda[ i + 1 ] + func_lambda[ i ] ) / 2;
         }
         else if ( integration_k == "gauss" ) {
