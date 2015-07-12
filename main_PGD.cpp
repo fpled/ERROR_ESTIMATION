@@ -10,7 +10,7 @@
 //
 //
 #include "build/problem_space/all_in_one.h" // sert a forcer le logiciel scons a generer le repertoire build et ses codes sources .h et .cpp correspondant a la formulation
-#include "build/problem_parameter/all_in_one.h" // sert a forcer le logiciel scons a generer le repertoire build et ses codes sources .h et .cpp correspondant a la formulation
+#include "build/problem_param/all_in_one.h" // sert a forcer le logiciel scons a generer le repertoire build et ses codes sources .h et .cpp correspondant a la formulation
 #include "Structure.h"
 #include "Material_properties.h"
 #include "Boundary_conditions.h"
@@ -34,7 +34,7 @@ int main( int argc, char **argv ) {
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    typedef Mesh<Mesh_carac_parameter<double,1> > TM_param;
+    typedef Mesh<Mesh_carac_param<double,1> > TM_param;
     typedef Formulation<TM_param,FormulationUnknownParam,DefaultBehavior,double,wont_add_nz> TF_unknown_param;
     typedef Formulation<TM_param,FormulationKnownParam,DefaultBehavior,double,wont_add_nz> TF_known_param;
     typedef TM_param::Pvec Pvec_param;
@@ -105,7 +105,7 @@ int main( int argc, char **argv ) {
     
     /// Zone of interest
     ///-----------------
-    static const Vec<unsigned> list_elems_interest_quantity( 4886 ); // liste des elements definissant la zone d'interet (quantite d'interet mean_sigma, mean_epsilon)
+    static const Vec<unsigned> elem_list_interest_quantity( 4886 ); // liste des elements definissant la zone d'interet (quantite d'interet mean_sigma, mean_epsilon)
     static const string pointwise_interest_quantity = "node"; // definition de la quantite d'interet ponctuelle : node, pos
     static const unsigned node_interest_quantity( 661 ); // noeud definissant la zone d'interet (quantite d'interet pointwise_dep, pointwise_sigma, pointwise_epsilon)
     static const Pvec pos_interest_quantity( 49.5, 135.5 ); // position definissant la zone d'interet (quantite d'interet pointwise_dep, pointwise_sigma, pointwise_epsilon)
@@ -139,13 +139,13 @@ int main( int argc, char **argv ) {
     ///---------------
     static const bool want_PGD = 1; // methode de reduction de modele PGD
     static const bool want_normalization_space = 1; // normalisation des fonctions en espace
-    static const unsigned nb_modes_max = 4; // nb max de modes dans la decomposition
-    static const unsigned nb_iterations_max = 10; // nb d'iterations max de l'algorithme de type point fixe
+    static const unsigned max_mode = 5; // nb de modes max dans la decomposition
+    static const unsigned max_iter = 20; // nb d'iterations max de l'algorithme de type point fixe
     static const T tol_global_convergence_criterium = 1e-4; // precision pour critere d'arret global (boucle sur les modes)
     static const T tol_local_convergence_criterium = 1e-8; // precision pour critere d'arret local (processus iteratif)
-    static const T initial_val_param = 0.0; // valeur initiale sur l'intervalle des parametres
-    static const T final_val_param = 9.0; // valeur finale sur l'intervalle des parametres
-    static const unsigned nb_steps_param = 100; // nb d'elements du maillage parametrique
+    static const T min_param = 0.0; // valeur min sur l'intervalle des parametres
+    static const T max_param = 1.0; // valeur max sur l'intervalle des parametres
+    static const unsigned nb_points_param = 100; // nb de points du maillage parametrique
     static const bool want_verif_kinematic_PGD = 0; // verification de la decomposition PGD cinematique
     static const unsigned nb_vals_param_verif = 1; // nb de valeurs des parametres pris aleatoirement pour la verification de la decomposition PGD
     
@@ -205,27 +205,26 @@ int main( int argc, char **argv ) {
     static const bool display_vtu_ref = 0;
     
     static const bool save_vtu_adjoint = 1;
-    static const bool display_vtu_adjoint = 0;
     static const bool save_pvd_adjoint = 0;
-    static const bool display_adjoint_pvd = 0;
     static const bool save_vtu_local_ref = 0;
+    static const bool display_vtu_adjoint = 0;
+    static const bool display_pvd_adjoint = 0;
     static const bool display_vtu_local_ref = 0;
     
     static const bool save_vtu_lambda = 1;
-    static const bool display_vtu_lambda = 0;
-    
     static const bool save_vtu_adjoint_lambda = 1;
+    static const bool display_vtu_lambda = 0;
     static const bool display_vtu_adjoint_lambda = 0;
     
     static const bool save_vtu_crown = 1;
     static const bool display_vtu_crown = 0;
     
     static const bool save_pvd_PGD_space = 1;
-    static const bool display_pvd_PGD_space = 0;
-    static const bool save_pvd_PGD_parameter = 1;
-    static const bool display_pvd_PGD_parameter = 0;
-    static const bool save_plot_PGD_parameter = 1;
+    static const bool save_pvd_PGD_param = 1;
+    static const bool save_plot_PGD_param = 1;
     static const bool save_pvd_PGD_space_verif = 1;
+    static const bool display_pvd_PGD_space = 0;
+    static const bool display_pvd_PGD_param = 0;
     static const bool display_pvd_PGD_space_verif = 0;
     
     ///--------------------------------------------///
@@ -239,7 +238,7 @@ int main( int argc, char **argv ) {
     create_structure( m, m_ref, "direct", structure, mesh_size, loading, deg_p, want_global_discretization_error, want_local_discretization_error, refinement_degree_ref, want_solve_ref );
     display_structure( m, m_ref, "direct", structure, deg_p, want_solve_ref );
     TM_param m_param;
-    create_structure_param( m_param, initial_val_param, final_val_param, nb_steps_param );
+    create_structure_param( m_param, min_param, max_param, nb_points_param );
     
     /// Formulation du pb direct
     ///-------------------------
@@ -252,8 +251,8 @@ int main( int argc, char **argv ) {
     ///------------------------------------------------------------
     create_material_properties( f, m, structure, loading );
     create_boundary_conditions( f, m, boundary_condition_D, "direct", structure, loading, mesh_size );
-    Vec<unsigned> list_elems_PGD_unknown_parameter; // liste des elements definissant la zone avec parametre materiau inconnu
-    define_unknown_parameter_zone( f, m, structure, list_elems_PGD_unknown_parameter );
+    Vec<unsigned> elem_list_PGD_unknown_param; // liste des elements definissant la zone avec parametre materiau inconnu
+    define_unknown_param_zone( f, m, structure, elem_list_PGD_unknown_param );
     if ( want_solve_ref ) {
         create_material_properties( f_ref, m_ref, structure, loading );
         create_boundary_conditions( f_ref, m_ref, boundary_condition_D, "direct", structure, loading, mesh_size );
@@ -264,26 +263,26 @@ int main( int argc, char **argv ) {
     unsigned nb_modes; // nb de modes dans la decomposition
     Vec< Vec<T> > dep_psi;
     Vec< Vec<T> > dep_lambda;
-    Vec< Vec< Vec<T>, nb_iterations_max+1 >, nb_modes_max > psi;
-    Vec< Vec< Vec<T>, nb_iterations_max+1 >, nb_modes_max > lambda;
+    Vec< Vec< Vec<T>, max_iter+1 >, max_mode > psi;
+    Vec< Vec< Vec<T>, max_iter+1 >, max_mode > lambda;
     Vec<unsigned> nb_iterations; // nb d'iterations de l'algorithme de type point fixe pour chaque mode
-    nb_iterations.resize( nb_modes_max );
+    nb_iterations.resize( max_mode );
     nb_iterations.set( 1 );
     static Vec<T> residual_mode; // residu au sens faible associe a la solution a variables separees pour chaque mode
-    residual_mode.resize( nb_modes_max );
+    residual_mode.resize( max_mode );
     residual_mode.set( 0. );
     Vec<T> vals_param;
     for (unsigned i=0;i<m_param.node_list.size();++i)
         vals_param.push_back( m_param.node_list[i].pos[0] );
-    Vec< DisplayParaview, nb_modes_max > dp_space, dp_parameter;
+    Vec< DisplayParaview, max_mode > dp_space, dp_param;
     Vec< DisplayParaview, nb_vals_param_verif > dp_space_verif;
     string prefix_space = define_prefix( m, "direct", structure, loading, mesh_size ) + "_space_mesh";
-    string prefix_parameter = define_prefix( m, "direct", structure, loading, mesh_size ) + "_parameter_mesh";
+    string prefix_param = define_prefix( m, "direct", structure, loading, mesh_size ) + "_param_mesh";
     Vec<string> lp_space;
     lp_space.push_back( "dep" );
     lp_space.push_back( "young_eff" );
-    Vec<string> lp_parameter;
-    lp_parameter.push_back( "dep" );
+    Vec<string> lp_param;
+    lp_param.push_back( "dep" );
     
     typedef Mat<T, Sym<>, SparseLine<> > TMatSymSparse;
     TMatSymSparse K_s, K_unk_s, K_k_s, K_unk_p, K_k_p;
@@ -310,18 +309,18 @@ int main( int argc, char **argv ) {
         K_s = f.matrices(Number<0>());
         F_s = f.sollicitation;
         for (unsigned i=0;i<m.elem_list.size();++i) {
-            if ( find( list_elems_PGD_unknown_parameter, _1 == i ) )
-                m.elem_list[i]->set_field( "phi_elem_PGD_unknown_parameter", 1. );
+            if ( find( elem_list_PGD_unknown_param, _1 == i ) )
+                m.elem_list[i]->set_field( "phi_elem_PGD_unknown_param", 1. );
             else
-                m.elem_list[i]->set_field( "phi_elem_PGD_unknown_parameter", 0. );
+                m.elem_list[i]->set_field( "phi_elem_PGD_unknown_param", 0. );
         }
         f.assemble( true, false );
         K_unk_s = f.matrices(Number<0>());
         for (unsigned i=0;i<m.elem_list.size();++i) {
-            if ( find( list_elems_PGD_unknown_parameter, _1 == i ) )
-                m.elem_list[i]->set_field( "phi_elem_PGD_unknown_parameter", 0. );
+            if ( find( elem_list_PGD_unknown_param, _1 == i ) )
+                m.elem_list[i]->set_field( "phi_elem_PGD_unknown_param", 0. );
             else
-                m.elem_list[i]->set_field( "phi_elem_PGD_unknown_parameter", 1. );
+                m.elem_list[i]->set_field( "phi_elem_PGD_unknown_param", 1. );
         }
         f.assemble( true, false );
         K_k_s = f.matrices(Number<0>());
@@ -336,7 +335,7 @@ int main( int argc, char **argv ) {
         K_k_p = f_known_param.matrices(Number<0>());
         unsigned n = 0;
         while ( true ) {
-            cout << "Mode n = " << n << endl << endl;
+//            cout << "Mode n = " << n << endl << endl;
             string prefix_mode = "mode_" + to_string( n );
             
             /// Initialisation
@@ -348,7 +347,7 @@ int main( int argc, char **argv ) {
             f_unknown_param.update_variables();
             f_unknown_param.call_after_solve();
             psi[ n ][ 0 ].resize( f.vectors[0].size() );
-            solve_PGD_space( m, f, n, k, nb_iterations, F_s, F_p, K_unk_p, K_k_p, want_iterative_solver, iterative_criterium, list_elems_PGD_unknown_parameter, lambda, psi );
+            solve_PGD_space( m, f, n, k, nb_iterations, F_s, F_p, K_unk_p, K_k_p, want_iterative_solver, iterative_criterium, elem_list_PGD_unknown_param, lambda, psi );
             if ( want_normalization_space ) {
                 psi[ n ][ k ] /= sqrt( dot( psi[ n ][ k ], K_s * psi[ n ][ k ] ) );
                 f.vectors[0] = psi[ n ][ k ];
@@ -358,12 +357,12 @@ int main( int argc, char **argv ) {
             
             if ( save_pvd_PGD_space or display_pvd_PGD_space )
                 dp_space[ n ].add_mesh_iter( m, prefix_space + "_" + prefix_mode, lp_space, k );
-            if ( save_pvd_PGD_parameter or display_pvd_PGD_parameter )
-                dp_parameter[ n ].add_mesh_iter( m_param, prefix_parameter + "_" + prefix_mode, lp_parameter, k );
+            if ( save_pvd_PGD_param or display_pvd_PGD_param )
+                dp_param[ n ].add_mesh_iter( m_param, prefix_param + "_" + prefix_mode, lp_param, k );
             
             while ( true ) {
                 k++;
-                cout << "Iteration k = " << k << endl << endl;
+//                cout << "Iteration k = " << k << endl << endl;
                 string prefix_iteration = "iteration_" + to_string( k );
                 psi[ n ][ k ].resize( f.vectors[0].size() );
                 lambda[ n ][ k ].resize( f_unknown_param.vectors[0].size() );
@@ -376,7 +375,7 @@ int main( int argc, char **argv ) {
                 
                 /// Construction et resolution du pb en espace
                 ///-------------------------------------------
-                solve_PGD_space( m, f, n, k, nb_iterations, F_s, F_p, K_unk_p, K_k_p, want_iterative_solver, iterative_criterium, list_elems_PGD_unknown_parameter, lambda, psi );
+                solve_PGD_space( m, f, n, k, nb_iterations, F_s, F_p, K_unk_p, K_k_p, want_iterative_solver, iterative_criterium, elem_list_PGD_unknown_param, lambda, psi );
                 
                 /// Normalisation de la fonction psi en espace
                 ///-------------------------------------------
@@ -394,14 +393,14 @@ int main( int argc, char **argv ) {
                 
                 if ( save_pvd_PGD_space or display_pvd_PGD_space )
                     dp_space[ n ].add_mesh_iter( m, prefix_space + "_" + prefix_mode + "_iteration", lp_space, k );
-                if ( save_pvd_PGD_parameter or display_pvd_PGD_parameter )
-                    dp_parameter[ n ].add_mesh_iter( m_param, prefix_parameter + "_" + prefix_mode + "_iteration", lp_parameter, k );
+                if ( save_pvd_PGD_param or display_pvd_PGD_param )
+                    dp_param[ n ].add_mesh_iter( m_param, prefix_param + "_" + prefix_mode + "_iteration", lp_param, k );
                 
-                if ( save_plot_PGD_parameter ) {
+                if ( save_plot_PGD_param ) {
                     static GnuPlot gp;
                     gp.set_terminal( "postscript eps enhanced color" );
                     stringstream graph_name;
-                    graph_name << "'" << prefix_parameter + "_" + prefix_mode + "_" + prefix_iteration << ".eps'";
+                    graph_name << "'" << prefix_param + "_" + prefix_mode + "_" + prefix_iteration << ".eps'";
                     gp.set_output(graph_name.str().c_str());
                     gp.set("key left bottom");
                     gp.set("format '%g'");
@@ -431,7 +430,7 @@ int main( int argc, char **argv ) {
                 ///----------------------------------------------------------------------------------------------------------------------------
                 T dist = sqrt( fabs( alpha_s_unk * alpha_p_unk + alpha_s_k * alpha_p_k + alpha_s_unk_old * alpha_p_unk_old + alpha_s_k_old * alpha_p_k_old - 2 * ( beta_s_unk * beta_p_unk + beta_s_k * beta_p_k ) ) ) / ( 0.5 * sqrt( fabs( alpha_s_unk * alpha_p_unk + alpha_s_k * alpha_p_k + alpha_s_unk_old * alpha_p_unk_old + alpha_s_k_old * alpha_p_k_old + 2 * ( beta_s_unk * beta_p_unk + beta_s_k * beta_p_k ) ) ) );
 //                cout << "Distance a l'iteration " << k << " = " << dist << endl << endl;
-                if ( dist < tol_local_convergence_criterium or k >= nb_iterations_max ) {
+                if ( dist < tol_local_convergence_criterium or k >= max_iter ) {
                     nb_iterations[ n ] = k;
                     cout << "Nb d'iterations associe au mode " << n << " = " << nb_iterations[ n ] << endl << endl;
                     break;
@@ -442,10 +441,10 @@ int main( int argc, char **argv ) {
                 dp_space[ n ].exec( prefix_space + "_" + prefix_mode + ".pvd" );
             else if ( save_pvd_PGD_space )
                 dp_space[ n ].make_pvd_file( prefix_space + "_" + prefix_mode + ".pvd" );
-            if ( display_pvd_PGD_parameter )
-                dp_parameter[ n ].exec( prefix_parameter + "_" + prefix_mode + ".pvd" );
-            else if ( save_pvd_PGD_parameter )
-                dp_parameter[ n ].make_pvd_file( prefix_parameter + "_" + prefix_mode + ".pvd" );
+            if ( display_pvd_PGD_param )
+                dp_param[ n ].exec( prefix_param + "_" + prefix_mode + ".pvd" );
+            else if ( save_pvd_PGD_param )
+                dp_param[ n ].make_pvd_file( prefix_param + "_" + prefix_mode + ".pvd" );
             
             /// Residu au sens faible associe a la solution u_n
             ///------------------------------------------------
@@ -475,7 +474,7 @@ int main( int argc, char **argv ) {
             residual = fabs( residual ) / fabs( residual_sollicitation );
             residual_mode[ n ] = residual;
             cout << "Residu au sens faible associe a la solution u_" << n << " = " << residual_mode[ n ] << endl << endl;
-            if ( /*fabs( residual_mode[ n ] ) < tol_global_convergence_criterium or*/ n >= nb_modes_max-1 ) {
+            if ( /*fabs( residual_mode[ n ] ) < tol_global_convergence_criterium or*/ n >= max_mode-1 ) {
                 nb_modes = n+1;
                 cout << "nb de modes = " << nb_modes << endl << endl;
                 break;
@@ -494,12 +493,12 @@ int main( int argc, char **argv ) {
             /// Verification pour un jeu connu de parametres
             ///---------------------------------------------
             for (unsigned p=0;p<nb_vals_param_verif;++p) {
-                unsigned ind_in_vals_param = rand() % nb_steps_param;
+                unsigned ind_in_vals_param = rand() % nb_points_param;
                 for (unsigned i=0;i<m.elem_list.size();++i) {
-                    if ( find( list_elems_PGD_unknown_parameter, _1 == i ) )
-                        m.elem_list[i]->set_field( "phi_elem_PGD_unknown_parameter", 1. + vals_param[ ind_in_vals_param ] );
+                    if ( find( elem_list_PGD_unknown_param, _1 == i ) )
+                        m.elem_list[i]->set_field( "phi_elem_PGD_unknown_param", 1. + vals_param[ ind_in_vals_param ] );
                     else
-                        m.elem_list[i]->set_field( "phi_elem_PGD_unknown_parameter", 1. );
+                        m.elem_list[i]->set_field( "phi_elem_PGD_unknown_param", 1. );
                 }
                 if ( want_iterative_solver == 0 )
                     f.solve();
@@ -536,7 +535,7 @@ int main( int argc, char **argv ) {
     ///-----------------------------------
     if ( want_PGD ) {
         for (unsigned i=0;i<m.elem_list.size();++i)
-            m.elem_list[i]->set_field( "phi_elem_PGD_unknown_parameter", 1. );
+            m.elem_list[i]->set_field( "phi_elem_PGD_unknown_param", 1. );
         f.assemble();
         if ( want_iterative_solver == 0 )
             f.solve_system();
@@ -611,21 +610,21 @@ int main( int argc, char **argv ) {
 //        /// Construction de la quantite d'interet ///
 //        ///---------------------------------------///
         
-//        display_interest_quantity( interest_quantity, direction_extractor, pointwise_interest_quantity, list_elems_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re );
+//        display_interest_quantity( interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re );
         
 //        /// Definition de l'extracteur
 //        ///---------------------------
 //        if ( interest_quantity == "SIF" or interest_quantity == "stress_intensity_factor" )
 //            create_structure_crown( m, m_crown, pos_crack_tip, radius_Ri, radius_Re, spread_cut );
 //        TF f_crown( m_crown );
-//        define_extractor( m, m_crown, f, f_crown, interest_quantity, direction_extractor, pointwise_interest_quantity, list_elems_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, want_local_enrichment );
+//        define_extractor( m, m_crown, f, f_crown, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, want_local_enrichment );
         
 //        ///------------------------------------------------------///
 //        /// Calcul de la quantite d'interet locale approchee I_h ///
 //        ///------------------------------------------------------///
         
 //        T I_h;
-//        calcul_interest_quantity( m, m_crown, f, f_crown, "direct", interest_quantity, direction_extractor, pointwise_interest_quantity, list_elems_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, I_h );
+//        calcul_interest_quantity( m, m_crown, f, f_crown, "direct", interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, I_h );
         
 //        ///------------------------------------------------------------///
 //        /// Calcul de la quantite d'interet locale (quasi-)exacte I_ex ///
@@ -638,9 +637,9 @@ int main( int argc, char **argv ) {
 //            static const bool want_local_discretization_error_local_ref = 0;
 //            create_structure( m_local_ref, m_local_ref, "direct", structure, mesh_size, loading, deg_p, want_global_discretization_error_local_ref, want_local_discretization_error_local_ref, refinement_degree_ref, want_solve_local_ref_ref );
             
-//            Vec<unsigned> list_elems_local_ref_interest_quantity;
+//            Vec<unsigned> elem_list_local_ref_interest_quantity;
 //            unsigned node_local_ref_interest_quantity;
-//            create_structure_local_ref( m, m_local_ref, deg_p, refinement_degree_ref, interest_quantity, list_elems_interest_quantity, list_elems_local_ref_interest_quantity, node_interest_quantity, node_local_ref_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut );
+//            create_structure_local_ref( m, m_local_ref, deg_p, refinement_degree_ref, interest_quantity, elem_list_interest_quantity, elem_list_local_ref_interest_quantity, node_interest_quantity, node_local_ref_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut );
             
 //            /// Formulation du pb de reference local
 //            ///-------------------------------------
@@ -672,11 +671,11 @@ int main( int argc, char **argv ) {
 //            if ( interest_quantity == "SIF" or interest_quantity == "stress_intensity_factor" )
 //                create_structure_crown( m_local_ref, m_crown_ref, pos_crack_tip, radius_Ri, radius_Re, spread_cut );
 //            TF f_crown_ref( m_crown_ref );
-//            define_extractor( m_local_ref, m_crown_ref, f_local_ref, f_crown_ref, interest_quantity, direction_extractor, pointwise_interest_quantity, list_elems_local_ref_interest_quantity, node_local_ref_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, want_local_enrichment );
+//            define_extractor( m_local_ref, m_crown_ref, f_local_ref, f_crown_ref, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_local_ref_interest_quantity, node_local_ref_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, want_local_enrichment );
             
 //            /// Calcul de la quantite d'interet locale (quasi-)exacte I_ex
 //            ///-----------------------------------------------------------
-//            calcul_interest_quantity( m_local_ref, m_crown_ref, f_local_ref, f_crown_ref, "reference", interest_quantity, direction_extractor, pointwise_interest_quantity, list_elems_local_ref_interest_quantity, node_local_ref_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, I_ex );
+//            calcul_interest_quantity( m_local_ref, m_crown_ref, f_local_ref, f_crown_ref, "reference", interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_local_ref_interest_quantity, node_local_ref_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, I_ex );
 //        }
         
 //        if ( want_interest_quantity_only == 0 ) {
@@ -685,20 +684,20 @@ int main( int argc, char **argv ) {
 //            /// Construction de la solution adjoint ///
 //            ///-------------------------------------///
             
-//            Vec<unsigned> list_elems_adjoint_interest_quantity;
-//            Vec<unsigned> list_elems_adjoint_enrichment_zone_1;
-//            Vec<unsigned> list_elems_adjoint_enrichment_zone_2;
-//            Vec<unsigned> list_faces_adjoint_enrichment_zone_12;
+//            Vec<unsigned> elem_list_adjoint_interest_quantity;
+//            Vec<unsigned> elem_list_adjoint_enrichment_zone_1;
+//            Vec<unsigned> elem_list_adjoint_enrichment_zone_2;
+//            Vec<unsigned> face_list_adjoint_enrichment_zone_12;
 //            unsigned node_adjoint_interest_quantity;
-//            Vec<unsigned> list_nodes_adjoint_enrichment;
+//            Vec<unsigned> node_list_adjoint_enrichment;
             
 //            /// Maillage du pb adjoint
 //            ///-----------------------
 //            create_structure( m_adjoint, m_local_ref, "adjoint", structure, mesh_size, loading, deg_p, want_global_discretization_error_adjoint, want_local_discretization_error_adjoint, refinement_degree_ref, want_compute_adjoint_ref );
-//            create_structure_adjoint( m, m_adjoint, deg_p, interest_quantity, direction_extractor, want_local_refinement_adjoint, local_refinement_adjoint_l_min, local_refinement_adjoint_k, pointwise_interest_quantity, list_elems_interest_quantity, list_elems_adjoint_interest_quantity, node_interest_quantity, node_adjoint_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, list_elems_adjoint_enrichment_zone_1, list_elems_adjoint_enrichment_zone_2, list_faces_adjoint_enrichment_zone_12, list_nodes_adjoint_enrichment, debug_geometry, debug_geometry_adjoint );
+//            create_structure_adjoint( m, m_adjoint, deg_p, interest_quantity, direction_extractor, want_local_refinement_adjoint, local_refinement_adjoint_l_min, local_refinement_adjoint_k, pointwise_interest_quantity, elem_list_interest_quantity, elem_list_adjoint_interest_quantity, node_interest_quantity, node_adjoint_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, elem_list_adjoint_enrichment_zone_1, elem_list_adjoint_enrichment_zone_2, face_list_adjoint_enrichment_zone_12, node_list_adjoint_enrichment, debug_geometry, debug_geometry_adjoint );
             
 //            display_structure( m_adjoint, m_local_ref, "adjoint", structure, deg_p, want_solve_local_ref );
-//            display_params_adjoint( want_local_refinement_adjoint, local_refinement_adjoint_l_min, local_refinement_adjoint_k, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, list_elems_adjoint_enrichment_zone_1, list_elems_adjoint_enrichment_zone_2, list_faces_adjoint_enrichment_zone_12, list_nodes_adjoint_enrichment, want_local_improvement, local_improvement, shape, k_min, k_max, k_opt );
+//            display_params_adjoint( want_local_refinement_adjoint, local_refinement_adjoint_l_min, local_refinement_adjoint_k, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, elem_list_adjoint_enrichment_zone_1, elem_list_adjoint_enrichment_zone_2, face_list_adjoint_enrichment_zone_12, node_list_adjoint_enrichment, want_local_improvement, local_improvement, shape, k_min, k_max, k_opt );
             
 //            /// Formulation du pb adjoint
 //            ///--------------------------
@@ -708,7 +707,7 @@ int main( int argc, char **argv ) {
 //            ///-------------------------------------
 //            create_material_properties( f_adjoint, m_adjoint, structure, loading );
 //            create_boundary_conditions( f_adjoint, m_adjoint, boundary_condition_D, "adjoint", structure, loading, mesh_size );
-//            create_load_conditions( m_adjoint, f_adjoint, m, m_crown, list_elems_interest_quantity, node_interest_quantity, pos_interest_quantity, interest_quantity, direction_extractor, pointwise_interest_quantity, want_local_enrichment );
+//            create_load_conditions( m_adjoint, f_adjoint, m, m_crown, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, interest_quantity, direction_extractor, pointwise_interest_quantity, want_local_enrichment );
             
 //            /// Verification des contraintes cinematiques
 //            ///------------------------------------------
@@ -775,7 +774,7 @@ int main( int argc, char **argv ) {
 //                /// Calcul ameliore des bornes d'erreur sur la quantite d'interet locale I ///
 //                ///------------------------------------------------------------------------///
 //                if ( want_local_improvement ) {
-//                    calcul_enhanced_local_error_bounds( m, m_adjoint, f, f_adjoint, m_lambda_min, m_lambda_max, m_lambda_opt, m_adjoint_lambda_min, m_adjoint_lambda_opt, deg_p, method, method_adjoint, structure, loading, mesh_size, cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, deg_k, local_improvement, shape, k_min, k_max, k_opt, interest_quantity, direction_extractor, pointwise_interest_quantity, list_elems_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, theta, theta_adjoint, theta_adjoint_elem, correspondance_elem_m_adjoint_to_elem_m, dep_hat, dep_adjoint_hat, I_h, I_hh, integration_k, integration_nb_steps, debug_method_adjoint, debug_method_enhancement_adjoint, debug_geometry_adjoint, debug_error_estimate_adjoint, want_introduction_sigma_hat_m, want_solve_eig_local_improvement, use_mask_eig_local_improvement );
+//                    calcul_enhanced_local_error_bounds( m, m_adjoint, f, f_adjoint, m_lambda_min, m_lambda_max, m_lambda_opt, m_adjoint_lambda_min, m_adjoint_lambda_opt, deg_p, method, method_adjoint, structure, loading, mesh_size, cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, deg_k, local_improvement, shape, k_min, k_max, k_opt, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, theta, theta_adjoint, theta_adjoint_elem, correspondance_elem_m_adjoint_to_elem_m, dep_hat, dep_adjoint_hat, I_h, I_hh, integration_k, integration_nb_steps, debug_method_adjoint, debug_method_enhancement_adjoint, debug_geometry_adjoint, debug_error_estimate_adjoint, want_introduction_sigma_hat_m, want_solve_eig_local_improvement, use_mask_eig_local_improvement );
 //                }
 //            }
 //        }
@@ -788,9 +787,9 @@ int main( int argc, char **argv ) {
     /// Affichage ///
     ///-----------///
     
-//     display_vtu_pvd( m, m_ref, m_lambda_min, m_lambda_max, m_lambda_opt, m_crown, "direct", method, structure, loading, mesh_size, cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, deg_k, refinement_degree_ref, want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation, want_local_improvement, interest_quantity, direction_extractor, pointwise_interest_quantity, list_elems_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment, save_vtu, display_vtu, save_pvd, display_pvd, save_vtu_ref, display_vtu_ref, save_vtu_lambda, display_vtu_lambda, save_vtu_crown, display_vtu_crown );
+//     display_vtu_pvd( m, m_ref, m_lambda_min, m_lambda_max, m_lambda_opt, m_crown, "direct", method, structure, loading, mesh_size, cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, deg_k, refinement_degree_ref, want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation, want_local_improvement, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment, save_vtu, display_vtu, save_pvd, display_pvd, save_vtu_ref, display_vtu_ref, save_vtu_lambda, display_vtu_lambda, save_vtu_crown, display_vtu_crown );
 //     if ( want_local_estimation and want_interest_quantity_only == 0 ) {
-//         display_vtu_pvd( m_adjoint, m_local_ref, m_adjoint_lambda_min, m_adjoint_lambda_max, m_adjoint_lambda_opt, m_crown, "adjoint", method_adjoint, structure, loading, mesh_size, cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, deg_k, refinement_degree_ref, want_global_discretization_error_adjoint, want_local_discretization_error_adjoint, want_global_estimation, want_local_estimation, want_local_improvement, interest_quantity, direction_extractor, pointwise_interest_quantity, list_elems_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment, save_vtu_adjoint, display_vtu_adjoint, save_pvd_adjoint, display_adjoint_pvd, save_vtu_local_ref, display_vtu_local_ref, save_vtu_adjoint_lambda, display_vtu_adjoint_lambda, save_adjoint_crown_vtu, display_adjoint_crown_vtu );
+//         display_vtu_pvd( m_adjoint, m_local_ref, m_adjoint_lambda_min, m_adjoint_lambda_max, m_adjoint_lambda_opt, m_crown, "adjoint", method_adjoint, structure, loading, mesh_size, cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, deg_k, refinement_degree_ref, want_global_discretization_error_adjoint, want_local_discretization_error_adjoint, want_global_estimation, want_local_estimation, want_local_improvement, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment, save_vtu_adjoint, display_vtu_adjoint, save_pvd_adjoint, display_pvd_adjoint, save_vtu_local_ref, display_vtu_local_ref, save_vtu_adjoint_lambda, display_vtu_adjoint_lambda, save_adjoint_crown_vtu, display_adjoint_crown_vtu );
 //     }
     
 }

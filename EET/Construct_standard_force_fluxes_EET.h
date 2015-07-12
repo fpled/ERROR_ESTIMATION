@@ -29,21 +29,21 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     TicToc t_construct_force_fluxes_std;
     t_construct_force_fluxes_std.start();
     
-    Vec<unsigned> cpt_elems_node;
-    Vec< Vec<unsigned> > list_elems_node;
-    construct_elems_connected_to_node( m, cpt_elems_node, list_elems_node, debug_geometry );
+    Vec<unsigned> elem_cpt_node;
+    Vec< Vec<unsigned> > elem_list_node;
+    construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node, debug_geometry );
     
-    list_elems_node.free();
+    elem_list_node.free();
     
-    Vec<unsigned> cpt_faces_node;
-    Vec< Vec<unsigned> > list_faces_node;
-    construct_faces_connected_to_node( m, cpt_faces_node, list_faces_node, debug_geometry );
+    Vec<unsigned> face_cpt_node;
+    Vec< Vec<unsigned> > face_list_node;
+    construct_faces_connected_to_node( m, face_cpt_node, face_list_node, debug_geometry );
     
-    Vec<unsigned> cpt_nodes_face;
-    Vec< Vec<unsigned> > list_nodes_face;
-    construct_nodes_connected_to_face( m, cpt_nodes_face, list_nodes_face, debug_geometry );
+    Vec<unsigned> node_cpt_face;
+    Vec< Vec<unsigned> > node_list_face;
+    construct_nodes_connected_to_face( m, node_cpt_face, node_list_face, debug_geometry );
 
-    cpt_nodes_face.free();
+    node_cpt_face.free();
 
     Vec<bool> correspondance_node_to_vertex_node;
     Vec<unsigned> connect_node_to_vertex_node;
@@ -51,11 +51,11 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
 
     connect_node_to_vertex_node.free();
 
-    Vec< Vec<unsigned> > type_face;
-    construct_type_face( m, f, type_face, debug_geometry );
+    Vec< Vec<unsigned> > face_type;
+    construct_face_type( m, f, face_type, debug_geometry );
 
-    Vec< Vec<unsigned> > type_node;
-    construct_type_node( m, f, type_face, type_node, debug_geometry );
+    Vec< Vec<unsigned> > node_type;
+    construct_node_type( m, f, face_type, node_type, debug_geometry );
 
     ///----------------------------------------------------///
     /// Construction des projections des densites d'effort ///
@@ -161,7 +161,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     Calcul_Nodal_Matrix_B calcul_nodal_matrix_B;
     calcul_nodal_matrix_B.elem_ind = &elem_ind;
     calcul_nodal_matrix_B.face_ind = &face_ind;
-    calcul_nodal_matrix_B.list_nodes_face = &list_nodes_face;
+    calcul_nodal_matrix_B.node_list_face = &node_list_face;
 
     apply( m.elem_list, calcul_nodal_matrix_B, m, B );
 
@@ -193,8 +193,8 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
 
     Calcul_Nodal_Vector_r calcul_nodal_vector_r;
     calcul_nodal_vector_r.elem_ind = &elem_ind;
-    calcul_nodal_vector_r.list_nodes_face = &list_nodes_face;
-    calcul_nodal_vector_r.cpt_elems_node = &cpt_elems_node;
+    calcul_nodal_vector_r.node_list_face = &node_list_face;
+    calcul_nodal_vector_r.elem_cpt_node = &elem_cpt_node;
     calcul_nodal_vector_r.pb = &pb;
     calcul_nodal_vector_r.want_local_enrichment = &want_local_enrichment;
 
@@ -229,8 +229,8 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
         
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                if ( type_node[ i ][ d ] == 0 ) {
-                    for (unsigned n=0;n<cpt_elems_node[ i ];n++) {
+                if ( node_type[ i ][ d ] == 0 ) {
+                    for (unsigned n=0;n<elem_cpt_node[ i ];n++) {
                         verif_eq_0[ i ][ d ] += r[ i ][ d ][ n ];
                     }
                 }
@@ -239,9 +239,9 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
         
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                if ( type_node[ i ][ d ] == 0 ) {
+                if ( node_type[ i ][ d ] == 0 ) {
                     if ( fabs( verif_eq_0[ i ][ d ] ) > tol_compatibility_conditions ) {
-                        cout << "verification des conditions de compatibilite (equilibre elements finis) du noeud " << i << " de type " << type_node[ i ][ d ] << " dans la direction " << d << " :" << endl;
+                        cout << "verification des conditions de compatibilite (equilibre elements finis) du noeud " << i << " de type " << node_type[ i ][ d ] << " dans la direction " << d << " :" << endl;
                         cout << verif_eq_0[ i ][ d ] << " != 0" << endl << endl;
                     }
                 }
@@ -270,16 +270,16 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     for (unsigned i=0;i<m.node_list.size();++i) {
         nodal_ind[ i ].resize( dim );
         for (unsigned d=0;d<dim;++d) {
-            nodal_ind[ i ][ d ].resize( cpt_faces_node[ i ] );
+            nodal_ind[ i ][ d ].resize( face_cpt_node[ i ] );
             nodal_ind[ i ][ d ].set( 0 );
         }
     }
 
     Calcul_Nodal_Ind calcul_nodal_ind;
-    calcul_nodal_ind.cpt_faces_node = &cpt_faces_node;
-    calcul_nodal_ind.list_faces_node = &list_faces_node;
-    calcul_nodal_ind.type_node = &type_node;
-    calcul_nodal_ind.type_face = &type_face;
+    calcul_nodal_ind.face_cpt_node = &face_cpt_node;
+    calcul_nodal_ind.face_list_node = &face_list_node;
+    calcul_nodal_ind.node_type = &node_type;
+    calcul_nodal_ind.face_type = &face_type;
 
     apply( m.node_list, calcul_nodal_ind, nb_eq_imp, nodal_ind ); // nb_eq_imp[ i ][ d ] contient le nb de lignes de la matrice C[ i ][ d ] et du vecteur q[ i ][ d ] associee au i eme noeud dans la direction d // nodal_ind[ i ][ d ][ k ] = indice de debut de ligne dans la matrice C[ i ][ d ] et dans le vecteur q[ i ][ d ] associes au ieme noeud pour chaque face k du maillage et chaque direction d
 
@@ -287,10 +287,10 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
                 cout << "nb d'equations imposees associees au noeud " << i << " dans la direction " << d << " : " << nb_eq_imp[ i ][ d ] << endl;
-                if ( type_node[ i ][ d ] == 2 or type_node[ i ][ d ] == 12 ) {
-                    for (unsigned k=0;k<cpt_faces_node[ i ];++k) {
-                        if ( type_face[ list_faces_node[ i ][ k ] ][ d ] == 2 ) {
-                            cout << "indice de debut de ligne de la face " << list_faces_node[ i ][ k ] << " dans la direction " << d << " dans la matrice C[ " << i << " ][ " << d << " ] : " << nodal_ind[ i ][ d ][ k ] << endl;
+                if ( node_type[ i ][ d ] == 2 or node_type[ i ][ d ] == 12 ) {
+                    for (unsigned k=0;k<face_cpt_node[ i ];++k) {
+                        if ( face_type[ face_list_node[ i ][ k ] ][ d ] == 2 ) {
+                            cout << "indice de debut de ligne de la face " << face_list_node[ i ][ k ] << " dans la direction " << d << " dans la matrice C[ " << i << " ][ " << d << " ] : " << nodal_ind[ i ][ d ][ k ] << endl;
                         }
                     }
                 }
@@ -315,17 +315,17 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     }
 
     Calcul_Nodal_Matrix_C calcul_nodal_matrix_C;
-    calcul_nodal_matrix_C.type_face = &type_face;
+    calcul_nodal_matrix_C.face_type = &face_type;
     calcul_nodal_matrix_C.nodal_ind = &nodal_ind;
     calcul_nodal_matrix_C.face_ind = &face_ind;
-    calcul_nodal_matrix_C.list_faces_node = &list_faces_node;
+    calcul_nodal_matrix_C.face_list_node = &face_list_node;
 
     apply( m.sub_mesh(Number<1>()).elem_list, calcul_nodal_matrix_C, m, C );
 
     if ( debug_method ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                if ( type_node[ i ][ d ] == 2 or type_node[ i ][ d ] == 12 ) {
+                if ( node_type[ i ][ d ] == 2 or node_type[ i ][ d ] == 12 ) {
                     cout << "dimension de la matrice C associe au noeud " << i << " dans la direction " << d << " : ( " << nb_eq_imp[ i ][ d ] << ", " << nb_unk[ i ][ d ] << " )" << endl;
                     cout << "matrice C associe au noeud " << i << " dans la direction " << d << " :" << endl;
                     cout << C[ i ][ d ] << endl << endl;
@@ -351,17 +351,17 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     }
 
     Calcul_Nodal_Vector_q calcul_nodal_vector_q;
-    calcul_nodal_vector_q.type_face = &type_face;
+    calcul_nodal_vector_q.face_type = &face_type;
     calcul_nodal_vector_q.nodal_ind = &nodal_ind;
-    calcul_nodal_vector_q.list_nodes_face = &list_nodes_face;
-    calcul_nodal_vector_q.list_faces_node = &list_faces_node;
+    calcul_nodal_vector_q.node_list_face = &node_list_face;
+    calcul_nodal_vector_q.face_list_node = &face_list_node;
 
     apply( m.elem_list, calcul_nodal_vector_q, m, f, q );
 
     if ( debug_method ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                if ( type_node[ i ][ d ] == 2 or type_node[ i ][ d ] == 12 ) {
+                if ( node_type[ i ][ d ] == 2 or node_type[ i ][ d ] == 12 ) {
                     cout << "dimension du vecteur q associe au noeud " << i << " dans la direction " << d << " : " << nb_eq_imp[ i ][ d ] << endl;
                     cout << "vecteur q associe au noeud " << i << " dans la direction " << d << " :" << endl;
                     cout << q[ i ][ d ] << endl << endl;
@@ -392,12 +392,12 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
         
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                if ( type_node[ i ][ d ] == 2 ) {
-                    for (unsigned n=0;n<cpt_elems_node[ i ];n++) {
+                if ( node_type[ i ][ d ] == 2 ) {
+                    for (unsigned n=0;n<elem_cpt_node[ i ];n++) {
                         verif_eq_sum_r[ i ][ d ] += r[ i ][ d ][ n ];
                     }
-                    for (unsigned k=0;k<cpt_faces_node[ i ];k++) {
-                        if ( type_face[ list_faces_node[ i ][ k ] ][ d ] == 2 ) {
+                    for (unsigned k=0;k<face_cpt_node[ i ];k++) {
+                        if ( face_type[ face_list_node[ i ][ k ] ][ d ] == 2 ) {
                             verif_eq_sum_q[ i ][ d ] += q[ i ][ d ][ nodal_ind[ i ][ d ][ k ] ];
                         }
                     }
@@ -407,9 +407,9 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
         
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                if ( type_node[ i ][ d ] == 2 ) {
+                if ( node_type[ i ][ d ] == 2 ) {
                     if ( fabs( verif_eq_sum_r[ i ][ d ] - verif_eq_sum_q[ i ][ d ] ) > tol_compatibility_conditions ) {
-                        cout << "verification des conditions de compatibilite (equilibre elements finis) au noeud " << i << " de type " << type_node[ i ][ d ] << " dans la direction " << d << " :" << endl;
+                        cout << "verification des conditions de compatibilite (equilibre elements finis) au noeud " << i << " de type " << node_type[ i ][ d ] << " dans la direction " << d << " :" << endl;
                         cout << verif_eq_sum_r[ i ][ d ] << " != " << verif_eq_sum_q[ i ][ d ] << endl << endl;
                     }
                 }
@@ -420,9 +420,9 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     }
 
     nodal_ind.free();
-    cpt_elems_node.free();
-    cpt_faces_node.free();
-    list_faces_node.free();
+    elem_cpt_node.free();
+    face_cpt_node.free();
+    face_list_node.free();
 
     /// Calcul du nb d'equations independantes : nb_eq_indep[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
     ///---------------------------------------------------------------------------------------------------------------------
@@ -439,7 +439,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
 
     for (unsigned i=0;i<m.node_list.size();++i) {
         for (unsigned d=0;d<dim;++d) {
-            if ( type_node[ i ][ d ] == 0 or type_node[ i ][ d ] == 2 ) { // si type_node[ i ][ d ] = 0 ou 2, l'ecriture de l'equilibre elements finis dans la direction d supprime 1 equation : nb_eq_indep[ i ][ d ] = nb_eq[ i ][ d ] - 1
+            if ( node_type[ i ][ d ] == 0 or node_type[ i ][ d ] == 2 ) { // si node_type[ i ][ d ] = 0 ou 2, l'ecriture de l'equilibre elements finis dans la direction d supprime 1 equation : nb_eq_indep[ i ][ d ] = nb_eq[ i ][ d ] - 1
                 nb_eq_indep[ i ][ d ] = nb_eq[ i ][ d ] - 1;
             }
             else {
@@ -470,16 +470,16 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
         minimisation[ i ].set( 0 );
     }
 
-    /// Si type_node[ i ][ d ] = 0 ou type_node[ i ][ d ] = 1,
+    /// Si node_type[ i ][ d ] = 0 ou node_type[ i ][ d ] = 1,
     ///------------------------------------------------------
 //    - si i est un noeud sommet (en 2D ou 3D) ou i est un noeud interieur a une arete (en 3D), alors il y a une etape de minimsation : minimisation[ i ][ d ] = 1
 //    - si i est un noeud non sommet (en 2D) ou i est un noeud interieur a une face (en 3D), alors il n'y a pas d'etape de minimsation : minimisation[ i ][ d ] = 0
 //    autrement dit :
 //    - si nb_eq_indep[ i ][ d ] < nb_unk[ i ][ d ], alors minimisation[ i ][ d ] = 1
 //    - sinon nb_eq_indep[ i ][ d ] = nb_unk[ i ][ d ], alors minimisation[ i ][ d ] = 0
-    /// Si type_node[ i ][ d ] = 12 ou type_node[ i ][ d ] = 2,
+    /// Si node_type[ i ][ d ] = 12 ou node_type[ i ][ d ] = 2,
     ///-------------------------------------------------------
-//    - si nb_eq_imp[ i ][ d ] = nb_unk[ i ][ d ] ( toutes les faces connectees au noeud i dans la direction d sont de type 2, possible uniquement pour type_node[ i ][ d ] = 2 ), alors il n'y a pas d'etape de minimsation : minimisation[ i ][ d ] = 0
+//    - si nb_eq_imp[ i ][ d ] = nb_unk[ i ][ d ] ( toutes les faces connectees au noeud i dans la direction d sont de type 2, possible uniquement pour node_type[ i ][ d ] = 2 ), alors il n'y a pas d'etape de minimsation : minimisation[ i ][ d ] = 0
 //    - sinon,
 //    - si nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] >= nb_unk[ i ][ d ], alors il n'y a pas d'etape de minimsation : minimisation[ i ][ d ] = 0
 //        - si nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] = nb_unk[ i ][ d ], on resoud explicitement
@@ -487,12 +487,12 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
 //        - si nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] < nb_unk[ i ][ d ], alors il y a une etape de minimsation : minimisation[ i ][ d ] = 1
     for (unsigned i=0;i<m.node_list.size();++i) {
         for (unsigned d=0;d<dim;++d) {
-//             if ( type_node[ i ][ d ] == 0 or type_node[ i ][ d ] == 1 ) {
+//             if ( node_type[ i ][ d ] == 0 or node_type[ i ][ d ] == 1 ) {
 //                 if ( nb_eq_indep[ i ][ d ] < nb_unk[ i ][ d ] ) {
 //                     minimisation[ i ][ d ] = 1;
 //                 }
 //             }
-//             else if ( type_node[ i ][ d ] == 2 or type_node[ i ][ d ] == 12 ) {
+//             else if ( node_type[ i ][ d ] == 2 or node_type[ i ][ d ] == 12 ) {
 //                 if ( nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] < nb_unk[ i ][ d ] ) {
 //                     minimisation[ i ][ d ] = 1;
 //                 }
@@ -570,9 +570,9 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
 
     Calcul_Nodal_Vector_b calcul_nodal_vector_b;
     calcul_nodal_vector_b.minimisation = &minimisation;
-    calcul_nodal_vector_b.type_face = &type_face;
+    calcul_nodal_vector_b.face_type = &face_type;
     calcul_nodal_vector_b.face_ind = &face_ind;
-    calcul_nodal_vector_b.list_nodes_face = &list_nodes_face;
+    calcul_nodal_vector_b.node_list_face = &node_list_face;
     calcul_nodal_vector_b.pb = &pb;
     calcul_nodal_vector_b.want_local_enrichment = &want_local_enrichment;
 
@@ -590,8 +590,8 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
         }
     }
 
-    list_nodes_face.free();
-    type_face.free();
+    node_list_face.free();
+    face_type.free();
 
     /// Construction des matrices K[ i ][ d ] et des vecteurs F[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
     ///------------------------------------------------------------------------------------------------------------------------
@@ -615,7 +615,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
         F[ i ].resize( dim );
         U[ i ].resize( dim );
         for (unsigned d=0;d<dim;++d) {
-            /* if ( type_node[ i ][ d ] == 0 or type_node[ i ][ d ] == 1 ) {
+            /* if ( node_type[ i ][ d ] == 0 or node_type[ i ][ d ] == 1 ) {
                 if ( minimisation[ i ][ d ] == 0 ) {
                     K[ i ][ d ].resize( nb_unk[ i ][ d ] );
                     F[ i ][ d ].resize( nb_unk[ i ][ d ] );
@@ -626,7 +626,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
                     F[ i ][ d ].resize( nb_unk[ i ][ d ] + nb_eq_indep[ i ][ d ] );
                     U[ i ][ d ].resize( nb_unk[ i ][ d ] + nb_eq_indep[ i ][ d ] );
                 }
-            else if ( type_node[ i ][ d ] == 2 or type_node[ i ][ d ] == 12 ) {
+            else if ( node_type[ i ][ d ] == 2 or node_type[ i ][ d ] == 12 ) {
                 if ( minimisation[ i ][ d ] == 0 ) {
                     K[ i ][ d ].resize( nb_unk[ i ][ d ] );
                     F[ i ][ d ].resize( nb_unk[ i ][ d ] );
@@ -657,7 +657,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
 
     for (unsigned i=0;i<m.node_list.size();++i) {
         for (unsigned d=0;d<dim;++d) {
-            /* if ( type_node[ i ][ d ] == 0 or type_node[ i ][ d ] == 1 ) {
+            /* if ( node_type[ i ][ d ] == 0 or node_type[ i ][ d ] == 1 ) {
                 if ( minimisation[ i ][ d ] == 0 ) {
                     Vec<unsigned> vec_unk = range( nb_unk[ i ][ d ] );
                     K[ i ][ d ]( vec_unk, vec_unk ) = B[ i ][ d ]( vec_unk, vec_unk ) * 1.;
@@ -675,9 +675,9 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
                     F[ i ][ d ][ vec_unk_to_unk_plus_eq_indep ] = r[ i ][ d ][ vec_eq_indep ] * 1.;
                 }
             }
-            else if ( type_node[ i ][ d ] == 2 or type_node[ i ][ d ] == 12 ) {
+            else if ( node_type[ i ][ d ] == 2 or node_type[ i ][ d ] == 12 ) {
                     // si minimisation[ i ][ d ] = 0
-                if ( nb_eq_imp[ i ][ d ] == nb_unk[ i ][ d ] ) { // possible uniquement si type_node[ i ][ d ] = 2
+                if ( nb_eq_imp[ i ][ d ] == nb_unk[ i ][ d ] ) { // possible uniquement si node_type[ i ][ d ] = 2
                     Vec<unsigned> vec_unk = range( nb_unk[ i ][ d ] );
                     K[ i ][ d ]( vec_unk, vec_unk ) = C[ i ][ d ]( vec_unk, vec_unk ) * 1.;
                     F[ i ][ d ][ vec_unk ] = q[ i ][ d ][ vec_unk ] * 1.;
@@ -772,7 +772,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     nb_eq_indep.free();
     M.free();
     b.free();
-    type_node.free();
+    node_type.free();
 
     /// Resolution des problemes de minimisation K[ i ][ d ] * U[ i ][ d ] = F[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
     /// Construction des vecteurs U[ i ][ d ] pour chaque noeud i du maillage et chaque direction d

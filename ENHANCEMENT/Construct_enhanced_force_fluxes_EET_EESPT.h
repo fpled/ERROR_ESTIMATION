@@ -22,22 +22,22 @@ using namespace std;
 /// Construction amelioree des densites d'effort par les methodes EET et EESPT
 ///---------------------------------------------------------------------------
 template<class TM, class TF, class T>
-void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string &method, const Vec<bool> &flag_elem_enh, const Vec<bool> &flag_face_enh, const Vec<bool> &flag_elem_bal, const Vec<unsigned> &list_elems_enh, const Vec<unsigned> &list_faces_enh, const Vec<unsigned> &list_elems_bal, Vec< Mat<T, Sym<> > > &K_hat, const Vec< Vec<T> > &dep_hat, Vec< Vec< Vec<T> > > &vec_force_fluxes, const string &solver, const string &solver_minimisation, const bool &debug_method_enhancement, const bool &verif_solver_enhancement, const T &tol_solver_enhancement, const bool &verif_solver_minimisation_enhancement, const T &tol_solver_minimisation_enhancement, const bool &debug_geometry, const bool &debug_force_fluxes_enhancement ) {
+void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string &method, const Vec<bool> &elem_flag_enh, const Vec<bool> &face_flag_enh, const Vec<bool> &elem_flag_bal, const Vec<unsigned> &elem_list_enh, const Vec<unsigned> &face_list_enh, const Vec<unsigned> &elem_list_bal, Vec< Mat<T, Sym<> > > &K_hat, const Vec< Vec<T> > &dep_hat, Vec< Vec< Vec<T> > > &vec_force_fluxes, const string &solver, const string &solver_minimisation, const bool &debug_method_enhancement, const bool &verif_solver_enhancement, const T &tol_solver_enhancement, const bool &verif_solver_minimisation_enhancement, const T &tol_solver_minimisation_enhancement, const bool &debug_geometry, const bool &debug_force_fluxes_enhancement ) {
 
     static const unsigned dim = TM::dim;
 
     TicToc t_construct_force_fluxes_enh;
     t_construct_force_fluxes_enh.start();
 
-    Vec<unsigned> cpt_nodes_face;
-    Vec< Vec<unsigned> > list_nodes_face;
-    construct_nodes_connected_to_face( m, cpt_nodes_face, list_nodes_face, debug_geometry );
+    Vec<unsigned> node_cpt_face;
+    Vec< Vec<unsigned> > node_list_face;
+    construct_nodes_connected_to_face( m, node_cpt_face, node_list_face, debug_geometry );
 
-    Vec<unsigned> cpt_elems_node;
-    Vec< Vec<unsigned> > list_elems_node;
-    construct_elems_connected_to_node( m, cpt_elems_node, list_elems_node, debug_geometry );
+    Vec<unsigned> elem_cpt_node;
+    Vec< Vec<unsigned> > elem_list_node;
+    construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node, debug_geometry );
 
-    list_elems_node.free();
+    elem_list_node.free();
 
     Vec<bool> correspondance_node_to_vertex_node;
     Vec<unsigned> connect_node_to_vertex_node;
@@ -45,8 +45,8 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
 
     connect_node_to_vertex_node.free();
 
-    Vec< Vec<unsigned> > type_face;
-    construct_type_face( m, f, type_face, debug_geometry );
+    Vec< Vec<unsigned> > face_type;
+    construct_face_type( m, f, face_type, debug_geometry );
 
     cout << "--------------------------------------------" << endl;
     cout << "Construction amelioree des densites d'effort" << endl;
@@ -54,8 +54,8 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
 
     unsigned nb_unk_enh = 0;
 
-    for (unsigned k=0;k<list_faces_enh.size();++k) {
-        nb_unk_enh += m.sub_mesh(Number<1>()).elem_list[ list_faces_enh[ k ] ]->nb_nodes_virtual() * dim;
+    for (unsigned k=0;k<face_list_enh.size();++k) {
+        nb_unk_enh += m.sub_mesh(Number<1>()).elem_list[ face_list_enh[ k ] ]->nb_nodes_virtual() * dim;
     }
 
     /// Construction des vecteurs F_hat_enh[ n ] pour chaque element ameliore n du maillage
@@ -66,21 +66,21 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     cout << "Construction des vecteurs F_hat_enh" << endl << endl;
 
     Vec<unsigned> nb_unk_local_enh;
-    nb_unk_local_enh.resize( list_elems_enh.size() );
+    nb_unk_local_enh.resize( elem_list_enh.size() );
 
     Vec< Vec< Vec<T> > > F_hat_enh;
-    F_hat_enh.resize( list_elems_enh.size() );
+    F_hat_enh.resize( elem_list_enh.size() );
 
     Calcul_Elem_Vector_F_hat_enh calc_elem_vector_F_hat_enh;
-    calc_elem_vector_F_hat_enh.flag_elem_enh = &flag_elem_enh;
-    calc_elem_vector_F_hat_enh.list_elems_enh = &list_elems_enh;
+    calc_elem_vector_F_hat_enh.elem_flag_enh = &elem_flag_enh;
+    calc_elem_vector_F_hat_enh.elem_list_enh = &elem_list_enh;
     calc_elem_vector_F_hat_enh.nb_unk_local_enh = &nb_unk_local_enh;
 
     apply( m.elem_list, calc_elem_vector_F_hat_enh, m, f, F_hat_enh );
 
     if ( debug_method_enhancement ) {
-        for (unsigned n=0;n<list_elems_enh.size();++n) {
-            cout << "vecteur F_hat_enh de l'element " << list_elems_enh[ n ] << " :" << endl << endl;
+        for (unsigned n=0;n<elem_list_enh.size();++n) {
+            cout << "vecteur F_hat_enh de l'element " << elem_list_enh[ n ] << " :" << endl << endl;
             for (unsigned i=0;i<nb_unk_local_enh[ n ];++i) {
                 cout << "avec cas de charge " << i << " :" << endl;
                 cout << F_hat_enh[ n ][ i ] << endl << endl;
@@ -94,14 +94,14 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     cout << "Construction des vecteurs dep_hat_enh" << endl << endl;
 
     Vec< Vec< Vec<T> > > dep_hat_enh;
-    dep_hat_enh.resize( list_elems_enh.size() );
+    dep_hat_enh.resize( elem_list_enh.size() );
 
-    for (unsigned n=0;n<list_elems_enh.size();++n) {
+    for (unsigned n=0;n<elem_list_enh.size();++n) {
         dep_hat_enh[ n ].resize( nb_unk_local_enh[ n ] );
         for (unsigned i=0;i<nb_unk_local_enh[ n ];++i) {
             if ( solver == "CholMod" ) {
 #ifdef WITH_CHOLMOD
-                Mat<T, Sym<>, SparseLine<> > K_hat_sym = K_hat[ list_elems_enh[ n ] ];
+                Mat<T, Sym<>, SparseLine<> > K_hat_sym = K_hat[ elem_list_enh[ n ] ];
                 Mat<T, Sym<>, SparseCholMod > K_hat_CholMod = K_hat_sym;
                 K_hat_CholMod.get_factorization();
                 dep_hat_enh[ n ][ i ] = K_hat_CholMod.solve( F_hat_enh[ n ][ i ] );
@@ -109,7 +109,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
             }
             else if ( solver == "LDL" ) {
 #ifdef WITH_LDL
-                Mat<T, Sym<>, SparseLine<> > K_hat_LDL = K_hat[ list_elems_enh[ n ] ];
+                Mat<T, Sym<>, SparseLine<> > K_hat_LDL = K_hat[ elem_list_enh[ n ] ];
                 dep_hat_enh[ n ][ i ] = F_hat_enh[ n ][ i ];
                 LDL_solver ls;
                 Vec< Vec<T> > Ker;
@@ -121,25 +121,25 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
             }
             else if ( solver == "UMFPACK" ) {
 #ifdef WITH_UMFPACK
-                Mat<T, Gen<>, SparseUMFPACK > K_hat_UMFPACK = K_hat[ list_elems_enh[ n ] ];
+                Mat<T, Gen<>, SparseUMFPACK > K_hat_UMFPACK = K_hat[ elem_list_enh[ n ] ];
                 K_hat_UMFPACK.get_factorization();
                 dep_hat_enh[ n ][ i ] = K_hat_UMFPACK.solve( F_hat_enh[ n ][ i ] );
 #endif
             }
             else if ( solver == "CholFactorize" ) {
-                Mat<T, Sym<>, SparseLine<> > K_hat_Chol = K_hat[ list_elems_enh[ n ] ];
+                Mat<T, Sym<>, SparseLine<> > K_hat_Chol = K_hat[ elem_list_enh[ n ] ];
                 chol_factorize( K_hat_Chol );
                 solve_using_chol_factorize( K_hat_Chol, F_hat_enh[ n ][ i ], dep_hat_enh[ n ][ i ] );
             }
             else if ( solver == "LUFactorize" ) {
-                Mat<T, Sym<>, SparseLine<> > K_hat_sym = K_hat[ list_elems_enh[ n ] ];
+                Mat<T, Sym<>, SparseLine<> > K_hat_sym = K_hat[ elem_list_enh[ n ] ];
                 Mat<T, Gen<>, SparseLU > K_hat_LU = K_hat_sym;
 //                Vec<int> vector_permutation;
                 lu_factorize( K_hat_LU/*, vector_permutation*/ );
                 solve_using_lu_factorize( K_hat_LU, /*vector_permutation,*/ F_hat_enh[ n ][ i ], dep_hat_enh[ n ][ i ] );
             }
             else if ( solver == "Inv" ) {
-                Mat<T, Sym<>, SparseLine<> > K_hat_Inv = K_hat[ list_elems_enh[ n ] ];
+                Mat<T, Sym<>, SparseLine<> > K_hat_Inv = K_hat[ elem_list_enh[ n ] ];
                 dep_hat_enh[ n ][ i ] = inv( K_hat_Inv ) * F_hat_enh[ n ][ i ];
             }
             else {
@@ -149,8 +149,8 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     }
 
     if ( debug_method_enhancement ) {
-        for (unsigned n=0;n<list_elems_enh.size();++n) {
-            cout << "vecteur dep_hat_enh de l'element " << list_elems_enh[ n ] << " :" << endl << endl;
+        for (unsigned n=0;n<elem_list_enh.size();++n) {
+            cout << "vecteur dep_hat_enh de l'element " << elem_list_enh[ n ] << " :" << endl << endl;
             for (unsigned i=0;i<nb_unk_local_enh[ n ];++i) {
                 cout << "avec cas de charge " << i << " :" << endl;
                 cout << dep_hat_enh[ n ][ i ] << endl << endl;
@@ -159,14 +159,14 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     }
     if ( verif_solver_enhancement ) {
         cout << "Verification de la resolution des problemes locaux associes a la partie amelioree des densites d'effort pour la technique " << method << " : tolerance = " << tol_solver_enhancement << endl << endl;
-        for (unsigned n=0;n<list_elems_enh.size();++n) {
+        for (unsigned n=0;n<elem_list_enh.size();++n) {
             for (unsigned i=0;i<nb_unk_local_enh[ n ];++i) {
-                if ( norm_2( K_hat[ list_elems_enh[ n ] ] * dep_hat_enh[ n ][ i ] - F_hat_enh[ n ][ i ] ) / norm_2( F_hat_enh[ n ][ i ] ) > tol_solver_enhancement ) {
-                    cout << "residu pour l'element " << list_elems_enh[ n ] << " avec cas de charge " << i << " :" << endl << endl;
+                if ( norm_2( K_hat[ elem_list_enh[ n ] ] * dep_hat_enh[ n ][ i ] - F_hat_enh[ n ][ i ] ) / norm_2( F_hat_enh[ n ][ i ] ) > tol_solver_enhancement ) {
+                    cout << "residu pour l'element " << elem_list_enh[ n ] << " avec cas de charge " << i << " :" << endl << endl;
                     cout << "K_hat * dep_hat_enh - F_hat_enh =" << endl;
-                    cout << K_hat[ list_elems_enh[ n ] ] * dep_hat_enh[ n ][ i ] - F_hat_enh[ n ][ i ] << endl << endl;
-                    cout << "norme 2 du residu = " << norm_2( K_hat[ list_elems_enh[ n ] ] * dep_hat_enh[ n ][ i ] - F_hat_enh[ n ][ i ] ) << endl << endl;
-                    cout << "norme 2 du residu relatif = " << norm_2( K_hat[ list_elems_enh[ n ] ] * dep_hat_enh[ n ][ i ] - F_hat_enh[ n ][ i ] ) / norm_2( F_hat_enh[ n ][ i ] ) << endl << endl;
+                    cout << K_hat[ elem_list_enh[ n ] ] * dep_hat_enh[ n ][ i ] - F_hat_enh[ n ][ i ] << endl << endl;
+                    cout << "norme 2 du residu = " << norm_2( K_hat[ elem_list_enh[ n ] ] * dep_hat_enh[ n ][ i ] - F_hat_enh[ n ][ i ] ) << endl << endl;
+                    cout << "norme 2 du residu relatif = " << norm_2( K_hat[ elem_list_enh[ n ] ] * dep_hat_enh[ n ][ i ] - F_hat_enh[ n ][ i ] ) / norm_2( F_hat_enh[ n ][ i ] ) << endl << endl;
                 }
             }
         }
@@ -180,23 +180,23 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     cout << "Construction des matrices A_local_enh" << endl << endl;
 
     Vec< Mat<T, Gen<>, SparseLine<> > > A_local_enh;
-    A_local_enh.resize( list_elems_enh.size() );
+    A_local_enh.resize( elem_list_enh.size() );
 
-    for (unsigned n=0;n<list_elems_enh.size();++n) {
+    for (unsigned n=0;n<elem_list_enh.size();++n) {
         A_local_enh[ n ].resize( nb_unk_local_enh[ n ] );
     }
 
     Calcul_Elem_Matrix_A_enh<T> calcul_elem_matrix_A_enh;
-    calcul_elem_matrix_A_enh.flag_elem_enh = &flag_elem_enh;
-    calcul_elem_matrix_A_enh.list_elems_enh = &list_elems_enh;
+    calcul_elem_matrix_A_enh.elem_flag_enh = &elem_flag_enh;
+    calcul_elem_matrix_A_enh.elem_list_enh = &elem_list_enh;
     calcul_elem_matrix_A_enh.dep_hat_enh = &dep_hat_enh;
 
     apply( m.elem_list, calcul_elem_matrix_A_enh, m, f, A_local_enh );
 
     if ( debug_method_enhancement ) {
-        for (unsigned n=0;n<list_elems_enh.size();++n) {
-            cout << "dimension de la matrice A_local_enh de l'element " << list_elems_enh[ n ] << " : ( " << nb_unk_local_enh[ n ] << ", " << nb_unk_local_enh[ n ] << " )" << endl;
-            cout << "matrice A_local_enh de l'element " << list_elems_enh[ n ] << " :" << endl;
+        for (unsigned n=0;n<elem_list_enh.size();++n) {
+            cout << "dimension de la matrice A_local_enh de l'element " << elem_list_enh[ n ] << " : ( " << nb_unk_local_enh[ n ] << ", " << nb_unk_local_enh[ n ] << " )" << endl;
+            cout << "matrice A_local_enh de l'element " << elem_list_enh[ n ] << " :" << endl;
             cout << A_local_enh[ n ] << endl << endl;
         }
     }
@@ -207,25 +207,25 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     cout << "Construction des vecteurs d_local_enh" << endl << endl;
 
     Vec< Vec<T> > d_local_enh;
-    d_local_enh.resize( list_elems_enh.size() );
+    d_local_enh.resize( elem_list_enh.size() );
 
-    for (unsigned n=0;n<list_elems_enh.size();++n) {
+    for (unsigned n=0;n<elem_list_enh.size();++n) {
         d_local_enh[ n ].resize( nb_unk_local_enh[ n ] );
         d_local_enh[ n ].set( 0. );
     }
 
     Calcul_Elem_Vector_d_enh<T> calcul_elem_vector_d_enh;
-    calcul_elem_vector_d_enh.flag_elem_enh = &flag_elem_enh;
-    calcul_elem_vector_d_enh.list_elems_enh = &list_elems_enh;
+    calcul_elem_vector_d_enh.elem_flag_enh = &elem_flag_enh;
+    calcul_elem_vector_d_enh.elem_list_enh = &elem_list_enh;
     calcul_elem_vector_d_enh.dep_hat = &dep_hat;
     calcul_elem_vector_d_enh.dep_hat_enh = &dep_hat_enh;
 
     apply( m.elem_list, calcul_elem_vector_d_enh, m, f, d_local_enh );
 
     if ( debug_method_enhancement ) {
-        for (unsigned n=0;n<list_elems_enh.size();++n) {
-            cout << "dimension du vecteur d_local_enh de l'element " << list_elems_enh[ n ] << " : " << nb_unk_local_enh[ n ] << endl;
-            cout << "vecteur d_local_enh de l'element " << list_elems_enh[ n ] << " :" << endl;
+        for (unsigned n=0;n<elem_list_enh.size();++n) {
+            cout << "dimension du vecteur d_local_enh de l'element " << elem_list_enh[ n ] << " : " << nb_unk_local_enh[ n ] << endl;
+            cout << "vecteur d_local_enh de l'element " << elem_list_enh[ n ] << " :" << endl;
             cout << d_local_enh[ n ] << endl << endl;
         }
     }
@@ -239,10 +239,10 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
 
     unsigned nb_eq_f_surf_enh = 0;
 
-    for (unsigned k=0;k<list_faces_enh.size();++k) {
+    for (unsigned k=0;k<face_list_enh.size();++k) {
         for (unsigned d=0;d<dim;d++) {
-            if ( type_face[ list_faces_enh[ k ] ][ d ] == 2 ) {
-                nb_eq_f_surf_enh += cpt_nodes_face[ list_faces_enh[ k ] ];
+            if ( face_type[ face_list_enh[ k ] ][ d ] == 2 ) {
+                nb_eq_f_surf_enh += node_cpt_face[ face_list_enh[ k ] ];
             }
         }
     }
@@ -253,9 +253,9 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     C_enh.resize( nb_eq_f_surf_enh, nb_unk_enh );
 
     Calcul_Global_Matrix_C_enh calcul_global_matrix_C_enh;
-    calcul_global_matrix_C_enh.type_face = &type_face;
-    calcul_global_matrix_C_enh.flag_face_enh = &flag_face_enh;
-    calcul_global_matrix_C_enh.list_faces_enh = &list_faces_enh;
+    calcul_global_matrix_C_enh.face_type = &face_type;
+    calcul_global_matrix_C_enh.face_flag_enh = &face_flag_enh;
+    calcul_global_matrix_C_enh.face_list_enh = &face_list_enh;
 
     apply( m.sub_mesh(Number<1>()).elem_list, calcul_global_matrix_C_enh, cpt_eq_f_surf_enh, C_enh );
 
@@ -277,8 +277,8 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     cpt_eq_f_surf_enh = 0;
 
     Calcul_Global_Vector_q_enh calcul_global_vector_q_enh;
-    calcul_global_vector_q_enh.type_face = &type_face;
-    calcul_global_vector_q_enh.flag_elem_enh = &flag_elem_enh;
+    calcul_global_vector_q_enh.face_type = &face_type;
+    calcul_global_vector_q_enh.elem_flag_enh = &elem_flag_enh;
     calcul_global_vector_q_enh.cpt_eq_f_surf_enh = &cpt_eq_f_surf_enh;
 
     apply( m.elem_list, calcul_global_vector_q_enh, m, f, q_enh );
@@ -289,7 +289,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
         cout << q_enh << endl << endl;
     }
 
-    type_face.free();
+    face_type.free();
     
     /// Construction des matrices L_local_enh[ n ] pour chaque element ameliore n du maillage
     ///--------------------------------------------------------------------------------------
@@ -299,27 +299,27 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     cout << "Construction des matrices L_local_enh" << endl << endl;
 
     Vec<unsigned> nb_unk_local_bal;
-    nb_unk_local_bal.resize( list_elems_bal.size() );
+    nb_unk_local_bal.resize( elem_list_bal.size() );
 
     Vec<unsigned> nb_eq_f_vol_local_enh;
-    nb_eq_f_vol_local_enh.resize( list_elems_bal.size() );
+    nb_eq_f_vol_local_enh.resize( elem_list_bal.size() );
 
     Vec< Mat<T, Gen<>, SparseLine<> > > L_local_enh;
-    L_local_enh.resize( list_elems_bal.size() );
+    L_local_enh.resize( elem_list_bal.size() );
 
     Calcul_Elem_Matrix_L_enh calcul_elem_matrix_L_enh;
-    calcul_elem_matrix_L_enh.flag_face_enh = &flag_face_enh;
-    calcul_elem_matrix_L_enh.flag_elem_bal = &flag_elem_bal;
-    calcul_elem_matrix_L_enh.list_elems_bal = &list_elems_bal;
+    calcul_elem_matrix_L_enh.face_flag_enh = &face_flag_enh;
+    calcul_elem_matrix_L_enh.elem_flag_bal = &elem_flag_bal;
+    calcul_elem_matrix_L_enh.elem_list_bal = &elem_list_bal;
     calcul_elem_matrix_L_enh.nb_unk_local_bal = &nb_unk_local_bal;
     calcul_elem_matrix_L_enh.nb_eq_f_vol_local_enh = &nb_eq_f_vol_local_enh;
 
     apply( m.elem_list, calcul_elem_matrix_L_enh, m, f, L_local_enh );
 
     if ( debug_method_enhancement ) {
-        for (unsigned n=0;n<list_elems_bal.size();++n) {
-            cout << "dimension de la matrice L_local_enh de l'element " << list_elems_bal[ n ] << " : ( " << nb_eq_f_vol_local_enh[ n ] << ", " << nb_unk_local_bal[ n ] << " )" << endl;
-            cout << "matrice L_local_enh de l'element " << list_elems_bal[ n ] << " :" << endl;
+        for (unsigned n=0;n<elem_list_bal.size();++n) {
+            cout << "dimension de la matrice L_local_enh de l'element " << elem_list_bal[ n ] << " : ( " << nb_eq_f_vol_local_enh[ n ] << ", " << nb_unk_local_bal[ n ] << " )" << endl;
+            cout << "matrice L_local_enh de l'element " << elem_list_bal[ n ] << " :" << endl;
             cout << L_local_enh[ n ] << endl << endl;
         }
     }
@@ -330,26 +330,26 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     cout << "Construction des vecteurs b_local_enh" << endl << endl;
 
     Vec< Vec<T> > b_local_enh;
-    b_local_enh.resize( list_elems_bal.size() );
+    b_local_enh.resize( elem_list_bal.size() );
 
     Calcul_Elem_Vector_b_enh<T> calcul_elem_vector_b_enh;
-    calcul_elem_vector_b_enh.list_nodes_face = &list_nodes_face;
-    calcul_elem_vector_b_enh.cpt_elems_node = &cpt_elems_node;
+    calcul_elem_vector_b_enh.node_list_face = &node_list_face;
+    calcul_elem_vector_b_enh.elem_cpt_node = &elem_cpt_node;
     calcul_elem_vector_b_enh.vec_force_fluxes = &vec_force_fluxes;
-    calcul_elem_vector_b_enh.flag_elem_bal = &flag_elem_bal;
-    calcul_elem_vector_b_enh.list_elems_bal = &list_elems_bal;
+    calcul_elem_vector_b_enh.elem_flag_bal = &elem_flag_bal;
+    calcul_elem_vector_b_enh.elem_list_bal = &elem_list_bal;
 
     apply( m.elem_list, calcul_elem_vector_b_enh, m, f, b_local_enh );
 
     if ( debug_method_enhancement ) {
-        for (unsigned n=0;n<list_elems_bal.size();++n) {
-            cout << "dimension du vecteur b_local_enh de l'element " << list_elems_bal[ n ] << " : " << nb_eq_f_vol_local_enh[ n ] << endl;
-            cout << "vecteur b_local_enh de l'element " << list_elems_bal[ n ] << " :" << endl;
+        for (unsigned n=0;n<elem_list_bal.size();++n) {
+            cout << "dimension du vecteur b_local_enh de l'element " << elem_list_bal[ n ] << " : " << nb_eq_f_vol_local_enh[ n ] << endl;
+            cout << "vecteur b_local_enh de l'element " << elem_list_bal[ n ] << " :" << endl;
             cout << b_local_enh[ n ] << endl << endl;
         }
     }
 
-    cpt_elems_node.free();
+    elem_cpt_node.free();
 
     /// Construction de la matrice globale A_enh
     ///-----------------------------------------
@@ -360,10 +360,10 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     A_enh.resize( nb_unk_enh );
 
     Calcul_Global_Matrix_A_enh calcul_global_matrix_A_enh;
-    calcul_global_matrix_A_enh.list_nodes_face = &list_nodes_face;
-    calcul_global_matrix_A_enh.flag_elem_enh = &flag_elem_enh;
-    calcul_global_matrix_A_enh.list_elems_enh = &list_elems_enh;
-    calcul_global_matrix_A_enh.list_faces_enh = &list_faces_enh;
+    calcul_global_matrix_A_enh.node_list_face = &node_list_face;
+    calcul_global_matrix_A_enh.elem_flag_enh = &elem_flag_enh;
+    calcul_global_matrix_A_enh.elem_list_enh = &elem_list_enh;
+    calcul_global_matrix_A_enh.face_list_enh = &face_list_enh;
 
     apply( m.elem_list, calcul_global_matrix_A_enh, m, A_local_enh, A_enh );
 
@@ -385,10 +385,10 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     d_enh.set( 0. );
 
     Calcul_Global_Vector_d_enh calcul_global_vector_d_enh;
-    calcul_global_vector_d_enh.list_nodes_face = &list_nodes_face;
-    calcul_global_vector_d_enh.flag_elem_enh = &flag_elem_enh;
-    calcul_global_vector_d_enh.list_elems_enh = &list_elems_enh;
-    calcul_global_vector_d_enh.list_faces_enh = &list_faces_enh;
+    calcul_global_vector_d_enh.node_list_face = &node_list_face;
+    calcul_global_vector_d_enh.elem_flag_enh = &elem_flag_enh;
+    calcul_global_vector_d_enh.elem_list_enh = &elem_list_enh;
+    calcul_global_vector_d_enh.face_list_enh = &face_list_enh;
 
     apply( m.elem_list, calcul_global_vector_d_enh, m, d_local_enh, d_enh );
 
@@ -407,7 +407,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
 
     unsigned nb_eq_f_vol_enh = 0;
 
-    for (unsigned n=0;n<list_elems_bal.size();++n) {
+    for (unsigned n=0;n<elem_list_bal.size();++n) {
         nb_eq_f_vol_enh += nb_eq_f_vol_local_enh[ n ];
     }
 
@@ -415,11 +415,11 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     L_enh.resize( nb_eq_f_vol_enh, nb_unk_enh );
 
     Calcul_Global_Matrix_L_enh calcul_global_matrix_L_enh;
-    calcul_global_matrix_L_enh.list_nodes_face = &list_nodes_face;
-    calcul_global_matrix_L_enh.flag_elem_bal = &flag_elem_bal;
-    calcul_global_matrix_L_enh.list_elems_bal = &list_elems_bal;
-    calcul_global_matrix_L_enh.flag_face_enh = &flag_face_enh;
-    calcul_global_matrix_L_enh.list_faces_enh = &list_faces_enh;
+    calcul_global_matrix_L_enh.node_list_face = &node_list_face;
+    calcul_global_matrix_L_enh.elem_flag_bal = &elem_flag_bal;
+    calcul_global_matrix_L_enh.elem_list_bal = &elem_list_bal;
+    calcul_global_matrix_L_enh.face_flag_enh = &face_flag_enh;
+    calcul_global_matrix_L_enh.face_list_enh = &face_list_enh;
     calcul_global_matrix_L_enh.nb_eq_f_vol_local_enh = &nb_eq_f_vol_local_enh;
 
     apply( m.elem_list, calcul_global_matrix_L_enh, m, L_local_enh, L_enh );
@@ -442,8 +442,8 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     b_enh.set( 0. );
 
     Calcul_Global_Vector_b_enh calcul_global_vector_b_enh;
-    calcul_global_vector_b_enh.flag_elem_bal = &flag_elem_bal;
-    calcul_global_vector_b_enh.list_elems_bal = &list_elems_bal;
+    calcul_global_vector_b_enh.elem_flag_bal = &elem_flag_bal;
+    calcul_global_vector_b_enh.elem_list_bal = &elem_list_bal;
     calcul_global_vector_b_enh.nb_eq_f_vol_local_enh = &nb_eq_f_vol_local_enh;
 
     apply( m.elem_list, calcul_global_vector_b_enh, m, b_local_enh, b_enh );
@@ -464,9 +464,9 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
 
     unsigned nb_eq_proj_f_surf_enh = 0;
 
-    for (unsigned k=0;k<list_faces_enh.size();++k) {
-        for (unsigned i=0;i<cpt_nodes_face[ list_faces_enh[ k ] ];++i) {
-            if ( correspondance_node_to_vertex_node[ list_nodes_face[ list_faces_enh[ k ] ][ i ] ] == 0 ) { // si le ieme noeud de la face k est non sommet
+    for (unsigned k=0;k<face_list_enh.size();++k) {
+        for (unsigned i=0;i<node_cpt_face[ face_list_enh[ k ] ];++i) {
+            if ( correspondance_node_to_vertex_node[ node_list_face[ face_list_enh[ k ] ][ i ] ] == 0 ) { // si le ieme noeud de la face k est non sommet
                 nb_eq_proj_f_surf_enh += dim;
             }
         }
@@ -478,8 +478,8 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     P_enh.resize( nb_eq_proj_f_surf_enh, nb_unk_enh );
 
     Calcul_Global_Matrix_P_enh calcul_global_matrix_P_enh;
-    calcul_global_matrix_P_enh.flag_face_enh = &flag_face_enh;
-    calcul_global_matrix_P_enh.list_faces_enh = &list_faces_enh;
+    calcul_global_matrix_P_enh.face_flag_enh = &face_flag_enh;
+    calcul_global_matrix_P_enh.face_list_enh = &face_list_enh;
 
     apply( m.sub_mesh(Number<1>()).elem_list, calcul_global_matrix_P_enh, cpt_eq_proj_f_surf_enh, P_enh );
 
@@ -490,8 +490,8 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     }
 
     correspondance_node_to_vertex_node.free();
-    cpt_nodes_face.free();
-    list_nodes_face.free();
+    node_cpt_face.free();
+    node_list_face.free();
 
     /// Construction de la matrice globale C_tot_enh et du vecteur global q_tot_enh
     ///----------------------------------------------------------------------------
@@ -785,36 +785,36 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
         mat_force_fluxes_enhancement[ k ].set( 0. );
     }
 
-    for (unsigned k=0;k<list_faces_enh.size();++k) {
+    for (unsigned k=0;k<face_list_enh.size();++k) {
         for (unsigned d=0;d<dim;++d) {
-            for (unsigned j=0;j<m.sub_mesh(Number<1>()).elem_list[list_faces_enh[ k ]]->nb_nodes_virtual();++j) {
-                vec_force_fluxes_enhancement[ list_faces_enh[ k ] ][ d ][ j ] += vec_force_fluxes_enhancement_global[ k * m.sub_mesh(Number<1>()).elem_list[list_faces_enh[ k ]]->nb_nodes_virtual() * dim + j * dim + d ];
+            for (unsigned j=0;j<m.sub_mesh(Number<1>()).elem_list[face_list_enh[ k ]]->nb_nodes_virtual();++j) {
+                vec_force_fluxes_enhancement[ face_list_enh[ k ] ][ d ][ j ] += vec_force_fluxes_enhancement_global[ k * m.sub_mesh(Number<1>()).elem_list[face_list_enh[ k ]]->nb_nodes_virtual() * dim + j * dim + d ];
             }
         }
     }
 
-    for (unsigned k=0;k<list_faces_enh.size();++k) {
+    for (unsigned k=0;k<face_list_enh.size();++k) {
         for (unsigned d=0;d<dim;++d) {;
-            for (unsigned j=0;j<m.sub_mesh(Number<1>()).elem_list[list_faces_enh[ k ]]->nb_nodes_virtual();++j) {
-                mat_force_fluxes_enhancement[ list_faces_enh[ k ] ]( j, d ) += vec_force_fluxes_enhancement[ list_faces_enh[ k ] ][ d ][ j ];
+            for (unsigned j=0;j<m.sub_mesh(Number<1>()).elem_list[face_list_enh[ k ]]->nb_nodes_virtual();++j) {
+                mat_force_fluxes_enhancement[ face_list_enh[ k ] ]( j, d ) += vec_force_fluxes_enhancement[ face_list_enh[ k ] ][ d ][ j ];
             }
         }
     }
 
     if ( debug_force_fluxes_enhancement or debug_method_enhancement ) {
-        for (unsigned k=0;k<list_faces_enh.size();++k) {
+        for (unsigned k=0;k<face_list_enh.size();++k) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "dimension du vecteur des densites d'effort ameliorees associe a la face " << list_faces_enh[ k ] << " dans la direction " << d << " : " << m.sub_mesh(Number<1>()).elem_list[list_faces_enh[ k ]]->nb_nodes_virtual() << endl;
-                cout << "vecteur des densites d'effort ameliorees associe a la face " << list_faces_enh[ k ] << " dans la direction " << d << " :" << endl;
-                cout << vec_force_fluxes_enhancement[ list_faces_enh[ k ] ][ d ] << endl << endl;
+                cout << "dimension du vecteur des densites d'effort ameliorees associe a la face " << face_list_enh[ k ] << " dans la direction " << d << " : " << m.sub_mesh(Number<1>()).elem_list[face_list_enh[ k ]]->nb_nodes_virtual() << endl;
+                cout << "vecteur des densites d'effort ameliorees associe a la face " << face_list_enh[ k ] << " dans la direction " << d << " :" << endl;
+                cout << vec_force_fluxes_enhancement[ face_list_enh[ k ] ][ d ] << endl << endl;
             }
         }
     }
     if ( debug_force_fluxes_enhancement or debug_method_enhancement ) {
-        for (unsigned k=0;k<list_faces_enh.size();++k) {
-            cout << "dimension de la matrice des densites d'effort ameliorees associe a la face " << list_faces_enh[ k ] << " : ( " << m.sub_mesh(Number<1>()).elem_list[list_faces_enh[ k ]]->nb_nodes_virtual() << ", " << dim << " )" << endl;
-            cout << "matrice des densites d'effort ameliorees associe a la face " << list_faces_enh[ k ] << " :" << endl;
-            cout << mat_force_fluxes_enhancement[ list_faces_enh[ k ] ] << endl << endl;
+        for (unsigned k=0;k<face_list_enh.size();++k) {
+            cout << "dimension de la matrice des densites d'effort ameliorees associe a la face " << face_list_enh[ k ] << " : ( " << m.sub_mesh(Number<1>()).elem_list[face_list_enh[ k ]]->nb_nodes_virtual() << ", " << dim << " )" << endl;
+            cout << "matrice des densites d'effort ameliorees associe a la face " << face_list_enh[ k ] << " :" << endl;
+            cout << mat_force_fluxes_enhancement[ face_list_enh[ k ] ] << endl << endl;
         }
     }
 

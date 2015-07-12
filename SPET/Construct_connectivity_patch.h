@@ -25,7 +25,7 @@ using namespace std;
 ///                                                            patch_face[ j ][ n ][ i ] pour chaque noeud i de chaque face k du patch j
 ///----------------------------------------------------------------------------------------------------------------------------------------
 template<class TM>
-void construct_connectivity_patch( const TM &m, const unsigned &nb_vertex_nodes, Vec< Vec<unsigned> > &list_faces_patch, const Vec<unsigned> &cpt_children, const Vec< Vec<unsigned> > &list_children, const Vec<unsigned> &cpt_elems_vertex_node, const Vec< Vec<unsigned> > &list_elems_vertex_node, Vec<unsigned> &nb_points_face, Vec<unsigned> &nb_points_elem, Vec<unsigned> &nb_points_patch, Vec< Vec< Vec<unsigned> > > &patch_face, Vec< Vec< Vec<unsigned> > > &patch_elem, const bool &debug_method ) {
+void construct_connectivity_patch( const TM &m, const unsigned &nb_vertex_nodes, Vec< Vec<unsigned> > &face_list_patch, const Vec<unsigned> &child_cpt, const Vec< Vec<unsigned> > &child_list, const Vec<unsigned> &elem_cpt_vertex_node, const Vec< Vec<unsigned> > &elem_list_vertex_node, Vec<unsigned> &nb_points_face, Vec<unsigned> &nb_points_elem, Vec<unsigned> &nb_points_patch, Vec< Vec< Vec<unsigned> > > &patch_face, Vec< Vec< Vec<unsigned> > > &patch_elem, const bool &debug_method ) {
     
     static const unsigned dim = TM::dim;
     typedef typename TM::TNode::T T;
@@ -36,15 +36,15 @@ void construct_connectivity_patch( const TM &m, const unsigned &nb_vertex_nodes,
     
     cout << "Construction de la liste des faces associees a chaque patch" << endl << endl;
     
-    list_faces_patch.resize( nb_vertex_nodes );
+    face_list_patch.resize( nb_vertex_nodes );
     
     for (unsigned j=0;j<nb_vertex_nodes;++j) {
-        for (unsigned n=0;n<cpt_elems_vertex_node[ j ];++n) {
-            for (unsigned k=0;k<cpt_children[ list_elems_vertex_node[ j ][ n ] ];++k) {
-                list_faces_patch[ j ].push_back( list_children[ list_elems_vertex_node[ j ][ n ] ][ k ] );
+        for (unsigned n=0;n<elem_cpt_vertex_node[ j ];++n) {
+            for (unsigned k=0;k<child_cpt[ elem_list_vertex_node[ j ][ n ] ];++k) {
+                face_list_patch[ j ].push_back( child_list[ elem_list_vertex_node[ j ][ n ] ][ k ] );
             }
         }
-        remove_doubles( list_faces_patch[ j ] );
+        remove_doubles( face_list_patch[ j ] );
     }
     
     cout << "Construction du nombre d'inconnues associees a chaque element et a chaque face" << endl << endl;
@@ -118,9 +118,9 @@ void construct_connectivity_patch( const TM &m, const unsigned &nb_vertex_nodes,
     pos_patch.resize( nb_vertex_nodes );
     
     for (unsigned j=0;j<nb_vertex_nodes;++j) {
-        for (unsigned n=0;n<cpt_elems_vertex_node[ j ];++n) {
-            for (unsigned p=0;p<nb_points_elem[ list_elems_vertex_node[ j ][ n ] ];++p) {
-                pos_patch[ j ].push_back( pos_elem[ list_elems_vertex_node[ j ][ n ] ][ p ] );
+        for (unsigned n=0;n<elem_cpt_vertex_node[ j ];++n) {
+            for (unsigned p=0;p<nb_points_elem[ elem_list_vertex_node[ j ][ n ] ];++p) {
+                pos_patch[ j ].push_back( pos_elem[ elem_list_vertex_node[ j ][ n ] ][ p ] );
             }
         }
         remove_doubles_approx( pos_patch[ j ], 1e-6 );
@@ -143,23 +143,23 @@ void construct_connectivity_patch( const TM &m, const unsigned &nb_vertex_nodes,
     patch_face.resize( nb_vertex_nodes );
     
     for (unsigned j=0;j<nb_vertex_nodes;++j) {
-        patch_elem[ j ].resize( cpt_elems_vertex_node[ j ] );
-        patch_face[ j ].resize( list_faces_patch[ j ].size() );
-        for (unsigned n=0;n<cpt_elems_vertex_node[ j ];++n) {
-            patch_elem[ j ][ n ].resize( nb_points_elem[ list_elems_vertex_node[ j ][ n ] ] );
-            for (unsigned pe=0;pe<nb_points_elem[ list_elems_vertex_node[ j ][ n ] ];++pe) {
+        patch_elem[ j ].resize( elem_cpt_vertex_node[ j ] );
+        patch_face[ j ].resize( face_list_patch[ j ].size() );
+        for (unsigned n=0;n<elem_cpt_vertex_node[ j ];++n) {
+            patch_elem[ j ][ n ].resize( nb_points_elem[ elem_list_vertex_node[ j ][ n ] ] );
+            for (unsigned pe=0;pe<nb_points_elem[ elem_list_vertex_node[ j ][ n ] ];++pe) {
                 for (unsigned pp=0;pp<nb_points_patch[ j ];++pp) {
-                    if ( norm_2( pos_elem[ list_elems_vertex_node[ j ][ n ] ][ pe ] - pos_patch[ j ][ pp ] ) < 1e-6 ) {
+                    if ( norm_2( pos_elem[ elem_list_vertex_node[ j ][ n ] ][ pe ] - pos_patch[ j ][ pp ] ) < 1e-6 ) {
                         patch_elem[ j ][ n ][ pe ] = pp;
                     }
                 }
             }
         }
-        for (unsigned k=0;k<list_faces_patch[ j ].size();++k) {
-            patch_face[ j ][ k ].resize( nb_points_face[ list_faces_patch[ j ][ k ] ] );
-            for (unsigned pf=0;pf<nb_points_face[ list_faces_patch[ j ][ k ] ];++pf) {
+        for (unsigned k=0;k<face_list_patch[ j ].size();++k) {
+            patch_face[ j ][ k ].resize( nb_points_face[ face_list_patch[ j ][ k ] ] );
+            for (unsigned pf=0;pf<nb_points_face[ face_list_patch[ j ][ k ] ];++pf) {
                 for (unsigned pp=0;pp<nb_points_patch[ j ];++pp) {
-                    if ( norm_2( pos_face[ list_faces_patch[ j ][ k ] ][ pf ] - pos_patch[ j ][ pp ] ) < 1e-6 ) {
+                    if ( norm_2( pos_face[ face_list_patch[ j ][ k ] ][ pf ] - pos_patch[ j ][ pp ] ) < 1e-6 ) {
                         patch_face[ j ][ k ][ pf ] = pp;
                     }
                 }
@@ -170,12 +170,12 @@ void construct_connectivity_patch( const TM &m, const unsigned &nb_vertex_nodes,
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             cout << "Table de connectivite du patch " << j << endl << endl;
-            for (unsigned n=0;n<cpt_elems_vertex_node[ j ];++n) {
-                cout << "indice du " << n << " eme element ( element " << list_elems_vertex_node[ j ][ n ] << " du maillage ) du patch associee au noeud sommet " << j << " : " << patch_elem[ j ][ n ] << endl;
+            for (unsigned n=0;n<elem_cpt_vertex_node[ j ];++n) {
+                cout << "indice du " << n << " eme element ( element " << elem_list_vertex_node[ j ][ n ] << " du maillage ) du patch associee au noeud sommet " << j << " : " << patch_elem[ j ][ n ] << endl;
             }
             cout << endl;
-            for (unsigned k=0;k<list_faces_patch[ j ].size();++k) {
-                cout << "indice de la " << k << " eme face ( face " << list_faces_patch[ j ][ k ] << " du maillage ) du patch associee au noeud sommet " << j << " : " << patch_face[ j ][ k ] << endl;
+            for (unsigned k=0;k<face_list_patch[ j ].size();++k) {
+                cout << "indice de la " << k << " eme face ( face " << face_list_patch[ j ][ k ] << " du maillage ) du patch associee au noeud sommet " << j << " : " << patch_face[ j ][ k ] << endl;
             }
             cout << endl << endl;
         }

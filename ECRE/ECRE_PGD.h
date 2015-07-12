@@ -31,21 +31,21 @@ struct Calcul_Elem_Matrix_K_hat {
 /// Construction des vecteurs F_hat[ n ] pour chaque element n du maillage
 ///-----------------------------------------------------------------------
 template<class TE, class TM, class TF, class TVV, class TV, class B, class BV, class TTWW, class S, class TTVVV, class TTVV>
-void calc_elem_vector_F_hat( TE &elem, const TM &m, const TF &f, const TVV &list_nodes_face, const TV &cpt_elems_node, const B &balancing, const BV &flag_elem_bal, const BV &flag_elem_enh, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, const TTVVV &vec_force_fluxes, TTVV &F_hat ) {}
+void calc_elem_vector_F_hat( TE &elem, const TM &m, const TF &f, const TVV &node_list_face, const TV &elem_cpt_node, const B &balancing, const BV &elem_flag_bal, const BV &elem_flag_enh, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, const TTVVV &vec_force_fluxes, TTVV &F_hat ) {}
 
 template<class T>
 struct Calcul_Elem_Vector_F_hat {
-    const Vec< Vec<unsigned> >* list_nodes_face;
-    const Vec<unsigned>* cpt_elems_node;
+    const Vec< Vec<unsigned> >* node_list_face;
+    const Vec<unsigned>* elem_cpt_node;
     const bool* balancing;
-    const Vec<bool>* flag_elem_bal;
-    const Vec<bool>* flag_elem_enh;
+    const Vec<bool>* elem_flag_bal;
+    const Vec<bool>* elem_flag_enh;
     const string* pb;
     const bool* want_local_enrichment;
     const Vec< Vec< Vec<T> > >* vec_force_fluxes;
     template<class TE, class TM, class TF> void operator()( TE &elem, const TM &m, const TF &f, Vec< Vec<T> > &F_hat ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
-        calc_elem_vector_F_hat( elem, m, f, *list_nodes_face, *cpt_elems_node, *balancing, *flag_elem_bal, *flag_elem_enh, f.vectors, ind, *pb, *want_local_enrichment, *vec_force_fluxes, F_hat );
+        calc_elem_vector_F_hat( elem, m, f, *node_list_face, *elem_cpt_node, *balancing, *elem_flag_bal, *elem_flag_enh, f.vectors, ind, *pb, *want_local_enrichment, *vec_force_fluxes, F_hat );
     }
 };
 
@@ -65,7 +65,7 @@ struct Calc_Elem_Error_Estimate_EET_EESPT {
     const Vec<T>* kappa;
     const TMAT* K_k_p;
     const TMAT* K_unk_p;
-    const Vec<unsigned>* list_elems_PGD_unknown_parameter;
+    const Vec<unsigned>* elem_list_PGD_unknown_param;
     const unsigned* nb_modes;
     template<class TE, class TM, class TF> void operator()( TE &elem, const TM &m, TF &f, T &theta ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
@@ -73,7 +73,7 @@ struct Calc_Elem_Error_Estimate_EET_EESPT {
         for (unsigned n=0;n<(*nb_modes);++n) {
             f.vectors[0] = - dot( (*dep_lambda)[ n ], (*K_k_p) * (*kappa) ) * (*dep_part);
             for (unsigned i=0;i<n+1;++i) {
-                if ( find( *list_elems_PGD_unknown_parameter, _1 == elem.number ) )
+                if ( find( *elem_list_PGD_unknown_param, _1 == elem.number ) )
                     f.vectors[0] += dot( (*dep_lambda)[ n ], (*K_unk_p) * (*dep_lambda)[ i ] ) * (*dep_psi)[ i ];
                 else
                     f.vectors[0] += dot( (*dep_lambda)[ n ], (*K_k_p) * (*dep_lambda)[ i ] ) * (*dep_psi)[ i ];

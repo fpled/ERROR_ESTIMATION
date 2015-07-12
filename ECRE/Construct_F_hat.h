@@ -21,7 +21,7 @@ using namespace std;
 /// Construction des vecteurs F_hat[ n ] pour chaque element n du maillage
 ///-----------------------------------------------------------------------
 template<class TM, class TF, class T>
-void construct_F_hat( TM &m, const TF &f, const string &pb, const bool &balancing, const Vec<bool> &flag_elem_bal, const Vec<bool> &flag_elem_enh, const Vec< Vec< Vec<T> > > &vec_force_fluxes, Vec< Vec<T> > &F_hat, const bool &want_local_enrichment, const bool &debug_method, const bool &debug_geometry ) {
+void construct_F_hat( TM &m, const TF &f, const string &pb, const bool &balancing, const Vec<bool> &elem_flag_bal, const Vec<bool> &elem_flag_enh, const Vec< Vec< Vec<T> > > &vec_force_fluxes, Vec< Vec<T> > &F_hat, const bool &want_local_enrichment, const bool &debug_method, const bool &debug_geometry ) {
 
     if ( balancing == 0 ) {
         cout << "Construction des vecteurs F_hat" << endl << endl;
@@ -30,24 +30,24 @@ void construct_F_hat( TM &m, const TF &f, const string &pb, const bool &balancin
         cout << "Construction des vecteurs F_hat avec procedure d'equilibrage" << endl << endl;
     }
 
-    Vec<unsigned> cpt_nodes_face;
-    Vec< Vec<unsigned> > list_nodes_face;
-    construct_nodes_connected_to_face( m, cpt_nodes_face, list_nodes_face, debug_geometry );
+    Vec<unsigned> node_cpt_face;
+    Vec< Vec<unsigned> > node_list_face;
+    construct_nodes_connected_to_face( m, node_cpt_face, node_list_face, debug_geometry );
 
-    Vec<unsigned> cpt_elems_node;
-    Vec< Vec<unsigned> > list_elems_node;
-    construct_elems_connected_to_node( m, cpt_elems_node, list_elems_node, debug_geometry );
+    Vec<unsigned> elem_cpt_node;
+    Vec< Vec<unsigned> > elem_list_node;
+    construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node, debug_geometry );
 
-    list_elems_node.free();
+    elem_list_node.free();
 
     F_hat.resize( m.elem_list.size() );
 
     Calcul_Elem_Vector_F_hat<T> calcul_elem_vector_F_hat;
-    calcul_elem_vector_F_hat.list_nodes_face = &list_nodes_face;
-    calcul_elem_vector_F_hat.cpt_elems_node = &cpt_elems_node;
+    calcul_elem_vector_F_hat.node_list_face = &node_list_face;
+    calcul_elem_vector_F_hat.elem_cpt_node = &elem_cpt_node;
     calcul_elem_vector_F_hat.balancing = &balancing;
-    calcul_elem_vector_F_hat.flag_elem_bal = &flag_elem_bal;
-    calcul_elem_vector_F_hat.flag_elem_enh = &flag_elem_enh;
+    calcul_elem_vector_F_hat.elem_flag_bal = &elem_flag_bal;
+    calcul_elem_vector_F_hat.elem_flag_enh = &elem_flag_enh;
     calcul_elem_vector_F_hat.pb = &pb;
     calcul_elem_vector_F_hat.want_local_enrichment = &want_local_enrichment;
     calcul_elem_vector_F_hat.vec_force_fluxes = &vec_force_fluxes;

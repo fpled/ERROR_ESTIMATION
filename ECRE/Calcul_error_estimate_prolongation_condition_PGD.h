@@ -22,7 +22,7 @@ using namespace std;
 template<class TM, class TF, class T>
 void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const string &pb, const string &method, T &theta, Vec<T> &theta_elem, const Vec< Vec<T> > &dep_hat, const bool &debug_method, const bool &debug_method_enhancement, const bool &debug_error_estimate, const bool &debug_local_effectivity_index, const bool &want_global_discretization_error, const bool &want_local_discretization_error ) {
     
-    const Vec< Vec<T> > &dep_psi, const Vec< Vec<T> > &dep_lambda, const unsigned &nb_modes, const TMAT &K_s, const TMAT &K_unk_s, const TMAT &K_k_s, const TMAT &K_unk_p, const TMAT &K_k_p, const Vec<T> &F_s, const Vec<T> &F_p, const Vec<unsigned> &list_elems_PGD_unknown_parameter,
+    const Vec< Vec<T> > &dep_psi, const Vec< Vec<T> > &dep_lambda, const unsigned &nb_modes, const TMAT &K_s, const TMAT &K_unk_s, const TMAT &K_k_s, const TMAT &K_unk_p, const TMAT &K_k_p, const Vec<T> &F_s, const Vec<T> &F_p, const Vec<unsigned> &elem_list_PGD_unknown_param,
 	
 	m, f, pb, "EET", theta, theta_elem, dep_part_hat, dep_psi_hat, debug_method, debug_method_enhancement, debug_ecre_theta, debug_local_effectivity_index, want_global_discretization_error, want_local_discretization_error
 
@@ -49,7 +49,7 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
     calc_elem_error_estimate_EET_EESPT.kappa = &kappa;
     calc_elem_error_estimate_EET_EESPT.K_k_p = &K_k_p;
     calc_elem_error_estimate_EET_EESPT.K_unk_p = K_unk_p;
-    calc_elem_error_estimate_EET_EESPT.list_elems_PGD_unknown_parameter = &list_elems_PGD_unknown_parameter;
+    calc_elem_error_estimate_EET_EESPT.elem_list_PGD_unknown_param = &elem_list_PGD_unknown_param;
     calc_elem_error_estimate_EET_EESPT.nb_modes = &nb_modes;
 
     apply( m.elem_list, calc_elem_error_estimate_EET_EESPT, m, f, theta );

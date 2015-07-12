@@ -138,7 +138,7 @@ def calc_vertex_nodal_matrix_K( list_f, rep )
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
         file_ <<< "namespace LMT {"
         file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class T>"
-        file_ <<< "void calc_vertex_nodal_matrix_K( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<unsigned> > &list_elems_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, const Vec< Vec< Vec<unsigned> > > &patch_elem, Vec< Mat<T, Sym<> > > &K ) {"
+        file_ <<< "void calc_vertex_nodal_matrix_K( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<unsigned> > &elem_list_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, const Vec< Vec< Vec<unsigned> > > &patch_elem, Vec< Mat<T, Sym<> > > &K ) {"
         file_ <<< "    #define PNODE(N) elem.node(N)"
         deg_p := max( e->order_interpolation )
         nb_points := e->upper_degree_points(deg_p + deg_k).size
@@ -165,14 +165,14 @@ def calc_vertex_nodal_matrix_K( list_f, rep )
             dr := residual.diff( unk_u )
             for unk_v, j in sym_v, 0 .. sym_v.size
                 K[ i, j ] = dr.diff( unk_v )
-        file_ <<< "    Vec<unsigned> ind_in_list_elems_vertex_node;"
+        file_ <<< "    Vec<unsigned> ind_in_elem_list_vertex_node;"
         if integration_type == "gauss_num" and integration_lang == "cpp"
             file_ <<< "    Vec<double> poids;"
             file_ <<< "    Vec<Vec<double, $(e->dim)> > valeurs;"
             file_ <<< "    gauss_points( $(e->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
         for n in 0 .. e->nb_nodes
             if e->node_number_is_a_vertex( n )
-                file_ <<< "    ind_in_list_elems_vertex_node = find_with_index( list_elems_vertex_node[ connect_node_to_vertex_node[ elem.node( $n )->number ] ] == elem.number );"
+                file_ <<< "    ind_in_elem_list_vertex_node = find_with_index( elem_list_vertex_node[ connect_node_to_vertex_node[ elem.node( $n )->number ] ] == elem.number );"
                 if integration_type == "gauss_num" and integration_lang == "cpp"
                     file_ <<< "    for (unsigned n=0; n<poids.size(); ++n) {"
                     file_ <<< "        Vec<double> var_inter( valeurs[ n ] );"
@@ -186,7 +186,7 @@ def calc_vertex_nodal_matrix_K( list_f, rep )
                             for j in 0 .. nb_points
                                 for d_j in 0 .. e->dim
                                     if j * e->dim + d_j <= i * e->dim + d_i
-                                        file_ <<< "        K[ connect_node_to_vertex_node[ elem.node( $n )->number ] ]( patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_list_elems_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d_i, patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_list_elems_vertex_node[ 0 ] ][ $j ] * $( e->dim ) + $d_j) += poids[ n ] * K_tmp( $i * $( e->dim ) + $d_i, $j * $( e->dim ) + $d_j );"
+                                        file_ <<< "        K[ connect_node_to_vertex_node[ elem.node( $n )->number ] ]( patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_elem_list_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d_i, patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_elem_list_vertex_node[ 0 ] ][ $j ] * $( e->dim ) + $d_j) += poids[ n ] * K_tmp( $i * $( e->dim ) + $d_i, $j * $( e->dim ) + $d_j );"
                     file_ <<< "    }"
                 else
                     file_ <<< "    {"
@@ -196,7 +196,7 @@ def calc_vertex_nodal_matrix_K( list_f, rep )
                             for j in 0 .. nb_points
                                 for d_j in 0 .. e->dim
                                     if j * e->dim + d_j <= i * e->dim + d_i
-                                        cw.add( "K[ connect_node_to_vertex_node[ elem.node( $n )->number ] ]( patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_list_elems_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d_i, patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_list_elems_vertex_node[ 0 ] ][ $j ] * $( e->dim ) + $d_j)", K[ i * e->dim + d_i, j * e->dim + d_j ], add )
+                                        cw.add( "K[ connect_node_to_vertex_node[ elem.node( $n )->number ] ]( patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_elem_list_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d_i, patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_elem_list_vertex_node[ 0 ] ][ $j ] * $( e->dim ) + $d_j)", K[ i * e->dim + d_i, j * e->dim + d_j ], add )
                     file_ <<< "$(cw.to_string( 4 ))"
                     file_ <<< "    }"
         file_ <<< "    #undef PNODE"
@@ -225,14 +225,14 @@ def calc_vertex_nodal_vector_F( list_f, rep )
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
         file_ <<< "namespace LMT {"
         file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class S, class B, class T>"
-        file_ <<< "void calc_vertex_nodal_vector_F( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<unsigned> > &list_elems_vertex_node, const Vec< Vec<unsigned> > &type_face, const Vec<unsigned> &connect_node_to_vertex_node, const Vec< Vec< Vec<unsigned> > > &patch_elem, const TTVV &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, Vec< Vec<T> > &F ) {"
+        file_ <<< "void calc_vertex_nodal_vector_F( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<unsigned> > &elem_list_vertex_node, const Vec< Vec<unsigned> > &face_type, const Vec<unsigned> &connect_node_to_vertex_node, const Vec< Vec< Vec<unsigned> > > &patch_elem, const TTVV &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, Vec< Vec<T> > &F ) {"
         file_ <<< "    #define PNODE(N) elem.node(N)"
         if integration_type == "gauss_num" and integration_lang == "cpp"
             file_ <<< "    Vec<double> poids;"
             file_ <<< "    Vec<Vec<double, $(e->dim)> > valeurs;"
             file_ <<< "    Vec<double> poids_face;"
             file_ <<< "    Vec<Vec<double, $(e->dim)-1> > valeurs_face;"
-        file_ <<< "    Vec<unsigned> ind_in_list_elems_vertex_node;"
+        file_ <<< "    Vec<unsigned> ind_in_elem_list_vertex_node;"
         deg_p := max( e->order_interpolation )
         points := e->upper_degree_points( deg_p + deg_k )
         base := e->get_upper_degree_shape_functions( "hierarchical", deg_p + deg_k )
@@ -256,7 +256,7 @@ def calc_vertex_nodal_vector_F( list_f, rep )
                 sym_v.push_back( coeffs_v[ d ][ x ] )
         for n in 0 .. e->nb_nodes
             if e->node_number_is_a_vertex( n )
-                file_ <<< "    ind_in_list_elems_vertex_node = find_with_index( list_elems_vertex_node[ connect_node_to_vertex_node[ elem.node( $n )->number ] ] == elem.number );"
+                file_ <<< "    ind_in_elem_list_vertex_node = find_with_index( elem_list_vertex_node[ connect_node_to_vertex_node[ elem.node( $n )->number ] ] == elem.number );"
                 lambda_n := e->shape_functions_vertex[ n ]
                 residual := Op( 0 )
                 residual_handbook := Op( 0 )
@@ -300,7 +300,7 @@ def calc_vertex_nodal_vector_F( list_f, rep )
                     file_ <<< "$(cw.to_string( 8 ))"
                     for i in 0 .. base.size
                         for d in 0 .. e->dim
-                            file_ <<< "        F[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_list_elems_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d ] += poids[ n ] * F_tmp[ $i * $( e->dim ) + $d ];"
+                            file_ <<< "        F[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_elem_list_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d ] += poids[ n ] * F_tmp[ $i * $( e->dim ) + $d ];"
                     file_ <<< "    }"
                     if want_local_enrichment
                         file_ <<< "    if ( pb == \"adjoint\" and want_local_enrichment and elem.phi_elem_handbook_zone_2 ) {"
@@ -314,7 +314,7 @@ def calc_vertex_nodal_vector_F( list_f, rep )
                         file_ <<< "$(cw_handbook.to_string( 12 ))"
                         for i in 0 .. base.size
                             for d in 0 .. e->dim
-                                file_ <<< "            F[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_list_elems_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d ] += poids[ n ] * F_handbook_tmp[ $i * $( e->dim ) + $d ];"
+                                file_ <<< "            F[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_elem_list_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d ] += poids[ n ] * F_handbook_tmp[ $i * $( e->dim ) + $d ];"
                         file_ <<< "        }"
                         file_ <<< "    }"
                 else
@@ -322,13 +322,13 @@ def calc_vertex_nodal_vector_F( list_f, rep )
                     cw := CodeWriterAlt( "T" )
                     for i in 0 .. base.size
                         for d in 0 .. e->dim
-                            cw.add( "F[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_list_elems_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d ]", F[ i * e->dim + d ], add )
+                            cw.add( "F[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_elem_list_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d ]", F[ i * e->dim + d ], add )
                     file_ <<< "$(cw.to_string( 4 ))"
                     if want_local_enrichment
                         cw_handbook := CodeWriterAlt( "T" )
                         for i in 0 .. base.size
                             for d in 0 .. e->dim
-                                cw_handbook.add( "F[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_list_elems_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d ]", F_handbook[ i * e->dim + d ], add )
+                                cw_handbook.add( "F[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_elem_list_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d ]", F_handbook[ i * e->dim + d ], add )
                         file_ <<< "    if ( pb == \"adjoint\" and want_local_enrichment and elem.phi_elem_handbook_zone_2 ) {"
                         file_ <<< "$(cw_handbook.to_string( 8 ))"
                         file_ <<< "    }"
@@ -365,7 +365,7 @@ def calc_vertex_nodal_vector_F( list_f, rep )
                             if want_local_enrichment
                                 dr_handbook := residual_face_handbook.diff( unk_v )
                                 F_face_handbook.push_back( dr_handbook )
-                        file_ <<< "    if ( type_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ] == 2 ) {"
+                        file_ <<< "    if ( face_type[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ] == 2 ) {"
                         if integration_type == "gauss_num" and integration_lang == "cpp"
                             file_ <<< "        gauss_points( $(face->name_for_gauss_point)(), $(degre_poly_face), poids_face, valeurs_face );"
                             file_ <<< "        for (unsigned n=0; n<poids_face.size(); ++n) {"
@@ -376,12 +376,12 @@ def calc_vertex_nodal_vector_F( list_f, rep )
                             cw_face.add( "F_face_tmp", F_face, reassign )
                             file_ <<< "$(cw_face.to_string( 12 ))"
                             for i in 0 .. base.size
-                                file_ <<< "            F[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_list_elems_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d ] += poids_face[ n ] * F_face_tmp[ $i * $( e->dim ) + $d ];"
+                                file_ <<< "            F[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_elem_list_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d ] += poids_face[ n ] * F_face_tmp[ $i * $( e->dim ) + $d ];"
                             file_ <<< "        }"
                         else
                             cw_face := CodeWriterAlt( "T" )
                             for i in 0 .. base.size
-                                cw_face.add( "F[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_list_elems_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d ]", F_face[ i * e->dim + d ], add )
+                                cw_face.add( "F[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_elem_list_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d ]", F_face[ i * e->dim + d ], add )
                             file_ <<< "$(cw_face.to_string( 8 ))"
                         file_ <<< "    }"
                         if want_local_enrichment
@@ -396,17 +396,17 @@ def calc_vertex_nodal_vector_F( list_f, rep )
                                 cw_face.add( "F_face_tmp", F_face_handbook, reassign )
                                 file_ <<< "$(cw_face.to_string( 12 ))"
                                 for i in 0 .. base.size
-                                    file_ <<< "            F[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_list_elems_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d ] += poids_face[ n ] * F_face_tmp[ $i * $( e->dim ) + $d ];"
+                                    file_ <<< "            F[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_elem_list_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d ] += poids_face[ n ] * F_face_tmp[ $i * $( e->dim ) + $d ];"
                                 file_ <<< "        }"
                             else
                                 cw_face := CodeWriterAlt( "T" )
                                 for i in 0 .. base.size
-                                    cw_face.add( "F[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_list_elems_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d ]", F_face_handbook[ i * e->dim + d ], add )
+                                    cw_face.add( "F[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_elem_list_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d ]", F_face_handbook[ i * e->dim + d ], add )
                                 file_ <<< "$(cw_face.to_string( 8 ))"
                             file_ <<< "    }"
                     file_ <<< "    }"
                 residual_nodal := Op( 0 )
-                nb_elems_node := symbol( "list_elems_vertex_node[ connect_node_to_vertex_node[ elem.node( $n )->number ].size()" )
+                nb_elems_node := symbol( "elem_list_vertex_node[ connect_node_to_vertex_node[ elem.node( $n )->number ].size()" )
                 residual_nodal = dot( child_cast(f)->pre_f_nodal.expr, lambda_n * ( v - Pi_v ) ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
                 F_nodal := Vec[ Op ]()
                 for unk_v in sym_v
@@ -415,7 +415,7 @@ def calc_vertex_nodal_vector_F( list_f, rep )
                 cw_nodal := CodeWriterAlt( "T" )
                 for i in 0 .. base.size
                     for d in 0 .. e->dim
-                        cw_nodal.add( "F[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_list_elems_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d ]", F_nodal[ i * e->dim + d ], add )
+                        cw_nodal.add( "F[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_elem_list_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d ]", F_nodal[ i * e->dim + d ], add )
                 file_ <<< "$(cw_nodal.to_string( 4 ))"
         file_ <<< "    #undef PNODE"
         file_ <<< "}"
@@ -438,16 +438,16 @@ def calc_elem_vector_E( list_f, rep )
         file_ <<< "#define calc_elem_vector_E_$(f->name)_$(e->dim)_$(e->name)_h"
         file_ <<< "namespace LMT {"
         file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class T>"
-        file_ <<< "void calc_elem_vector_E( const Element<$(e->name),TN,TNG,TD,NET> &elem, const Vec< Vec<unsigned> > &list_elems_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, const Vec< Vec< Vec<unsigned> > > &patch_elem, const Vec< Vec<T> > &U, Vec< Vec<T> > &E ) {"
+        file_ <<< "void calc_elem_vector_E( const Element<$(e->name),TN,TNG,TD,NET> &elem, const Vec< Vec<unsigned> > &elem_list_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, const Vec< Vec< Vec<unsigned> > > &patch_elem, const Vec< Vec<T> > &U, Vec< Vec<T> > &E ) {"
         deg_p := max( e->order_interpolation )
         nb_points := e->upper_degree_points( deg_p + deg_k ).size
-        file_ <<< "    Vec<unsigned> ind_in_list_elems_vertex_node;"
+        file_ <<< "    Vec<unsigned> ind_in_elem_list_vertex_node;"
         for n in 0 .. e->nb_nodes
             if e->node_number_is_a_vertex( n )
-                file_ <<< "    ind_in_list_elems_vertex_node = find_with_index( list_elems_vertex_node[ connect_node_to_vertex_node[ elem.node( $n )->number ] ] == elem.number );"
+                file_ <<< "    ind_in_elem_list_vertex_node = find_with_index( elem_list_vertex_node[ connect_node_to_vertex_node[ elem.node( $n )->number ] ] == elem.number );"
                 for i in 0 .. nb_points
                     for d in 0 .. e->dim
-                        file_ <<< "    E[ elem.number ][ $i * $( e->dim ) + $d ] += U[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_list_elems_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d ];"
+                        file_ <<< "    E[ elem.number ][ $i * $( e->dim ) + $d ] += U[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ patch_elem[ connect_node_to_vertex_node[ elem.node( $n )->number ] ][ ind_in_elem_list_vertex_node[ 0 ] ][ $i ] * $( e->dim ) + $d ];"
         file_ <<< "}"
         file_ <<< "}"
         file_ <<< "#endif"

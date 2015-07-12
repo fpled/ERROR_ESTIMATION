@@ -29,18 +29,18 @@ void check_equilibrium( const TF &f, const string &pb, const bool &verif_eq ) {
 /// Construction du vecteur de vecteurs residual_force_fluxes
 ///----------------------------------------------------------
 template<class TE, class TM, class TF, class TVV, class TV, class TTVVV, class TTWW, class S, class B, class TTVV>
-void check_elem_eq_force_fluxes( const TE &elem, const TM &m, const TF &f, const TVV &list_nodes_face, const TV &cpt_elems_node, const TTVVV &vec_force_fluxes, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, TTVV &residual_force_fluxes ) {}
+void check_elem_eq_force_fluxes( const TE &elem, const TM &m, const TF &f, const TVV &node_list_face, const TV &elem_cpt_node, const TTVVV &vec_force_fluxes, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, TTVV &residual_force_fluxes ) {}
 
 template<class T>
 struct Check_Elem_Eq_Force_Fluxes {
-    const Vec< Vec<unsigned> >* list_nodes_face;
-    const Vec<unsigned>* cpt_elems_node;
+    const Vec< Vec<unsigned> >* node_list_face;
+    const Vec<unsigned>* elem_cpt_node;
     const Vec< Vec< Vec<T> > >* vec_force_fluxes;
     const string* pb;
     const bool* want_local_enrichment;
     template<class TE, class TM, class TF> void operator()( const TE &elem, const TM &m, const TF &f, Vec< Vec<T> > &residual_force_fluxes ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
-        check_elem_eq_force_fluxes( elem, m, f, *list_nodes_face, *cpt_elems_node, *vec_force_fluxes, f.vectors, ind, *pb, *want_local_enrichment, residual_force_fluxes );
+        check_elem_eq_force_fluxes( elem, m, f, *node_list_face, *elem_cpt_node, *vec_force_fluxes, f.vectors, ind, *pb, *want_local_enrichment, residual_force_fluxes );
     }
 };
 
@@ -53,15 +53,15 @@ void check_equilibrium_force_fluxes( TM &m, const TF &f, const string pb, const 
 
     if ( verif_eq_force_fluxes ) {
 
-        Vec<unsigned> cpt_nodes_face;
-        Vec< Vec<unsigned> > list_nodes_face;
-        construct_nodes_connected_to_face( m, cpt_nodes_face, list_nodes_face, debug_geometry );
+        Vec<unsigned> node_cpt_face;
+        Vec< Vec<unsigned> > node_list_face;
+        construct_nodes_connected_to_face( m, node_cpt_face, node_list_face, debug_geometry );
 
-        Vec<unsigned> cpt_elems_node;
-        Vec< Vec<unsigned> > list_elems_node;
-        construct_elems_connected_to_node( m, cpt_elems_node, list_elems_node, debug_geometry );
+        Vec<unsigned> elem_cpt_node;
+        Vec< Vec<unsigned> > elem_list_node;
+        construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node, debug_geometry );
 
-        list_elems_node.free();
+        elem_list_node.free();
 
         Vec< Vec<T> > residual_force_fluxes;
         residual_force_fluxes.resize( m.elem_list.size() );
@@ -80,8 +80,8 @@ void check_equilibrium_force_fluxes( TM &m, const TF &f, const string pb, const 
         }
 
         Check_Elem_Eq_Force_Fluxes<T> check_elem_eq_force_fluxes;
-        check_elem_eq_force_fluxes.list_nodes_face = &list_nodes_face;
-        check_elem_eq_force_fluxes.cpt_elems_node = &cpt_elems_node;
+        check_elem_eq_force_fluxes.node_list_face = &node_list_face;
+        check_elem_eq_force_fluxes.elem_cpt_node = &elem_cpt_node;
         check_elem_eq_force_fluxes.vec_force_fluxes = &vec_force_fluxes;
         check_elem_eq_force_fluxes.pb = &pb;
         check_elem_eq_force_fluxes.want_local_enrichment = &want_local_enrichment;

@@ -41,7 +41,7 @@ struct Eta {
 
 //m.sub_mesh(Number<1>()).update_node_parents();
 //for (unsigned k=0;k<m.sub_mesh(Number<1>()).get_node_parents( node.number ).size();++k) {
-//    if ( (*type_face)[ m.sub_mesh(Number<1>()).get_node_parents( node.number )[ k ]->number ][ d ] == 2 ) {
+//    if ( (*face_type)[ m.sub_mesh(Number<1>()).get_node_parents( node.number )[ k ]->number ][ d ] == 2 ) {
 //        C_i_ind[ node.number ][ d ][ k ] += nb_eq_imp[ node.number ][ d ];
 //        nb_eq_imp[ node.number ][ d ]++;
 //    }

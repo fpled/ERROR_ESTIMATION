@@ -529,12 +529,12 @@ e.pos_nodes[3] = [110 22] # 33
 # GM := e.pos - e.barycenter
 # for face_ in e.children( 1 )
     # face := child_cast( face_ )
-    # eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)" )
+    # eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)", tex_name = "\\eta" )
     # sym_force_surf_enhanced := Vec[ Vec[ Op, face->dim ], face->nb_nodes ]()
     # for i in 0 .. face->nb_nodes
         # for d in 0 .. face->dim
             # s := Op()
-            # s = symbol( "vec_force_fluxes_local[ $( face->num_child ) ][ $d ][ $i ]" )
+            # s = symbol( "vec_force_fluxes_local[ $( face->num_child ) ][ $d ][ $i ]", tex_name = "F_s" )
             # sym_force_surf_enhanced_elem.push_back( s )
             # sym_force_surf_enhanced[ i ][ d ] = s
     # force_surf_enhanced := Vec[ Op, face->dim ]( face->interpolation( sym_force_surf_enhanced, force_fluxes_base ) )
@@ -593,13 +593,13 @@ e.pos_nodes[3] = [110 22] # 33
     # F_hat_enhanced_e := (energie_F_enhanced_e[ i ]).diff( sym_dep_hat_test )
 # for face_ in e.children( 1 )
     # face := child_cast( face_ )
-    # eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)" )
+    # eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)", tex_name = "\\eta" )
     # sym_force_flux_enhanced := Vec[ Op ]()
     # sym_force_surf_enhanced := Vec[ Vec[ Op, face->dim ], face->nb_nodes ]()
     # for i in 0 .. face->nb_nodes
         # for d in 0 .. face->dim
             # s := Op()
-            # s = symbol( "vec_force_fluxes_local[ $( face->num_child ) ][ $d ][ $i ]" )
+            # s = symbol( "vec_force_fluxes_local[ $( face->num_child ) ][ $d ][ $i ]", tex_name = "F_s" )
             # sym_force_flux_enhanced.push_back(s)
             # sym_force_surf_enhanced[ i ][ d ] = s
     # sym_force_surf_enhanced_elem.display_tex( "f_surf_enhanced_" + cpt++ )

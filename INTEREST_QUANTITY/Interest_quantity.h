@@ -51,14 +51,14 @@ struct Calcul_Dep_Handbook_In_Infinite_Domain {
 /// Construction du chargement du pb adjoint a partir de l'extracteur
 ///------------------------------------------------------------------
 struct Construct_Extractor_Mean_Sigma {
-    template<class TE, class TM> void operator()( TE &elem_adjoint, const TM &m, const Vec<unsigned> &list_elems_interest_quantity ) const {
+    template<class TE, class TM> void operator()( TE &elem_adjoint, const TM &m, const Vec<unsigned> &elem_list_interest_quantity ) const {
         typedef typename TE::T T;
-        for (unsigned n=0;n<list_elems_interest_quantity.size();++n) {
+        for (unsigned n=0;n<elem_list_interest_quantity.size();++n) {
             Vec<Vec<T,TE::dim>, TE::nb_nodes > pos_nodes;
-            for(unsigned i=0;i<(m.elem_list[ list_elems_interest_quantity[ n ] ]->nb_nodes_virtual());++i)
-                pos_nodes[i] = m.elem_list[ list_elems_interest_quantity[ n ] ]->node_virtual(i)->pos;
+            for(unsigned i=0;i<(m.elem_list[ elem_list_interest_quantity[ n ] ]->nb_nodes_virtual());++i)
+                pos_nodes[i] = m.elem_list[ elem_list_interest_quantity[ n ] ]->node_virtual(i)->pos;
             if ( is_inside_linear( typename TE::NE(), pos_nodes, center( elem_adjoint ) ) ) {
-                Vec<T,unsigned(TE::dim*(TE::dim+1)/2) > extractor = m.elem_list[ list_elems_interest_quantity[ n ] ]->get_field( "pre_epsilon", StructForType<Vec<T,unsigned(TE::dim*(TE::dim+1)/2)> >() );
+                Vec<T,unsigned(TE::dim*(TE::dim+1)/2) > extractor = m.elem_list[ elem_list_interest_quantity[ n ] ]->get_field( "pre_epsilon", StructForType<Vec<T,unsigned(TE::dim*(TE::dim+1)/2)> >() );
                 elem_adjoint.set_field( "pre_epsilon", extractor );
 //                cout << "pre epsilon = " << endl;
 //                cout << extractor << endl;
@@ -70,14 +70,14 @@ struct Construct_Extractor_Mean_Sigma {
 };
 
 struct Construct_Extractor_Mean_Epsilon {
-    template<class TE, class TM> void operator()( TE &elem_adjoint, const TM &m, const Vec<unsigned> &list_elems_interest_quantity ) const {
+    template<class TE, class TM> void operator()( TE &elem_adjoint, const TM &m, const Vec<unsigned> &elem_list_interest_quantity ) const {
         typedef typename TE::T T;
-        for (unsigned n=0;n<list_elems_interest_quantity.size();++n) {
+        for (unsigned n=0;n<elem_list_interest_quantity.size();++n) {
             Vec<Vec<T,TE::dim>, TE::nb_nodes > pos_nodes;
-            for(unsigned i=0;i<(m.elem_list[ list_elems_interest_quantity[ n ] ]->nb_nodes_virtual());++i)
-                pos_nodes[i] = m.elem_list[ list_elems_interest_quantity[ n ] ]->node_virtual(i)->pos;
+            for(unsigned i=0;i<(m.elem_list[ elem_list_interest_quantity[ n ] ]->nb_nodes_virtual());++i)
+                pos_nodes[i] = m.elem_list[ elem_list_interest_quantity[ n ] ]->node_virtual(i)->pos;
             if ( is_inside_linear( typename TE::NE(), pos_nodes, center( elem_adjoint ) ) ) {
-                Vec<T,unsigned(TE::dim*(TE::dim+1)/2) > extractor = m.elem_list[ list_elems_interest_quantity[ n ] ]->get_field( "pre_sigma", StructForType<Vec<T,unsigned(TE::dim*(TE::dim+1)/2)> >() );
+                Vec<T,unsigned(TE::dim*(TE::dim+1)/2) > extractor = m.elem_list[ elem_list_interest_quantity[ n ] ]->get_field( "pre_sigma", StructForType<Vec<T,unsigned(TE::dim*(TE::dim+1)/2)> >() );
                 elem_adjoint.set_field( "pre_sigma", extractor );
 //                cout << "pre sigma = " << endl;
 //                cout << extractor << endl;
@@ -124,9 +124,9 @@ template<class TE, class TM, class TF, class TTWW, class TT>
 void calc_interest_quantity_mean_sigma_epsilon( const TE &elem, const TM &m, const TF &f, const TTWW &vectors, const Vec<unsigned> &indices, TT &I ) {}
 
 struct Calcul_Interest_Quantity_Mean_Sigma_Epsilon {
-    const Vec<unsigned>* list_elems_interest_quantity;
+    const Vec<unsigned>* elem_list_interest_quantity;
     template<class TE, class TM, class TF, class T> void operator()( const TE &elem, const TM &m, const TF &f, T &I ) const {
-        if ( find( *list_elems_interest_quantity, _1 == elem.number ) ) {
+        if ( find( *elem_list_interest_quantity, _1 == elem.number ) ) {
             Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
             calc_interest_quantity_mean_sigma_epsilon( elem, m, f, f.vectors, ind, I );
         }
@@ -324,7 +324,7 @@ struct Calcul_Correction_Interest_Quantity_w_sigma_hat_m {
 /// Construction du centre et de la taille du domaine Omega_lambda selon la forme et la quantite d'interet
 ///-------------------------------------------------------------------------------------------------------
 template<class TM, class T, class Pvec>
-void construct_center_length_domain( TM &m, const unsigned &deg_p, const string &shape, const string &interest_quantity, const Vec<unsigned> &list_elems, const unsigned &node, const Pvec &pos_crack_tip, const T &radius_Re, Pvec &domain_center, Vec<T> &domain_length ) {
+void construct_center_length_domain( TM &m, const unsigned &deg_p, const string &shape, const string &interest_quantity, const Vec<unsigned> &elem_list, const unsigned &node, const Pvec &pos_crack_tip, const T &radius_Re, Pvec &domain_center, Vec<T> &domain_length ) {
     
     static const unsigned dim = TM::dim;
     
@@ -341,48 +341,48 @@ void construct_center_length_domain( TM &m, const unsigned &deg_p, const string 
         T domain_size = 0.;
         if ( interest_quantity == "mean_sigma" or interest_quantity == "mean_epsilon" ) {
             /// Construction du vecteur de vecteurs circum_center et du vecteur circum_radius
-            /// circum_center[ n ] : position du centre du cercle/sphere circonscrit au n ieme element de la liste list_elems (list_elems[ n ])
-            /// circum_radius[ n ] : rayon du cercle/sphere circonscrit au n ieme element de la liste list_elems (list_elems[ n ])
+            /// circum_center[ n ] : position du centre du cercle/sphere circonscrit au n ieme element de la liste elem_list (elem_list[ n ])
+            /// circum_radius[ n ] : rayon du cercle/sphere circonscrit au n ieme element de la liste elem_list (elem_list[ n ])
             ///--------------------------------------------------------------------------------------------------------------------------------
             Vec< Vec<T> > circum_center;
-            circum_center.resize( list_elems.size() );
+            circum_center.resize( elem_list.size() );
 
-            for (unsigned n=0;n<list_elems.size();++n) {
+            for (unsigned n=0;n<elem_list.size();++n) {
                 circum_center[ n ].resize( dim );
                 circum_center[ n ].set( 0. );
             }
 
             Vec<T> circum_radius;
-            circum_radius.resize( list_elems.size() );
+            circum_radius.resize( elem_list.size() );
             circum_radius.set( 0. );
 
-            Construct_Circum_Center_Radius_List_Elems construct_circum_center_radius_list_elems;
-            construct_circum_center_radius_list_elems.list_elems = &list_elems;
+            Construct_Circum_Center_Radius_Elem_List construct_circum_center_radius_elem_list;
+            construct_circum_center_radius_elem_list.elem_list = &elem_list;
             
-            apply( m.elem_list, construct_circum_center_radius_list_elems, circum_center, circum_radius );
+            apply( m.elem_list, construct_circum_center_radius_elem_list, circum_center, circum_radius );
             
 //             cout << "Construction du vecteur de vecteurs circum_center et du vecteur circum_radius" << endl << endl;
-//             for (unsigned n=0;n<list_elems.size();++n) {
+//             for (unsigned n=0;n<elem_list.size();++n) {
 //                 if ( dim == 2 ) {
-//                     cout << "position du centre du cercle circonscrit a l'element " << list_elems[ n ] << " : " << circum_center[ n ] << endl;
-//                     cout << "rayon du cercle circonscrit a l'element " << list_elems[ n ] << " : " << circum_radius[ n ] << endl;
+//                     cout << "position du centre du cercle circonscrit a l'element " << elem_list[ n ] << " : " << circum_center[ n ] << endl;
+//                     cout << "rayon du cercle circonscrit a l'element " << elem_list[ n ] << " : " << circum_radius[ n ] << endl;
 //                 }
 //                 else if ( dim == 3 ) {
-//                     cout << "position du centre de la sphere circonscrite a l'element " << list_elems[ n ] << " : " << circum_center[ n ] << endl;
-//                     cout << "rayon de la sphere circonscrite a l'element " << list_elems[ n ] << " : " << circum_radius[ n ] << endl;
+//                     cout << "position du centre de la sphere circonscrite a l'element " << elem_list[ n ] << " : " << circum_center[ n ] << endl;
+//                     cout << "rayon de la sphere circonscrite a l'element " << elem_list[ n ] << " : " << circum_radius[ n ] << endl;
 //                 }
 //                 cout << endl << endl;
 //             }
             
             for (unsigned d=0;d<dim;++d) {
                 Vec<T> pos_circum_centers;
-                pos_circum_centers.reserve( list_elems.size() );
-                for (unsigned n=0;n<list_elems.size();++n) {
+                pos_circum_centers.reserve( elem_list.size() );
+                for (unsigned n=0;n<elem_list.size();++n) {
                     pos_circum_centers.push_back( circum_center[ n ][ d ] );
                 }
                 domain_center[ d ] = mean( pos_circum_centers );
             }
-            for (unsigned n=0;n<list_elems.size();++n) {
+            for (unsigned n=0;n<elem_list.size();++n) {
                 domain_size = max( domain_size, length( circum_center[ n ] - domain_center ) + circum_radius[ n ] );
             }
             

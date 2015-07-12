@@ -170,7 +170,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     is_on_skin := Variable( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="", tex_name = "is on skin" )
     normal := Variable[[dim]]( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="1", tex_name = "normal" )
 
-    phi_elem_PGD_unknown_parameter := Variable( interpolation="elementary", default_value=1, unit="", tex_name = "\\phi_{elem}^{unknown parameter}" )
+    phi_elem_PGD_unknown_param := Variable( interpolation="elementary", default_value=1, unit="", tex_name = "\\phi_{elem}^{unknown param}" )
 
     # Definition de la formulation
     # ----------------------------
@@ -179,7 +179,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
         if boundary_condition == "lagrange"
             assumed_symmetric_matrix = false
 
-        young_eff = young.expr * phi_elem_PGD_unknown_parameter.expr
+        young_eff = young.expr * phi_elem_PGD_unknown_param.expr
 
         pos := e.pos
         epsilon = grad_sym( dep.expr )
@@ -214,7 +214,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
         if want_local_enrichment
             pos_handbook := Vec[ Op, dim ]()
             for d in 0 .. dim
-                pos_handbook[ d ] = symbol( "f.m->pos_handbook[ $d ]" )
+                pos_handbook[ d ] = symbol( "f.m->pos_handbook[ $d ]", tex_name = "P_{$d}" )
             OM := pos - pos_handbook
             Galerkin_vector := Galerkin_vector_function( dim, OM, mu.expr, phi_handbook_for_pointwise_force_in_infinite_domain.expr, phi_handbook_for_pointwise_pre_sigma_in_infinite_domain.expr, phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain.expr )
             dep_handbook_ := dep_handbook_function( e, Galerkin_vector, la.expr, mu.expr )

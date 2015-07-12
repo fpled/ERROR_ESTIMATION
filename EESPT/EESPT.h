@@ -43,34 +43,34 @@ struct Calcul_Vertex_Nodal_Ind_EESPT {
 /// Construction des matrices A[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
 ///---------------------------------------------------------------------------------------------------
 template<class TE, class TM, class TV, class TVVV, class TVV, class TTMVV> 
-void calc_vertex_nodal_matrix_A( const TE &elem, const TM &m, const TV &connect_node_to_vertex_node, const TVVV &face_ind, const TVVV &vertex_nodal_ind, const TVV &list_vertex_nodes_elem, const TVV &list_nodes_face, TTMVV &A ) {}
+void calc_vertex_nodal_matrix_A( const TE &elem, const TM &m, const TV &connect_node_to_vertex_node, const TVVV &face_ind, const TVVV &vertex_nodal_ind, const TVV &vertex_node_list_elem, const TVV &node_list_face, TTMVV &A ) {}
 
 struct Calcul_Vertex_Nodal_Matrix_A {
     const Vec< Vec< Vec<unsigned> > >* face_ind;
     const Vec< Vec< Vec<unsigned> > >* vertex_nodal_ind;
-    const Vec< Vec<unsigned> >* list_vertex_nodes_elem;
-    const Vec< Vec<unsigned> >* list_nodes_face;
+    const Vec< Vec<unsigned> >* vertex_node_list_elem;
+    const Vec< Vec<unsigned> >* node_list_face;
     template<class TE, class TM, class T> void operator()( const TE &elem, const TM &m, const Vec<unsigned> &connect_node_to_vertex_node, Vec< Vec< Mat<T, Gen<>, SparseLine<> > > > &A ) const {
-        calc_vertex_nodal_matrix_A( elem, m, connect_node_to_vertex_node, *face_ind, *vertex_nodal_ind, *list_vertex_nodes_elem, *list_nodes_face, A );
+        calc_vertex_nodal_matrix_A( elem, m, connect_node_to_vertex_node, *face_ind, *vertex_nodal_ind, *vertex_node_list_elem, *node_list_face, A );
     }
 };
 
 /// Construction des vecteurs R[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
 ///---------------------------------------------------------------------------------------------------
 template<class TE, class TM, class TF, class TV, class TVVV, class TVV, class TTWW, class S, class B, class TTVVV> 
-void calc_vertex_nodal_vector_R( const TE &elem, const TM &m, const TF &f, const TV &connect_node_to_vertex_node, const TVVV &vertex_nodal_ind, const TVV &list_nodes_face, const TVV &list_vertex_nodes_elem, const TV &cpt_elems_node, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, TTVVV &R ) {}
+void calc_vertex_nodal_vector_R( const TE &elem, const TM &m, const TF &f, const TV &connect_node_to_vertex_node, const TVVV &vertex_nodal_ind, const TVV &node_list_face, const TVV &vertex_node_list_elem, const TV &elem_cpt_node, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, TTVVV &R ) {}
 
 struct Calcul_Vertex_Nodal_Vector_R {
     const Vec<unsigned>* connect_node_to_vertex_node;
     const Vec< Vec< Vec<unsigned> > >* vertex_nodal_ind;
-    const Vec< Vec<unsigned> >* list_nodes_face;
-    const Vec< Vec<unsigned> >* list_vertex_nodes_elem;
-    const Vec<unsigned>* cpt_elems_node;
+    const Vec< Vec<unsigned> >* node_list_face;
+    const Vec< Vec<unsigned> >* vertex_node_list_elem;
+    const Vec<unsigned>* elem_cpt_node;
     const string* pb;
     const bool* want_local_enrichment;
     template<class TE, class TM, class TF, class T> void operator()( const TE &elem, const TM &m, const TF &f, Vec< Vec< Vec<T> > > &R ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
-        calc_vertex_nodal_vector_R( elem, m, f, *connect_node_to_vertex_node, *vertex_nodal_ind, *list_nodes_face, *list_vertex_nodes_elem, *cpt_elems_node, f.vectors, ind, *pb, *want_local_enrichment, R );
+        calc_vertex_nodal_vector_R( elem, m, f, *connect_node_to_vertex_node, *vertex_nodal_ind, *node_list_face, *vertex_node_list_elem, *elem_cpt_node, f.vectors, ind, *pb, *want_local_enrichment, R );
     }
 };
 
@@ -78,17 +78,17 @@ struct Calcul_Vertex_Nodal_Vector_R {
 /// Stockage des inconnues non bloques : eq_indep[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
 ///---------------------------------------------------------------------------------------------------------------------
 template<class TE, class TM, class TV, class TVVV, class TVV, class BVV> 
-void remove_kernel( const TE &elem , const TM &m, const TV &connect_node_to_vertex_node, const TVVV &vertex_nodal_ind, const TVV &list_nodes_vertex_node, const TVV &list_edge_nodes_vertex_node, BVV &flag_node, TVV &flag_elem, TVVV &eq_indep ) {}
+void remove_kernel( const TE &elem , const TM &m, const TV &connect_node_to_vertex_node, const TVVV &vertex_nodal_ind, const TVV &node_list_vertex_node, const TVV &edge_node_list_vertex_node, BVV &node_flag, TVV &elem_flag, TVVV &eq_indep ) {}
 
 struct Remove_Kernel {
     const Vec<unsigned>* connect_node_to_vertex_node;
     const Vec< Vec< Vec<unsigned> > >* vertex_nodal_ind;
-    const Vec< Vec<unsigned> >* list_nodes_vertex_node;
-    const Vec< Vec<unsigned> >* list_edge_nodes_vertex_node;
-    Vec< Vec<bool> >* flag_node;
-    Vec< Vec<unsigned> >* flag_elem;
+    const Vec< Vec<unsigned> >* node_list_vertex_node;
+    const Vec< Vec<unsigned> >* edge_node_list_vertex_node;
+    Vec< Vec<bool> >* node_flag;
+    Vec< Vec<unsigned> >* elem_flag;
     template<class TE, class TM> void operator()( const TE &elem, const TM &m, Vec< Vec< Vec<unsigned> > > &eq_indep ) const {
-        remove_kernel( elem, m, *connect_node_to_vertex_node, *vertex_nodal_ind, *list_nodes_vertex_node, *list_edge_nodes_vertex_node, *flag_node, *flag_elem, eq_indep );
+        remove_kernel( elem, m, *connect_node_to_vertex_node, *vertex_nodal_ind, *node_list_vertex_node, *edge_node_list_vertex_node, *node_flag, *elem_flag, eq_indep );
     }
 };
 
@@ -121,18 +121,18 @@ struct Calcul_Skin_Elem_Matrix_B_p_1 {
         /// Construction des vecteurs Q[ k ][ d ] pour chaque face k du maillage et chaque direction d
         ///-------------------------------------------------------------------------------------------
 template<class TE, class TM, class TF, class TV, class TVV, class TVVV, class TTWW, class S, class B, class TTVVV> 
-void calc_skin_elem_vector_Q_p_1( const TE &elem , const TM &m, const TF &f, const TV &connect_node_to_vertex_node, const TVV &type_face, const TVVV &face_ind, const TVV &list_nodes_face, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, TTVVV &Q ) {}
+void calc_skin_elem_vector_Q_p_1( const TE &elem , const TM &m, const TF &f, const TV &connect_node_to_vertex_node, const TVV &face_type, const TVVV &face_ind, const TVV &node_list_face, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, TTVVV &Q ) {}
 
 struct Calcul_Skin_Elem_Vector_Q_p_1 {
     const Vec<unsigned>* connect_node_to_vertex_node;
-    const Vec< Vec<unsigned> >* type_face;
+    const Vec< Vec<unsigned> >* face_type;
     const Vec< Vec< Vec<unsigned> > >* face_ind;
-    const Vec< Vec<unsigned> >* list_nodes_face;
+    const Vec< Vec<unsigned> >* node_list_face;
     const string* pb;
     const bool* want_local_enrichment;
     template<class TE, class TM, class TF, class T> void operator()( const TE &elem, const TM &m, const TF &f, Vec< Vec< Vec<T> > > &Q ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
-        calc_skin_elem_vector_Q_p_1( elem, m, f, *connect_node_to_vertex_node, *type_face, *face_ind, *list_nodes_face, f.vectors, ind, *pb, *want_local_enrichment, Q );
+        calc_skin_elem_vector_Q_p_1( elem, m, f, *connect_node_to_vertex_node, *face_type, *face_ind, *node_list_face, f.vectors, ind, *pb, *want_local_enrichment, Q );
     }
 };
 
@@ -149,37 +149,37 @@ struct Calcul_Vertex_Nodal_Vector_lambda_F_p_1 {
     /// Cas p >= 2
     ///-----------
 template<class TE, class TM, class TF, class TV, class TVV, class TVVV, class TTWW, class S, class B, class TTVVV>
-void calc_vertex_nodal_vector_lambda_F_p_2( const TE &elem , const TM &m, const TF &f, const TV &connect_node_to_vertex_node, const TVV &type_face, const TVVV &face_ind, const TVV &list_nodes_face, const TVV &list_vertex_nodes_face, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, TTVVV &lambda_F ) {}
+void calc_vertex_nodal_vector_lambda_F_p_2( const TE &elem , const TM &m, const TF &f, const TV &connect_node_to_vertex_node, const TVV &face_type, const TVVV &face_ind, const TVV &node_list_face, const TVV &vertex_node_list_face, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, TTVVV &lambda_F ) {}
 
 struct Calcul_Vertex_Nodal_Vector_lambda_F_p_2 {
     const Vec<unsigned>* connect_node_to_vertex_node;
-    const Vec< Vec<unsigned> >* type_face;
+    const Vec< Vec<unsigned> >* face_type;
     const Vec< Vec< Vec<unsigned> > >* face_ind;
-    const Vec< Vec<unsigned> >* list_nodes_face;
-    const Vec< Vec<unsigned> >* list_vertex_nodes_face;
+    const Vec< Vec<unsigned> >* node_list_face;
+    const Vec< Vec<unsigned> >* vertex_node_list_face;
     const string* pb;
     const bool* want_local_enrichment;
     template<class TE, class TM, class TF, class T> void operator()( const TE &elem, const TM &m, const TF &f, Vec< Vec< Vec<T> > > &lambda_F ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
-        calc_vertex_nodal_vector_lambda_F_p_2( elem, m, f, *connect_node_to_vertex_node, *type_face, *face_ind, *list_nodes_face, *list_vertex_nodes_face, f.vectors, ind, *pb, *want_local_enrichment, lambda_F );
+        calc_vertex_nodal_vector_lambda_F_p_2( elem, m, f, *connect_node_to_vertex_node, *face_type, *face_ind, *node_list_face, *vertex_node_list_face, f.vectors, ind, *pb, *want_local_enrichment, lambda_F );
     }
 };
 
 /// Construction des matrices de minimisation M[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
 ///-------------------------------------------------------------------------------------------------------------------
 template<class TE, class TM, class TF, class TV, class TVV, class TVVV, class T, class TT, class BVV, class TTMVV>
-void calc_vertex_nodal_matrix_M( const TE &child_elem , const TM &m, const TF &f, const TV &connect_node_to_vertex_node, const TVV type_face, const TVVV &face_ind, const T &cost_function, const TT &pen_N, const BVV &minimisation, TTMVV &M ) {}
+void calc_vertex_nodal_matrix_M( const TE &child_elem , const TM &m, const TF &f, const TV &connect_node_to_vertex_node, const TVV face_type, const TVVV &face_ind, const T &cost_function, const TT &pen_N, const BVV &minimisation, TTMVV &M ) {}
 
 template<class T>
 struct Calcul_Vertex_Nodal_Matrix_M {
     const Vec<unsigned>* connect_node_to_vertex_node;
-    const Vec< Vec<unsigned> >* type_face;
+    const Vec< Vec<unsigned> >* face_type;
     const Vec< Vec< Vec<unsigned> > >* face_ind;
     const unsigned* cost_function;
     const T* pen_N;
     const Vec< Vec<bool> >* minimisation;
     template<class TE, class TM, class TF> void operator()( const TE &child_elem, const TM &m, const TF &f, Vec< Vec< Mat< T, Diag<> > > > &M ) const {
-        calc_vertex_nodal_matrix_M( child_elem, m, f, *connect_node_to_vertex_node, *type_face, *face_ind, *cost_function, *pen_N, *minimisation, M );
+        calc_vertex_nodal_matrix_M( child_elem, m, f, *connect_node_to_vertex_node, *face_type, *face_ind, *cost_function, *pen_N, *minimisation, M );
     }
 };
 

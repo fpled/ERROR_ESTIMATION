@@ -22,28 +22,28 @@ using namespace std;
 /// Construction standard des densites d'effort par la methode EET
 ///---------------------------------------------------------------
 template<class TM, class TF, class T, class TMAT>
-void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, const unsigned &cost_function, const bool &enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, const bool &want_local_enrichment, const bool &debug_method, const bool &verif_solver_minimisation, const T &tol_solver_minimisation, const bool &debug_geometry, const bool &verif_compatibility_conditions, const T &tol_compatibility_conditions, const bool &debug_force_fluxes, Vec< Vec< Vec<T> > > &vec_force_fluxes, const Vec< Vec<T> > &dep_psi, const Vec< Vec<T> > &dep_lambda, const Vec<T> &dep_part, const Vec<T> &kappa, const TMAT &K_k_p, const TMAT &K_unk_p, const Vec<unsigned> &list_elems_PGD_unknown_parameter, const unsigned &mode ) {
+void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, const unsigned &cost_function, const bool &enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, const bool &want_local_enrichment, const bool &debug_method, const bool &verif_solver_minimisation, const T &tol_solver_minimisation, const bool &debug_geometry, const bool &verif_compatibility_conditions, const T &tol_compatibility_conditions, const bool &debug_force_fluxes, Vec< Vec< Vec<T> > > &vec_force_fluxes, const Vec< Vec<T> > &dep_psi, const Vec< Vec<T> > &dep_lambda, const Vec<T> &dep_part, const Vec<T> &kappa, const TMAT &K_k_p, const TMAT &K_unk_p, const Vec<unsigned> &elem_list_PGD_unknown_param, const unsigned &mode ) {
     
     static const unsigned dim = TM::dim;
     
     TicToc t_construct_force_fluxes_std;
     t_construct_force_fluxes_std.start();
     
-    Vec<unsigned> cpt_elems_node;
-    Vec< Vec<unsigned> > list_elems_node;
-    construct_elems_connected_to_node( m, cpt_elems_node, list_elems_node, debug_geometry );
+    Vec<unsigned> elem_cpt_node;
+    Vec< Vec<unsigned> > elem_list_node;
+    construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node, debug_geometry );
     
-    list_elems_node.free();
+    elem_list_node.free();
     
-    Vec<unsigned> cpt_faces_node;
-    Vec< Vec<unsigned> > list_faces_node;
-    construct_faces_connected_to_node( m, cpt_faces_node, list_faces_node, debug_geometry );
+    Vec<unsigned> face_cpt_node;
+    Vec< Vec<unsigned> > face_list_node;
+    construct_faces_connected_to_node( m, face_cpt_node, face_list_node, debug_geometry );
     
-    Vec<unsigned> cpt_nodes_face;
-    Vec< Vec<unsigned> > list_nodes_face;
-    construct_nodes_connected_to_face( m, cpt_nodes_face, list_nodes_face, debug_geometry );
+    Vec<unsigned> node_cpt_face;
+    Vec< Vec<unsigned> > node_list_face;
+    construct_nodes_connected_to_face( m, node_cpt_face, node_list_face, debug_geometry );
 
-    cpt_nodes_face.free();
+    node_cpt_face.free();
 
     Vec<bool> correspondance_node_to_vertex_node;
     Vec<unsigned> connect_node_to_vertex_node;
@@ -51,11 +51,11 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
 
     connect_node_to_vertex_node.free();
 
-    Vec< Vec<unsigned> > type_face;
-    construct_type_face( m, f, type_face, debug_geometry );
+    Vec< Vec<unsigned> > face_type;
+    construct_face_type( m, f, face_type, debug_geometry );
 
-    Vec< Vec<unsigned> > type_node;
-    construct_type_node( m, f, type_face, type_node, debug_geometry );
+    Vec< Vec<unsigned> > node_type;
+    construct_node_type( m, f, face_type, node_type, debug_geometry );
 
     ///----------------------------------------------------///
     /// Construction des projections des densites d'effort ///
@@ -161,7 +161,7 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     Calcul_Nodal_Matrix_B calcul_nodal_matrix_B;
     calcul_nodal_matrix_B.elem_ind = &elem_ind;
     calcul_nodal_matrix_B.face_ind = &face_ind;
-    calcul_nodal_matrix_B.list_nodes_face = &list_nodes_face;
+    calcul_nodal_matrix_B.node_list_face = &node_list_face;
 
     apply( m.elem_list, calcul_nodal_matrix_B, m, B );
 
@@ -193,8 +193,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
 
     Calcul_Nodal_Vector_r_PGD<T, TMAT> calcul_nodal_vector_r_PGD;
     calcul_nodal_vector_r_PGD.elem_ind = &elem_ind;
-    calcul_nodal_vector_r_PGD.list_nodes_face = &list_nodes_face;
-    calcul_nodal_vector_r_PGD.cpt_elems_node = &cpt_elems_node;
+    calcul_nodal_vector_r_PGD.node_list_face = &node_list_face;
+    calcul_nodal_vector_r_PGD.elem_cpt_node = &elem_cpt_node;
     calcul_nodal_vector_r_PGD.pb = &pb;
     calcul_nodal_vector_r_PGD.want_local_enrichment = &want_local_enrichment;
     calcul_nodal_vector_r_PGD.dep_psi = &dep_psi;
@@ -203,7 +203,7 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     calcul_nodal_vector_r_PGD.kappa = &kappa;
     calcul_nodal_vector_r_PGD.K_k_p = &K_k_p;
     calcul_nodal_vector_r_PGD.K_unk_p = &K_unk_p;
-    calcul_nodal_vector_r_PGD.list_elems_PGD_unknown_parameter = &list_elems_PGD_unknown_parameter;
+    calcul_nodal_vector_r_PGD.elem_list_PGD_unknown_param = &elem_list_PGD_unknown_param;
     calcul_nodal_vector_r_PGD.mode = &mode;
 
     apply( m.elem_list, calcul_nodal_vector_r, m, f, r );
@@ -237,8 +237,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
         
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                if ( type_node[ i ][ d ] == 0 ) {
-                    for (unsigned n=0;n<cpt_elems_node[ i ];n++) {
+                if ( node_type[ i ][ d ] == 0 ) {
+                    for (unsigned n=0;n<elem_cpt_node[ i ];n++) {
                         verif_eq_0[ i ][ d ] += r[ i ][ d ][ n ];
                     }
                 }
@@ -247,9 +247,9 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
         
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                if ( type_node[ i ][ d ] == 0 ) {
+                if ( node_type[ i ][ d ] == 0 ) {
                     if ( fabs( verif_eq_0[ i ][ d ] ) > tol_compatibility_conditions ) {
-                        cout << "verification des conditions de compatibilite (equilibre elements finis) du noeud " << i << " de type " << type_node[ i ][ d ] << " dans la direction " << d << " :" << endl;
+                        cout << "verification des conditions de compatibilite (equilibre elements finis) du noeud " << i << " de type " << node_type[ i ][ d ] << " dans la direction " << d << " :" << endl;
                         cout << verif_eq_0[ i ][ d ] << " != 0" << endl << endl;
                     }
                 }
@@ -278,16 +278,16 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     for (unsigned i=0;i<m.node_list.size();++i) {
         nodal_ind[ i ].resize( dim );
         for (unsigned d=0;d<dim;++d) {
-            nodal_ind[ i ][ d ].resize( cpt_faces_node[ i ] );
+            nodal_ind[ i ][ d ].resize( face_cpt_node[ i ] );
             nodal_ind[ i ][ d ].set( 0 );
         }
     }
 
     Calcul_Nodal_Ind calcul_nodal_ind;
-    calcul_nodal_ind.cpt_faces_node = &cpt_faces_node;
-    calcul_nodal_ind.list_faces_node = &list_faces_node;
-    calcul_nodal_ind.type_node = &type_node;
-    calcul_nodal_ind.type_face = &type_face;
+    calcul_nodal_ind.face_cpt_node = &face_cpt_node;
+    calcul_nodal_ind.face_list_node = &face_list_node;
+    calcul_nodal_ind.node_type = &node_type;
+    calcul_nodal_ind.face_type = &face_type;
 
     apply( m.node_list, calcul_nodal_ind, nb_eq_imp, nodal_ind ); // nb_eq_imp[ i ][ d ] contient le nb de lignes de la matrice C[ i ][ d ] et du vecteur q[ i ][ d ] associee au i eme noeud dans la direction d // nodal_ind[ i ][ d ][ k ] = indice de debut de ligne dans la matrice C[ i ][ d ] et dans le vecteur q[ i ][ d ] associes au ieme noeud pour chaque face k du maillage et chaque direction d
 
@@ -295,10 +295,10 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
                 cout << "nb d'equations imposees associees au noeud " << i << " dans la direction " << d << " : " << nb_eq_imp[ i ][ d ] << endl;
-                if ( type_node[ i ][ d ] == 2 or type_node[ i ][ d ] == 12 ) {
-                    for (unsigned k=0;k<cpt_faces_node[ i ];++k) {
-                        if ( type_face[ list_faces_node[ i ][ k ] ][ d ] == 2 ) {
-                            cout << "indice de debut de ligne de la face " << list_faces_node[ i ][ k ] << " dans la direction " << d << " dans la matrice C[ " << i << " ][ " << d << " ] : " << nodal_ind[ i ][ d ][ k ] << endl;
+                if ( node_type[ i ][ d ] == 2 or node_type[ i ][ d ] == 12 ) {
+                    for (unsigned k=0;k<face_cpt_node[ i ];++k) {
+                        if ( face_type[ face_list_node[ i ][ k ] ][ d ] == 2 ) {
+                            cout << "indice de debut de ligne de la face " << face_list_node[ i ][ k ] << " dans la direction " << d << " dans la matrice C[ " << i << " ][ " << d << " ] : " << nodal_ind[ i ][ d ][ k ] << endl;
                         }
                     }
                 }
@@ -323,17 +323,17 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     }
 
     Calcul_Nodal_Matrix_C calcul_nodal_matrix_C;
-    calcul_nodal_matrix_C.type_face = &type_face;
+    calcul_nodal_matrix_C.face_type = &face_type;
     calcul_nodal_matrix_C.nodal_ind = &nodal_ind;
     calcul_nodal_matrix_C.face_ind = &face_ind;
-    calcul_nodal_matrix_C.list_faces_node = &list_faces_node;
+    calcul_nodal_matrix_C.face_list_node = &face_list_node;
 
     apply( m.sub_mesh(Number<1>()).elem_list, calcul_nodal_matrix_C, m, C );
 
     if ( debug_method ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                if ( type_node[ i ][ d ] == 2 or type_node[ i ][ d ] == 12 ) {
+                if ( node_type[ i ][ d ] == 2 or node_type[ i ][ d ] == 12 ) {
                     cout << "dimension de la matrice C associe au noeud " << i << " dans la direction " << d << " : ( " << nb_eq_imp[ i ][ d ] << ", " << nb_unk[ i ][ d ] << " )" << endl;
                     cout << "matrice C associe au noeud " << i << " dans la direction " << d << " :" << endl;
                     cout << C[ i ][ d ] << endl << endl;
@@ -359,17 +359,17 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     }
 
     Calcul_Nodal_Vector_q_PGD<T, TMAT> calcul_nodal_vector_q_PGD;
-    calcul_nodal_vector_q_PGD.type_face = &type_face;
+    calcul_nodal_vector_q_PGD.face_type = &face_type;
     calcul_nodal_vector_q_PGD.nodal_ind = &nodal_ind;
-    calcul_nodal_vector_q_PGD.list_nodes_face = &list_nodes_face;
-    calcul_nodal_vector_q_PGD.list_faces_node = &list_faces_node;
+    calcul_nodal_vector_q_PGD.node_list_face = &node_list_face;
+    calcul_nodal_vector_q_PGD.face_list_node = &face_list_node;
     calcul_nodal_vector_q_PGD.dep_psi = &dep_psi;
     calcul_nodal_vector_q_PGD.dep_lambda = &dep_lambda;
     calcul_nodal_vector_q_PGD.dep_part = &dep_part;
     calcul_nodal_vector_q_PGD.kappa = &kappa;
     calcul_nodal_vector_q_PGD.K_k_p = &K_k_p;
     calcul_nodal_vector_q_PGD.K_unk_p = &K_unk_p;
-    calcul_nodal_vector_q_PGD.list_elems_PGD_unknown_parameter = &list_elems_PGD_unknown_parameter;
+    calcul_nodal_vector_q_PGD.elem_list_PGD_unknown_param = &elem_list_PGD_unknown_param;
     calcul_nodal_vector_q_PGD.mode = &mode;
 
     apply( m.elem_list, calcul_nodal_vector_q_PGD, m, f, q );
@@ -377,7 +377,7 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     if ( debug_method ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                if ( type_node[ i ][ d ] == 2 or type_node[ i ][ d ] == 12 ) {
+                if ( node_type[ i ][ d ] == 2 or node_type[ i ][ d ] == 12 ) {
                     cout << "dimension du vecteur q associe au noeud " << i << " dans la direction " << d << " : " << nb_eq_imp[ i ][ d ] << endl;
                     cout << "vecteur q associe au noeud " << i << " dans la direction " << d << " :" << endl;
                     cout << q[ i ][ d ] << endl << endl;
@@ -408,12 +408,12 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
         
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                if ( type_node[ i ][ d ] == 2 ) {
-                    for (unsigned n=0;n<cpt_elems_node[ i ];n++) {
+                if ( node_type[ i ][ d ] == 2 ) {
+                    for (unsigned n=0;n<elem_cpt_node[ i ];n++) {
                         verif_eq_sum_r[ i ][ d ] += r[ i ][ d ][ n ];
                     }
-                    for (unsigned k=0;k<cpt_faces_node[ i ];k++) {
-                        if ( type_face[ list_faces_node[ i ][ k ] ][ d ] == 2 ) {
+                    for (unsigned k=0;k<face_cpt_node[ i ];k++) {
+                        if ( face_type[ face_list_node[ i ][ k ] ][ d ] == 2 ) {
                             verif_eq_sum_q[ i ][ d ] += q[ i ][ d ][ nodal_ind[ i ][ d ][ k ] ];
                         }
                     }
@@ -423,9 +423,9 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
         
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                if ( type_node[ i ][ d ] == 2 ) {
+                if ( node_type[ i ][ d ] == 2 ) {
                     if ( fabs( verif_eq_sum_r[ i ][ d ] - verif_eq_sum_q[ i ][ d ] ) > tol_compatibility_conditions ) {
-                        cout << "verification des conditions de compatibilite (equilibre elements finis) au noeud " << i << " de type " << type_node[ i ][ d ] << " dans la direction " << d << " :" << endl;
+                        cout << "verification des conditions de compatibilite (equilibre elements finis) au noeud " << i << " de type " << node_type[ i ][ d ] << " dans la direction " << d << " :" << endl;
                         cout << verif_eq_sum_r[ i ][ d ] << " != " << verif_eq_sum_q[ i ][ d ] << endl << endl;
                     }
                 }
@@ -436,9 +436,9 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     }
 
     nodal_ind.free();
-    cpt_elems_node.free();
-    cpt_faces_node.free();
-    list_faces_node.free();
+    elem_cpt_node.free();
+    face_cpt_node.free();
+    face_list_node.free();
 
     /// Calcul du nb d'equations independantes : nb_eq_indep[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
     ///---------------------------------------------------------------------------------------------------------------------
@@ -455,7 +455,7 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
 
     for (unsigned i=0;i<m.node_list.size();++i) {
         for (unsigned d=0;d<dim;++d) {
-            if ( type_node[ i ][ d ] == 0 or type_node[ i ][ d ] == 2 ) { // si type_node[ i ][ d ] = 0 ou 2, l'ecriture de l'equilibre elements finis dans la direction d supprime 1 equation : nb_eq_indep[ i ][ d ] = nb_eq[ i ][ d ] - 1
+            if ( node_type[ i ][ d ] == 0 or node_type[ i ][ d ] == 2 ) { // si node_type[ i ][ d ] = 0 ou 2, l'ecriture de l'equilibre elements finis dans la direction d supprime 1 equation : nb_eq_indep[ i ][ d ] = nb_eq[ i ][ d ] - 1
                 nb_eq_indep[ i ][ d ] = nb_eq[ i ][ d ] - 1;
             }
             else {
@@ -486,16 +486,16 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
         minimisation[ i ].set( 0 );
     }
 
-    /// Si type_node[ i ][ d ] = 0 ou type_node[ i ][ d ] = 1,
+    /// Si node_type[ i ][ d ] = 0 ou node_type[ i ][ d ] = 1,
     ///------------------------------------------------------
 //    - si i est un noeud sommet (en 2D ou 3D) ou i est un noeud interieur a une arete (en 3D), alors il y a une etape de minimsation : minimisation[ i ][ d ] = 1
 //    - si i est un noeud non sommet (en 2D) ou i est un noeud interieur a une face (en 3D), alors il n'y a pas d'etape de minimsation : minimisation[ i ][ d ] = 0
 //    autrement dit :
 //    - si nb_eq_indep[ i ][ d ] < nb_unk[ i ][ d ], alors minimisation[ i ][ d ] = 1
 //    - sinon nb_eq_indep[ i ][ d ] = nb_unk[ i ][ d ], alors minimisation[ i ][ d ] = 0
-    /// Si type_node[ i ][ d ] = 12 ou type_node[ i ][ d ] = 2,
+    /// Si node_type[ i ][ d ] = 12 ou node_type[ i ][ d ] = 2,
     ///-------------------------------------------------------
-//    - si nb_eq_imp[ i ][ d ] = nb_unk[ i ][ d ] ( toutes les faces connectees au noeud i dans la direction d sont de type 2, possible uniquement pour type_node[ i ][ d ] = 2 ), alors il n'y a pas d'etape de minimsation : minimisation[ i ][ d ] = 0
+//    - si nb_eq_imp[ i ][ d ] = nb_unk[ i ][ d ] ( toutes les faces connectees au noeud i dans la direction d sont de type 2, possible uniquement pour node_type[ i ][ d ] = 2 ), alors il n'y a pas d'etape de minimsation : minimisation[ i ][ d ] = 0
 //    - sinon,
 //    - si nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] >= nb_unk[ i ][ d ], alors il n'y a pas d'etape de minimsation : minimisation[ i ][ d ] = 0
 //        - si nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] = nb_unk[ i ][ d ], on resoud explicitement
@@ -503,12 +503,12 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
 //        - si nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] < nb_unk[ i ][ d ], alors il y a une etape de minimsation : minimisation[ i ][ d ] = 1
     for (unsigned i=0;i<m.node_list.size();++i) {
         for (unsigned d=0;d<dim;++d) {
-//             if ( type_node[ i ][ d ] == 0 or type_node[ i ][ d ] == 1 ) {
+//             if ( node_type[ i ][ d ] == 0 or node_type[ i ][ d ] == 1 ) {
 //                 if ( nb_eq_indep[ i ][ d ] < nb_unk[ i ][ d ] ) {
 //                     minimisation[ i ][ d ] = 1;
 //                 }
 //             }
-//             else if ( type_node[ i ][ d ] == 2 or type_node[ i ][ d ] == 12 ) {
+//             else if ( node_type[ i ][ d ] == 2 or node_type[ i ][ d ] == 12 ) {
 //                 if ( nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] < nb_unk[ i ][ d ] ) {
 //                     minimisation[ i ][ d ] = 1;
 //                 }
@@ -586,9 +586,9 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
 
     Calcul_Nodal_Vector_b_PGD<T, TMAT> calcul_nodal_vector_b_PGD;
     calcul_nodal_vector_b_PGD.minimisation = &minimisation;
-    calcul_nodal_vector_b_PGD.type_face = &type_face;
+    calcul_nodal_vector_b_PGD.face_type = &face_type;
     calcul_nodal_vector_b_PGD.face_ind = &face_ind;
-    calcul_nodal_vector_b_PGD.list_nodes_face = &list_nodes_face;
+    calcul_nodal_vector_b_PGD.node_list_face = &node_list_face;
     calcul_nodal_vector_b_PGD.pb = &pb;
     calcul_nodal_vector_b_PGD.want_local_enrichment = &want_local_enrichment;
     calcul_nodal_vector_b_PGD.dep_psi = &dep_psi;
@@ -597,7 +597,7 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     calcul_nodal_vector_b_PGD.kappa = &kappa;
     calcul_nodal_vector_b_PGD.K_k_p = &K_k_p;
     calcul_nodal_vector_b_PGD.K_unk_p = &K_unk_p;
-    calcul_nodal_vector_b_PGD.list_elems_PGD_unknown_parameter = &list_elems_PGD_unknown_parameter;
+    calcul_nodal_vector_b_PGD.elem_list_PGD_unknown_param = &elem_list_PGD_unknown_param;
     calcul_nodal_vector_b_PGD.mode = &mode;
 
     apply( m.elem_list, calcul_nodal_vector_b_PGD, m, f, b );
@@ -614,8 +614,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
         }
     }
 
-    list_nodes_face.free();
-    type_face.free();
+    node_list_face.free();
+    face_type.free();
 
     /// Construction des matrices K[ i ][ d ] et des vecteurs F[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
     ///------------------------------------------------------------------------------------------------------------------------
@@ -639,7 +639,7 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
         F[ i ].resize( dim );
         U[ i ].resize( dim );
         for (unsigned d=0;d<dim;++d) {
-            /* if ( type_node[ i ][ d ] == 0 or type_node[ i ][ d ] == 1 ) {
+            /* if ( node_type[ i ][ d ] == 0 or node_type[ i ][ d ] == 1 ) {
                 if ( minimisation[ i ][ d ] == 0 ) {
                     K[ i ][ d ].resize( nb_unk[ i ][ d ] );
                     F[ i ][ d ].resize( nb_unk[ i ][ d ] );
@@ -650,7 +650,7 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
                     F[ i ][ d ].resize( nb_unk[ i ][ d ] + nb_eq_indep[ i ][ d ] );
                     U[ i ][ d ].resize( nb_unk[ i ][ d ] + nb_eq_indep[ i ][ d ] );
                 }
-            else if ( type_node[ i ][ d ] == 2 or type_node[ i ][ d ] == 12 ) {
+            else if ( node_type[ i ][ d ] == 2 or node_type[ i ][ d ] == 12 ) {
                 if ( minimisation[ i ][ d ] == 0 ) {
                     K[ i ][ d ].resize( nb_unk[ i ][ d ] );
                     F[ i ][ d ].resize( nb_unk[ i ][ d ] );
@@ -681,7 +681,7 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
 
     for (unsigned i=0;i<m.node_list.size();++i) {
         for (unsigned d=0;d<dim;++d) {
-            /* if ( type_node[ i ][ d ] == 0 or type_node[ i ][ d ] == 1 ) {
+            /* if ( node_type[ i ][ d ] == 0 or node_type[ i ][ d ] == 1 ) {
                 if ( minimisation[ i ][ d ] == 0 ) {
                     Vec<unsigned> vec_unk = range( nb_unk[ i ][ d ] );
                     K[ i ][ d ]( vec_unk, vec_unk ) = B[ i ][ d ]( vec_unk, vec_unk ) * 1.;
@@ -699,9 +699,9 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
                     F[ i ][ d ][ vec_unk_to_unk_plus_eq_indep ] = r[ i ][ d ][ vec_eq_indep ] * 1.;
                 }
             }
-            else if ( type_node[ i ][ d ] == 2 or type_node[ i ][ d ] == 12 ) {
+            else if ( node_type[ i ][ d ] == 2 or node_type[ i ][ d ] == 12 ) {
                     // si minimisation[ i ][ d ] = 0
-                if ( nb_eq_imp[ i ][ d ] == nb_unk[ i ][ d ] ) { // possible uniquement si type_node[ i ][ d ] = 2
+                if ( nb_eq_imp[ i ][ d ] == nb_unk[ i ][ d ] ) { // possible uniquement si node_type[ i ][ d ] = 2
                     Vec<unsigned> vec_unk = range( nb_unk[ i ][ d ] );
                     K[ i ][ d ]( vec_unk, vec_unk ) = C[ i ][ d ]( vec_unk, vec_unk ) * 1.;
                     F[ i ][ d ][ vec_unk ] = q[ i ][ d ][ vec_unk ] * 1.;
@@ -796,7 +796,7 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     nb_eq_indep.free();
     M.free();
     b.free();
-    type_node.free();
+    node_type.free();
 
     /// Resolution des problemes de minimisation K[ i ][ d ] * U[ i ][ d ] = F[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
     /// Construction des vecteurs U[ i ][ d ] pour chaque noeud i du maillage et chaque direction d

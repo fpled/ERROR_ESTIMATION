@@ -25,7 +25,7 @@ using namespace std;
 /// Compteur du nb de faces connectees a l'element n du maillage : cpt
 /// Liste des faces connectees a l'element n du maillage : list
 ///-------------------------------------------------------------------
-struct Counter_Children {
+struct Counter_Child {
     template<class TE, class TM> void operator()( const TE &elem, const TM &m, Vec<unsigned> &cpt, Vec< Vec<unsigned> > &list ) const {
         cpt[ elem.number ] = NbChildrenElement<typename TE::NE,1>::res;
         for (unsigned k=0;k<NbChildrenElement<typename TE::NE,1>::res;++k) {
@@ -75,7 +75,7 @@ struct Counter_Vertex {
 /// Compteur du nb de noeuds sommets connectes a l'element e ( ou a la face face ) du maillage : cpt
 /// Liste des noeuds sommets connectes a l'element e ( ou a la face face ) du maillage : list
 ///-------------------------------------------------------------------------------------------------
-struct Counter_Vertex_Nodes {
+struct Counter_Vertex_Node {
     const Vec<bool>* correspondance_node_to_vertex_node;
     template<class TE> void operator()( const TE &elem, const Vec<unsigned> &connect_node_to_vertex_node, Vec<unsigned> &cpt, Vec< Vec<unsigned> > &list ) const {
         unsigned elem_nb_nodes = TE::nb_nodes; // nb de noeuds de l'element elem
@@ -91,7 +91,7 @@ struct Counter_Vertex_Nodes {
 /// Compteur du nb de noeuds connectes a l'element e ( ou a la face face ) du maillage : cpt
 /// Liste des noeuds connectes a l'element e ( ou a la face face ) du maillage : list
 ///-----------------------------------------------------------------------------------------
-struct Counter_Nodes {
+struct Counter_Node {
     template<class TE> void operator()( const TE &elem, Vec<unsigned> &cpt, Vec< Vec<unsigned> > &list ) const {
         unsigned elem_nb_nodes = TE::nb_nodes; // nb de noeuds de l'element elem
         for (unsigned i=0;i<elem_nb_nodes;++i) {
@@ -105,7 +105,7 @@ struct Counter_Nodes {
 
 /// Construction de la correspondance entre noeuds sommets et noeuds sommets appartenant a delta_Omega : correspondance_vertex_node_to_skin_vertex_node
 ///----------------------------------------------------------------------------------------------------------------------------------------------------
-struct Constr_Correspondance_Vertex_Node_To_Skin_Vertex_Node {
+struct Construct_Correspondance_Vertex_Node_To_Skin_Vertex_Node {
     Vec<bool>* correspondance_node_to_vertex_node;
     template<class TE> void operator()( const TE &skin_node, const Vec<unsigned> &correspondance_node_to_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, Vec<bool> &correspondance_vertex_node_to_skin_vertex_node ) const {
         if ( correspondance_node_to_vertex_node[ skin_node.number ] == true ) { // si le noeud skin_node est un noeud sommet du maillage
@@ -114,10 +114,10 @@ struct Constr_Correspondance_Vertex_Node_To_Skin_Vertex_Node {
     }
 };
 
-/// Construction du vecteur type_face
+/// Construction du vecteur face_type
 ///----------------------------------
-struct Construct_Type_Face {
-    template<class TE, class TM, class TF> void operator()( const TE &child_elem, const TM &m, const TF &f, Vec< Vec<unsigned> > &type_face ) const {
+struct Construct_Face_Type {
+    template<class TE, class TM, class TF> void operator()( const TE &child_elem, const TM &m, const TF &f, Vec< Vec<unsigned> > &face_type ) const {
         if ( m.sub_mesh(Number<1>()).get_parents_of( child_elem ).size() != 2 ) {
             for (unsigned d=0;d< TE::dim;++d) {
                 unsigned cpt = 0;
@@ -126,41 +126,41 @@ struct Construct_Type_Face {
                         cpt++;
                 }
                 if ( cpt == child_elem.nb_nodes )
-                    type_face[ child_elem.number ][ d ] = 1;
+                    face_type[ child_elem.number ][ d ] = 1;
                 else
-                    type_face[ child_elem.number ][ d ] = 2;
+                    face_type[ child_elem.number ][ d ] = 2;
             }
         }
     }
 };
 
-/// Construction du vecteur type_node
+/// Construction du vecteur node_type
 ///----------------------------------
-struct Construct_Type_Node {
-    const Vec< Vec<unsigned> >* type_face;
-    const Vec<unsigned>* cpt_faces_node;
-    const Vec< Vec<unsigned> >* list_faces_node;
-    template<class TE, class TM, class TF> void operator()( const TE &skin_node, const TM &m, const TF &f, Vec< Vec<unsigned> > &type_node ) const {
+struct Construct_Node_Type {
+    const Vec< Vec<unsigned> >* face_type;
+    const Vec<unsigned>* face_cpt_node;
+    const Vec< Vec<unsigned> >* face_list_node;
+    template<class TE, class TM, class TF> void operator()( const TE &skin_node, const TM &m, const TF &f, Vec< Vec<unsigned> > &node_type ) const {
 //         PRINT( skin_node.number ); // numero du noeud de bord skin_node dans le maillage global 
         for (unsigned d =0;d<TE::dim;++d) {
-            unsigned cpt_type_face_1 = 0;
-            unsigned cpt_type_face_2 = 0;
-            for (unsigned k=0;k<(*cpt_faces_node)[ skin_node.number ];++k) {
-                if ( (*type_face)[ (*list_faces_node)[ skin_node.number ][ k ] ][ d ] == 1 ) {
-                    cpt_type_face_1++;
+            unsigned face_type_cpt_1 = 0;
+            unsigned face_type_cpt_2 = 0;
+            for (unsigned k=0;k<(*face_cpt_node)[ skin_node.number ];++k) {
+                if ( (*face_type)[ (*face_list_node)[ skin_node.number ][ k ] ][ d ] == 1 ) {
+                    face_type_cpt_1++;
                 }
-                if ( (*type_face)[ (*list_faces_node)[ skin_node.number ][ k ] ][ d ] == 2 ) {
-                    cpt_type_face_2++;
+                if ( (*face_type)[ (*face_list_node)[ skin_node.number ][ k ] ][ d ] == 2 ) {
+                    face_type_cpt_2++;
                 }
             }
-            if ( cpt_type_face_1 == 0 and cpt_type_face_2 != 0 ) {
-                type_node[ skin_node.number ][ d ] = 2;
+            if ( face_type_cpt_1 == 0 and face_type_cpt_2 != 0 ) {
+                node_type[ skin_node.number ][ d ] = 2;
             }
-            if ( cpt_type_face_1 != 0 and cpt_type_face_2 == 0 ) {
-                type_node[ skin_node.number ][ d ] = 1;
+            if ( face_type_cpt_1 != 0 and face_type_cpt_2 == 0 ) {
+                node_type[ skin_node.number ][ d ] = 1;
             }
-            if ( cpt_type_face_1 != 0 and cpt_type_face_2 != 0 ) {
-                type_node[ skin_node.number ][ d ] = 12;
+            if ( face_type_cpt_1 != 0 and face_type_cpt_2 != 0 ) {
+                node_type[ skin_node.number ][ d ] = 12;
             }
         }
     }
@@ -304,15 +304,15 @@ struct Construction_Ref_Mesh_Hexa {
     }
 };
 
-/// Construction du maillage de ref local par subdivision des elements dans list_elems en 4 pour Triangle et Quad, et en 8 pour Tetra et Hexa
-///------------------------------------------------------------------------------------------------------------------------------------------
+/// Construction du maillage de ref local par subdivision des elements dans elem_list en 4 pour Triangle et Quad, et en 8 pour Tetra et Hexa
+///-----------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class T>
 struct Divide_element_locally {
-    Divide_element_locally( TM &m, const Vec<T> &list_elems ) : ptr_m( &m ), ptr_list_elems( &list_elems ) {} 
+    Divide_element_locally( TM &m, const Vec<T> &elem_list ) : ptr_m( &m ), ptr_elem_list( &elem_list ) {}
     
     template< class NameBehavior, class TNode_, class TData, unsigned num_in_elem_list_ >
     bool operator() ( Element< Triangle, NameBehavior, TNode_, TData, num_in_elem_list_ > &e ) {
-       if ( find( ptr_list_elems, _1 == e.number ) ) {
+       if ( find( ptr_elem_list, _1 == e.number ) ) {
             typedef typename Element< Triangle, NameBehavior, TNode_, TData, num_in_elem_list_ >::TNode TNode;
             Vec< TNode*, 3 > vn;
             ptr_m->update_elem_children();
@@ -353,7 +353,7 @@ struct Divide_element_locally {
     
     template< class NameBehavior, class TNode_, class TData, unsigned num_in_elem_list_ >
     bool operator() ( Element< Quad, NameBehavior, TNode_, TData, num_in_elem_list_ > &e ) {
-        if ( find( ptr_list_elems, _1 == e.number ) ) {
+        if ( find( ptr_elem_list, _1 == e.number ) ) {
             typedef typename Element< Quad, NameBehavior, TNode_, TData, num_in_elem_list_ >::TNode TNode;
             Vec< TNode*, 4 > vn;
             ptr_m->update_elem_children();
@@ -399,7 +399,7 @@ struct Divide_element_locally {
     
     template< class NameBehavior, class TNode_, class TData, unsigned num_in_elem_list_ >
     bool operator() ( Element< Tetra, NameBehavior, TNode_, TData, num_in_elem_list_ > &e ) {
-        if ( find( ptr_list_elems, _1 == e.number ) ) {
+        if ( find( ptr_elem_list, _1 == e.number ) ) {
             typedef typename Element< Tetra, NameBehavior, TNode_, TData, num_in_elem_list_ >::TNode TNode;
             Vec< TNode*, 4 > vn;
             ptr_m->update_elem_children();
@@ -473,7 +473,7 @@ struct Divide_element_locally {
 
     template< class NameBehavior, class TNode_, class TData, unsigned num_in_elem_list_ >
     bool operator() ( Element< Hexa, NameBehavior, TNode_, TData, num_in_elem_list_ > &e ) {
-        if ( find( ptr_list_elems, _1 == e.number ) ) {
+        if ( find( ptr_elem_list, _1 == e.number ) ) {
             typedef typename Element< Hexa, NameBehavior, TNode_, TData, num_in_elem_list_ >::TNode TNode;
             Vec< TNode*, 8 > vn;
             ptr_m->update_elem_children();
@@ -588,12 +588,12 @@ struct Divide_element_locally {
         return false;
     }
     TM* ptr_m;
-    const Vec<T>* ptr_list_elems;
+    const Vec<T>* ptr_elem_list;
 };
 
 template <class TM, class T>
-void divide_element( TM &m, const Vec<T> &list_elems ) {
-    Divide_element_locally<TM,T> de( m, list_elems );
+void divide_element( TM &m, const Vec<T> &elem_list ) {
+    Divide_element_locally<TM,T> de( m, elem_list );
     m.remove_elements_if( de );
 }
 
@@ -871,16 +871,16 @@ void divide_element( TM &m ) {
     m.remove_elements_if( de );
 }
 
-/// Construction de la liste des elements list_elems_local_ref du maillage de reference contenus dans la liste des elements list_elems du maillage
-///-----------------------------------------------------------------------------------------------------------------------------------------------
-struct Construct_List_Elems_Local_Ref {
-    template<class TE, class TM> void operator()( const TE &elem, TM &m, const Vec<unsigned> &list_elems, Vec<unsigned> &list_elems_local_ref ) const {
-        for (unsigned n=0;n<list_elems.size();++n) {
+/// Construction de la liste des elements elem_list_local_ref du maillage de reference contenus dans la liste des elements elem_list du maillage
+///---------------------------------------------------------------------------------------------------------------------------------------------
+struct Construct_Elem_List_Local_Ref {
+    template<class TE, class TM> void operator()( const TE &elem, TM &m, const Vec<unsigned> &elem_list, Vec<unsigned> &elem_list_local_ref ) const {
+        for (unsigned n=0;n<elem_list.size();++n) {
             Vec<Vec<typename TE::T,TE::dim>, TE::nb_nodes > pos_nodes;
-            for(unsigned i=0;i<(m.elem_list[ list_elems[ n ] ]->nb_nodes_virtual());++i)
-                pos_nodes[i] = m.elem_list[ list_elems[ n ] ]->node_virtual(i)->pos;
+            for(unsigned i=0;i<(m.elem_list[ elem_list[ n ] ]->nb_nodes_virtual());++i)
+                pos_nodes[i] = m.elem_list[ elem_list[ n ] ]->node_virtual(i)->pos;
             if ( is_inside_linear( typename TE::NE(), pos_nodes, center( elem ) ) ) {
-                list_elems_local_ref.push_back( elem.number );
+                elem_list_local_ref.push_back( elem.number );
             }
         }
     }

@@ -66,7 +66,7 @@ def calc_interest_quantity_pointwise_dep_sigma_epsilon( list_f, rep )
         file_ <<< "    #define PNODE(N) elem.node(N)"
         pos_interest_quantity := Vec[ Op, e->dim ]()
         for d in 0 .. e->dim
-            pos_interest_quantity[ d ] = symbol( "pos_interest_quantity[ $d ]" )
+            pos_interest_quantity[ d ] = symbol( "pos_interest_quantity[ $d ]", tex_name = "P_{$d}" )
         e_var_inter := e->var_inter_for_pos( pos_interest_quantity, 1 )
         pointwise_dep := ( child_cast(f)->dep.expr ).subs( e->var_inter, e_var_inter )
         pointwise_epsilon := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
@@ -212,9 +212,9 @@ def calc_interest_quantity_SIF( list_f, rep )
         kappa := parameter_kappa( child_cast(f)->poisson.expr, e->dim, type_stress_2D )
         pos_crack_tip := Vec[ Op, e->dim ]()
         for d in 0 .. e->dim
-            pos_crack_tip[ d ] = symbol( "pos_crack_tip[ $d ]" )
+            pos_crack_tip[ d ] = symbol( "pos_crack_tip[ $d ]", tex_name = "P_{$d}" )
         OM := e->pos - pos_crack_tip
-        angle_crack := symbol( "angle_crack" )
+        angle_crack := symbol( "angle_crack", tex_name = "\\alpha" )
         r := norm_2( OM )
         theta := atan2( OM[ 1 ], OM[ 0 ] ) - angle_crack
         u_0 := 1 / ( 2 * sqrt( 2 * Pi * r ) * ( 1 + kappa ) )
@@ -254,9 +254,9 @@ def calc_interest_quantity_SIF( list_f, rep )
         sigma_tilde_II = mat * sigma_tilde_II_ * trans( mat )
         # sigma_tilde_II := sigma_hooke_iso( e->grad_sym( u_tilde_II ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
         # sigma_tilde_II.display_tex( "sigma_tilde_II" )
-        R_1 := symbol( "radius_Ri" )
-        R_2 := symbol( "radius_Re" )
-        phi := ( R_2 - r ) / ( R_2 - R_1 )
+        R_i := symbol( "radius_Ri", tex_name = "R_i" )
+        R_e := symbol( "radius_Re", tex_name = "R_e" )
+        phi := ( R_e - r ) / ( R_e - R_i )
         epsilon_tilde_I := e->grad_sym( phi * u_tilde_I )
         extractor_pre_sigma_I := sigma_hooke_iso( epsilon_tilde_I, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) - phi * sigma_tilde_I
         extractor_pre_sigma_I_const_in_elem := extractor_pre_sigma_I.subs( e->var_inter, e->get_center_of_var_inter() )
@@ -386,7 +386,7 @@ def calc_elem_correction_interest_quantity_wo_sigma_hat_m( list_f, rep )
         sym_dep_hat := Vec[ Op ]()
         for i in 0 .. sym_dep_hat_expr.size
             sy := Op()
-            sy = symbol( "dep_hat[ elem.number ][ $i ]" )
+            sy = symbol( "dep_hat[ elem.number ][ $i ]", tex_name = "\\hat{U}[ elem.number ][ $i ]" )
             sym_dep_hat.push_back( sy )
         sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
         for _f_adjoint in list_f
@@ -513,7 +513,7 @@ def calc_elem_correction_interest_quantity_w_sigma_hat_m( list_f, rep )
         sym_dep_hat := Vec[ Op ]()
         for i in 0 .. sym_dep_hat_expr.size
             sy := Op()
-            sy = symbol( "dep_hat[ elem.number ][ $i ]" )
+            sy = symbol( "dep_hat[ elem.number ][ $i ]", tex_name = "\\hat{U}[ elem.number ][ $i ]" )
             sym_dep_hat.push_back( sy )
         sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
         for _f_adjoint in list_f
@@ -550,7 +550,7 @@ def calc_elem_correction_interest_quantity_w_sigma_hat_m( list_f, rep )
             sym_dep_adjoint_hat := Vec[ Op ]()
             for i in 0 .. sym_dep_adjoint_hat_expr.size
                 sy := Op()
-                sy = symbol( "dep_adjoint_hat[ elem_adjoint.number ][ $i ]" )
+                sy = symbol( "dep_adjoint_hat[ elem_adjoint.number ][ $i ]", tex_name = "\\hat{\\tilde{U}}[ elem_adjoint.number ][ $i ]" )
                 sym_dep_adjoint_hat.push_back( sy )
             sigma_adjoint_hat := sigma_adjoint_hat_expr.subs( sym_dep_adjoint_hat_expr, sym_dep_adjoint_hat )
 
@@ -674,7 +674,7 @@ def calc_elem_error_estimate_lambda( list_f, rep )
         sym_dep_hat := Vec[ Op ]()
         for i in 0 .. sym_dep_hat_expr.size
             sy := Op()
-            sy = symbol( "dep_hat[ elem.number ][ $i ]" )
+            sy = symbol( "dep_hat[ elem.number ][ $i ]", tex_name = "\\hat{U}[ elem.number ][ $i ]" )
             sym_dep_hat.push_back( sy )
         dep_hat := dep_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
         sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
@@ -834,10 +834,10 @@ def calc_elem_weighted_error_estimate_lambda( list_f, rep )
 
         domain_center := Vec[ Op, e_lambda->dim ]()
         for d in 0 .. e_lambda->dim
-            domain_center[ d ] = symbol( "domain_center[ $d ]" )
+            domain_center[ d ] = symbol( "domain_center[ $d ]", tex_name = "C[ $d ]" )
         OM := e_lambda->pos - domain_center
         r := norm_2( OM )
-        r_min := symbol( "( k_min * domain_length[ 0 ] )" )
+        r_min := symbol( "( k_min * domain_length[ 0 ] )", tex_name = "r_{\\text{min}}" )
         h := symbol( "h" )
 
         dep_hat_expr := Vec[ Op, e->dim ]()
@@ -862,7 +862,7 @@ def calc_elem_weighted_error_estimate_lambda( list_f, rep )
         sym_dep_hat := Vec[ Op ]()
         for i in 0 .. sym_dep_hat_expr.size
             sy := Op()
-            sy = symbol( "dep_hat[ elem.number ][ $i ]" )
+            sy = symbol( "dep_hat[ elem.number ][ $i ]", tex_name = "\\hat{U}[ elem.number ][ $i ]" )
             sym_dep_hat.push_back( sy )
         dep_hat := dep_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
         sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
@@ -946,7 +946,7 @@ def calc_skin_elem_error_estimate_lambda_boundary( list_f, rep )
         file_ <<< "    #define PNODE(N) elem.node(N)"
         domain_center := Vec[ Op, e->dim ]()
         for d in 0 .. e->dim
-            domain_center[ d ] = symbol( "domain_center[ $d ]" )
+            domain_center[ d ] = symbol( "domain_center[ $d ]", tex_name = "C_{$d}" )
         dep_hat_expr := Vec[ Op, e->dim ]()
         corr_SPET := symbol( "(method == \"SPET\" ? 1 : 0)" )
         corr_EET_EESPT := symbol( "((method == \"EET\" or method == \"EESPT\") ? 1 : 0)" )
@@ -969,7 +969,7 @@ def calc_skin_elem_error_estimate_lambda_boundary( list_f, rep )
         sym_dep_hat := Vec[ Op ]()
         for i in 0 .. sym_dep_hat_expr.size
             sy := Op()
-            sy = symbol( "dep_hat[ elem.number ][ $i ]" )
+            sy = symbol( "dep_hat[ elem.number ][ $i ]", tex_name = "\\hat{U}[ elem.number ][ $i ]" )
             sym_dep_hat.push_back( sy )
         dep_hat := dep_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
         sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
@@ -1075,7 +1075,7 @@ def calc_elem_correction_interest_quantity_lambda( list_f, rep )
         sym_dep_hat := Vec[ Op ]()
         for i in 0 .. sym_dep_hat_expr.size
             sy := Op()
-            sy = symbol( "dep_hat[ elem.number ][ $i ]" )
+            sy = symbol( "dep_hat[ elem.number ][ $i ]", tex_name = "\\hat{U}[ elem.number ][ $i ]" )
             sym_dep_hat.push_back( sy )
         sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
         for _f_adjoint in list_f
@@ -1113,7 +1113,7 @@ def calc_elem_correction_interest_quantity_lambda( list_f, rep )
             sym_dep_adjoint_hat := Vec[ Op ]()
             for i in 0 .. sym_dep_adjoint_hat_expr.size
                 sy := Op()
-                sy = symbol( "dep_adjoint_hat[ elem_adjoint.number ][ $i ]" )
+                sy = symbol( "dep_adjoint_hat[ elem_adjoint.number ][ $i ]", tex_name = "\\hat{\\tilde{U}}[ elem_adjoint.number ][ $i ]" )
                 sym_dep_adjoint_hat.push_back( sy )
             sigma_adjoint_hat := sigma_adjoint_hat_expr.subs( sym_dep_adjoint_hat_expr, sym_dep_adjoint_hat )
 
@@ -1210,7 +1210,7 @@ def calc_elem_error_estimate_proj_on_adjoint( list_f, rep )
         sym_dep_hat := Vec[ Op ]()
         for i in 0 .. sym_dep_hat_expr.size
             sy := Op()
-            sy = symbol( "dep_hat[ elem.number ][ $i ]" )
+            sy = symbol( "dep_hat[ elem.number ][ $i ]", tex_name = "\\hat{U}[ elem.number ][ $i ]" )
             sym_dep_hat.push_back( sy )
         sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
         for _f_adjoint in list_f
@@ -1278,7 +1278,7 @@ def calc_dep_handbook_in_infinite_domain( list_f, rep )
         e := child_cast( f->pe )
         pos_handbook := Vec[ Op, e->dim ]()
         for d in 0 .. e->dim
-            pos_handbook[ d ] = symbol( "f.m->pos_handbook[ $d ]" )
+            pos_handbook[ d ] = symbol( "f.m->pos_handbook[ $d ]", tex_name = "P_{$d}" )
         OM := e->pos - pos_handbook
         Galerkin_vector := Galerkin_vector_function( e->dim, OM, child_cast(f)->mu.expr, child_cast(f)->phi_handbook_for_pointwise_force_in_infinite_domain.expr, child_cast(f)->phi_handbook_for_pointwise_pre_sigma_in_infinite_domain.expr, child_cast(f)->phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain.expr )
         u_handbook := dep_handbook_function( @e, Galerkin_vector, child_cast(f)->la.expr, child_cast(f)->mu.expr )

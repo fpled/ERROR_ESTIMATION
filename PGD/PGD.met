@@ -12,7 +12,7 @@
 
 # Methode qui permet de definir la fonction f(parametre)
 #-------------------------------------------------------
-def parameter_function( pos )
+def param_function( pos )
     res := pos;
     return res
 
@@ -34,8 +34,8 @@ def eval_dep_lambda( list_f, rep )
         file_ <<< "    #define PNODE(N) elem.node(N)"
         pos := Vec[ Op, e->dim ]()
         for d in 0 .. e->dim
-            pos[ d ] = symbol( "pos[ $d ]" )
-        child_cast(f)->dep.subs( interpolation="nodal", interpolation_base=FE_base, default_value=0.0, unit="m", unknown=true, tex_name = "\\lambda" )
+            pos[ d ] = symbol( "pos[ $d ]", tex_name = "P_{$d}" )
+        child_cast(f)->dep.subs( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="m", unknown=true, tex_name = "\\lambda" )
         file_ <<< "    #undef PNODE"
         file_ <<< "}"
         file_ <<< "}"
@@ -58,7 +58,7 @@ def construct_dep_psi( list_f, rep )
         file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV>"
         file_ <<< "void construct_dep_psi( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const TTVV &vectors ) {"
         file_ <<< "    #define PNODE(N) elem.node(N)"
-        child_cast(f)->dep_psi.push_back( interpolation="nodal", interpolation_base=FE_base, default_value=0.0, unit="m", unknown=true, tex_name = "\\psi" )
+        child_cast(f)->dep_psi.push_back( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="m", unknown=true, tex_name = "\\psi" )
         file_ <<< "    #undef PNODE"
         file_ <<< "}"
         file_ <<< "}"
@@ -70,7 +70,7 @@ def construct_dep_psi( list_f, rep )
 def construct_space_pb( list_f, rep )
     file_names := Vec[String]()
     for f in list_f
-        e_param := new SymbolicElement[ Bar, 1 ]( name_elem = "elem_param", tex_symbol_pos = "P_{param}" )
+        e_param := new SymbolicElement[ Bar, 1 ]( name_elem = "elem_param", tex_symbol_pos = "P_{\\text{param}}" )
         e_param->assume_const_jac = false
         f_param := new FormulationElasticity[ e_param->dim ]( @e_param, "param_" )
         f_param->name = f->name
@@ -83,18 +83,18 @@ def construct_space_pb( list_f, rep )
         file_ <<< "namespace LMT {"
         file_ <<< "template<class TN_param, class TNG_param, class TD_param, unsigned NET_param, class TM_param, class T>"
         file_ <<< "void construct_space_pb( const Element<$(e_param->name),TN_param,TNG_param,TD_param,NET_param> &elem_param, const TM_param &m_param, T &alpha_s, T &gamma_s ) {"
-        f_param->dep_param.push_back( interpolation="nodal", interpolation_base=FE_base, default_value=0.0, unit="m", tex_name = "U_{param}" )
+        f_param->dep_param.push_back( interpolation="nodal", interpolation_base=FE_base, default_value=0.0, unit="m", tex_name = "U_{\\text{param}}" )
         alpha := Op( 0 )
         gamma := Op( 0 )
         pos := e_param->pos
-        function_parameter := 1 + pos[0]
-        degre_poly_alpha := ( dot( f_param->dep_param[].expr, f_param->dep_param.expr ) * function_parameter ).poly_deg( e_param->var_inter )
+        function_param := 1 + pos[0]
+        degre_poly_alpha := ( dot( f_param->dep_param.expr, f_param->dep_param.expr ) * function_param ).poly_deg( e_param->var_inter )
         degre_poly_gamma := ( f_param->dep_param.expr[0] ).poly_deg( e_param->var_inter )
         if integ_type == "gauss_num"
-            alpha = e_param->gauss_num_integration( dot( f_param->dep_param.expr, f_param->dep_param.expr ) * function_parameter, order_diff = degre_poly_alpha )
+            alpha = e_param->gauss_num_integration( dot( f_param->dep_param.expr, f_param->dep_param.expr ) * function_param, order_diff = degre_poly_alpha )
             gamma = e_param->gauss_num_integration( f_param->dep_param.expr[0], order_diff = degre_poly_gamma )
         else if integ_type == "formal"
-            alpha = e_param->integration( dot( f_param->dep_param.expr, f_param->dep_param.expr ) * function_parameter, order_diff = degre_poly_alpha )
+            alpha = e_param->integration( dot( f_param->dep_param.expr, f_param->dep_param.expr ) * function_param, order_diff = degre_poly_alpha )
             gamma = e_param->integration( f_param->dep_param.expr[0], order_diff = degre_poly_gamma )
         cw := CodeWriterAlt( "T" )
         cw.add( "alpha_s", alpha, add )

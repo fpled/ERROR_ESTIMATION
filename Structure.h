@@ -12,7 +12,7 @@
 #ifndef Structure_h
 #define Structure_h
 
-#include "LMT/include/mesh/make_rect.h" // sert a definir la fonction make_rect() pour fabriquer un maillage rectangulaire
+#include "LMT/include/mesh/make_rect.h" // sert a definir la fonction make_rect() pour fabriquer un maillage rectangulaire/hypercubique
 #include "LMT/include/mesh/read_msh_2.h" // sert a definir la fonction read_msh_2() pour charger un maillage a partir d'un fichier .msh
 #include "LMT/include/mesh/read_avs.h" // sert a definir la fonction read_avs() pour charger un maillage a partir d'un fichier .avs ou .inp
 #include "LMT/include/mesh/read_inp.h" // sert a definir la fonction read_inp() pour charger un maillage a partir d'un fichier .inp
@@ -1061,14 +1061,14 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
 /// Creation de la structure adjoint
 ///---------------------------------
 template<class TM, class T, class Pvec>
-void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, const string &interest_quantity, const string &direction_extractor, const bool &want_local_refinement_adjoint, const T &l_min, const T &k, const string &pointwise_interest_quantity, const Vec<unsigned> &list_elems, Vec<unsigned> &list_elems_adjoint, const unsigned &node, unsigned &node_adjoint, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool &spread_cut, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, Vec<unsigned> &list_elems_adjoint_enrichment_zone_1, Vec<unsigned> &list_elems_adjoint_enrichment_zone_2, Vec<unsigned> &list_faces_adjoint_enrichment_zone_12, Vec<unsigned> &list_nodes_adjoint_enrichment, const bool &debug_geometry, const bool &debug_geometry_adjoint ) {
+void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, const string &interest_quantity, const string &direction_extractor, const bool &want_local_refinement_adjoint, const T &l_min, const T &k, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list, Vec<unsigned> &elem_list_adjoint, const unsigned &node, unsigned &node_adjoint, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool &spread_cut, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, Vec<unsigned> &elem_list_adjoint_enrichment_zone_1, Vec<unsigned> &elem_list_adjoint_enrichment_zone_2, Vec<unsigned> &face_list_adjoint_enrichment_zone_12, Vec<unsigned> &node_list_adjoint_enrichment, const bool &debug_geometry, const bool &debug_geometry_adjoint ) {
 
     static const unsigned dim = TM::dim;
 
     if ( interest_quantity.find("mean") != string::npos ) {
-        for (unsigned n=0;n<list_elems.size();++n) {
-            if ( list_elems[ n ] > m.elem_list.size() ) {
-                cerr << "Arret brutal, car l'element " << list_elems[ n ] << " definissant la zone d'interet ne fait pas partie de la liste des elements du maillage EF..." << endl << endl;
+        for (unsigned n=0;n<elem_list.size();++n) {
+            if ( elem_list[ n ] > m.elem_list.size() ) {
+                cerr << "Arret brutal, car l'element " << elem_list[ n ] << " definissant la zone d'interet ne fait pas partie de la liste des elements du maillage EF..." << endl << endl;
                 throw "Baleinou sous caillou...";
             }
         }
@@ -1085,13 +1085,13 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
     if ( want_local_refinement_adjoint ) {
         if (deg_p == 1) {
             if ( interest_quantity.find("mean") != string::npos ) {
-                for (unsigned n=0;n<list_elems.size();++n) {
+                for (unsigned n=0;n<elem_list.size();++n) {
 //                    divide_element( m_adjoint );
-                    Local_refinement_point_w_id<T, Pvec> ref( l_min, k, center( *m.elem_list[ list_elems[ n ] ] ) );
+                    Local_refinement_point_w_id<T, Pvec> ref( l_min, k, center( *m.elem_list[ elem_list[ n ] ] ) );
                     while( refinement( m_adjoint, ref, spread_cut ) )
                         ref.id++;
-                    for(unsigned i=0;i<(m.elem_list[ list_elems[ n ] ]->nb_nodes_virtual());++i) {
-                        Local_refinement_point_w_id<T, Pvec> ref( l_min, k, m.elem_list[ list_elems[ n ] ]->node_virtual(i)->pos );
+                    for(unsigned i=0;i<(m.elem_list[ elem_list[ n ] ]->nb_nodes_virtual());++i) {
+                        Local_refinement_point_w_id<T, Pvec> ref( l_min, k, m.elem_list[ elem_list[ n ] ]->node_virtual(i)->pos );
                         while( refinement( m_adjoint, ref, spread_cut ) )
                             ref.id++;
                     }
@@ -1130,7 +1130,7 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
     /// Zone d'interet du maillage adjoint
     ///-----------------------------------
     if ( interest_quantity.find("mean") != string::npos )
-        apply( m_adjoint.elem_list, Construct_List_Elems_Local_Ref(), m, list_elems, list_elems_adjoint );
+        apply( m_adjoint.elem_list, Construct_Elem_List_Local_Ref(), m, elem_list, elem_list_adjoint );
     else if ( interest_quantity.find("pointwise") != string::npos )
         apply( m_adjoint.node_list, Construct_Node_Local_Ref(), m, node, node_adjoint );
     
@@ -1139,53 +1139,53 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
     if ( want_local_enrichment ) {
         m.update_node_neighbours();
         m.update_node_parents();
-        Vec<unsigned> list_nodes_enrichment;
-        Vec<unsigned> list_elems_enrichment_zone_1;
+        Vec<unsigned> node_list_enrichment;
+        Vec<unsigned> elem_list_enrichment_zone_1;
         /// Definition de la zone d'enrichissement zone_1 du pb direct
         ///-----------------------------------------------------------
         if ( interest_quantity.find("mean") != string::npos ) {
-            for (unsigned n=0;n<list_elems.size();++n) {
-                unsigned cpt_layers_nodes_enrichment = 1;
-                list_elems_enrichment_zone_1.push_back( list_elems[ n ] );
-                for(unsigned i=0;i<(m.elem_list[ list_elems[ n ] ]->nb_nodes_virtual());++i)
-                    list_nodes_enrichment.push_back( m.elem_list[ list_elems[ n ] ]->node_virtual(i)->number );
-                while ( cpt_layers_nodes_enrichment < nb_layers_nodes_enrichment ) {
-                    Vec<unsigned> list_nodes_enrichment_tmp = list_nodes_enrichment;
-                    for(unsigned i=0;i<list_nodes_enrichment_tmp.size();++i) {
-                        for (unsigned j=0;j<m.get_node_neighbours( list_nodes_enrichment_tmp[ i ] ).size();++j) {
-                            if ( not find( list_nodes_enrichment, _1 == m.get_node_neighbours( list_nodes_enrichment_tmp[ i ] )[ j ]->number ) )
-                                list_nodes_enrichment.push_back( m.get_node_neighbours( list_nodes_enrichment[ i ] )[ j ]->number );
+            for (unsigned n=0;n<elem_list.size();++n) {
+                unsigned node_layer_cpt_enrichment = 1;
+                elem_list_enrichment_zone_1.push_back( elem_list[ n ] );
+                for(unsigned i=0;i<(m.elem_list[ elem_list[ n ] ]->nb_nodes_virtual());++i)
+                    node_list_enrichment.push_back( m.elem_list[ elem_list[ n ] ]->node_virtual(i)->number );
+                while ( node_layer_cpt_enrichment < nb_layers_nodes_enrichment ) {
+                    Vec<unsigned> node_list_enrichment_tmp = node_list_enrichment;
+                    for(unsigned i=0;i<node_list_enrichment_tmp.size();++i) {
+                        for (unsigned j=0;j<m.get_node_neighbours( node_list_enrichment_tmp[ i ] ).size();++j) {
+                            if ( not find( node_list_enrichment, _1 == m.get_node_neighbours( node_list_enrichment_tmp[ i ] )[ j ]->number ) )
+                                node_list_enrichment.push_back( m.get_node_neighbours( node_list_enrichment[ i ] )[ j ]->number );
                         }
-                        for (unsigned p=0;p<m.get_node_parents( list_nodes_enrichment_tmp[ i ] ).size();++p) {
-                            if ( not find( list_elems_enrichment_zone_1, _1 == m.get_node_parents( list_nodes_enrichment_tmp[ i ] )[ p ]->number ) )
-                                list_elems_enrichment_zone_1.push_back( m.get_node_parents( list_nodes_enrichment_tmp[ i ] )[ p ]->number );
+                        for (unsigned p=0;p<m.get_node_parents( node_list_enrichment_tmp[ i ] ).size();++p) {
+                            if ( not find( elem_list_enrichment_zone_1, _1 == m.get_node_parents( node_list_enrichment_tmp[ i ] )[ p ]->number ) )
+                                elem_list_enrichment_zone_1.push_back( m.get_node_parents( node_list_enrichment_tmp[ i ] )[ p ]->number );
                         }
                     }
-                    cpt_layers_nodes_enrichment++;
+                    node_layer_cpt_enrichment++;
                 }
             }
         }
         else if ( interest_quantity.find("pointwise") != string::npos ) {
             if ( pointwise_interest_quantity == "node" ) {
-                unsigned cpt_layers_nodes_enrichment = 1;
+                unsigned node_layer_cpt_enrichment = 1;
                 for (unsigned n=0;n<m.get_node_parents( node ).size();++n)
-                    list_elems_enrichment_zone_1.push_back( m.get_node_parents( node )[ n ]->number );
-                list_nodes_enrichment.push_back( node );
+                    elem_list_enrichment_zone_1.push_back( m.get_node_parents( node )[ n ]->number );
+                node_list_enrichment.push_back( node );
                 for (unsigned j=0;j<m.get_node_neighbours( node ).size();++j)
-                    list_nodes_enrichment.push_back( m.get_node_neighbours( node )[ j ]->number );
-                while ( cpt_layers_nodes_enrichment < nb_layers_nodes_enrichment ) {
-                    Vec<unsigned> list_nodes_enrichment_tmp = list_nodes_enrichment;
-                    for(unsigned j=0;j<list_nodes_enrichment_tmp.size();++j) {
-                        for (unsigned k=0;k<m.get_node_neighbours( list_nodes_enrichment_tmp[ j ] ).size();++k) {
-                            if ( not find( list_nodes_enrichment, _1 == m.get_node_neighbours( list_nodes_enrichment_tmp[ j ] )[ k ]->number ) )
-                                list_nodes_enrichment.push_back( m.get_node_neighbours( list_nodes_enrichment[ j ] )[ k ]->number );
+                    node_list_enrichment.push_back( m.get_node_neighbours( node )[ j ]->number );
+                while ( node_layer_cpt_enrichment < nb_layers_nodes_enrichment ) {
+                    Vec<unsigned> node_list_enrichment_tmp = node_list_enrichment;
+                    for(unsigned j=0;j<node_list_enrichment_tmp.size();++j) {
+                        for (unsigned k=0;k<m.get_node_neighbours( node_list_enrichment_tmp[ j ] ).size();++k) {
+                            if ( not find( node_list_enrichment, _1 == m.get_node_neighbours( node_list_enrichment_tmp[ j ] )[ k ]->number ) )
+                                node_list_enrichment.push_back( m.get_node_neighbours( node_list_enrichment[ j ] )[ k ]->number );
                         }
-                        for (unsigned p=0;p<m.get_node_parents( list_nodes_enrichment_tmp[ j ] ).size();++p) {
-                            if ( not find( list_elems_enrichment_zone_1, _1 == m.get_node_parents( list_nodes_enrichment_tmp[ j ] )[ p ]->number ) )
-                                list_elems_enrichment_zone_1.push_back( m.get_node_parents( list_nodes_enrichment_tmp[ j ] )[ p ]->number );
+                        for (unsigned p=0;p<m.get_node_parents( node_list_enrichment_tmp[ j ] ).size();++p) {
+                            if ( not find( elem_list_enrichment_zone_1, _1 == m.get_node_parents( node_list_enrichment_tmp[ j ] )[ p ]->number ) )
+                                elem_list_enrichment_zone_1.push_back( m.get_node_parents( node_list_enrichment_tmp[ j ] )[ p ]->number );
                         }
                     }
-                    cpt_layers_nodes_enrichment++;
+                    node_layer_cpt_enrichment++;
                 }
             }
             else if ( pointwise_interest_quantity == "pos" ) {
@@ -1194,23 +1194,23 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
                     if ( length( center( *m.elem_list[ n ] ) - pos_interest_quantity ) < length( center( *m.elem_list[ num_elem ] ) - pos_interest_quantity ) )
                         num_elem = n;
                 }
-                unsigned cpt_layers_nodes_enrichment = 1;
-                list_elems_enrichment_zone_1.push_back( num_elem );
+                unsigned node_layer_cpt_enrichment = 1;
+                elem_list_enrichment_zone_1.push_back( num_elem );
                 for(unsigned i=0;i<(m.elem_list[ num_elem ]->nb_nodes_virtual());++i)
-                    list_nodes_enrichment.push_back( m.elem_list[ num_elem ]->node_virtual(i)->number );
-                while ( cpt_layers_nodes_enrichment < nb_layers_nodes_enrichment ) {
-                    Vec<unsigned> list_nodes_enrichment_tmp = list_nodes_enrichment;
-                    for(unsigned i=0;i<list_nodes_enrichment_tmp.size();++i) {
-                        for (unsigned j=0;j<m.get_node_neighbours( list_nodes_enrichment_tmp[ i ] ).size();++j) {
-                            if ( not find( list_nodes_enrichment, _1 == m.get_node_neighbours( list_nodes_enrichment_tmp[ i ] )[ j ]->number ) )
-                                list_nodes_enrichment.push_back( m.get_node_neighbours( list_nodes_enrichment[ i ] )[ j ]->number );
+                    node_list_enrichment.push_back( m.elem_list[ num_elem ]->node_virtual(i)->number );
+                while ( node_layer_cpt_enrichment < nb_layers_nodes_enrichment ) {
+                    Vec<unsigned> node_list_enrichment_tmp = node_list_enrichment;
+                    for(unsigned i=0;i<node_list_enrichment_tmp.size();++i) {
+                        for (unsigned j=0;j<m.get_node_neighbours( node_list_enrichment_tmp[ i ] ).size();++j) {
+                            if ( not find( node_list_enrichment, _1 == m.get_node_neighbours( node_list_enrichment_tmp[ i ] )[ j ]->number ) )
+                                node_list_enrichment.push_back( m.get_node_neighbours( node_list_enrichment[ i ] )[ j ]->number );
                         }
-                        for (unsigned p=0;p<m.get_node_parents( list_nodes_enrichment_tmp[ i ] ).size();++p) {
-                            if ( not find( list_elems_enrichment_zone_1, _1 == m.get_node_parents( list_nodes_enrichment_tmp[ i ] )[ p ]->number ) )
-                                list_elems_enrichment_zone_1.push_back( m.get_node_parents( list_nodes_enrichment_tmp[ i ] )[ p ]->number );
+                        for (unsigned p=0;p<m.get_node_parents( node_list_enrichment_tmp[ i ] ).size();++p) {
+                            if ( not find( elem_list_enrichment_zone_1, _1 == m.get_node_parents( node_list_enrichment_tmp[ i ] )[ p ]->number ) )
+                                elem_list_enrichment_zone_1.push_back( m.get_node_parents( node_list_enrichment_tmp[ i ] )[ p ]->number );
                         }
                     }
-                    cpt_layers_nodes_enrichment++;
+                    node_layer_cpt_enrichment++;
                 }
             }
             else
@@ -1218,77 +1218,77 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
         }
         /// Definition de la zone d'enrichissement zone_2 du pb direct
         ///-----------------------------------------------------------
-        Vec<unsigned> list_elems_enrichment_zone_2;
-        for (unsigned i=0;i<list_nodes_enrichment.size();++i) {
-            for (unsigned n=0;n<m.get_node_parents( list_nodes_enrichment[ i ] ).size();++n) {
-                if ( not find( list_elems_enrichment_zone_1, _1 == m.get_node_parents( list_nodes_enrichment[ i ] )[ n ]->number ) and not find( list_elems_enrichment_zone_2, _1 == m.get_node_parents( list_nodes_enrichment[ i ] )[ n ]->number ) )
-                    list_elems_enrichment_zone_2.push_back( m.get_node_parents( list_nodes_enrichment[ i ] )[ n ]->number );
+        Vec<unsigned> elem_list_enrichment_zone_2;
+        for (unsigned i=0;i<node_list_enrichment.size();++i) {
+            for (unsigned n=0;n<m.get_node_parents( node_list_enrichment[ i ] ).size();++n) {
+                if ( not find( elem_list_enrichment_zone_1, _1 == m.get_node_parents( node_list_enrichment[ i ] )[ n ]->number ) and not find( elem_list_enrichment_zone_2, _1 == m.get_node_parents( node_list_enrichment[ i ] )[ n ]->number ) )
+                    elem_list_enrichment_zone_2.push_back( m.get_node_parents( node_list_enrichment[ i ] )[ n ]->number );
             }
         }
         /// Definition de la zone d'enrichissement zone_12 du pb direct
         ///------------------------------------------------------------
-        Vec<unsigned> cpt_children;
-        Vec< Vec<unsigned> > list_children;
-        construct_children( m, cpt_children, list_children, debug_geometry );
-        Vec<unsigned> list_faces_enrichment_zone_1;
-        for (unsigned n=0;n<list_elems_enrichment_zone_1.size();++n) {
-            for (unsigned k=0;k<cpt_children[ list_elems_enrichment_zone_1[ n ] ];++k) {
-                if ( not find( list_faces_enrichment_zone_1, _1 == list_children[ list_elems_enrichment_zone_1[ n ] ][ k ] ) )
-                    list_faces_enrichment_zone_1.push_back( list_children[ list_elems_enrichment_zone_1[ n ] ][ k ] );
+        Vec<unsigned> child_cpt;
+        Vec< Vec<unsigned> > child_list;
+        construct_child( m, child_cpt, child_list, debug_geometry );
+        Vec<unsigned> face_list_enrichment_zone_1;
+        for (unsigned n=0;n<elem_list_enrichment_zone_1.size();++n) {
+            for (unsigned k=0;k<child_cpt[ elem_list_enrichment_zone_1[ n ] ];++k) {
+                if ( not find( face_list_enrichment_zone_1, _1 == child_list[ elem_list_enrichment_zone_1[ n ] ][ k ] ) )
+                    face_list_enrichment_zone_1.push_back( child_list[ elem_list_enrichment_zone_1[ n ] ][ k ] );
             }
         }
-        Vec<unsigned> list_faces_enrichment_zone_12;
-        for (unsigned n=0;n<list_elems_enrichment_zone_2.size();++n) {
-            for (unsigned k=0;k<cpt_children[ list_elems_enrichment_zone_2[ n ] ];++k) {
-                if ( find( list_faces_enrichment_zone_1, _1 == list_children[ list_elems_enrichment_zone_2[ n ] ][ k ] ) )
-                    list_faces_enrichment_zone_12.push_back( list_children[ list_elems_enrichment_zone_2[ n ] ][ k ] );
+        Vec<unsigned> face_list_enrichment_zone_12;
+        for (unsigned n=0;n<elem_list_enrichment_zone_2.size();++n) {
+            for (unsigned k=0;k<child_cpt[ elem_list_enrichment_zone_2[ n ] ];++k) {
+                if ( find( face_list_enrichment_zone_1, _1 == child_list[ elem_list_enrichment_zone_2[ n ] ][ k ] ) )
+                    face_list_enrichment_zone_12.push_back( child_list[ elem_list_enrichment_zone_2[ n ] ][ k ] );
             }
         }
         /// Definition des level set du pb direct
         ///--------------------------------------
-        for (unsigned i=0;i<list_nodes_enrichment.size();++i)
-            m.node_list[ list_nodes_enrichment[ i ] ].phi_nodal_handbook = 1.;
-        for (unsigned n=0;n<list_elems_enrichment_zone_1.size();++n)
-            m.elem_list[ list_elems_enrichment_zone_1[ n ] ]->set_field( "phi_elem_handbook_zone_1", 1 );
-        for (unsigned n=0;n<list_elems_enrichment_zone_2.size();++n)
-            m.elem_list[ list_elems_enrichment_zone_2[ n ] ]->set_field( "phi_elem_handbook_zone_2", 1 );
-        for (unsigned k=0;k<list_faces_enrichment_zone_12.size();++k)
-            m.sub_mesh(Number<1>()).elem_list[ list_faces_enrichment_zone_12[ k ] ]->set_field( "phi_surf_handbook_zone_12", 1 );
+        for (unsigned i=0;i<node_list_enrichment.size();++i)
+            m.node_list[ node_list_enrichment[ i ] ].phi_nodal_handbook = 1.;
+        for (unsigned n=0;n<elem_list_enrichment_zone_1.size();++n)
+            m.elem_list[ elem_list_enrichment_zone_1[ n ] ]->set_field( "phi_elem_handbook_zone_1", 1 );
+        for (unsigned n=0;n<elem_list_enrichment_zone_2.size();++n)
+            m.elem_list[ elem_list_enrichment_zone_2[ n ] ]->set_field( "phi_elem_handbook_zone_2", 1 );
+        for (unsigned k=0;k<face_list_enrichment_zone_12.size();++k)
+            m.sub_mesh(Number<1>()).elem_list[ face_list_enrichment_zone_12[ k ] ]->set_field( "phi_surf_handbook_zone_12", 1 );
         
         /// Definition de la zone d'enrichissement zone_1 du pb adjoint
         ///------------------------------------------------------------
-        apply( m_adjoint.elem_list, Construct_List_Elems_Local_Ref(), m, list_elems_enrichment_zone_1, list_elems_adjoint_enrichment_zone_1 );
-        for (unsigned n=0;n<list_elems_adjoint_enrichment_zone_1.size();++n) {
-            for(unsigned i=0;i<(m_adjoint.elem_list[ list_elems_adjoint_enrichment_zone_1[ n ] ]->nb_nodes_virtual());++i) {
-                if ( not find( list_nodes_adjoint_enrichment, _1 == m_adjoint.elem_list[ list_elems_adjoint_enrichment_zone_1[ n ] ]->node_virtual(i)->number ) )
-                    list_nodes_adjoint_enrichment.push_back( m_adjoint.elem_list[ list_elems_adjoint_enrichment_zone_1[ n ] ]->node_virtual(i)->number );
+        apply( m_adjoint.elem_list, Construct_Elem_List_Local_Ref(), m, elem_list_enrichment_zone_1, elem_list_adjoint_enrichment_zone_1 );
+        for (unsigned n=0;n<elem_list_adjoint_enrichment_zone_1.size();++n) {
+            for(unsigned i=0;i<(m_adjoint.elem_list[ elem_list_adjoint_enrichment_zone_1[ n ] ]->nb_nodes_virtual());++i) {
+                if ( not find( node_list_adjoint_enrichment, _1 == m_adjoint.elem_list[ elem_list_adjoint_enrichment_zone_1[ n ] ]->node_virtual(i)->number ) )
+                    node_list_adjoint_enrichment.push_back( m_adjoint.elem_list[ elem_list_adjoint_enrichment_zone_1[ n ] ]->node_virtual(i)->number );
             }
         }
         /// Definition de la zone d'enrichissement zone_2 du pb adjoint
         ///------------------------------------------------------------
         m_adjoint.update_node_parents();
-        for (unsigned i=0;i<list_nodes_adjoint_enrichment.size();++i) {
-            for (unsigned n=0;n<m_adjoint.get_node_parents( list_nodes_adjoint_enrichment[ i ] ).size();++n) {
-                if ( not find( list_elems_adjoint_enrichment_zone_1, _1 == m_adjoint.get_node_parents( list_nodes_adjoint_enrichment[ i ] )[ n ]->number ) and not find( list_elems_adjoint_enrichment_zone_2, _1 == m_adjoint.get_node_parents( list_nodes_adjoint_enrichment[ i ] )[ n ]->number ) )
-                    list_elems_adjoint_enrichment_zone_2.push_back( m_adjoint.get_node_parents( list_nodes_adjoint_enrichment[ i ] )[ n ]->number );
+        for (unsigned i=0;i<node_list_adjoint_enrichment.size();++i) {
+            for (unsigned n=0;n<m_adjoint.get_node_parents( node_list_adjoint_enrichment[ i ] ).size();++n) {
+                if ( not find( elem_list_adjoint_enrichment_zone_1, _1 == m_adjoint.get_node_parents( node_list_adjoint_enrichment[ i ] )[ n ]->number ) and not find( elem_list_adjoint_enrichment_zone_2, _1 == m_adjoint.get_node_parents( node_list_adjoint_enrichment[ i ] )[ n ]->number ) )
+                    elem_list_adjoint_enrichment_zone_2.push_back( m_adjoint.get_node_parents( node_list_adjoint_enrichment[ i ] )[ n ]->number );
             }
         }
         /// Definition de la zone d'enrichissement zone_12 du pb adjoint
         ///-------------------------------------------------------------
-        Vec<unsigned> cpt_children_adjoint;
-        Vec< Vec<unsigned> > list_children_adjoint;
-        construct_children( m_adjoint, cpt_children_adjoint, list_children_adjoint, debug_geometry_adjoint );
-        Vec<unsigned> list_faces_adjoint_enrichment_zone_1;
-        for (unsigned n=0;n<list_elems_adjoint_enrichment_zone_1.size();++n) {
-            for (unsigned k=0;k<cpt_children_adjoint[ list_elems_adjoint_enrichment_zone_1[ n ] ];++k) {
-                if ( not find( list_faces_adjoint_enrichment_zone_1, _1 == list_children_adjoint[ list_elems_adjoint_enrichment_zone_1[ n ] ][ k ] ) )
-                    list_faces_adjoint_enrichment_zone_1.push_back( list_children_adjoint[ list_elems_adjoint_enrichment_zone_1[ n ] ][ k ] );
+        Vec<unsigned> child_cpt_adjoint;
+        Vec< Vec<unsigned> > child_list_adjoint;
+        construct_child( m_adjoint, child_cpt_adjoint, child_list_adjoint, debug_geometry_adjoint );
+        Vec<unsigned> face_list_adjoint_enrichment_zone_1;
+        for (unsigned n=0;n<elem_list_adjoint_enrichment_zone_1.size();++n) {
+            for (unsigned k=0;k<child_cpt_adjoint[ elem_list_adjoint_enrichment_zone_1[ n ] ];++k) {
+                if ( not find( face_list_adjoint_enrichment_zone_1, _1 == child_list_adjoint[ elem_list_adjoint_enrichment_zone_1[ n ] ][ k ] ) )
+                    face_list_adjoint_enrichment_zone_1.push_back( child_list_adjoint[ elem_list_adjoint_enrichment_zone_1[ n ] ][ k ] );
             }
         }
-        for (unsigned n=0;n<list_elems_adjoint_enrichment_zone_2.size();++n) {
-            for (unsigned k=0;k<cpt_children_adjoint[ list_elems_adjoint_enrichment_zone_2[ n ] ];++k) {
-                if ( find( list_faces_adjoint_enrichment_zone_1, _1 == list_children_adjoint[ list_elems_adjoint_enrichment_zone_2[ n ] ][ k ] ) )
-                    list_faces_adjoint_enrichment_zone_12.push_back( list_children_adjoint[ list_elems_adjoint_enrichment_zone_2[ n ] ][ k ] );
+        for (unsigned n=0;n<elem_list_adjoint_enrichment_zone_2.size();++n) {
+            for (unsigned k=0;k<child_cpt_adjoint[ elem_list_adjoint_enrichment_zone_2[ n ] ];++k) {
+                if ( find( face_list_adjoint_enrichment_zone_1, _1 == child_list_adjoint[ elem_list_adjoint_enrichment_zone_2[ n ] ][ k ] ) )
+                    face_list_adjoint_enrichment_zone_12.push_back( child_list_adjoint[ elem_list_adjoint_enrichment_zone_2[ n ] ][ k ] );
             }
         }
         /// Definition des level sets du pb adjoint
@@ -1411,18 +1411,18 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
                 break;
             }
         }
-        for (unsigned i=0;i<list_nodes_adjoint_enrichment.size();++i)
-            m_adjoint.node_list[ list_nodes_adjoint_enrichment[ i ] ].phi_nodal_handbook = 1.;
-        for (unsigned n=0;n<list_elems_adjoint_enrichment_zone_1.size();++n)
-            m_adjoint.elem_list[ list_elems_adjoint_enrichment_zone_1[ n ] ]->set_field( "phi_elem_handbook_zone_1", 1 );
-        for (unsigned n=0;n<list_elems_adjoint_enrichment_zone_2.size();++n)
-            m_adjoint.elem_list[ list_elems_adjoint_enrichment_zone_2[ n ] ]->set_field( "phi_elem_handbook_zone_2", 1 );
-        for (unsigned k=0;k<list_faces_adjoint_enrichment_zone_12.size();++k)
-            m_adjoint.sub_mesh(Number<1>()).elem_list[ list_faces_adjoint_enrichment_zone_12[ k ] ]->set_field( "phi_surf_handbook_zone_12", 1 );
-        LMT::sort( list_nodes_adjoint_enrichment );
-        LMT::sort( list_elems_adjoint_enrichment_zone_1 );
-        LMT::sort( list_elems_adjoint_enrichment_zone_2 );
-        LMT::sort( list_faces_adjoint_enrichment_zone_12 );
+        for (unsigned i=0;i<node_list_adjoint_enrichment.size();++i)
+            m_adjoint.node_list[ node_list_adjoint_enrichment[ i ] ].phi_nodal_handbook = 1.;
+        for (unsigned n=0;n<elem_list_adjoint_enrichment_zone_1.size();++n)
+            m_adjoint.elem_list[ elem_list_adjoint_enrichment_zone_1[ n ] ]->set_field( "phi_elem_handbook_zone_1", 1 );
+        for (unsigned n=0;n<elem_list_adjoint_enrichment_zone_2.size();++n)
+            m_adjoint.elem_list[ elem_list_adjoint_enrichment_zone_2[ n ] ]->set_field( "phi_elem_handbook_zone_2", 1 );
+        for (unsigned k=0;k<face_list_adjoint_enrichment_zone_12.size();++k)
+            m_adjoint.sub_mesh(Number<1>()).elem_list[ face_list_adjoint_enrichment_zone_12[ k ] ]->set_field( "phi_surf_handbook_zone_12", 1 );
+        LMT::sort( node_list_adjoint_enrichment );
+        LMT::sort( elem_list_adjoint_enrichment_zone_1 );
+        LMT::sort( elem_list_adjoint_enrichment_zone_2 );
+        LMT::sort( face_list_adjoint_enrichment_zone_12 );
     }
 }
 
@@ -1443,7 +1443,7 @@ void create_structure_crown( TM &m, TM &m_crown, const Pvec &pos_crack_tip, cons
 /// Creation de la structure de reference locale
 ///---------------------------------------------
 template<class TM, class T, class Pvec>
-void create_structure_local_ref( TM &m, TM &m_local_ref, const unsigned &deg_p, const unsigned &refinement_deg_ref, const string &interest_quantity, const Vec<unsigned> &list_elems, Vec<unsigned> &list_elems_local_ref, const unsigned &node, unsigned &node_local_ref, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool &spread_cut ) {
+void create_structure_local_ref( TM &m, TM &m_local_ref, const unsigned &deg_p, const unsigned &refinement_deg_ref, const string &interest_quantity, const Vec<unsigned> &elem_list, Vec<unsigned> &elem_list_local_ref, const unsigned &node, unsigned &node_local_ref, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool &spread_cut ) {
 
     static const unsigned dim = TM::dim;
     
@@ -1451,12 +1451,12 @@ void create_structure_local_ref( TM &m, TM &m_local_ref, const unsigned &deg_p, 
         for (unsigned n=0;n<refinement_deg_ref;++n)
             divide_element( m_local_ref );
 //        if ( interest_quantity.find("mean") != string::npos ) {
-//            for (unsigned n=0;n<list_elems.size();++n) {
-//                Local_refinement_point_w_id<T, Pvec> ref( 0.05, 0.05, center( *m.elem_list[ list_elems[ n ] ] ) );
+//            for (unsigned n=0;n<elem_list.size();++n) {
+//                Local_refinement_point_w_id<T, Pvec> ref( 0.05, 0.05, center( *m.elem_list[ elem_list[ n ] ] ) );
 //                while( refinement( m_local_ref, ref, spread_cut ) )
 //                    ref.id++;
-//                for(unsigned i=0;i<(m.elem_list[ list_elems[ n ] ]->nb_nodes_virtual());++i) {
-//                    Local_refinement_point_w_id<T, Pvec> ref( 0.05, 0.05, m.elem_list[ list_elems[ n ] ]->node_virtual(i)->pos );
+//                for(unsigned i=0;i<(m.elem_list[ elem_list[ n ] ]->nb_nodes_virtual());++i) {
+//                    Local_refinement_point_w_id<T, Pvec> ref( 0.05, 0.05, m.elem_list[ elem_list[ n ] ]->node_virtual(i)->pos );
 //                    while( refinement( m_local_ref, ref, spread_cut ) )
 //                        ref.id++;
 //                }
@@ -1491,7 +1491,7 @@ void create_structure_local_ref( TM &m, TM &m_local_ref, const unsigned &deg_p, 
     }
     
     if ( interest_quantity.find("mean") != string::npos )
-        apply( m_local_ref.elem_list, Construct_List_Elems_Local_Ref(), m, list_elems, list_elems_local_ref );
+        apply( m_local_ref.elem_list, Construct_Elem_List_Local_Ref(), m, elem_list, elem_list_local_ref );
     else if ( interest_quantity.find("pointwise") != string::npos )
         apply( m_local_ref.node_list, Construct_Node_Local_Ref(), m, node, node_local_ref );
 }
@@ -1517,9 +1517,9 @@ void create_structure_cut( TM &m, TM &m_lambda, const unsigned &deg_p, const str
 /// Creation de la structure parametrique
 ///--------------------------------------
 template<class TM_param, class T, class TT>
-void create_structure_param( TM_param &m_param, const T &initial_val_param, const T &final_val_param, const TT &nb_steps_param ) {
+void create_structure_param( TM_param &m_param, const T &min_param, const T &max_param, const TT &nb_points ) {
     typedef typename TM_param::Pvec Pvec_param;
-    make_rect( m_param, Bar(), Pvec_param( initial_val_param ), Pvec_param( final_val_param ), Pvec_param( nb_steps_param + 1 ) );
+    make_rect( m_param, Bar(), Pvec_param( min_param ), Pvec_param( max_param ), Pvec_param( nb_points ) );
 }
 
 #endif // Structure_h

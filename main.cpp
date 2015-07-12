@@ -32,7 +32,7 @@ int main( int argc, char **argv ) {
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "circular_inclusions"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circular_inclusions, circular_holes
+    static const string structure = "weight_sensor"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circular_inclusions, circular_holes
                                                      // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes
     static const string mesh_size = "fine"; // maillage pour les structures plate_hole (2D ou 3D), plate_crack, structure_crack, test_specimen, weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
     static const string loading = "pull"; // chargement pour la structure spot_weld (3D) : pull, shear, peeling et pour la structure plate_crack (2D) : pull, shear
@@ -99,7 +99,7 @@ int main( int argc, char **argv ) {
     
     /// Zone of interest
     ///-----------------
-    static const Vec<unsigned> list_elems_interest_quantity( 4886 ); // liste des elements definissant la zone d'interet (quantite d'interet mean_sigma, mean_epsilon)
+    static const Vec<unsigned> elem_list_interest_quantity( 4886 ); // liste des elements definissant la zone d'interet (quantite d'interet mean_sigma, mean_epsilon)
     static const string pointwise_interest_quantity = "node"; // definition de la quantite d'interet ponctuelle : node, pos
     static const unsigned node_interest_quantity( 661 ); // noeud definissant la zone d'interet (quantite d'interet pointwise_dep, pointwise_sigma, pointwise_epsilon)
     static const Pvec pos_interest_quantity( 49.5, 135.5 ); // position definissant la zone d'interet (quantite d'interet pointwise_dep, pointwise_sigma, pointwise_epsilon)
@@ -178,23 +178,22 @@ int main( int argc, char **argv ) {
     /// Sauvegarde / Affichage
     ///-----------------------
     static const bool save_vtu = 1;
-    static const bool display_vtu = 1;
     static const bool save_pvd = 0;
-    static const bool display_pvd = 0;
     static const bool save_vtu_ref = 0;
+    static const bool display_vtu = 1;
+    static const bool display_pvd = 0;
     static const bool display_vtu_ref = 0;
     
     static const bool save_vtu_adjoint = 1;
-    static const bool display_vtu_adjoint = 0;
     static const bool save_pvd_adjoint = 0;
-    static const bool display_adjoint_pvd = 0;
     static const bool save_vtu_local_ref = 0;
+    static const bool display_vtu_adjoint = 0;
+    static const bool display_pvd_adjoint = 0;
     static const bool display_vtu_local_ref = 0;
     
     static const bool save_vtu_lambda = 1;
-    static const bool display_vtu_lambda = 0;
-    
     static const bool save_vtu_adjoint_lambda = 1;
+    static const bool display_vtu_lambda = 0;
     static const bool display_vtu_adjoint_lambda = 0;
     
     static const bool save_vtu_crown = 1;
@@ -300,21 +299,21 @@ int main( int argc, char **argv ) {
         /// Construction de la quantite d'interet ///
         ///---------------------------------------///
         
-        display_interest_quantity( interest_quantity, direction_extractor, pointwise_interest_quantity, list_elems_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re );
+        display_interest_quantity( interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re );
         
         /// Definition de l'extracteur
         ///---------------------------
         if ( interest_quantity == "SIF" or interest_quantity == "stress_intensity_factor" )
             create_structure_crown( m, m_crown, pos_crack_tip, radius_Ri, radius_Re, spread_cut );
         TF f_crown( m_crown );
-        define_extractor( m, m_crown, f, f_crown, interest_quantity, direction_extractor, pointwise_interest_quantity, list_elems_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, want_local_enrichment );
+        define_extractor( m, m_crown, f, f_crown, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, want_local_enrichment );
         
         ///------------------------------------------------------///
         /// Calcul de la quantite d'interet locale approchee I_h ///
         ///------------------------------------------------------///
         
         T I_h;
-        calcul_interest_quantity( m, m_crown, f, f_crown, "direct", interest_quantity, direction_extractor, pointwise_interest_quantity, list_elems_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, I_h );
+        calcul_interest_quantity( m, m_crown, f, f_crown, "direct", interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, I_h );
         
         ///------------------------------------------------------------///
         /// Calcul de la quantite d'interet locale (quasi-)exacte I_ex ///
@@ -327,9 +326,9 @@ int main( int argc, char **argv ) {
             static const bool want_local_discretization_error_local_ref = 0;
             create_structure( m_local_ref, m_local_ref, "direct", structure, mesh_size, loading, deg_p, want_global_discretization_error_local_ref, want_local_discretization_error_local_ref, refinement_degree_ref, want_solve_local_ref_ref );
             
-            Vec<unsigned> list_elems_local_ref_interest_quantity;
+            Vec<unsigned> elem_list_local_ref_interest_quantity;
             unsigned node_local_ref_interest_quantity;
-            create_structure_local_ref( m, m_local_ref, deg_p, refinement_degree_ref, interest_quantity, list_elems_interest_quantity, list_elems_local_ref_interest_quantity, node_interest_quantity, node_local_ref_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut );
+            create_structure_local_ref( m, m_local_ref, deg_p, refinement_degree_ref, interest_quantity, elem_list_interest_quantity, elem_list_local_ref_interest_quantity, node_interest_quantity, node_local_ref_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut );
             
             /// Formulation du pb de reference local
             ///-------------------------------------
@@ -361,11 +360,11 @@ int main( int argc, char **argv ) {
             if ( interest_quantity == "SIF" or interest_quantity == "stress_intensity_factor" )
                 create_structure_crown( m_local_ref, m_crown_ref, pos_crack_tip, radius_Ri, radius_Re, spread_cut );
             TF f_crown_ref( m_crown_ref );
-            define_extractor( m_local_ref, m_crown_ref, f_local_ref, f_crown_ref, interest_quantity, direction_extractor, pointwise_interest_quantity, list_elems_local_ref_interest_quantity, node_local_ref_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, want_local_enrichment );
+            define_extractor( m_local_ref, m_crown_ref, f_local_ref, f_crown_ref, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_local_ref_interest_quantity, node_local_ref_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, want_local_enrichment );
             
             /// Calcul de la quantite d'interet locale (quasi-)exacte I_ex
             ///-----------------------------------------------------------
-            calcul_interest_quantity( m_local_ref, m_crown_ref, f_local_ref, f_crown_ref, "reference", interest_quantity, direction_extractor, pointwise_interest_quantity, list_elems_local_ref_interest_quantity, node_local_ref_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, I_ex );
+            calcul_interest_quantity( m_local_ref, m_crown_ref, f_local_ref, f_crown_ref, "reference", interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_local_ref_interest_quantity, node_local_ref_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, I_ex );
         }
         
         if ( want_interest_quantity_only == 0 ) {
@@ -374,20 +373,20 @@ int main( int argc, char **argv ) {
             /// Construction de la solution adjoint ///
             ///-------------------------------------///
             
-            Vec<unsigned> list_elems_adjoint_interest_quantity;
-            Vec<unsigned> list_elems_adjoint_enrichment_zone_1;
-            Vec<unsigned> list_elems_adjoint_enrichment_zone_2;
-            Vec<unsigned> list_faces_adjoint_enrichment_zone_12;
+            Vec<unsigned> elem_list_adjoint_interest_quantity;
+            Vec<unsigned> elem_list_adjoint_enrichment_zone_1;
+            Vec<unsigned> elem_list_adjoint_enrichment_zone_2;
+            Vec<unsigned> face_list_adjoint_enrichment_zone_12;
             unsigned node_adjoint_interest_quantity;
-            Vec<unsigned> list_nodes_adjoint_enrichment;
+            Vec<unsigned> node_list_adjoint_enrichment;
             
             /// Maillage du pb adjoint
             ///-----------------------
             create_structure( m_adjoint, m_local_ref, "adjoint", structure, mesh_size, loading, deg_p, want_global_discretization_error_adjoint, want_local_discretization_error_adjoint, refinement_degree_ref, want_compute_adjoint_ref );
-            create_structure_adjoint( m, m_adjoint, deg_p, interest_quantity, direction_extractor, want_local_refinement_adjoint, local_refinement_adjoint_l_min, local_refinement_adjoint_k, pointwise_interest_quantity, list_elems_interest_quantity, list_elems_adjoint_interest_quantity, node_interest_quantity, node_adjoint_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, list_elems_adjoint_enrichment_zone_1, list_elems_adjoint_enrichment_zone_2, list_faces_adjoint_enrichment_zone_12, list_nodes_adjoint_enrichment, debug_geometry, debug_geometry_adjoint );
+            create_structure_adjoint( m, m_adjoint, deg_p, interest_quantity, direction_extractor, want_local_refinement_adjoint, local_refinement_adjoint_l_min, local_refinement_adjoint_k, pointwise_interest_quantity, elem_list_interest_quantity, elem_list_adjoint_interest_quantity, node_interest_quantity, node_adjoint_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, elem_list_adjoint_enrichment_zone_1, elem_list_adjoint_enrichment_zone_2, face_list_adjoint_enrichment_zone_12, node_list_adjoint_enrichment, debug_geometry, debug_geometry_adjoint );
             
             display_structure( m_adjoint, m_local_ref, "adjoint", structure, deg_p, want_solve_local_ref );
-            display_params_adjoint( want_local_refinement_adjoint, local_refinement_adjoint_l_min, local_refinement_adjoint_k, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, list_elems_adjoint_enrichment_zone_1, list_elems_adjoint_enrichment_zone_2, list_faces_adjoint_enrichment_zone_12, list_nodes_adjoint_enrichment, want_local_improvement, local_improvement, shape, k_min, k_max, k_opt );
+            display_params_adjoint( want_local_refinement_adjoint, local_refinement_adjoint_l_min, local_refinement_adjoint_k, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, elem_list_adjoint_enrichment_zone_1, elem_list_adjoint_enrichment_zone_2, face_list_adjoint_enrichment_zone_12, node_list_adjoint_enrichment, want_local_improvement, local_improvement, shape, k_min, k_max, k_opt );
             
             /// Formulation du pb adjoint
             ///--------------------------
@@ -397,7 +396,7 @@ int main( int argc, char **argv ) {
             ///-------------------------------------
             create_material_properties( f_adjoint, m_adjoint, structure, loading );
             create_boundary_conditions( f_adjoint, m_adjoint, boundary_condition_D, "adjoint", structure, loading, mesh_size );
-            create_load_conditions( m_adjoint, f_adjoint, m, m_crown, list_elems_interest_quantity, node_interest_quantity, pos_interest_quantity, interest_quantity, direction_extractor, pointwise_interest_quantity, want_local_enrichment );
+            create_load_conditions( m_adjoint, f_adjoint, m, m_crown, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, interest_quantity, direction_extractor, pointwise_interest_quantity, want_local_enrichment );
             
             /// Verification des contraintes cinematiques
             ///------------------------------------------
@@ -464,7 +463,7 @@ int main( int argc, char **argv ) {
                 /// Calcul ameliore des bornes d'erreur sur la quantite d'interet locale I ///
                 ///------------------------------------------------------------------------///
                 if ( want_local_improvement ) {
-                    calcul_enhanced_local_error_bounds( m, m_adjoint, f, f_adjoint, m_lambda_min, m_lambda_max, m_lambda_opt, m_adjoint_lambda_min, m_adjoint_lambda_opt, deg_p, method, method_adjoint, structure, loading, mesh_size, cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, deg_k, local_improvement, shape, k_min, k_max, k_opt, interest_quantity, direction_extractor, pointwise_interest_quantity, list_elems_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, theta, theta_adjoint, theta_adjoint_elem, correspondance_elem_m_adjoint_to_elem_m, dep_hat, dep_adjoint_hat, I_h, I_hh, integration_k, integration_nb_steps, debug_method_adjoint, debug_method_enhancement_adjoint, debug_geometry_adjoint, debug_error_estimate_adjoint, want_introduction_sigma_hat_m, want_solve_eig_local_improvement, use_mask_eig_local_improvement );
+                    calcul_enhanced_local_error_bounds( m, m_adjoint, f, f_adjoint, m_lambda_min, m_lambda_max, m_lambda_opt, m_adjoint_lambda_min, m_adjoint_lambda_opt, deg_p, method, method_adjoint, structure, loading, mesh_size, cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, deg_k, local_improvement, shape, k_min, k_max, k_opt, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, theta, theta_adjoint, theta_adjoint_elem, correspondance_elem_m_adjoint_to_elem_m, dep_hat, dep_adjoint_hat, I_h, I_hh, integration_k, integration_nb_steps, debug_method_adjoint, debug_method_enhancement_adjoint, debug_geometry_adjoint, debug_error_estimate_adjoint, want_introduction_sigma_hat_m, want_solve_eig_local_improvement, use_mask_eig_local_improvement );
                 }
             }
         }
@@ -477,9 +476,9 @@ int main( int argc, char **argv ) {
     /// Affichage ///
     ///-----------///
     
-    display_vtu_pvd( m, m_ref, m_lambda_min, m_lambda_max, m_lambda_opt, m_crown, "direct", method, structure, loading, mesh_size, cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, deg_k, refinement_degree_ref, want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation, want_local_improvement, interest_quantity, direction_extractor, pointwise_interest_quantity, list_elems_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment, save_vtu, display_vtu, save_pvd, display_pvd, save_vtu_ref, display_vtu_ref, save_vtu_lambda, display_vtu_lambda, save_vtu_crown, display_vtu_crown );
+    display_vtu_pvd( m, m_ref, m_lambda_min, m_lambda_max, m_lambda_opt, m_crown, "direct", method, structure, loading, mesh_size, cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, deg_k, refinement_degree_ref, want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation, want_local_improvement, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment, save_vtu, display_vtu, save_pvd, display_pvd, save_vtu_ref, display_vtu_ref, save_vtu_lambda, display_vtu_lambda, save_vtu_crown, display_vtu_crown );
     if ( want_local_estimation and want_interest_quantity_only == 0 ) {
-        display_vtu_pvd( m_adjoint, m_local_ref, m_adjoint_lambda_min, m_adjoint_lambda_max, m_adjoint_lambda_opt, m_crown, "adjoint", method_adjoint, structure, loading, mesh_size, cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, deg_k, refinement_degree_ref, want_global_discretization_error_adjoint, want_local_discretization_error_adjoint, want_global_estimation, want_local_estimation, want_local_improvement, interest_quantity, direction_extractor, pointwise_interest_quantity, list_elems_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment, save_vtu_adjoint, display_vtu_adjoint, save_pvd_adjoint, display_adjoint_pvd, save_vtu_local_ref, display_vtu_local_ref, save_vtu_adjoint_lambda, display_vtu_adjoint_lambda, save_adjoint_crown_vtu, display_adjoint_crown_vtu );
+        display_vtu_pvd( m_adjoint, m_local_ref, m_adjoint_lambda_min, m_adjoint_lambda_max, m_adjoint_lambda_opt, m_crown, "adjoint", method_adjoint, structure, loading, mesh_size, cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, deg_k, refinement_degree_ref, want_global_discretization_error_adjoint, want_local_discretization_error_adjoint, want_global_estimation, want_local_estimation, want_local_improvement, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment, save_vtu_adjoint, display_vtu_adjoint, save_pvd_adjoint, display_pvd_adjoint, save_vtu_local_ref, display_vtu_local_ref, save_vtu_adjoint_lambda, display_vtu_adjoint_lambda, save_adjoint_crown_vtu, display_adjoint_crown_vtu );
     }
     
 }

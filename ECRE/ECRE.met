@@ -103,21 +103,21 @@ def calc_elem_vector_F_hat( list_f, rep )
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
         file_ <<< "namespace LMT {"
         file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class S, class B, class T>"
-        file_ <<< "void calc_elem_vector_F_hat( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<unsigned> > &list_nodes_face, const Vec<unsigned> &cpt_elems_node, const B &balancing, const Vec<B> &flag_elem_bal, const Vec<B> &flag_elem_enh, const TTVV &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, const Vec< Vec< Vec<T> > > &vec_force_fluxes, Vec< Vec<T> > &F_hat ) {"
+        file_ <<< "void calc_elem_vector_F_hat( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<unsigned> > &node_list_face, const Vec<unsigned> &elem_cpt_node, const B &balancing, const Vec<B> &elem_flag_bal, const Vec<B> &elem_flag_enh, const TTVV &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, const Vec< Vec< Vec<T> > > &vec_force_fluxes, Vec< Vec<T> > &F_hat ) {"
         file_ <<< "    #define PNODE(N) elem.node(N)"
         file_ <<<<
                 Vec< Vec< Vec<T> > > f_surf;
                 f_surf.resize( $(e->children( 1 ).size) );
-                Vec<unsigned> ind_in_list_nodes_face;
+                Vec<unsigned> ind_in_node_list_face;
         for face_ in e->children( 1 )
             face := child_cast( face_ )
-            eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)" )
+            eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)", tex_name = "\\eta" )
             file_ <<< "    f_surf[ $( face->num_child ) ].resize( $(face->dim) );"
             for d in 0 .. face->dim
                 file_ <<< "    f_surf[ $( face->num_child ) ][ $d ].resize( m.sub_mesh(Number<1>()).elem_list[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ]->nb_nodes_virtual(), 0. );"
                 for i in 0 .. face->nb_nodes
-                    file_ <<< "    ind_in_list_nodes_face = find_with_index( list_nodes_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ] == elem.node( $( face->node_numbers_to_node_numbers_in_parent_cpp[ i ] ) )->number );"
-                    file_ <<< "    f_surf[ $( face->num_child ) ][ $d ][ $i ] += $( eta ) * vec_force_fluxes[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_list_nodes_face[ 0 ] ];"
+                    file_ <<< "    ind_in_node_list_face = find_with_index( node_list_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ] == elem.node( $( face->node_numbers_to_node_numbers_in_parent_cpp[ i ] ) )->number );"
+                    file_ <<< "    f_surf[ $( face->num_child ) ][ $d ][ $i ] += $( eta ) * vec_force_fluxes[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_node_list_face[ 0 ] ];"
         deg_p := max( e->order_interpolation )
         f_vol_std := Vec[ Op, e->dim ]()
         sym_f_surf_std_e := Vec[ Op ]()
@@ -128,7 +128,7 @@ def calc_elem_vector_F_hat( list_f, rep )
             for i in 0 .. face->nb_nodes
                 for d in 0 .. face->dim
                     s := Op()
-                    s = symbol( "f_surf[ $( face->num_child ) ][ $d ][ $i ]" )
+                    s = symbol( "f_surf[ $( face->num_child ) ][ $d ][ $i ]", tex_name = "F_s[ $( face->num_child ) ][$d][$i]" )
                     sym_f_surf_std_e.push_back( s )
                     sym_f_surf_std[ i ][ d ] = s
             f_surf_std := Vec[ Op, face->dim ]( face->interpolation( sym_f_surf_std, force_fluxes_base ) )
@@ -192,7 +192,7 @@ def calc_elem_vector_F_hat( list_f, rep )
             file_ <<< "    Vec<Vec<double, $(e->dim)> > valeurs;"
             file_ <<< "    Vec<double> poids_face;"
             file_ <<< "    Vec<Vec<double, $(e->dim)-1> > valeurs_face;"
-            file_ <<< "    if ( balancing == 0 or ( balancing and flag_elem_bal[ elem.number ] == 0 and flag_elem_enh[ elem.number ] == 0 ) ) {"
+            file_ <<< "    if ( balancing == 0 or ( balancing and elem_flag_bal[ elem.number ] == 0 and elem_flag_enh[ elem.number ] == 0 ) ) {"
             file_ <<< "        gauss_points( $(e->name_for_gauss_point)(), $(degre_poly_1), poids, valeurs );"
             file_ <<< "        for (unsigned n=0; n<poids.size(); ++n) {"
             file_ <<< "            Vec<double> var_inter( valeurs[ n ] );"
@@ -217,7 +217,7 @@ def calc_elem_vector_F_hat( list_f, rep )
                 file_ <<< "            }"
                 file_ <<< "        }"
             file_ <<< "    }"
-            file_ <<< "    if ( balancing and ( flag_elem_bal[ elem.number ] or flag_elem_enh[ elem.number ] ) ) {"
+            file_ <<< "    if ( balancing and ( elem_flag_bal[ elem.number ] or elem_flag_enh[ elem.number ] ) ) {"
             file_ <<< "        gauss_points( $(e->name_for_gauss_point)(), $(degre_poly_2), poids, valeurs );"
             file_ <<< "        for (unsigned n=0; n<poids.size(); ++n) {"
             file_ <<< "            Vec<double> var_inter( valeurs[ n ] );"
@@ -268,7 +268,7 @@ def calc_elem_vector_F_hat( list_f, rep )
                 file_ <<< "    }"
                 if want_local_enrichment
                     F_hat_face_handbook := residual_face_handbook.diff( sym_dep_hat_test )
-                    file_ <<< "    if ( ( balancing == 0 or ( balancing and flag_elem_bal[ elem.number ] == 0 and flag_elem_enh[ elem.number ] == 0 ) ) and pb == \"adjoint\" and want_local_enrichment ) {"
+                    file_ <<< "    if ( ( balancing == 0 or ( balancing and elem_flag_bal[ elem.number ] == 0 and elem_flag_enh[ elem.number ] == 0 ) ) and pb == \"adjoint\" and want_local_enrichment ) {"
                     file_ <<< "        typedef typename TM::template SubMesh<1>::T TSubMesh;"
                     file_ <<< "        typedef typename TSubMesh::template TElem<typename TypeChildrenElement<typename Element<$(e->name),TN,TNG,TD,NET>::NE,1,$( face->num_child )>::T>::TE TCH;"
                     file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem,Number<1>())[ $( face->num_child ) ] ) );"
@@ -289,7 +289,7 @@ def calc_elem_vector_F_hat( list_f, rep )
                 residual += residual_face
                 residual_std += residual_face
                 if want_local_enrichment
-                    file_ <<< "    if ( ( balancing == 0 or ( balancing and flag_elem_bal[ elem.number ] == 0 and flag_elem_enh[ elem.number ] == 0 ) ) and pb == \"adjoint\" and want_local_enrichment ) {"
+                    file_ <<< "    if ( ( balancing == 0 or ( balancing and elem_flag_bal[ elem.number ] == 0 and elem_flag_enh[ elem.number ] == 0 ) ) and pb == \"adjoint\" and want_local_enrichment ) {"
                     file_ <<< "        typedef typename TM::template SubMesh<1>::T TSubMesh;"
                     file_ <<< "        typedef typename TSubMesh::template TElem<typename TypeChildrenElement<typename Element<$(e->name),TN,TNG,TD,NET>::NE,1,$( face->num_child )>::T>::TE TCH;"
                     file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem,Number<1>())[ $( face->num_child ) ] ) );"
@@ -301,7 +301,7 @@ def calc_elem_vector_F_hat( list_f, rep )
                     file_ <<< "        }"
                     file_ <<< "    }"
         if integration_type != "gauss_num" or integration_lang != "cpp"
-            file_ <<< "    if ( balancing == 0 or ( balancing and flag_elem_bal[ elem.number ] == 0 and flag_elem_enh[ elem.number ] == 0 ) ) {"
+            file_ <<< "    if ( balancing == 0 or ( balancing and elem_flag_bal[ elem.number ] == 0 and elem_flag_enh[ elem.number ] == 0 ) ) {"
             F_hat := residual.diff( sym_dep_hat_test )
             cw := CodeWriterAlt( "T" )
             cw.add( "F_hat[ elem.number ]", F_hat, add )
@@ -314,7 +314,7 @@ def calc_elem_vector_F_hat( list_f, rep )
                 file_ <<< "$(cw_handbook.to_string( 12 ))"
                 file_ <<< "        }"
             file_ <<< "    }"
-            file_ <<< "    if ( balancing and ( flag_elem_bal[ elem.number ] or flag_elem_enh[ elem.number ] ) ) {"
+            file_ <<< "    if ( balancing and ( elem_flag_bal[ elem.number ] or elem_flag_enh[ elem.number ] ) ) {"
             F_hat_std := residual_std.diff( sym_dep_hat_test )
             cw_balancing := CodeWriterAlt( "T" )
             cw_balancing.add( "F_hat[ elem.number ]", F_hat_std, reassign )
@@ -322,9 +322,9 @@ def calc_elem_vector_F_hat( list_f, rep )
             file_ <<< "    }"
         residual_nodal := Op( 0 )
         for n in 0 .. e->nb_nodes
-            nb_elems_node := symbol( "cpt_elems_node[ elem.node( $n )->number ]" )
+            nb_elems_node := symbol( "elem_cpt_node[ elem.node( $n )->number ]" )
             residual_nodal += dot( child_cast(f)->pre_f_nodal.expr, dep_hat_test ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
-        file_ <<< "    if ( balancing == 0 or ( balancing and flag_elem_bal[ elem.number ] == 0 and flag_elem_enh[ elem.number ] == 0 ) ) {"
+        file_ <<< "    if ( balancing == 0 or ( balancing and elem_flag_bal[ elem.number ] == 0 and elem_flag_enh[ elem.number ] == 0 ) ) {"
         F_hat_nodal := residual_nodal.diff( sym_dep_hat_test )
         cw_nodal := CodeWriterAlt( "T" )
         cw_nodal.add( "F_hat[ elem.number ]", F_hat_nodal, add )
@@ -366,7 +366,7 @@ def calc_elem_error_estimate_EET_EESPT( list_f, rep )
         sym_dep_hat := Vec[ Op ]()
         for i in 0 .. sym_dep_hat_expr.size
             sy := Op()
-            sy = symbol( "dep_hat[ elem.number ][ $i ]" )
+            sy = symbol( "dep_hat[ elem.number ][ $i ]", tex_name = "\\hat{U}[ elem.number ][ $i ]" )
             sym_dep_hat.push_back( sy )
         sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
         sigma_hat_const_in_elem := sigma_hat.subs( e->var_inter, e->get_center_of_var_inter() )

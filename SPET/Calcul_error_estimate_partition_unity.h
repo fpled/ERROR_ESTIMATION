@@ -26,77 +26,77 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     
     static const unsigned dim = TM::dim;
     
-    Vec<unsigned> cpt_children;
-    Vec< Vec<unsigned> > list_children;
-    construct_children( m, cpt_children, list_children, debug_geometry );
+    Vec<unsigned> child_cpt;
+    Vec< Vec<unsigned> > child_list;
+    construct_child( m, child_cpt, child_list, debug_geometry );
     
     Vec<bool> correspondance_node_to_vertex_node;
     Vec<unsigned> connect_node_to_vertex_node;
     unsigned nb_vertex_nodes = match_node_to_vertex_node( m, correspondance_node_to_vertex_node, connect_node_to_vertex_node, debug_geometry );
     
-    Vec<unsigned> cpt_elems_vertex_node;
-    Vec< Vec<unsigned> > list_elems_vertex_node;
-    construct_elems_connected_to_vertex_node( m, nb_vertex_nodes, correspondance_node_to_vertex_node, connect_node_to_vertex_node, cpt_elems_vertex_node, list_elems_vertex_node, debug_geometry );
+    Vec<unsigned> elem_cpt_vertex_node;
+    Vec< Vec<unsigned> > elem_list_vertex_node;
+    construct_elems_connected_to_vertex_node( m, nb_vertex_nodes, correspondance_node_to_vertex_node, connect_node_to_vertex_node, elem_cpt_vertex_node, elem_list_vertex_node, debug_geometry );
     
     correspondance_node_to_vertex_node.free();
     
-    Vec< Vec<unsigned> > type_face;
-    construct_type_face( m, f, type_face, debug_geometry );
+    Vec< Vec<unsigned> > face_type;
+    construct_face_type( m, f, face_type, debug_geometry );
     
     /// Construction de la table de connectivite de chaque patch
     ///---------------------------------------------------------
     
-    Vec< Vec<unsigned> > list_faces_patch;
+    Vec< Vec<unsigned> > face_list_patch;
     Vec<unsigned> nb_points_face;
     Vec<unsigned> nb_points_elem;
     Vec<unsigned> nb_points_patch;
     Vec< Vec< Vec<unsigned> > > patch_face;
     Vec< Vec< Vec<unsigned> > > patch_elem;
     
-    construct_connectivity_patch( m, nb_vertex_nodes, list_faces_patch, cpt_children, list_children, cpt_elems_vertex_node, list_elems_vertex_node, nb_points_face, nb_points_elem, nb_points_patch, patch_face, patch_elem, debug_method );
+    construct_connectivity_patch( m, nb_vertex_nodes, face_list_patch, child_cpt, child_list, elem_cpt_vertex_node, elem_list_vertex_node, nb_points_face, nb_points_elem, nb_points_patch, patch_face, patch_elem, debug_method );
     
-    cpt_children.free();
-    list_children.free();
-    cpt_elems_vertex_node.free();
+    child_cpt.free();
+    child_list.free();
+    elem_cpt_vertex_node.free();
     
     /// Construction des contraintes cinematiques pour chaque noeud sommet j du maillage et chaque direction d
     ///-------------------------------------------------------------------------------------------------------
     
     cout << "Construction des contraintes cinematiques" << endl << endl;
     
-    Vec< Vec< Vec<unsigned> > > list_constrained_points_patch;
-    list_constrained_points_patch.resize( nb_vertex_nodes );
+    Vec< Vec< Vec<unsigned> > > constrained_points_list_patch;
+    constrained_points_list_patch.resize( nb_vertex_nodes );
     
     Vec<unsigned> nb_constraints_patch;
     nb_constraints_patch.resize( nb_vertex_nodes );
     nb_constraints_patch.set( 0 );
     
     for (unsigned j=0;j<nb_vertex_nodes;++j) {
-        list_constrained_points_patch[ j ].resize( dim );
+        constrained_points_list_patch[ j ].resize( dim );
         for (unsigned d=0;d<dim;++d) {
-            for (unsigned k=0;k<list_faces_patch[ j ].size();++k) {
-                if ( type_face[ list_faces_patch[ j ][ k ] ][ d ] == 1 ) { // si list_faces_patch[ j ][ k ] (k eme face connectee au patch associe au noeud sommet j) est une face de type Dirichlet (en deplacement) dans la direction d
-                    for (unsigned p=0;p<nb_points_face[ list_faces_patch[ j ][ k ] ];++p) {
-                        list_constrained_points_patch[ j ][ d ].push_back( patch_face[ j ][ k ][ p ] );
+            for (unsigned k=0;k<face_list_patch[ j ].size();++k) {
+                if ( face_type[ face_list_patch[ j ][ k ] ][ d ] == 1 ) { // si face_list_patch[ j ][ k ] (k eme face connectee au patch associe au noeud sommet j) est une face de type Dirichlet (en deplacement) dans la direction d
+                    for (unsigned p=0;p<nb_points_face[ face_list_patch[ j ][ k ] ];++p) {
+                        constrained_points_list_patch[ j ][ d ].push_back( patch_face[ j ][ k ][ p ] );
                     }
                 }
             }
-            remove_doubles( list_constrained_points_patch[ j ][ d ] );
-            nb_constraints_patch[ j ] += list_constrained_points_patch[ j ][ d ].size();
+            remove_doubles( constrained_points_list_patch[ j ][ d ] );
+            nb_constraints_patch[ j ] += constrained_points_list_patch[ j ][ d ].size();
         }
     }
     
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "liste des points bloques dans le patch associe au noeud sommet " << j << " dans la direction " << d << " : " << list_constrained_points_patch[ j ][ d ] << endl;
+                cout << "liste des points bloques dans le patch associe au noeud sommet " << j << " dans la direction " << d << " : " << constrained_points_list_patch[ j ][ d ] << endl;
             }
             cout << "nb de contraintes sur le patch associe au noeud sommet " << j << " : " << nb_constraints_patch[ j ] << endl;
             cout << endl;
         }
     }
     
-    list_faces_patch.free();
+    face_list_patch.free();
     nb_points_face.free();
     patch_face.free();
     nb_constraints_patch.free();
@@ -118,7 +118,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     }
     
     Calcul_Vertex_Nodal_Matrix_K calcul_vertex_nodal_matrix_K;
-    calcul_vertex_nodal_matrix_K.list_elems_vertex_node = &list_elems_vertex_node;
+    calcul_vertex_nodal_matrix_K.elem_list_vertex_node = &elem_list_vertex_node;
     calcul_vertex_nodal_matrix_K.connect_node_to_vertex_node = &connect_node_to_vertex_node;
     calcul_vertex_nodal_matrix_K.patch_elem = &patch_elem;
     
@@ -133,10 +133,10 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
         vec_null.resize( nb_points_patch[ j ] * dim );
         vec_null.set( 0 );
         for (unsigned d=0;d<dim;++d) {
-            for (unsigned p=0;p<list_constrained_points_patch[ j ][ d ].size();++p) {
-                K[ j ].row( list_constrained_points_patch[ j ][ d ][ p ] * dim + d ) = vec_null;
-                K[ j ].col( list_constrained_points_patch[ j ][ d ][ p ] * dim + d ) = vec_null;
-                K[ j ]( list_constrained_points_patch[ j ][ d ][ p ] * dim + d, list_constrained_points_patch[ j ][ d ][ p ] * dim + d ) = 1;
+            for (unsigned p=0;p<constrained_points_list_patch[ j ][ d ].size();++p) {
+                K[ j ].row( constrained_points_list_patch[ j ][ d ][ p ] * dim + d ) = vec_null;
+                K[ j ].col( constrained_points_list_patch[ j ][ d ][ p ] * dim + d ) = vec_null;
+                K[ j ]( constrained_points_list_patch[ j ][ d ][ p ] * dim + d, constrained_points_list_patch[ j ][ d ][ p ] * dim + d ) = 1;
             }
         }
     }
@@ -166,8 +166,8 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     }
     
     Calcul_Vertex_Nodal_Vector_F calcul_vertex_nodal_vector_F;
-    calcul_vertex_nodal_vector_F.list_elems_vertex_node = &list_elems_vertex_node;
-    calcul_vertex_nodal_vector_F.type_face = &type_face;
+    calcul_vertex_nodal_vector_F.elem_list_vertex_node = &elem_list_vertex_node;
+    calcul_vertex_nodal_vector_F.face_type = &face_type;
     calcul_vertex_nodal_vector_F.connect_node_to_vertex_node = &connect_node_to_vertex_node;
     calcul_vertex_nodal_vector_F.patch_elem = &patch_elem;
     calcul_vertex_nodal_vector_F.pb = &pb;
@@ -175,15 +175,15 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     
     apply( m.elem_list, calcul_vertex_nodal_vector_F, m, f, F );
     
-    type_face.free();
+    face_type.free();
     
     /// Prise en compte des conditions aux limites dans les vecteurs F[ j ] pour chaque noeud sommet j du maillage
     ///-----------------------------------------------------------------------------------------------------------
     
     for (unsigned j=0;j<nb_vertex_nodes;++j) {
         for (unsigned d=0;d<dim;++d) {
-            for (unsigned p=0;p<list_constrained_points_patch[ j ][ d ].size();++p) {
-                F[ j ][ list_constrained_points_patch[ j ][ d ][ p ] * dim + d ] = 0;
+            for (unsigned p=0;p<constrained_points_list_patch[ j ][ d ].size();++p) {
+                F[ j ][ constrained_points_list_patch[ j ][ d ][ p ] * dim + d ] = 0;
             }
         }
     }
@@ -196,7 +196,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
         }
     }
     
-    list_constrained_points_patch.free();
+    constrained_points_list_patch.free();
     
     cout << "---------------------------------------------------------" << endl;
     cout << "Resolution des problemes locaux auto-equilibres par patch" << endl;
@@ -321,7 +321,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     }
     
     Calcul_Elem_Vector_E calcul_elem_vector_E;
-    calcul_elem_vector_E.list_elems_vertex_node = &list_elems_vertex_node;
+    calcul_elem_vector_E.elem_list_vertex_node = &elem_list_vertex_node;
     calcul_elem_vector_E.connect_node_to_vertex_node = &connect_node_to_vertex_node;
     calcul_elem_vector_E.patch_elem = &patch_elem;
     
@@ -339,7 +339,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     patch_elem.free();
     U.free();
     connect_node_to_vertex_node.free();
-    list_elems_vertex_node.free();
+    elem_list_vertex_node.free();
     
     ///---------------------------------------------------------------------------------------------------------///
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale ///

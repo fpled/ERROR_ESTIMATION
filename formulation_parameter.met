@@ -11,9 +11,9 @@ class FormulationUnknownParam[ dim ] inherits LmtppFormulation[ dim ]
     def formulation( e )
 
         pos := e.pos
-        function_parameter := 1 + parameter_function( pos[0] )
+        function_param := 1 + param_function( pos[0] )
 
-        residual := function_parameter * dot( dep.expr, dep.test ) * dV - dep.test[0] * dV
+        residual := function_param * dot( dep.expr, dep.test ) * dV - dep.test[0] * dV
 
         return residual
 
@@ -32,7 +32,7 @@ class FormulationKnownParam[ dim ] inherits LmtppFormulation[ dim ]
 
 # Nom du probleme
 #----------------
-pb_name := "parameter"
+pb_name := "param"
 
 # Liste de formulations
 #----------------------

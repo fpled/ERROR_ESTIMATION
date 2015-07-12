@@ -63,61 +63,61 @@ struct Calc_Pos_Face {
 ///                                                            patch_face[ j ][ n ][ i ] pour chaque noeud i de chaque face k du patch j
 ///----------------------------------------------------------------------------------------------------------------------------------------
 template<class TE, class TM, class TF, class TVV, class TV, class TVVV>
-void construct_patch( const TE &elem, const TM &m, const TF &f, const TVV &list_elems_vertex_node, const TVV &list_faces_patch, const TV &connect_node_to_vertex_node, TV &nb_unk_patch, TVVV &patch_elem, TVVV &patch_face ) {}
+void construct_patch( const TE &elem, const TM &m, const TF &f, const TVV &elem_list_vertex_node, const TVV &face_list_patch, const TV &connect_node_to_vertex_node, TV &nb_unk_patch, TVVV &patch_elem, TVVV &patch_face ) {}
 
 struct Construct_Patch {
-    const Vec< Vec<unsigned> >* list_elems_vertex_node;
-    const Vec< Vec<unsigned> >* list_faces_patch;
+    const Vec< Vec<unsigned> >* elem_list_vertex_node;
+    const Vec< Vec<unsigned> >* face_list_patch;
     const Vec<unsigned>* connect_node_to_vertex_node;
     Vec<unsigned>* nb_unk_patch;
     template<class TE, class TM, class TF> void operator()( const TE &elem, const TM &m, const TF &f, Vec< Vec< Vec<unsigned> > > &patch_face, Vec< Vec< Vec<unsigned> > > &patch_elem ) const {
-        construct_patch( elem, m, f, *list_elems_vertex_node, *list_faces_patch, *connect_node_to_vertex_node, *nb_unk_patch, patch_face, patch_elem );
+        construct_patch( elem, m, f, *elem_list_vertex_node, *face_list_patch, *connect_node_to_vertex_node, *nb_unk_patch, patch_face, patch_elem );
     }
 };
 
 /// Construction des matrices K[ j ] pour chaque noeud sommet j du maillage
 ///------------------------------------------------------------------------
 template<class TE, class TM, class TF, class TVV, class TV, class TVVV, class TTMV> 
-void calc_vertex_nodal_matrix_K( const TE &elem, const TM &m, const TF &f, const TVV &list_elems_vertex_node, const TV &connect_node_to_vertex_node, const TVVV &patch_elem, const TTMV &K ) {}
+void calc_vertex_nodal_matrix_K( const TE &elem, const TM &m, const TF &f, const TVV &elem_list_vertex_node, const TV &connect_node_to_vertex_node, const TVVV &patch_elem, const TTMV &K ) {}
 
 struct Calcul_Vertex_Nodal_Matrix_K {
     const Vec<unsigned>* connect_node_to_vertex_node;
-    const Vec< Vec<unsigned> >* list_elems_vertex_node;
+    const Vec< Vec<unsigned> >* elem_list_vertex_node;
     const Vec< Vec< Vec<unsigned> > >* patch_elem;
     template<class TE, class TM, class TF, class T> void operator()( const TE &elem, const TM &m, const TF &f, Vec< Mat<T, Sym<> > > &K ) const {
-        calc_vertex_nodal_matrix_K( elem, m, f, *list_elems_vertex_node, *connect_node_to_vertex_node, *patch_elem, K );
+        calc_vertex_nodal_matrix_K( elem, m, f, *elem_list_vertex_node, *connect_node_to_vertex_node, *patch_elem, K );
     }
 };
 
 /// Construction des vecteurs F[ j ] pour chaque noeud sommet j du maillage
 ///------------------------------------------------------------------------
 template<class TE, class TM, class TF, class TVV, class TV, class TVVV, class TTWW, class S, class B, class TTVV> 
-void calc_vertex_nodal_vector_F( const TE &elem, const TM &m, const TF &f, const TVV &list_elems_vertex_node, const TVV &type_face, const TV &connect_node_to_vertex_node, const TVVV &patch_elem, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, TTVV &F ) {}
+void calc_vertex_nodal_vector_F( const TE &elem, const TM &m, const TF &f, const TVV &elem_list_vertex_node, const TVV &face_type, const TV &connect_node_to_vertex_node, const TVVV &patch_elem, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, TTVV &F ) {}
 
 struct Calcul_Vertex_Nodal_Vector_F {
-    const Vec< Vec<unsigned> >* list_elems_vertex_node;
-    const Vec< Vec<unsigned> >* type_face;
+    const Vec< Vec<unsigned> >* elem_list_vertex_node;
+    const Vec< Vec<unsigned> >* face_type;
     const Vec<unsigned>* connect_node_to_vertex_node;
     const Vec< Vec< Vec<unsigned> > >* patch_elem;
     const string* pb;
     const bool* want_local_enrichment;
     template<class TE, class TM, class TF, class T> void operator()( const TE &elem, const TM &m, const TF &f, Vec< Vec<T> > &F ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
-        calc_vertex_nodal_vector_F( elem, m, f, *list_elems_vertex_node, *type_face, *connect_node_to_vertex_node, *patch_elem, f.vectors, ind, *pb, *want_local_enrichment, F );
+        calc_vertex_nodal_vector_F( elem, m, f, *elem_list_vertex_node, *face_type, *connect_node_to_vertex_node, *patch_elem, f.vectors, ind, *pb, *want_local_enrichment, F );
     }
 };
 
 /// Construction des vecteurs E[ n ] pour chaque element n du maillage
 ///-------------------------------------------------------------------
 template<class TE, class TVV, class TV, class TVVV, class TTVV> 
-void calc_elem_vector_E( const TE &elem, const TVV &list_elems_vertex_node, const TV &connect_node_to_vertex_node, const TVVV &patch_elem, const TTVV &U, TTVV &E ) {}
+void calc_elem_vector_E( const TE &elem, const TVV &elem_list_vertex_node, const TV &connect_node_to_vertex_node, const TVVV &patch_elem, const TTVV &U, TTVV &E ) {}
 
 struct Calcul_Elem_Vector_E {
-    const Vec< Vec<unsigned> >* list_elems_vertex_node;
+    const Vec< Vec<unsigned> >* elem_list_vertex_node;
     const Vec<unsigned>* connect_node_to_vertex_node;
     const Vec< Vec< Vec<unsigned> > >* patch_elem;
     template<class TE, class T> void operator()( const TE &elem, const Vec< Vec<T> > &U, Vec< Vec<T> > &E ) const {
-        calc_elem_vector_E( elem, *list_elems_vertex_node, *connect_node_to_vertex_node, *patch_elem, U, E );
+        calc_elem_vector_E( elem, *elem_list_vertex_node, *connect_node_to_vertex_node, *patch_elem, U, E );
     }
 };
 

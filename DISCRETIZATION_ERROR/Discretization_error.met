@@ -78,7 +78,7 @@ def calc_elem_discretization_error( list_f, rep )
             # file_ <<< "    recovery_test_nodes.resize( elem.nb_nodes, 0 );"
             center_e_ref := Vec[ Op, e_ref->dim ]()
             for d in 0 .. e_ref->dim
-                center_e_ref[ d ] = symbol( "center( elem_ref )[ $d ]" )
+                center_e_ref[ d ] = symbol( "center( elem_ref )[ $d ]", tex_name = "C_{$d}" )
             recovery_test_center := e->point_is_inside( center_e_ref, 1 )
             cw_0 := CodeWriterAlt( "T" )
             cw_0.add( "recovery_test_center", recovery_test_center, reassign )
@@ -89,7 +89,7 @@ def calc_elem_discretization_error( list_f, rep )
             # nodes_e_ref := Vec[ Vec[ Op, e_ref->dim ], e_ref->nb_nodes ]()
             # for n in 0 .. e_ref->nb_nodes
                 # for d in 0 .. e_ref->dim
-                    # nodes_e_ref[ n ][ d ] = symbol( "elem_ref.node( $n )->pos[ $d ]" )
+                    # nodes_e_ref[ n ][ d ] = symbol( "elem_ref.node( $n )->pos[ $d ]", tex_name = "P_{$d}" )
                 # recovery_test_nodes := e->point_is_inside( nodes_e_ref[ n ] )
                 # cw_1.add( "recovery_test_nodes[ $n ]", recovery_test_nodes, reassign )
             # file_ <<< "    {"

@@ -61,7 +61,7 @@ void display_structure( TM &m, TM &m_ref, const string &pb, const string &struct
 /// Display quantity of interest and zone of interest
 ///--------------------------------------------------
 template<class T, class Pvec>
-void display_interest_quantity( const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &list_elems, const unsigned &node, const Pvec &pos, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re ) {
+void display_interest_quantity( const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list, const unsigned &node, const Pvec &pos, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re ) {
 
     cout << "-------------------------------------------------------" << endl;
     cout << "Quantite d'interet : " << interest_quantity << " dans la direction " << direction_extractor << endl;
@@ -71,7 +71,7 @@ void display_interest_quantity( const string &interest_quantity, const string &d
     cout << "Zone d'interet" << endl;
     cout << "--------------" << endl << endl;
     if ( interest_quantity.find("mean") != string::npos ) {
-        cout << "liste des elements du maillage direct :" << endl << list_elems << endl << endl;
+        cout << "liste des elements du maillage direct :" << endl << elem_list << endl << endl;
     }
     else if ( interest_quantity.find("pointwise") != string::npos ) {
         if (pointwise_interest_quantity == "node") {
@@ -92,7 +92,7 @@ void display_interest_quantity( const string &interest_quantity, const string &d
 /// Display adjoint mesh parameters
 ///--------------------------------
 template<class T>
-void display_params_adjoint( const bool &want_local_refinement_adjoint, const T &l_min, const T &k, const bool &spread_cut, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, const Vec<unsigned> &list_elems_adjoint_enrichment_zone_1, const Vec<unsigned> &list_elems_adjoint_enrichment_zone_2, const Vec<unsigned> &list_faces_adjoint_enrichment_zone_12, const Vec<unsigned> &list_nodes_adjoint_enrichment, const bool &want_local_improvement, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt ) {
+void display_params_adjoint( const bool &want_local_refinement_adjoint, const T &l_min, const T &k, const bool &spread_cut, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, const Vec<unsigned> &elem_list_adjoint_enrichment_zone_1, const Vec<unsigned> &elem_list_adjoint_enrichment_zone_2, const Vec<unsigned> &face_list_adjoint_enrichment_zone_12, const Vec<unsigned> &node_list_adjoint_enrichment, const bool &want_local_improvement, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt ) {
 
     if ( want_local_refinement_adjoint ) {
         cout << "------------------------------------------------------------" << endl;
@@ -107,14 +107,14 @@ void display_params_adjoint( const bool &want_local_refinement_adjoint, const T 
         cout << "Parametres associes a l'enrichissement local avec fonctions handbook" << endl;
         cout << "--------------------------------------------------------------------" << endl << endl;
         cout << "nb de couches/rangées de noeuds enrichis par la PUM sur le pb direct = " << nb_layers_nodes_enrichment << endl << endl;
-        cout << "nb de noeuds enrichis par la PUM = " << list_nodes_adjoint_enrichment.size() << endl << endl;
-        cout << "liste des noeuds enrichis par la PUM :" << endl << list_nodes_adjoint_enrichment << endl << endl;
-        cout << "nb d'elements enrichis dans la zone Omega_1 = " << list_elems_adjoint_enrichment_zone_1.size() << endl << endl;
-        cout << "liste des elements enrichis dans la zone Omega_1 :" << endl << list_elems_adjoint_enrichment_zone_1 << endl << endl;
-        cout << "nb d'elements enrichis dans la zone Omega_2 = " << list_elems_adjoint_enrichment_zone_2.size() << endl << endl;
-        cout << "liste des elements enrichis dans la zone Omega_2 :" << endl << list_elems_adjoint_enrichment_zone_2 << endl << endl;
-        cout << "nb de faces enrichies a l'interface entre les zones Omega_1 et Omega_2 = " << list_faces_adjoint_enrichment_zone_12.size() << endl << endl;
-        cout << "liste des faces enrichies a l'interface entre les zones Omega_1 et Omega_2 :" << endl << list_faces_adjoint_enrichment_zone_12 << endl << endl;
+        cout << "nb de noeuds enrichis par la PUM = " << node_list_adjoint_enrichment.size() << endl << endl;
+        cout << "liste des noeuds enrichis par la PUM :" << endl << node_list_adjoint_enrichment << endl << endl;
+        cout << "nb d'elements enrichis dans la zone Omega_1 = " << elem_list_adjoint_enrichment_zone_1.size() << endl << endl;
+        cout << "liste des elements enrichis dans la zone Omega_1 :" << endl << elem_list_adjoint_enrichment_zone_1 << endl << endl;
+        cout << "nb d'elements enrichis dans la zone Omega_2 = " << elem_list_adjoint_enrichment_zone_2.size() << endl << endl;
+        cout << "liste des elements enrichis dans la zone Omega_2 :" << endl << elem_list_adjoint_enrichment_zone_2 << endl << endl;
+        cout << "nb de faces enrichies a l'interface entre les zones Omega_1 et Omega_2 = " << face_list_adjoint_enrichment_zone_12.size() << endl << endl;
+        cout << "liste des faces enrichies a l'interface entre les zones Omega_1 et Omega_2 :" << endl << face_list_adjoint_enrichment_zone_12 << endl << endl;
     }
     if ( want_local_improvement ) {
         cout << "------------------------------------------------------" << endl;
@@ -168,7 +168,7 @@ string define_prefix( TM &m, const string &pb, const string &structure, const st
 }
 
 template<class TM, class T, class Pvec>
-void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &m_lambda_opt, TM &m_crown, const string &pb, const string &method, const string &structure, const string &loading, const string &mesh_size, const unsigned &cost_function, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, const string &geometric_criterium, const unsigned &deg_k, const unsigned &refinement_deg_ref, const bool &want_global_discretization_error, const bool &want_local_discretization_error, const bool &want_global_estimation, const bool &want_local_estimation, const bool &want_local_improvement, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &list_elems_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, const bool &save_vtu, const bool &display_vtu, const bool &save_pvd, const bool &display_pvd, const bool &save_vtu_ref, const bool &display_vtu_ref, const bool &save_vtu_lambda, const bool &display_vtu_lambda, const bool &save_vtu_crown, const bool &display_vtu_crown ) {
+void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &m_lambda_opt, TM &m_crown, const string &pb, const string &method, const string &structure, const string &loading, const string &mesh_size, const unsigned &cost_function, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, const string &geometric_criterium, const unsigned &deg_k, const unsigned &refinement_deg_ref, const bool &want_global_discretization_error, const bool &want_local_discretization_error, const bool &want_global_estimation, const bool &want_local_estimation, const bool &want_local_improvement, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, const bool &save_vtu, const bool &display_vtu, const bool &save_pvd, const bool &display_pvd, const bool &save_vtu_ref, const bool &display_vtu_ref, const bool &save_vtu_lambda, const bool &display_vtu_lambda, const bool &save_vtu_crown, const bool &display_vtu_crown ) {
     
     static const unsigned dim = TM::dim;
     
@@ -198,9 +198,9 @@ void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &
         if ( interest_quantity.find("mean") != string::npos ) {
             prefix += "_elem";
             prefix_ref += "_elem";
-            for (unsigned n=0;n<list_elems_interest_quantity.size();++n) {
-                prefix += "_" + to_string( list_elems_interest_quantity[ n ] );
-                prefix_ref += "_" + to_string( list_elems_interest_quantity[ n ] );
+            for (unsigned n=0;n<elem_list_interest_quantity.size();++n) {
+                prefix += "_" + to_string( elem_list_interest_quantity[ n ] );
+                prefix_ref += "_" + to_string( elem_list_interest_quantity[ n ] );
             }
         }
         else if ( interest_quantity.find("pointwise") != string::npos ) {
@@ -280,7 +280,7 @@ void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &
     }
     else if ( save_vtu ) {
         DisplayParaview dp;
-        dp.add_mesh_wo_iter( m, prefix_ );
+        dp.set_mesh( m, prefix_ );
     }
     if ( save_pvd or display_pvd ) {
         DisplayParaview dp;
@@ -295,7 +295,7 @@ void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &
     }
     else if ( save_vtu_ref ) {
         DisplayParaview dp;
-        dp.add_mesh_wo_iter( m_ref, prefix_ref_ );
+        dp.set_mesh( m_ref, prefix_ref_ );
     }
     if ( want_local_estimation and ( interest_quantity == "SIF" or interest_quantity == "stress_intensity_factor" ) ) {
         if ( display_vtu_crown ) {
@@ -303,7 +303,7 @@ void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &
         }
         else if ( ( save_vtu_crown ) ) {
             DisplayParaview dp;
-            dp.add_mesh_wo_iter( m_crown, prefix_crown_ );
+            dp.set_mesh( m_crown, prefix_crown_ );
         }
     }
     if ( want_local_estimation and want_local_improvement ) {
@@ -314,9 +314,9 @@ void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &
             }
             else if ( save_vtu_lambda ) {
                 DisplayParaview dp_min;
-                dp_min.add_mesh_wo_iter( m_lambda_min, prefix_lambda_min_ );
+                dp_min.set_mesh( m_lambda_min, prefix_lambda_min_ );
                 DisplayParaview dp_max;
-                dp_max.add_mesh_wo_iter( m_lambda_max, prefix_lambda_max_ );
+                dp_max.set_mesh( m_lambda_max, prefix_lambda_max_ );
             }
         }
         else if ( local_improvement == "rayleigh" ) {
@@ -324,7 +324,7 @@ void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &
                 display( m_lambda_opt, prefix_lambda_opt_ );
             else if ( save_vtu_lambda ) {
                 DisplayParaview dp_opt;
-                dp_opt.add_mesh_wo_iter( m_lambda_opt, prefix_lambda_opt_ );
+                dp_opt.set_mesh( m_lambda_opt, prefix_lambda_opt_ );
             }
         }
     }

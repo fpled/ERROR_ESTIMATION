@@ -198,26 +198,26 @@ void construct_estimator_criterium( TM &m, Vec<T> &estimator_ratio, const Vec<T>
 /// Application du critere d'amelioration geometrique et/ou sur l'estimateur d'erreur theta
 ///----------------------------------------------------------------------------------------
 template<class TM, class T>
-void apply_criterium_enhancement( TM &m, const string &method, const bool &enhancement_with_estimator_criterium, const bool &enhancement_with_geometric_criterium, const Vec<T> &estimator_ratio, const Vec<T> &geometric_ratio, const T &val_estimator_criterium, const T &val_geometric_criterium, Vec<bool> &flag_elem_enh, Vec<bool> &flag_face_enh, Vec<bool> &flag_elem_bal, Vec<unsigned> &list_elems_enh, Vec<unsigned> &list_faces_enh, Vec<unsigned> &list_elems_bal, const bool &debug_criterium_enhancement ) {
+void apply_criterium_enhancement( TM &m, const string &method, const bool &enhancement_with_estimator_criterium, const bool &enhancement_with_geometric_criterium, const Vec<T> &estimator_ratio, const Vec<T> &geometric_ratio, const T &val_estimator_criterium, const T &val_geometric_criterium, Vec<bool> &elem_flag_enh, Vec<bool> &face_flag_enh, Vec<bool> &elem_flag_bal, Vec<unsigned> &elem_list_enh, Vec<unsigned> &face_list_enh, Vec<unsigned> &elem_list_bal, const bool &debug_criterium_enhancement ) {
 	
-    Vec<bool> flag_node_enh;
-    Vec<unsigned> list_nodes_enh;
+    Vec<bool> node_flag_enh;
+    Vec<unsigned> node_list_enh;
 	
-    flag_elem_enh.resize( m.elem_list.size() );
-    flag_elem_enh.set( 0 );
-    flag_face_enh.resize( m.sub_mesh(Number<1>()).elem_list.size() );
-    flag_face_enh.set( 0 );
-    flag_node_enh.resize( m.node_list.size() );
-    flag_node_enh.set( 0 );
-    flag_elem_bal.resize( m.elem_list.size() );
-    flag_elem_bal.set( 0 );
+    elem_flag_enh.resize( m.elem_list.size() );
+    elem_flag_enh.set( 0 );
+    face_flag_enh.resize( m.sub_mesh(Number<1>()).elem_list.size() );
+    face_flag_enh.set( 0 );
+    node_flag_enh.resize( m.node_list.size() );
+    node_flag_enh.set( 0 );
+    elem_flag_bal.resize( m.elem_list.size() );
+    elem_flag_bal.set( 0 );
 	
-    /// Construction des vecteurs flag_elem_enh, flag_face_enh, flag_node_enh
-    /// Construction des vecteurs list_elems_enh, list_faces_enh, list_nodes_enh
+    /// Construction des vecteurs elem_flag_enh, face_flag_enh, node_flag_enh
+    /// Construction des vecteurs elem_list_enh, face_list_enh, node_list_enh
     ///-------------------------------------------------------------------------
 
-    cout << "Construction des vecteurs flag_elem_enh, flag_face_enh et flag_node_enh" << endl;
-    cout << "Construction des vecteurs list_elems_enh, list_faces_enh et list_nodes_enh" << endl << endl;
+    cout << "Construction des vecteurs elem_flag_enh, face_flag_enh et node_flag_enh" << endl;
+    cout << "Construction des vecteurs elem_list_enh, face_list_enh et node_list_enh" << endl << endl;
 
     Apply_Criterium_Enhancement<T> apply_criterium_enhancement;
 	apply_criterium_enhancement.method = &method;
@@ -227,64 +227,64 @@ void apply_criterium_enhancement( TM &m, const string &method, const bool &enhan
     apply_criterium_enhancement.geometric_ratio = &geometric_ratio;
 	apply_criterium_enhancement.val_estimator_criterium = &val_estimator_criterium;
     apply_criterium_enhancement.val_geometric_criterium = &val_geometric_criterium;
-    apply_criterium_enhancement.flag_elem_enh = &flag_elem_enh;
-    apply_criterium_enhancement.flag_face_enh = &flag_face_enh;
-    apply_criterium_enhancement.flag_node_enh = &flag_node_enh;
-    apply_criterium_enhancement.list_nodes_enh = &list_nodes_enh;
+    apply_criterium_enhancement.elem_flag_enh = &elem_flag_enh;
+    apply_criterium_enhancement.face_flag_enh = &face_flag_enh;
+    apply_criterium_enhancement.node_flag_enh = &node_flag_enh;
+    apply_criterium_enhancement.node_list_enh = &node_list_enh;
 
-    apply( m.elem_list, apply_criterium_enhancement, m, list_elems_enh, list_faces_enh );
+    apply( m.elem_list, apply_criterium_enhancement, m, elem_list_enh, face_list_enh );
 
-    remove_doubles( list_faces_enh );
-    remove_doubles( list_nodes_enh );
+    remove_doubles( face_list_enh );
+    remove_doubles( node_list_enh );
 
-    /// Construction du vecteur flag_elem_bal
-    /// Construction du vecteur list_elems_bal
+    /// Construction du vecteur elem_flag_bal
+    /// Construction du vecteur elem_list_bal
     ///---------------------------------------
 
-    cout << "Construction des vecteurs flag_elem_bal et list_elems_bal" << endl << endl;
+    cout << "Construction des vecteurs elem_flag_bal et elem_list_bal" << endl << endl;
 
     Construct_Balancing construct_balancing;
-    construct_balancing.flag_face_enh = &flag_face_enh;
+    construct_balancing.face_flag_enh = &face_flag_enh;
 
-    apply( m.elem_list, construct_balancing, m, flag_elem_bal, list_elems_bal );
+    apply( m.elem_list, construct_balancing, m, elem_flag_bal, elem_list_bal );
 
     if ( debug_criterium_enhancement ) {
-        cout << "Construction du vecteur flag_elem_enh" << endl << endl;
+        cout << "Construction du vecteur elem_flag_enh" << endl << endl;
         for (unsigned n=0;n<m.elem_list.size();++n) {
-            cout << "participation de l'element " << n << " a l'amelioration : " << flag_elem_enh[ n ] << endl;
+            cout << "participation de l'element " << n << " a l'amelioration : " << elem_flag_enh[ n ] << endl;
         }
         cout << endl << endl;
-        cout << "Construction du vecteur flag_face_enh" << endl << endl;
+        cout << "Construction du vecteur face_flag_enh" << endl << endl;
         for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
-            cout << "participation de la face " << k << " a l'amelioration : " << flag_face_enh[ k ] << endl;
+            cout << "participation de la face " << k << " a l'amelioration : " << face_flag_enh[ k ] << endl;
         }
         cout << endl << endl;
-        cout << "Construction du vecteur flag_node_enh" << endl << endl;
+        cout << "Construction du vecteur node_flag_enh" << endl << endl;
         for (unsigned i=0;i<m.node_list.size();++i) {
-            cout << "participation du noeud " << i << " a l'amelioration : " << flag_node_enh[ i ] << endl;
+            cout << "participation du noeud " << i << " a l'amelioration : " << node_flag_enh[ i ] << endl;
         }
         cout << endl << endl;
-        cout << "Construction du vecteur flag_elem_bal" << endl << endl;
+        cout << "Construction du vecteur elem_flag_bal" << endl << endl;
         for (unsigned n=0;n<m.elem_list.size();++n) {
-            cout << "participation de l'element " << n << " a l'equilibrage des densites d'effort ameliorees : " << flag_elem_bal[ n ] << endl;
+            cout << "participation de l'element " << n << " a l'equilibrage des densites d'effort ameliorees : " << elem_flag_bal[ n ] << endl;
         }
         cout << endl << endl;
-        cout << "liste des elements participant a l'amelioration de la construction des densites d'effort : " << list_elems_enh << endl << endl;
-        cout << "liste des faces participant a l'amelioration de la construction des densites d'effort : " << list_faces_enh << endl << endl;
-        cout << "liste des noeuds participant a l'amelioration de la construction des densites d'effort : " << list_nodes_enh << endl << endl;
-        cout << "liste des elements participant a l'equilibrage des densites d'effort ameliorees : " << list_elems_bal << endl << endl;
+        cout << "liste des elements participant a l'amelioration de la construction des densites d'effort : " << elem_list_enh << endl << endl;
+        cout << "liste des faces participant a l'amelioration de la construction des densites d'effort : " << face_list_enh << endl << endl;
+        cout << "liste des noeuds participant a l'amelioration de la construction des densites d'effort : " << node_list_enh << endl << endl;
+        cout << "liste des elements participant a l'equilibrage des densites d'effort ameliorees : " << elem_list_bal << endl << endl;
     }
     
     if ( enhancement_with_estimator_criterium )
         cout << "valeur du critere d'amelioration sur l'estimateur d'erreur : " << val_estimator_criterium << endl << endl;
     if ( enhancement_with_geometric_criterium )
 	    cout << "valeur du critere d'amelioration geometrique : " << val_geometric_criterium << endl << endl;
-    cout << "nb d'elements participant a l'amelioration de la construction des densites d'effort : " << list_elems_enh.size() << endl << endl;
-    cout << "nb de faces participant a l'amelioration de la construction des densites d'effort : " << list_faces_enh.size() << endl << endl;
-    cout << "nb de noeuds participant a l'amelioration de la construction des densites d'effort : " << list_nodes_enh.size() << endl << endl;
-    cout << "nb d'elements participant a l'equilibrage des densites d'effort ameliorees : " << list_elems_bal.size() << endl << endl;
+    cout << "nb d'elements participant a l'amelioration de la construction des densites d'effort : " << elem_list_enh.size() << endl << endl;
+    cout << "nb de faces participant a l'amelioration de la construction des densites d'effort : " << face_list_enh.size() << endl << endl;
+    cout << "nb de noeuds participant a l'amelioration de la construction des densites d'effort : " << node_list_enh.size() << endl << endl;
+    cout << "nb d'elements participant a l'equilibrage des densites d'effort ameliorees : " << elem_list_bal.size() << endl << endl;
 	
-    if (list_elems_enh.size() == 0) {
+    if (elem_list_enh.size() == 0) {
         cerr << "Arret brutal, car il n'y a aucune densite d'effort a ameliorer pour le critere choisi..." << endl << endl;
         throw "Baleinou sous caillou...";
     }

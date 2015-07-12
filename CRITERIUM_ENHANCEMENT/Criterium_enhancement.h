@@ -37,12 +37,12 @@ struct Calcul_Circum_Center_Radius {
     }
 };
 
-struct Construct_Circum_Center_Radius_List_Elems {
-    const Vec<unsigned>* list_elems;
+struct Construct_Circum_Center_Radius_Elem_List {
+    const Vec<unsigned>* elem_list;
     template<class TE, class T> void operator()( const TE &elem, Vec< Vec<T> > &circum_center, Vec<T> &circum_radius ) const {
-        if ( find( *list_elems, _1 == elem.number ) ) {
-            Vec<unsigned> ind_in_list_elems = find_with_index( *list_elems == elem.number );
-            update_circum_center( elem, circum_center[ ind_in_list_elems[ 0 ] ], circum_radius[ ind_in_list_elems[ 0 ] ] );
+        if ( find( *elem_list, _1 == elem.number ) ) {
+            Vec<unsigned> ind_in_elem_list = find_with_index( *elem_list == elem.number );
+            update_circum_center( elem, circum_center[ ind_in_elem_list[ 0 ] ], circum_radius[ ind_in_elem_list[ 0 ] ] );
         }
     }
 };
@@ -106,11 +106,11 @@ struct Calcul_Estimator_Ratio {
     }
 };
 
-/// Construction des vecteurs flag_elem_enh, flag_face_enh, flag_node_enh
-/// Construction des vecteurs list_elems_enh, list_faces_enh, list_nodes_enh
+/// Construction des vecteurs elem_flag_enh, face_flag_enh, node_flag_enh
+/// Construction des vecteurs elem_list_enh, face_list_enh, node_list_enh
 ///-------------------------------------------------------------------------
 template<class TE, class TM, class S, class B, class TTV, class T, class BV, class TV>
-void apply_criterium_enhancement( TE &e, const TM &m, const S &method, const B &enhancement_with_estimator_criterium, const B &enhancement_with_geometric_criterium, const TTV &estimator_ratio, const TTV &geometric_ratio, const T &val_estimator_criterium, const T &val_geometric_criterium, BV &flag_elem_enh, BV &flag_face_enh, BV &flag_node_enh, TV &list_elems_enh, TV &list_faces_enh, TV &list_nodes_enh ) {}
+void apply_criterium_enhancement( TE &e, const TM &m, const S &method, const B &enhancement_with_estimator_criterium, const B &enhancement_with_geometric_criterium, const TTV &estimator_ratio, const TTV &geometric_ratio, const T &val_estimator_criterium, const T &val_geometric_criterium, BV &elem_flag_enh, BV &face_flag_enh, BV &node_flag_enh, TV &elem_list_enh, TV &face_list_enh, TV &node_list_enh ) {}
 
 template<class T>
 struct Apply_Criterium_Enhancement {
@@ -121,11 +121,11 @@ struct Apply_Criterium_Enhancement {
     const Vec<T>* geometric_ratio;
     const T* val_estimator_criterium;
     const T* val_geometric_criterium;
-    Vec<bool>* flag_elem_enh;
-    Vec<bool>* flag_face_enh;
-    Vec<bool>* flag_node_enh;
-    Vec<unsigned>* list_nodes_enh;
-    template<class TE, class TM> void operator()( TE &elem, const TM &m, Vec<unsigned> &list_elems_enh, Vec<unsigned> &list_faces_enh ) const {
+    Vec<bool>* elem_flag_enh;
+    Vec<bool>* face_flag_enh;
+    Vec<bool>* node_flag_enh;
+    Vec<unsigned>* node_list_enh;
+    template<class TE, class TM> void operator()( TE &elem, const TM &m, Vec<unsigned> &elem_list_enh, Vec<unsigned> &face_list_enh ) const {
         if ( ( *enhancement_with_estimator_criterium and *enhancement_with_geometric_criterium == 0 and (*estimator_ratio)[ elem.number ] >= *val_estimator_criterium ) or ( *enhancement_with_estimator_criterium == 0 and *enhancement_with_geometric_criterium and (*geometric_ratio)[ elem.number ] <= *val_geometric_criterium ) or ( *enhancement_with_estimator_criterium and *enhancement_with_geometric_criterium and (*geometric_ratio)[ elem.number ] <= *val_geometric_criterium and (*estimator_ratio)[ elem.number ] >= *val_estimator_criterium ) ) {
             if ( *method == "EET" ) {
                 elem.enhancement_EET = 1;
@@ -133,33 +133,33 @@ struct Apply_Criterium_Enhancement {
             if ( *method == "EESPT" ) {
                 elem.enhancement_EESPT = 1;
             }
-            (*flag_elem_enh)[ elem.number ] = 1;
-            list_elems_enh.push_back( elem.number );
+            (*elem_flag_enh)[ elem.number ] = 1;
+            elem_list_enh.push_back( elem.number );
             for (unsigned k=0;k<NbChildrenElement<typename TE::NE,1>::res;++k) {
-                (*flag_face_enh)[ m.get_children_of( elem, Number<1>() )[k]->number ] = 1;
-                list_faces_enh.push_back( m.get_children_of( elem, Number<1>() )[k]->number );
+                (*face_flag_enh)[ m.get_children_of( elem, Number<1>() )[k]->number ] = 1;
+                face_list_enh.push_back( m.get_children_of( elem, Number<1>() )[k]->number );
             }
             for (unsigned i=0;i<TE::nb_nodes;++i) {
-                (*flag_node_enh)[ elem.node( i )->number ] = 1;
-                (*list_nodes_enh).push_back( elem.node( i )->number );
+                (*node_flag_enh)[ elem.node( i )->number ] = 1;
+                (*node_list_enh).push_back( elem.node( i )->number );
             }
         }
     }
 };
 
-/// Construction du vecteur flag_elem_bal
-/// Construction du vecteur list_elems_bal
+/// Construction du vecteur elem_flag_bal
+/// Construction du vecteur elem_list_bal
 ///---------------------------------------
 struct Construct_Balancing {
-    const Vec<bool>* flag_face_enh;
-    template<class TE, class TM> void operator()( const TE &elem, const TM &m, Vec<bool> &flag_elem_bal, Vec<unsigned> &list_elems_bal ) const {
+    const Vec<bool>* face_flag_enh;
+    template<class TE, class TM> void operator()( const TE &elem, const TM &m, Vec<bool> &elem_flag_bal, Vec<unsigned> &elem_list_bal ) const {
         for (unsigned k=0;k<NbChildrenElement<typename TE::NE,1>::res;++k) {
-            if ( (*flag_face_enh)[ m.get_children_of( elem, Number<1>() )[k]->number ] ) {
-                flag_elem_bal[ elem.number ] = 1;
+            if ( (*face_flag_enh)[ m.get_children_of( elem, Number<1>() )[k]->number ] ) {
+                elem_flag_bal[ elem.number ] = 1;
             }
         }
-        if ( flag_elem_bal[ elem.number ] ) {
-            list_elems_bal.push_back( elem.number );
+        if ( elem_flag_bal[ elem.number ] ) {
+            elem_list_bal.push_back( elem.number );
         }
     }
 };
