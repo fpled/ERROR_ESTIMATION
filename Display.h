@@ -158,7 +158,7 @@ void display_method( const string &pb, const string &method, const bool &enhance
 ///-------------------------------
 template<class TM>
 string define_prefix( TM &m, const string &pathname, const string &pb, const string &structure, const string &loading, const string &mesh_size ) {
-    string prefix = pathname + structure;
+    string prefix = pathname + "/" + structure;
     if ( structure == "plate_crack" or structure == "spot_weld" )
         prefix += "_" + loading;
     if ( structure == "plate_hole" or structure == "plate_crack" or structure == "structure_crack" or structure == "test_specimen" or structure == "weight_sensor" or structure == "circle" or structure == "beam_hole" or structure == "plate_hole_full" or structure == "spot_weld" or structure == "reactor_head" or structure == "door_seal" or structure == "sphere" or structure == "sphere_center" or structure == "SAP" )

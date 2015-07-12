@@ -197,7 +197,7 @@ int main( int argc, char **argv ) {
     
     /// Sauvegarde / Affichage
     ///-----------------------
-    static const bool string = "./RESULTS";
+    static const string pathname = "./RESULTS";
 
     static const bool save_vtu = 1;
     static const bool display_vtu = 0;
