@@ -197,7 +197,7 @@ int main( int argc, char **argv ) {
     
     /// Sauvegarde / Affichage
     ///-----------------------
-    static const string pathname = "./RESULTS";
+    static const string pathname = "./RESULTS/";
 
     static const bool save_vtu = 1;
     static const bool display_vtu = 0;
@@ -388,9 +388,9 @@ int main( int argc, char **argv ) {
                     f.call_after_solve();
                 }
                 
-//                cout << "psi_" + to_string( k ) << endl;
+//                cout << "psi_" + to_string( k ) << " =" << endl;
 //                cout << psi[ n ][ k ] << endl;
-//                cout << "lambda_" + to_string( k ) << endl;
+//                cout << "lambda_" + to_string( k ) << " =" << endl;
 //                cout << lambda[ n ][ k ] << endl << endl;
                 
                 if ( save_pvd_PGD_space or display_pvd_PGD_space )
@@ -431,7 +431,7 @@ int main( int argc, char **argv ) {
                 /// Stationnarite du produit fonction psi en espace * fonction lambda en parametre dans le processus iteratif associe au mode n
                 ///----------------------------------------------------------------------------------------------------------------------------
                 T dist = sqrt( fabs( alpha_s_unk * alpha_p_unk + alpha_s_k * alpha_p_k + alpha_s_unk_old * alpha_p_unk_old + alpha_s_k_old * alpha_p_k_old - 2 * ( beta_s_unk * beta_p_unk + beta_s_k * beta_p_k ) ) ) / ( 0.5 * sqrt( fabs( alpha_s_unk * alpha_p_unk + alpha_s_k * alpha_p_k + alpha_s_unk_old * alpha_p_unk_old + alpha_s_k_old * alpha_p_k_old + 2 * ( beta_s_unk * beta_p_unk + beta_s_k * beta_p_k ) ) ) );
-//                cout << "Distance a l'iteration " << k << " = " << dist << endl << endl;
+                cout << "Distance a l'iteration " << k << " = " << dist << endl << endl;
                 if ( dist < tol_local_convergence_criterium or k >= max_iter ) {
                     nb_iterations[ n ] = k;
                     cout << "Nb d'iterations associe au mode " << n << " = " << nb_iterations[ n ] << endl << endl;

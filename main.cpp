@@ -177,7 +177,7 @@ int main( int argc, char **argv ) {
     
     /// Sauvegarde / Affichage
     ///-----------------------
-    static const string pathname = "./RESULTS";
+    static const string pathname = "./RESULTS/";
 
     static const bool save_vtu = 1;
     static const bool save_pvd = 0;

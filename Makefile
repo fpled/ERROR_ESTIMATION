@@ -25,6 +25,7 @@ DIC_Dir = git://gitosis.lmt.ens-cachan.fr/dic.git
 qsub_Dir = /usr/local/torque-current/bin/
 scons_file = SConstruct
 scons_file_PGD = SConstruct_PGD
+scons_file_HOMOG = SConstruct_HOMOG
 # Options for the compilation
 debug = 0 
 opt = 0
@@ -54,6 +55,12 @@ PGD:
 	cd LMT/include/codegen; scons -j 1
 	scons --sconstruct=$(scons_file_PGD) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
 	time ./main_PGD
+
+HOMOG:
+# 	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation_PGD.met
+	cd LMT/include/codegen; scons -j 1
+	scons --sconstruct=$(scons_file_HOMOG) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
+	time ./main_HOMOG
 
 # Codegen ---------------------------
 codegen:
