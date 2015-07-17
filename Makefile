@@ -81,6 +81,11 @@ compile_PGD:
 	cd LMT/include/codegen; scons -j 1
 	scons --sconstruct=$(scons_file_PGD) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
 
+compile_HOMOG:
+# 	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation_PGD.met
+	cd LMT/include/codegen; scons -j 1
+	scons --sconstruct=$(scons_file_HOMOG) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
+
 # Test ---------------------------
 test:
 	export METILPATH=../METIL/MET; ../METIL-install/bin/metil TESTS/Test_metil.met

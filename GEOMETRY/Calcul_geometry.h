@@ -21,7 +21,7 @@ using namespace std;
 /// Liste des faces connectees a l'element n du maillage : child_list[ n ]
 ///---------------------------------------------------------------------------------
 template<class TM>
-void construct_child( TM &m, Vec<unsigned> &child_cpt, Vec< Vec<unsigned> > &child_list, const bool &debug_geometry ) {
+void construct_child( TM &m, Vec<unsigned> &child_cpt, Vec< Vec<unsigned> > &child_list, const bool debug_geometry = false ) {
     child_cpt.resize( m.elem_list.size() );
     child_cpt.set( 0 );
     child_list.resize( m.elem_list.size() );
@@ -42,7 +42,7 @@ void construct_child( TM &m, Vec<unsigned> &child_cpt, Vec< Vec<unsigned> > &chi
 /// Liste des elements connectes au noeud i du maillage : elem_list_node[ i ]
 ///---------------------------------------------------------------------------------
 template<class TM>
-void construct_elems_connected_to_node( const TM &m, Vec<unsigned> &elem_cpt_node, Vec< Vec<unsigned> > &elem_list_node, const bool &debug_geometry ) {
+void construct_elems_connected_to_node( const TM &m, Vec<unsigned> &elem_cpt_node, Vec< Vec<unsigned> > &elem_list_node, const bool debug_geometry = false ) {
     elem_cpt_node.resize( m.node_list.size() );
     elem_cpt_node.set( 0 );
     elem_list_node.resize( m.node_list.size() );
@@ -62,7 +62,7 @@ void construct_elems_connected_to_node( const TM &m, Vec<unsigned> &elem_cpt_nod
 /// Liste des faces connectees au noeud i du maillage : face_list_node[ i ]
 ///--------------------------------------------------------------------------------
 template<class TM>
-void construct_faces_connected_to_node( TM &m, Vec<unsigned> &face_cpt_node, Vec< Vec<unsigned> > &face_list_node, const bool &debug_geometry ) {
+void construct_faces_connected_to_node( TM &m, Vec<unsigned> &face_cpt_node, Vec< Vec<unsigned> > &face_list_node, const bool debug_geometry = false ) {
     face_cpt_node.resize( m.node_list.size() );
     face_cpt_node.set( 0 );
     face_list_node.resize( m.node_list.size() );
@@ -83,7 +83,7 @@ void construct_faces_connected_to_node( TM &m, Vec<unsigned> &face_cpt_node, Vec
 /// Liste des noeuds connectes a l'element n du maillage : node_list_elem[ n ]
 ///-----------------------------------------------------------------------------------
 template<class TM>
-void construct_nodes_connected_to_elem( const TM &m, Vec<unsigned> &node_cpt_elem, Vec< Vec<unsigned> > &node_list_elem, const bool &debug_geometry ) {
+void construct_nodes_connected_to_elem( const TM &m, Vec<unsigned> &node_cpt_elem, Vec< Vec<unsigned> > &node_list_elem, const bool debug_geometry = false ) {
     node_cpt_elem.resize( m.elem_list.size() );
     node_cpt_elem.set( 0 );
     node_list_elem.resize( m.elem_list.size() );
@@ -103,7 +103,7 @@ void construct_nodes_connected_to_elem( const TM &m, Vec<unsigned> &node_cpt_ele
 /// Liste des noeuds connectes a la face k du maillage : node_list_face[ k ]
 ///---------------------------------------------------------------------------------
 template<class TM>
-void construct_nodes_connected_to_face( TM &m, Vec<unsigned> &node_cpt_face, Vec< Vec<unsigned> > &node_list_face, const bool &debug_geometry ) {
+void construct_nodes_connected_to_face( TM &m, Vec<unsigned> &node_cpt_face, Vec< Vec<unsigned> > &node_list_face, const bool debug_geometry  = false ) {
     node_cpt_face.resize( m.sub_mesh(Number<1>()).elem_list.size() );
     node_cpt_face.set( 0 );
     node_list_face.resize( m.sub_mesh(Number<1>()).elem_list.size() );
@@ -124,7 +124,7 @@ void construct_nodes_connected_to_face( TM &m, Vec<unsigned> &node_cpt_face, Vec
 /// Compteur du nb de noeuds sommets dans le maillage : nb_vertex_nodes
 ///-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM>
-unsigned match_node_to_vertex_node( const TM &m, Vec<bool> &correspondance_node_to_vertex_node, Vec<unsigned> &connect_node_to_vertex_node, const bool &debug_geometry ) {
+unsigned match_node_to_vertex_node( const TM &m, Vec<bool> &correspondance_node_to_vertex_node, Vec<unsigned> &connect_node_to_vertex_node, const bool debug_geometry = false ) {
     correspondance_node_to_vertex_node.resize( m.node_list.size() );
     correspondance_node_to_vertex_node.set( 0 );
 
@@ -151,7 +151,7 @@ unsigned match_node_to_vertex_node( const TM &m, Vec<bool> &correspondance_node_
 /// Liste des elements connectes au noeud i du maillage : elem_list_vertex_node[ j ]
 ///-----------------------------------------------------------------------------------------------
 template<class TM>
-void construct_elems_connected_to_vertex_node( const TM &m, const unsigned &nb_vertex_nodes, const Vec<bool> &correspondance_node_to_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, Vec<unsigned> &elem_cpt_vertex_node, Vec< Vec<unsigned> > &elem_list_vertex_node, const bool &debug_geometry ) {
+void construct_elems_connected_to_vertex_node( const TM &m, const unsigned &nb_vertex_nodes, const Vec<bool> &correspondance_node_to_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, Vec<unsigned> &elem_cpt_vertex_node, Vec< Vec<unsigned> > &elem_list_vertex_node, const bool debug_geometry = false ) {
     elem_cpt_vertex_node.resize( nb_vertex_nodes );
     elem_cpt_vertex_node.set( 0 );
     elem_list_vertex_node.resize( nb_vertex_nodes );
@@ -174,7 +174,7 @@ void construct_elems_connected_to_vertex_node( const TM &m, const unsigned &nb_v
 /// Liste des faces connectees au noeud i du maillage : face_list_vertex_node[ j ]
 ///----------------------------------------------------------------------------------------------
 template<class TM>
-void construct_faces_connected_to_vertex_node( TM &m, const unsigned &nb_vertex_nodes, const Vec<bool> &correspondance_node_to_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, Vec<unsigned> &face_cpt_vertex_node, Vec< Vec<unsigned> > &face_list_vertex_node, const bool &debug_geometry ) {
+void construct_faces_connected_to_vertex_node( TM &m, const unsigned &nb_vertex_nodes, const Vec<bool> &correspondance_node_to_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, Vec<unsigned> &face_cpt_vertex_node, Vec< Vec<unsigned> > &face_list_vertex_node, const bool debug_geometry = false ) {
     face_cpt_vertex_node.resize( nb_vertex_nodes );
     face_cpt_vertex_node.set( 0 );
     face_list_vertex_node.resize( nb_vertex_nodes );
@@ -198,7 +198,7 @@ void construct_faces_connected_to_vertex_node( TM &m, const unsigned &nb_vertex_
 /// Liste des noeuds sommets connectes a l'element n du maillage : vertex_node_list_elem[ n ]
 ///--------------------------------------------------------------------------------------------------
 template<class TM>
-void construct_vertex_nodes_connected_to_elem( const TM &m, const Vec<bool> &correspondance_node_to_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, Vec<unsigned> &vertex_node_cpt_elem, Vec< Vec<unsigned> > &vertex_node_list_elem, const bool &debug_geometry ) {
+void construct_vertex_nodes_connected_to_elem( const TM &m, const Vec<bool> &correspondance_node_to_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, Vec<unsigned> &vertex_node_cpt_elem, Vec< Vec<unsigned> > &vertex_node_list_elem, const bool debug_geometry = false ) {
     vertex_node_cpt_elem.resize( m.elem_list.size() );
     vertex_node_cpt_elem.set( 0 );
     vertex_node_list_elem.resize( m.elem_list.size() );
@@ -221,7 +221,7 @@ void construct_vertex_nodes_connected_to_elem( const TM &m, const Vec<bool> &cor
 /// Liste des noeuds sommets connectes a la face k du maillage : vertex_node_list_face[ k ]
 ///------------------------------------------------------------------------------------------------
 template<class TM>
-void construct_vertex_nodes_connected_to_face( TM &m, const Vec<bool> &correspondance_node_to_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, Vec<unsigned> &vertex_node_cpt_face, Vec< Vec<unsigned> > &vertex_node_list_face, const bool &debug_geometry ) {
+void construct_vertex_nodes_connected_to_face( TM &m, const Vec<bool> &correspondance_node_to_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, Vec<unsigned> &vertex_node_cpt_face, Vec< Vec<unsigned> > &vertex_node_list_face, const bool debug_geometry = false ) {
     vertex_node_cpt_face.resize( m.sub_mesh(Number<1>()).elem_list.size() );
     vertex_node_cpt_face.set( 0 );
     vertex_node_list_face.resize( m.sub_mesh(Number<1>()).elem_list.size() );
@@ -247,7 +247,7 @@ void construct_vertex_nodes_connected_to_face( TM &m, const Vec<bool> &correspon
 /// face_type_dim[ k ][ d ] = 2 : face k appartenant a un bord delta_2_Omega dans la direction d
 ///---------------------------------------------------------------------------------------------
 template<class TM, class TF>
-void construct_face_type( TM &m, const TF &f, Vec< Vec<unsigned> > &face_type, const bool &debug_geometry ) {
+void construct_face_type( TM &m, const TF &f, Vec< Vec<unsigned> > &face_type, const bool debug_geometry = false ) {
 
     static const unsigned dim = TM::dim;
 
@@ -279,7 +279,7 @@ void construct_face_type( TM &m, const TF &f, Vec< Vec<unsigned> > &face_type, c
 /// node_type[ i ][ d ] = 12 : noeud i a la separation entre delta_1_Omega et delat_2_Omega dans la direction d
 ///------------------------------------------------------------------------------------------------------------
 template<class TM, class TF>
-void construct_node_type( TM &m, const TF &f, const Vec< Vec<unsigned> > &face_type, Vec< Vec<unsigned> > &node_type, const bool &debug_geometry ) {
+void construct_node_type( TM &m, const TF &f, const Vec< Vec<unsigned> > &face_type, Vec< Vec<unsigned> > &node_type, const bool debug_geometry = false ) {
 
     static const unsigned dim = TM::dim;
 
@@ -315,7 +315,7 @@ void construct_node_type( TM &m, const TF &f, const Vec< Vec<unsigned> > &face_t
 /// Calcul des informations relatives a la geometrie
 ///-------------------------------------------------
 template<class TM, class TF>
-void calcul_display_geometry( TM &m, const TF &f, const bool &debug_geometry ) {
+void calcul_display_geometry( TM &m, const TF &f, const bool debug_geometry = false ) {
 
     if ( debug_geometry ) {
         cout << "--------------------------------------------------------------" << endl;

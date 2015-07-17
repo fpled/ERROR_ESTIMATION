@@ -40,7 +40,7 @@ def Galerkin_vector_for_pointwise_pre_sigma_in_infinite_domain( dim, pos, mu )
         for i in 0 .. dim
             for j in 0 .. dim
                 if j == i
-                    B[ i, i ][ j ] = - pos[ i ] * ( 2 * log( r ) + 1 ) / ( 8 * Pi * mu )
+                    B[ i, i ][ j ] = - pos[ i ] * ( 1 + 2 * log( r ) ) / ( 8 * Pi * mu )
                 else
                     B[ i, i ][ j ] = 0
         B[ 0, 1 ] = B[ 0, 0 ] * cos( Pi/4 ) + B[ 1, 1 ] * sin( Pi/4 )

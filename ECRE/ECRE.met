@@ -323,7 +323,7 @@ def calc_elem_vector_F_hat( list_f, rep )
         residual_nodal := Op( 0 )
         for n in 0 .. e->nb_nodes
             nb_elems_node := symbol( "elem_cpt_node[ elem.node( $n )->number ]" )
-            residual_nodal += dot( child_cast(f)->pre_f_nodal.expr, dep_hat_test ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
+            residual_nodal += dot( child_cast(f)->f_nodal.expr + child_cast(f)->pre_f_nodal.expr, dep_hat_test ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
         file_ <<< "    if ( balancing == 0 or ( balancing and elem_flag_bal[ elem.number ] == 0 and elem_flag_enh[ elem.number ] == 0 ) ) {"
         F_hat_nodal := residual_nodal.diff( sym_dep_hat_test )
         cw_nodal := CodeWriterAlt( "T" )

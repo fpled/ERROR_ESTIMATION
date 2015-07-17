@@ -20,7 +20,7 @@ using namespace std;
 /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale pour les methodes basees sur la condition de prolongement (EET,EESPT)
 ///------------------------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T>
-void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const string &pb, const string &method, T &theta, Vec<T> &theta_elem, const Vec< Vec<T> > &dep_hat, const bool &debug_method, const bool &debug_method_enhancement, const bool &debug_error_estimate, const bool &debug_local_effectivity_index, const bool &want_global_discretization_error, const bool &want_local_discretization_error ) {
+void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const string &pb, const string &method, T &theta, Vec<T> &theta_elem, const Vec< Vec<T> > &dep_hat, const bool debug_method = false, const bool debug_method_enhancement = false, const bool debug_error_estimate = false, const bool debug_local_effectivity_index = false, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false ) {
     
     const Vec< Vec<T> > &dep_psi, const Vec< Vec<T> > &dep_lambda, const unsigned &nb_modes, const TMAT &K_s, const TMAT &K_unk_s, const TMAT &K_k_s, const TMAT &K_unk_p, const TMAT &K_k_p, const Vec<T> &F_s, const Vec<T> &F_p, const Vec<unsigned> &elem_list_PGD_unknown_param,
 	

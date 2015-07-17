@@ -64,7 +64,7 @@ void define_unknown_param_zone( TF &f, TM &m, const string &structure, TV &elem_
 /// Construction et resolution du pb en espace
 ///-------------------------------------------
 template<class TM, class TF, class T, class TV, class TMAT, class TVVV>
-void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_s, const TV &F_p, const TMAT &K_unk_p, const TMAT &K_k_p, const bool &want_iterative_solver, const T &iterative_criterium, const Vec<unsigned> &elem_list_PGD_unknown_param, const TVVV &lambda, TVVV &psi ) {
+void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_s, const TV &F_p, const TMAT &K_unk_p, const TMAT &K_k_p, const Vec<unsigned> &elem_list_PGD_unknown_param, const TVVV &lambda, TVVV &psi, const bool want_iterative_solver = false, const T iterative_criterium = 1e-3 ) {
 
     /// Construction du pb en espace
     ///-----------------------------

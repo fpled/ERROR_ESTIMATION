@@ -22,7 +22,7 @@ using namespace std;
 /// Construction standard des densites d'effort par la methode EET
 ///---------------------------------------------------------------
 template<class TM, class TF, class T>
-void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, const unsigned &cost_function, const bool &enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, const bool &want_local_enrichment, const bool &debug_method, const bool &verif_solver_minimisation, const T &tol_solver_minimisation, const bool &debug_geometry, const bool &verif_compatibility_conditions, const T &tol_compatibility_conditions, const bool &debug_force_fluxes, Vec< Vec< Vec<T> > > &vec_force_fluxes ) {
+void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, const unsigned &cost_function, const bool &enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, Vec< Vec< Vec<T> > > &vec_force_fluxes, const bool want_local_enrichment = false, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool debug_geometry = false, const bool debug_force_fluxes = false, const bool debug_method = false ) {
     
     static const unsigned dim = TM::dim;
     

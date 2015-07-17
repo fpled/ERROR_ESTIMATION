@@ -981,7 +981,7 @@ def calc_skin_elem_error_estimate_lambda_boundary( list_f, rep )
 
         for face_lambda_ in e_lambda->children( 1 )
             face_lambda := child_cast( face_lambda_ )
-            file_ <<< "    if ( m_lambda.sub_mesh(Number<1>()).get_parents_of_EA( m_lambda.get_children_of( elem_lambda, Number<1>() )[ $( face_lambda->num_child ) ] ).size() != 2 ) {"
+            file_ <<< "    if ( m_lambda.sub_mesh(Number<1>()).get_parents_of_EA( m_lambda.get_children_of( elem_lambda, Number<1>() )[ $( face_lambda->num_child ) ] ).size() == 1 ) {"
             theta_face := Op( 0 )
             u := face_lambda->pos - domain_center
 

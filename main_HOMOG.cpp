@@ -32,15 +32,15 @@ int main( int argc, char **argv ) {
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "weight_sensor"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circular_inclusions, circular_holes
+    static const string structure = "square_32"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circular_inclusions, circular_holes
                                                      // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes
     static const string mesh_size = "fine"; // maillage pour les structures plate_hole (2D ou 3D), plate_crack, structure_crack, test_specimen, weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
-    static const string loading = "pull"; // chargement pour la structure spot_weld (3D) : pull, shear, peeling et pour la structure plate_crack (2D) : pull, shear
+    static const string loading = "pre_sigma"; // chargement pour la structure spot_weld (3D) : pull, shear, peeling et pour la structure plate_crack (2D) : pull, shear
                                           // chargement pour la structure square_... (2D) : pre_epsilon, pre_sigma
     static const unsigned deg_p = 1; // degre de l'analyse elements finis : 1, 2, ...
     static const unsigned deg_k = 3; // degre supplementaire : 1, 2 , 3, ...
     static const string boundary_condition_D = "penalisation"; // methode de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalisation
-    static const bool display_constraints = 0; // affichage des contraintes cinematiques
+    static const bool display_constraints = 1; // affichage des contraintes cinematiques
     
     /// Global discretization error
     ///----------------------------
@@ -59,7 +59,7 @@ int main( int argc, char **argv ) {
 
     /// Global error estimation method
     ///-------------------------------
-    static const bool want_global_estimation = 1; // calcul d'un estimateur d'erreur globale (au sens de la norme energetique)
+    static const bool want_global_estimation = 0; // calcul d'un estimateur d'erreur globale (au sens de la norme energetique)
     static const string method = "EET"; //methode de construction de champs admissibles pour le pb direct : EET, SPET, EESPT
     static const string method_adjoint = "EET"; // methode de construction de champs admissibles pour le pb adjoint : EET, SPET, EESPT
 
@@ -182,7 +182,7 @@ int main( int argc, char **argv ) {
     static const bool save_vtu = 1;
     static const bool save_pvd = 0;
     static const bool save_vtu_ref = 0;
-    static const bool display_vtu = 1;
+    static const bool display_vtu = 0;
     static const bool display_pvd = 0;
     static const bool display_vtu_ref = 0;
     
@@ -235,10 +235,64 @@ int main( int argc, char **argv ) {
     ///------------------------
     TicToc t;
     t.start();
+
+    f.allocate_matrices();
+    f.shift();
+    f.assemble();
+    f.update_variables();
+    f.call_after_solve();
+
+//    cout << f.matrices(Number<0>()) << endl << endl;
+    cout << "residual =" << endl << endl;
+    for(unsigned i=0;i<f.vectors[0].size();++i) {
+        if ( i % 2== 0 )
+            cout << "node " << i/2 << " :" << endl;
+        cout << ( f.matrices(Number<0>()) * f.vectors[0] - f.sollicitation )[i] << endl;
+    }
+    cout << endl;
+    cout << "K U =" << endl << endl;
+    for(unsigned i=0;i<f.vectors[0].size();++i) {
+        if ( i % 2== 0 )
+            cout << "node " << i/2 << " :" << endl;
+        cout << ( f.matrices(Number<0>()) * f.vectors[0] )[i] << endl;
+    }
+    cout << endl;
+    cout << "F =" << endl << endl;
+    for(unsigned i=0;i<f.vectors[0].size();++i) {
+        if ( i % 2== 0 )
+            cout << "node " << i/2 << " :" << endl;
+        cout << f.sollicitation[i] << endl;
+    }
+    cout << endl;
+    cout << "U =" << endl << endl;
+    for(unsigned i=0;i<f.vectors[0].size();++i) {
+        if ( i % 2== 0 )
+            cout << "node " << i/2 << " :" << endl;
+        cout << ( f.vectors[0] )[i] << endl;
+    }
+    cout << endl;
+    cout << "K =" << endl << endl;
+    for(unsigned i=0;i<f.vectors[0].size();++i) {
+        if ( i % 2== 0 )
+            cout << "node " << i/2 << " :" << endl;
+        cout << f.matrices(Number<0>()).row(i) << endl;
+    }
+    cout << endl;
+
+    Vec<T> U = f.vectors[0];
+
     if ( want_iterative_solver == 0 )
         f.solve();
     else
         f.solve( iterative_criterium );
+
+    cout << "U - U =" << endl << endl;
+    for(unsigned i=0;i<f.vectors[0].size();++i) {
+        if ( i % 2== 0 )
+            cout << "node " << i/2 << " :" << endl;
+        cout << U[i] - ( f.vectors[0] )[i] << endl;
+    }
+
     t.stop();
     cout << "Temps de calcul du pb direct : " << t.res << endl << endl;
     
@@ -321,7 +375,7 @@ int main( int argc, char **argv ) {
         
         T I_ex;
         if ( want_solve_local_ref ) {
-            create_structure( m_local_ref, m_local_ref, "direct", structure, mesh_size, loading, deg_p );
+            create_structure( m_local_ref, m_local_ref, "direct", structure, mesh_size, loading, deg_p, refinement_degree_ref );
             
             Vec<unsigned> elem_list_local_ref_interest_quantity;
             unsigned node_local_ref_interest_quantity;

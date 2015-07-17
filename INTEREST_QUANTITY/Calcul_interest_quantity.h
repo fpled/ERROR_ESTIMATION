@@ -30,7 +30,7 @@ using namespace std;
 /// Definition de l'extracteur
 ///---------------------------
 template<class TM, class TF, class T, class Pvec>
-void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re, const bool &want_local_enrichment ) {
+void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re, const bool want_local_enrichment = false ) {
     
     static const unsigned dim = TM::dim;
     
@@ -238,7 +238,7 @@ void calcul_interest_quantity( const TM &m, const TM &m_crown, const TF &f, cons
 /// Calcul de la correction I_hh sur la quantite d'interet locale I (avec ou sans introduction de sigma_hat_m)
 ///-----------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T, class TV, class TVV>
-void calcul_correction_interest_quantity( TM &m, TM &m_adjoint, const TF &f, const TF &f_adjoint, const string &interest_quantity, const string &method, const string &method_adjoint, const bool &want_local_enrichment, const T &theta, const T &theta_adjoint, const TV &theta_elem_adjoint, const Vec<unsigned> &correspondance_elem_m_adjoint_to_elem_m, const TVV &dep_hat, const TVV &dep_adjoint_hat, const T &I_h, const bool &want_introduction_sigma_hat_m, T &I_hh ) {
+void calcul_correction_interest_quantity( TM &m, TM &m_adjoint, const TF &f, const TF &f_adjoint, const string &interest_quantity, const string &method, const string &method_adjoint, const T &theta, const T &theta_adjoint, const TV &theta_elem_adjoint, const Vec<unsigned> &correspondance_elem_m_adjoint_to_elem_m, const TVV &dep_hat, const TVV &dep_adjoint_hat, const T &I_h, T &I_hh, const bool want_local_enrichment = false, const bool want_introduction_sigma_hat_m = true ) {
     I_hh = 0.;
     
     TicToc t_corr_I_hh;
@@ -298,7 +298,7 @@ void calcul_correction_interest_quantity( TM &m, TM &m_adjoint, const TF &f, con
 /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale sur la structure extraite, Affichage de l'estimateur
 ///--------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T>
-void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const T &k, T &theta_lambda, const Vec< Vec<T> > &dep_hat, Vec< Vec<T> > &dep_hat_lambda, const bool &debug_method, const bool &debug_method_enhancement, const bool &debug_error_estimate, const bool &want_display ) {
+void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const T &k, T &theta_lambda, const Vec< Vec<T> > &dep_hat, Vec< Vec<T> > &dep_hat_lambda, const bool want_display = false, const bool debug_method = false, const bool debug_method_enhancement = false, const bool debug_error_estimate = false ) {
     
     ///-----------------------------------------------------------------------------------------------------------------------------------///
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale sur la structure extraite ///
@@ -345,7 +345,7 @@ void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f
     
     if ( debug_error_estimate or debug_method or debug_method_enhancement ) {
         for (unsigned n=0;n<m_lambda.elem_list.size();++n) {
-            cout << "contribution a l'estimateur d'erreur globale au carre sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " de l'element : " << n << " :" << endl;
+            cout << "contribution a l'estimateur d'erreur globale au carre sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " de l'element " << n << " :" << endl;
             cout << "theta_elem^2 = " << theta_lambda_elem[ n ] << endl;
         }
     }
@@ -377,7 +377,7 @@ void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f
 /// Calcul d'un estimateur pondere d'erreur globale weighted_theta
 ///---------------------------------------------------------------
 template<class TM, class TF, class T, class Pvec>
-void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const T &h, const Pvec &domain_center, const Vec<T> &domain_length, const T &k_min, T &weighted_theta_lambda, const Vec< Vec<T> > &dep_hat, const bool &debug_method, const bool &debug_method_enhancement, const bool &debug_error_estimate, const bool &want_display ) {
+void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const T &h, const Pvec &domain_center, const Vec<T> &domain_length, const T &k_min, T &weighted_theta_lambda, const Vec< Vec<T> > &dep_hat, const bool want_display = false, const bool debug_method = false, const bool debug_method_enhancement = false, const bool debug_error_estimate = false ) {
     
     ///-------------------------------------------------------------------------------------------------------------------------------------------///
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur pondere d'erreur globale sur la structure extraite ///
@@ -421,6 +421,13 @@ void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF 
     
     apply( m_lambda.elem_list, calcul_weighted_error_estimate_lambda );
     
+//    if ( debug_error_estimate or debug_method or debug_method_enhancement ) {
+//        for (unsigned n=0;n<m_lambda.elem_list.size();++n) {
+//            cout << "contribution a l'estimateur pondere d'erreur globale au carre sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k_min << " de l'element " <<  n << " :" << endl;
+//            cout << "theta^2 = " << weighted_theta_lambda_elem[ n ] << endl;
+//        }
+//    }
+
     t_weighted_error_estimate_lambda.stop();
     if ( want_display ) {
         /// Affichage de l'estimateur pondere weighted_theta de l'erreur globale au carre sur les maillages extraits des maillages initiaux direct/adjoint
@@ -435,7 +442,7 @@ void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF 
 /// Construction d'un champ de contrainte admissible, Calcul d'un estimateur d'erreur globale sur le bord de la structure extraite, Affichage de l'estimateur
 ///----------------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T, class Pvec>
-void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const Pvec &domain_center, const T &k, T &theta_lambda_boundary, const Vec< Vec<T> > &dep_hat, const bool &debug_method, const bool &debug_method_enhancement, const bool &debug_geometry, const bool &debug_error_estimate, const bool &want_display ) {
+void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const Pvec &domain_center, const T &k, T &theta_lambda_boundary, const Vec< Vec<T> > &dep_hat, const bool want_display = false, const bool debug_method = false, const bool debug_method_enhancement = false, const bool debug_error_estimate = false ) {
     
     ///----------------------------------------------------------------------------------------------------------------------------------------------///
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale sur le bord de la structure extraite ///
@@ -483,7 +490,7 @@ void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF 
     if ( debug_error_estimate or debug_method or debug_method_enhancement ) {
         unsigned cpt_face = 0;
         for (unsigned n=0;n<m_lambda.sub_mesh(Number<1>()).elem_list.size();++n) {
-            if ( m_lambda.sub_mesh(Number<1>()).get_parents_of_EA( m_lambda.sub_mesh(Number<1>()).elem_list[ n ] ).size() != 2 ) {
+            if ( m_lambda.sub_mesh(Number<1>()).get_parents_of_EA( m_lambda.sub_mesh(Number<1>()).elem_list[ n ] ).size() == 1 ) {
                 cout << "contribution a l'estimateur d'erreur globale au carre sur le bord de la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " de la face " << m_lambda.sub_mesh(Number<1>()).elem_list[ n ]->number << " :" << endl;
                 cout << "theta_face^2 = " << theta_face_lambda_boundary[ cpt_face ] << endl;
                 cpt_face++;
@@ -507,7 +514,7 @@ void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF 
 /// Calcul du terme gamma pour le calcul des bornes locales ameliorees
 ///-------------------------------------------------------------------
 template<class TM, class TF, class T, class Pvec>
-void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, const TF &f_adjoint, TF &f_adjoint_lambda_, const unsigned &deg_p, const string &method, const string &structure, const string &loading, const string &mesh_size, const unsigned &cost_function, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, const string &geometric_criterium, const unsigned &deg_k, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const T &theta_lambda_min, const T &theta_lambda_max, const T &h, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const Pvec &domain_center, const Vec<T> &domain_length, const bool &spread_cut, const Vec< Vec<T> > &dep_hat, const Vec< Vec<T> > &dep_adjoint_hat, const string &integration_k, const unsigned &integration_nb_points, const bool &debug_method, const bool &debug_method_enhancement, const bool &debug_geometry, const bool &debug_error_estimate, T &gamma ) {
+void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, const TF &f_adjoint, TF &f_adjoint_lambda_, const unsigned &deg_p, const string &method, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const T &theta_lambda_min, const T &theta_lambda_max, const T &h, const Pvec &domain_center, const Vec<T> &domain_length, const bool &spread_cut, const Vec< Vec<T> > &dep_hat, const Vec< Vec<T> > &dep_adjoint_hat, const string &integration_k, const unsigned &integration_nb_points, T &gamma, const bool debug_method = false, const bool debug_method_enhancement = false, const bool debug_error_estimate = false ) {
     
     static const unsigned dim = TM::dim;
     
@@ -539,7 +546,7 @@ void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, cons
                 T theta_k = 0.;
                 Vec< Vec<T> > dep_hat_lambda;
                 dep_hat_lambda.resize( m_lambda.elem_list.size() );
-                calcul_error_estimate_lambda( m, m_lambda, f, f_lambda, "direct", method, shape, k, theta_k, dep_hat, dep_hat_lambda, debug_method, debug_method_enhancement, debug_error_estimate, want_display_error_estimate_lambda );
+                calcul_error_estimate_lambda( m, m_lambda, f, f_lambda, "direct", method, shape, k, theta_k, dep_hat, dep_hat_lambda, want_display_error_estimate_lambda, debug_method, debug_method_enhancement, debug_error_estimate );
                 theta_lambda.push_back( pow( theta_k, 2 ) );
                 func_lambda.push_back( pow( k / k_min, -1./h ) * pow( theta_k, 2 ) / ( h * k ) );
                 lambda.push_back( k );
@@ -559,7 +566,7 @@ void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, cons
                 T theta_k = 0.;
                 Vec< Vec<T> > dep_hat_lambda;
                 dep_hat_lambda.resize( m_lambda.elem_list.size() );
-                calcul_error_estimate_lambda( m, m_lambda, f, f_lambda, "direct", method, shape, k, theta_k, dep_hat, dep_hat_lambda, debug_method, debug_method_enhancement, debug_error_estimate, want_display_error_estimate_lambda );
+                calcul_error_estimate_lambda( m, m_lambda, f, f_lambda, "direct", method, shape, k, theta_k, dep_hat, dep_hat_lambda, want_display_error_estimate_lambda, debug_method, debug_method_enhancement, debug_error_estimate );
                 theta_lambda.push_back( pow( theta_k, 2 ) );
                 func_lambda.push_back( pow( k / k_min, -1./h ) * pow( theta_k, 2 ) / ( h * k ) );
                 lambda.push_back( k );
@@ -573,13 +580,13 @@ void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, cons
             create_structure_crown( m, m_crown_lambda, domain_center, lambda_min, lambda_max, spread_cut );
             TF f_crown_lambda( m_crown_lambda );
             T weighted_theta_crown_lambda_2 = 0.;
-            calcul_weighted_error_estimate_lambda( m, m_crown_lambda, f, f_crown_lambda, "direct", method, shape, h, domain_center, domain_length, k_min, weighted_theta_crown_lambda_2, dep_hat, debug_method, debug_method_enhancement, debug_error_estimate, want_display_error_estimate_lambda );
+            calcul_weighted_error_estimate_lambda( m, m_crown_lambda, f, f_crown_lambda, "direct", method, shape, h, domain_center, domain_length, k_min, weighted_theta_crown_lambda_2, dep_hat, want_display_error_estimate_lambda, debug_method, debug_method_enhancement, debug_error_estimate );
             gamma = pow( theta_lambda_min, 2 ) - pow( k_min / k_max, 1./h ) * pow( theta_lambda_max, 2 ) + weighted_theta_crown_lambda_2;
         }
     }
     else if ( local_improvement == "rayleigh" ) {
         T theta_adjoint_lambda_boundary = 0.;
-        calcul_error_estimate_lambda_boundary( m_adjoint, m_adjoint_lambda_, f_adjoint, f_adjoint_lambda_, "adjoint", method, shape, domain_center, k_opt, theta_adjoint_lambda_boundary, dep_adjoint_hat, debug_method, debug_method_enhancement, debug_geometry, debug_error_estimate, want_display_error_estimate_lambda );
+        calcul_error_estimate_lambda_boundary( m_adjoint, m_adjoint_lambda_, f_adjoint, f_adjoint_lambda_, "adjoint", method, shape, domain_center, k_opt, theta_adjoint_lambda_boundary, dep_adjoint_hat, want_display_error_estimate_lambda, debug_method, debug_method_enhancement, debug_error_estimate );
         unsigned n = dim - 1;
         gamma = 2 * sqrt( h ) / ( h + n + 1 ) * theta_adjoint_lambda_boundary;
     }

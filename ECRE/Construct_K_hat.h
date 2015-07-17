@@ -20,7 +20,7 @@ using namespace std;
 /// Construction des matrices K_hat[ n ] pour chaque element n du maillage
 ///-----------------------------------------------------------------------
 template<class TM, class TF, class T>
-void construct_K_hat( const TM &m, const TF &f, const string &method, Vec< Mat<T, Sym<> > > &K_hat, const bool &debug_method ) {
+void construct_K_hat( const TM &m, const TF &f, const string &method, Vec< Mat<T, Sym<> > > &K_hat, const bool debug_method = false ) {
 
     cout << "Construction des matrices K_hat" << endl << endl;
 

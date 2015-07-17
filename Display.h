@@ -18,7 +18,7 @@ using namespace std;
 /// Display dimension, degree, structure and mesh parameters
 ///---------------------------------------------------------
 template<class TM>
-void display_structure( TM &m, TM &m_ref, const string &pb, const string &structure, const unsigned &deg_p, const bool &want_solve_ref ) {
+void display_structure( TM &m, TM &m_ref, const string &pb, const string &structure, const unsigned &deg_p, const bool want_ref = false ) {
     
     static const unsigned dim = TM::dim;
     typedef typename TM::Pvec Pvec;
@@ -47,7 +47,7 @@ void display_structure( TM &m, TM &m_ref, const string &pb, const string &struct
         cout << "nb d'elements du pb " << pb << " : " << m.elem_list.size() << endl << endl;
     }
     
-    if ( want_solve_ref ) {
+    if ( want_ref ) {
         if ( m_ref.node_list.size() ) {
             if ( remove_lonely_nodes( m_ref ) )
                 cerr << "Des noeuds seuls ont ete retires du maillage de reference associe au pb " << pb << "..." << endl << endl;
@@ -92,9 +92,9 @@ void display_interest_quantity( const string &interest_quantity, const string &d
 /// Display adjoint mesh parameters
 ///--------------------------------
 template<class T>
-void display_params_adjoint( const bool &want_local_refinement_adjoint, const T &l_min, const T &k, const bool &spread_cut, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, const Vec<unsigned> &elem_list_adjoint_enrichment_zone_1, const Vec<unsigned> &elem_list_adjoint_enrichment_zone_2, const Vec<unsigned> &face_list_adjoint_enrichment_zone_12, const Vec<unsigned> &node_list_adjoint_enrichment, const bool &want_local_improvement, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt ) {
+void display_params_adjoint( const bool &want_local_refinement, const T &l_min, const T &k, const bool &spread_cut, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, const Vec<unsigned> &elem_list_adjoint_enrichment_zone_1, const Vec<unsigned> &elem_list_adjoint_enrichment_zone_2, const Vec<unsigned> &face_list_adjoint_enrichment_zone_12, const Vec<unsigned> &node_list_adjoint_enrichment, const bool &want_local_improvement, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt ) {
 
-    if ( want_local_refinement_adjoint ) {
+    if ( want_local_refinement ) {
         cout << "------------------------------------------------------------" << endl;
         cout << "Parametres associes au raffinement local du maillage adjoint" << endl;
         cout << "------------------------------------------------------------" << endl << endl;
@@ -132,7 +132,7 @@ void display_params_adjoint( const bool &want_local_refinement_adjoint, const T 
 
 /// Display method for constructing admissible fields (EET,SPET,EESPT) with/without enhancement, cost-function and solver
 ///----------------------------------------------------------------------------------------------------------------------
-void display_method( const string &pb, const string &method, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const unsigned &cost_function, const string &solver, const string &solver_minimisation ) {
+void display_method( const string &pb, const string &method, const unsigned &cost_function, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const string &solver, const string &solver_minimisation ) {
     cout << "-----------------------------------------------------------------------------------------" << endl;
     cout << "Methode de construction de champs admissibles associee au pb " << pb << " : " << method;
     if ( method.find("EET") != string::npos or method.find("EESPT") != string::npos ) {
@@ -168,7 +168,7 @@ string define_prefix( TM &m, const string &pathname, const string &pb, const str
 }
 
 template<class TM, class T, class Pvec>
-void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &m_lambda_opt, TM &m_crown, const string &pathname, const string &pb, const string &method, const string &structure, const string &loading, const string &mesh_size, const unsigned &cost_function, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, const string &geometric_criterium, const unsigned &deg_k, const unsigned &refinement_deg_ref, const bool &want_global_discretization_error, const bool &want_local_discretization_error, const bool &want_global_estimation, const bool &want_local_estimation, const bool &want_local_improvement, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, const bool &save_vtu, const bool &display_vtu, const bool &save_pvd, const bool &display_pvd, const bool &save_vtu_ref, const bool &display_vtu_ref, const bool &save_vtu_lambda, const bool &display_vtu_lambda, const bool &save_vtu_crown, const bool &display_vtu_crown ) {
+void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &m_lambda_opt, TM &m_crown, const string &pathname, const string &pb, const string &method, const string &structure, const string &loading, const string &mesh_size, const unsigned &cost_function, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, const string &geometric_criterium, const unsigned &deg_k, const unsigned &refinement_deg_ref, const bool &want_global_discretization_error, const bool &want_local_discretization_error, const bool &want_global_estimation, const bool &want_local_estimation, const bool &want_local_improvement, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, const bool save_vtu = true, const bool display_vtu = false, const bool save_pvd = false, const bool display_pvd = false, const bool save_vtu_ref = false, const bool display_vtu_ref = false, const bool save_vtu_lambda = true, const bool display_vtu_lambda = false, const bool save_vtu_crown = true, const bool display_vtu_crown =false ) {
     
     static const unsigned dim = TM::dim;
     

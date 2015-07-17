@@ -18,6 +18,22 @@
 using namespace LMT;
 using namespace std;
 
+//struct Set_Field_f_surf {
+//    template<class TE, class TM> void operator()( TE &elem, TM &m ) const {
+//        m.update_elem_children();
+//        typedef typename TE::T T;
+//        Mat<T,Sym<TE::dim > > pre_sig = elem.get_field( "pre_sigma", StructForType<Mat<T,Sym<TE::dim > > >() );
+//        for (unsigned k=0;k<NbChildrenElement<typename TE::NE,1>::res;++k) {
+//            if ( m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of(elem,Number<1>())[k] ).size() == 1 ) {
+//                Vec<T,TE::dim> force_surf = pre_sig * m.sub_mesh(Number<1>()).elem_list[ m.get_children_of( elem, Number<1>() )[k]->number ]->sample_normal_virtual() * -1.;
+//                m.sub_mesh(Number<1>()).elem_list[ m.get_children_of( elem, Number<1>() )[k]->number ]->set_field( "f_surf", force_surf );
+////                cout << "face : "  << m.get_children_of( elem, Number<1>() )[k]->number << endl;
+////                cout << force_surf << endl;
+//            }
+//        }
+//    }
+//};
+
 /// Creation des conditions aux limites
 ///------------------------------------
 template<class TF, class TM>
@@ -216,46 +232,48 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
             }
             /// Carre 2D
             /// application du champ de deplacement u a tous les noeuds
-            /// condition de periodicite
-            ///--------------------------------------------------------
+            /// condition de periodicite aux noeuds situés en x = 0 et x = 1
+            /// condition de periodicite aux noeuds situés en y = 0 et y = 1
+            /// blocage du noeud (0.25, 0.25) dans toutes les directions
+            ///-------------------------------------------------------------
             else if ( structure.find("square") != string::npos ) {
-//                size_t off = structure.rfind( "_" );
-//                string str = structure.substr( off+1 );
-//                istringstream buffer(str);
-//                int N;
-//                buffer >> N;
+                size_t off = structure.rfind( "_" );
+                string str = structure.substr( off+1 );
+                istringstream buffer(str);
+                int N;
+                buffer >> N;
 
-//                string filename = "DATA_HDF5/square-" + str + "x" + str + ".hdf5";
-//                bool clear_old = false;
-//                bool read_only = true;
-//                Hdf hdf(filename, clear_old, read_only);
+                string filename = "DATA_HDF5/square-" + str + "x" + str + ".hdf5";
+                bool clear_old = false;
+                bool read_only = true;
+                Hdf hdf(filename, clear_old, read_only);
 
-//                Vec<int> s;
-//                hdf.read_size( "/u", s );
+                Vec<int> s;
+                hdf.read_size( "/u", s );
 
-//                Tens3<T> u;
-//                u.resize( s );
-//                hdf.read_data( "/u", u.ptr(), s, s );
+                Tens3<T> u;
+                u.resize( s );
+                hdf.read_data( "/u", u.ptr(), s, s );
 
-//                for (unsigned i=0;i<m.node_list.size();++i) {
-//                    if ( m.node_list[i].pos[0] < 1. - 1e-6 and m.node_list[i].pos[1] < 1. - 1e-6 ) {
-//                        for (unsigned d=0;d<dim;++d)
-//                            m.node_list[i].dep[ d ] = u( d, int(m.node_list[i].pos[1]*N), int(m.node_list[i].pos[0]*N) );
-//                    }
-//                    else if ( m.node_list[i].pos[0] > 1. - 1e-6 and m.node_list[i].pos[1] < 1. - 1e-6 ) {
-//                        for (unsigned d=0;d<dim;++d)
-//                            m.node_list[i].dep[ d ] = u( d, int(m.node_list[i].pos[1]*N), 0 );
-//                    }
-//                    else if ( m.node_list[i].pos[1] > 1. - 1e-6 and m.node_list[i].pos[0] < 1. - 1e-6 ) {
-//                        for (unsigned d=0;d<dim;++d)
-//                            m.node_list[i].dep[ d ] = u( d, 0, int(m.node_list[i].pos[0]*N) );
-//                    }
-//                    else {
-//                        for (unsigned d=0;d<dim;++d)
-//                            m.node_list[i].dep[ d ] = u( d, 0, 0 );
-//                    }
-//    //                cout << "node " << i << " : pos = (" << int(m.node_list[i].pos[0]*N) << "," << int(m.node_list[i].pos[1]*N) << "), " << "dep = " << m.node_list[i].dep << endl;
-//                }
+                for (unsigned i=0;i<m.node_list.size();++i) {
+                    if ( m.node_list[i].pos[0] < 1. - 1e-6 and m.node_list[i].pos[1] < 1. - 1e-6 ) {
+                        for (unsigned d=0;d<dim;++d)
+                            m.node_list[i].dep[ d ] = u( d, int(m.node_list[i].pos[1]*N), int(m.node_list[i].pos[0]*N) );
+                    }
+                    else if ( m.node_list[i].pos[0] > 1. - 1e-6 and m.node_list[i].pos[1] < 1. - 1e-6 ) {
+                        for (unsigned d=0;d<dim;++d)
+                            m.node_list[i].dep[ d ] = u( d, int(m.node_list[i].pos[1]*N), 0 );
+                    }
+                    else if ( m.node_list[i].pos[1] > 1. - 1e-6 and m.node_list[i].pos[0] < 1. - 1e-6 ) {
+                        for (unsigned d=0;d<dim;++d)
+                            m.node_list[i].dep[ d ] = u( d, 0, int(m.node_list[i].pos[0]*N) );
+                    }
+                    else {
+                        for (unsigned d=0;d<dim;++d)
+                            m.node_list[i].dep[ d ] = u( d, 0, 0 );
+                    }
+                }
+
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 1e-6 ) {
                         for (unsigned j=0;j<m.node_list.size();++j) {
@@ -275,8 +293,14 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                             }
                         }
                     }
+                    else if ( 0.25 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.25 + 1e-6 and 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) {
+                        for (unsigned d=0;d<dim;++d) {
+                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+                        }
+                    }
                 }
             }
+
             m.update_skin();
             if ( pb == "direct" ) {
                 /// effort surfacique applique sur les bords des elements situes en x = 0 (F_d = -x)
@@ -416,19 +440,32 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                         Vec<int> s;
                         hdf.read_size( "/tau", s );
 
-                        Tens3<T> t;
-                        t.resize( s );
-                        hdf.read_data( "/tau", t.ptr(), s, s );
+                        Tens3<T> tau;
+                        tau.resize( s );
+                        hdf.read_data( "/tau", tau.ptr(), s, s );
 
+                        Vec<T,unsigned(dim*(dim+1)/2) > pre_sig, pre_eps;
+                        pre_eps.set( 1, -1./2 );
                         for(unsigned n=0;n<m.elem_list.size();++n) {
-                            Vec<T,unsigned(dim*(dim+1)/2) > tau;
                             int i = int(center( *m.elem_list[n] )[0]*N-1./2);
                             int j = int(center( *m.elem_list[n] )[1]*N-1./2);
-                            tau[ 0 ] = t( 0, j, i );
-                            tau[ 1 ] = t( 2, j, i )/sqrt(2.);
-                            tau[ 2 ] = t( 1, j, i );
-                            m.elem_list[ n ]->set_field( "pre_sigma", -tau );
+                            pre_sig[ 0 ] = -tau( 0, j, i );
+                            pre_sig[ 1 ] = -tau( 2, j, i )/sqrt(2.);
+                            pre_sig[ 2 ] = -tau( 1, j, i );
+                            m.elem_list[n]->set_field( "pre_sigma", pre_sig );
+                            m.elem_list[n]->set_field( "pre_epsilon", pre_eps );
                         }
+
+//                        apply( m.elem_list, Set_Field_f_surf(), m );
+
+//                        for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
+//                            if ( m.sub_mesh(Number<1>()).get_parents_of_EA( m.sub_mesh(Number<1>()).elem_list[i] ).size() == 1 ) {
+//                                unsigned n = m.sub_mesh(Number<1>()).get_parents_of_EA( m.sub_mesh(Number<1>()).elem_list[i] )[0]->number;
+//                                Mat<T,Sym<dim> > pre_sig = m.elem_list[n]->get_field( "pre_sigma", StructForType<Mat<T,Sym<dim> > >() );
+//                                Vec<T,dim> force_surf = pre_sig * m.sub_mesh(Number<1>()).elem_list[i]->sample_normal_virtual() * -1.;
+//                                m.sub_mesh(Number<1>()).elem_list[i]->set_field( "f_surf", force_surf );
+//                            }
+//                        }
                     }
                 }
             }
@@ -732,7 +769,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                     }
                 }
                 /// Moyeu-rotor 3D de l'helicoptere NH90
-                /// effort surfacique applique sur les bords des elements situes a l'exterieur du plan P : P(x,y,z) = 0.993771220888593 * (x - 505.668689385943) - 0.00145804725003041 * (y + 1.04229616690589) + 0.111429953925374 * (z + 6.713826134760) (F_d = +x)
+                /// effort surfacique applique sur les bords des elements situes a l'exterieur du plan P : P(x,y,z) = 0.993771220888593 * (x - 505.668689385943) - 0.00145804725003041 * (y + 1.04229616690589) + 0.111429953925374 * (z + 6.713826134760) (F_d = +n)
                 ///--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
                 else if ( structure == "hub_rotor_helico" ) {
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
@@ -750,8 +787,8 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                 ///                                                           bords des elements situes sur le plan P_2 : y = 310.75 et compris entre les cylindres C_1 et C_2 (F_d = -n)
                 ///                                                           bords des elements situes sur le cylindre C_3 d'axe (Ay) et de rayon 5.125 : C_3(x,z) = (x - 12)^2 + (z - 36)^2 - 5.125^2 (F_d = -n)
                 ///                                                           bords des elements situes sur le cylindre C_4 d'axe (By) et de rayon 5.125 : C_4(x,z) = (x - 36)^2 + (z - 12)^2 - 5.125^2 (F_d = -n)
-                /// effort surfacique applique sur bords des elements situes en y = 306.75 et a l'exterieur du cylindre C_5 d'axe (Oy) et de rayon 68 : C_5(x,z) = x^2 + z^2 - 68^2 (F_d = +y)
-                /// effort surfacique applique sur bords des elements situes en y = 329.75 et a l'exterieur du cylindre C_5 (F_d = -y)
+                /// effort surfacique applique sur bords des elements situes en y = 306.75 et a l'exterieur du cylindre C_5 d'axe (Oy) et de rayon 68 : C_5(x,z) = x^2 + z^2 - 68^2 (F_d = +y = -n)
+                /// effort surfacique applique sur bords des elements situes en y = 329.75 et a l'exterieur du cylindre C_5 (F_d = -y = -n)
                 ///-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
                 else if ( structure == "reactor_head" ) {
                     if ( mesh_size == "coarse" ) {
@@ -882,7 +919,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
 /// Creation des conditions de chargement du pb adjoint a partir de l'extracteur
 ///-----------------------------------------------------------------------------
 template<class TM, class TF, class Pvec>
-void create_load_conditions( TM &m_adjoint, const TF &f_adjoint, const TM &m, const TM &m_crown, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const bool &want_local_enrichment ) {
+void create_load_conditions( TM &m_adjoint, const TF &f_adjoint, const TM &m, const TM &m_crown, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const bool want_local_enrichment = false ) {
     
     if ( want_local_enrichment and interest_quantity.find("pointwise") != string::npos ) {
         if ( pointwise_interest_quantity == "node" )
@@ -932,30 +969,27 @@ void create_load_conditions( TM &m_adjoint, const TF &f_adjoint, const TM &m, co
 /// Verification des contraintes cinematiques
 ///------------------------------------------
 template<class TF>
-void check_constraints( const TF &f, const bool &display_constraints ) {
-    if ( display_constraints ) {
-        
-        cout << "Verification des contraintes cinematiques" << endl << endl;
-        
-        cout << "nb de constraintes : " << f.nb_constraints() << endl;
-        for (unsigned nc=0;nc<f.constraints.size();++nc) { // f.nb_constraints() = f.constraints.size()
-            for (unsigned j=0;j<f.constraints[nc].coeffs.size();++j) {
-                if ( f.constraints[nc].coeffs[j].type_var == -1 )
-                    cout << f.constraints[nc].coeffs[j].val << " * unk[ noeud " << f.constraints[nc].coeffs[j].num << ", direction " << f.constraints[nc].coeffs[j].num_in_vec << " ]";
-                else if ( f.constraints[nc].coeffs[j].type_var == -2 )
-                    cout << f.constraints[nc].coeffs[j].val << " * unk[ global, direction " << f.constraints[nc].coeffs[j].num_in_vec << " ]";
-                cout << (j<f.constraints[nc].coeffs.size()-1 ? " + " : "" );
-            }
-            cout << " == " << f.constraints[nc].res << endl;
+void check_constraints( const TF &f ) {
+    cout << "Verification des contraintes cinematiques" << endl << endl;
+
+    cout << "nb de constraintes : " << f.nb_constraints() << endl;
+    for (unsigned nc=0;nc<f.constraints.size();++nc) { // f.nb_constraints() = f.constraints.size()
+        for (unsigned j=0;j<f.constraints[nc].coeffs.size();++j) {
+            if ( f.constraints[nc].coeffs[j].type_var == -1 )
+                cout << f.constraints[nc].coeffs[j].val << " * unk[ noeud " << f.constraints[nc].coeffs[j].num << ", direction " << f.constraints[nc].coeffs[j].num_in_vec << " ]";
+            else if ( f.constraints[nc].coeffs[j].type_var == -2 )
+                cout << f.constraints[nc].coeffs[j].val << " * unk[ global, direction " << f.constraints[nc].coeffs[j].num_in_vec << " ]";
+            cout << (j<f.constraints[nc].coeffs.size()-1 ? " + " : "" );
         }
-        cout << endl;
+        cout << " == " << f.constraints[nc].res << endl;
     }
+    cout << endl;
 }
 
 /// Creation des conditions de chargement nul
 ///------------------------------------------
 template<class TF, class TM>
-void create_null_load_conditions( TF &f, TM &m, const bool &debug_geometry ) {
+void create_null_load_conditions( TF &f, TM &m, const bool debug_geometry = false ) {
     
     static const unsigned dim = TM::dim;
     typedef typename TM::TNode::T T;
@@ -976,8 +1010,10 @@ void create_null_load_conditions( TF &f, TM &m, const bool &debug_geometry ) {
     }
     
     for (unsigned i=0;i<m.node_list.size();++i) {
-        for (unsigned d=0;d<dim;++d)
+        for (unsigned d=0;d<dim;++d) {
+            m.node_list[i].f_nodal[d] = 0.;
             m.node_list[i].pre_f_nodal[d] = 0.;
+        }
     }
     
     Vec<T,dim> f_vol, pre_f_vol;

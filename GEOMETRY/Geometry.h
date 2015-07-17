@@ -118,7 +118,7 @@ struct Construct_Correspondance_Vertex_Node_To_Skin_Vertex_Node {
 ///----------------------------------
 struct Construct_Face_Type {
     template<class TE, class TM, class TF> void operator()( const TE &child_elem, const TM &m, const TF &f, Vec< Vec<unsigned> > &face_type ) const {
-        if ( m.sub_mesh(Number<1>()).get_parents_of( child_elem ).size() != 2 ) {
+        if ( m.sub_mesh(Number<1>()).get_parents_of( child_elem ).size() == 1 ) {
             for (unsigned d=0;d< TE::dim;++d) {
                 unsigned cpt = 0;
                 for (unsigned i=0;i<child_elem.nb_nodes;++i) {
@@ -189,7 +189,7 @@ void divide_element_Triangle(Element<Triangle,TN,TNG,TD,NET> &e, const TM &m, TM
     DM::copy( e, *m_ref.add_element( Triangle(), TN(), node_center_Bar[0], node_center_Bar[1], node_center_Bar[2] ) );
 }
 
-struct Construction_Ref_Mesh_Triangle {
+struct Divide_element_Triangle {
     template<class TE, class TM> void operator()( TE &elem, TM &m, TM &m_ref ) const {
         m.update_elem_children();
         m.update_elem_children( Number<1>() );
@@ -221,7 +221,7 @@ void divide_element_Quad(Element<Quad,TN,TNG,TD,NET> &e, const TM &m, TM &m_ref)
     DM::copy( e, *m_ref.add_element( Quad(), TN(), node_center_Bar[3], node_center_Quad, node_center_Bar[2], node_Quad[3] ) );
 }
 
-struct Construction_Ref_Mesh_Quad {
+struct Divide_element_Quad {
     template<class TE, class TM> void operator()( TE &elem, TM &m, TM &m_ref ) const {
         m.update_elem_children();
         m.update_elem_children( Number<1>() );
@@ -256,7 +256,7 @@ void divide_element_Tetra(Element<Tetra,TN,TNG,TD,NET> &e, const TM &m, TM &m_re
     DM::copy( e, *m_ref.add_element( Tetra(), TN(), node_center_Bar[0], node_center_Bar[3], node_center_Bar[1], node_center_Bar[4] ) );
 }
 
-struct Construction_Ref_Mesh_Tetra {
+struct Divide_element_Tetra {
     template<class TE, class TM> void operator()( TE &elem, TM &m, TM &m_ref ) const {
         m.update_elem_children();
         m.update_elem_children( Number<2>() );
@@ -296,7 +296,7 @@ void divide_element_Hexa(Element<Hexa,TN,TNG,TD,NET> &e, const TM &m, TM &m_ref)
     DM::copy( e, *m_ref.add_element( Hexa(), TN(), node_center_Hexa, node_center_Quad[5], node_center_Bar[10], node_center_Quad[3], node_center_Quad[1], node_center_Bar[5], node_Hexa[6], node_center_Bar[6] ) );
 }
 
-struct Construction_Ref_Mesh_Hexa {
+struct Divide_element_Hexa {
     template<class TE, class TM> void operator()( TE &elem, TM &m, TM &m_ref ) const {
         m.update_elem_children();
         m.update_elem_children( Number<2>() );
@@ -304,8 +304,8 @@ struct Construction_Ref_Mesh_Hexa {
     }
 };
 
-/// Construction du maillage de ref local par subdivision des elements dans elem_list en 4 pour Triangle et Quad, et en 8 pour Tetra et Hexa
-///-----------------------------------------------------------------------------------------------------------------------------------------
+/// Construction du maillage de ref local : subdivision des elements du maillage contenus dans elem_list en 4 (resp. 8) pour Triangle et Quad (resp. Tetra et Hexa) dans le maillge de ref
+///---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class T>
 struct Divide_element_locally {
     Divide_element_locally( TM &m, const Vec<T> &elem_list ) : ptr_m( &m ), ptr_elem_list( &elem_list ) {}
@@ -597,6 +597,8 @@ void divide_element( TM &m, const Vec<T> &elem_list ) {
     m.remove_elements_if( de );
 }
 
+/// Construction du maillage de ref : subdivision des elements du maillage en 4 (resp. 8) pour Triangle et Quad (resp. Tetra et Hexa) dans le maillge de ref
+///---------------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM>
 struct Divide_element {
     Divide_element( TM &m ) : ptr_m( &m ) {}
@@ -871,33 +873,33 @@ void divide_element( TM &m ) {
     m.remove_elements_if( de );
 }
 
-/// Construction de la liste des elements elem_list_local_ref du maillage de reference contenus dans la liste des elements elem_list du maillage
-///---------------------------------------------------------------------------------------------------------------------------------------------
-struct Construct_Elem_List_Local_Ref {
-    template<class TE, class TM> void operator()( const TE &elem, TM &m, const Vec<unsigned> &elem_list, Vec<unsigned> &elem_list_local_ref ) const {
+/// Construction de la liste des elements elem_list_ref du maillage de reference contenus dans la liste des elements elem_list du maillage m
+///-----------------------------------------------------------------------------------------------------------------------------------------
+struct Construct_Elem_List_Ref {
+    template<class TE, class TM> void operator()( const TE &elem, TM &m, const Vec<unsigned> &elem_list, Vec<unsigned> &elem_list_ref ) const {
         for (unsigned n=0;n<elem_list.size();++n) {
             Vec<Vec<typename TE::T,TE::dim>, TE::nb_nodes > pos_nodes;
             for(unsigned i=0;i<(m.elem_list[ elem_list[ n ] ]->nb_nodes_virtual());++i)
                 pos_nodes[i] = m.elem_list[ elem_list[ n ] ]->node_virtual(i)->pos;
             if ( is_inside_linear( typename TE::NE(), pos_nodes, center( elem ) ) ) {
-                elem_list_local_ref.push_back( elem.number );
+                elem_list_ref.push_back( elem.number );
             }
         }
     }
 };
 
-/// Construction du noeud node_local_ref du maillage de reference correspondant au noeud node du maillage
-///------------------------------------------------------------------------------------------------------
-struct Construct_Node_Local_Ref {
-    template<class TN, class TM> void operator()( const TN &node, TM &m, const unsigned &node_number, unsigned &node_number_local_ref ) const {
+/// Construction du noeud node_ref du maillage de reference correspondant au noeud node du maillage m
+///--------------------------------------------------------------------------------------------------
+struct Construct_Node_Ref {
+    template<class TN, class TM> void operator()( const TN &node, TM &m, const unsigned &node_number, unsigned &node_number_ref ) const {
         if ( node.pos == m.node_list[ node_number ].pos ) {
-            node_number_local_ref = node.number ;
+            node_number_ref = node.number ;
         }
     }
 };
 
-/// Criteres de rafinement du maillage adjoint
-///-------------------------------------------
+/// Criteres de raffinement du maillage adjoint
+///--------------------------------------------
 /*!
     Objectif :
         Ce foncteur est conçu pour la fonction \a refinement () . Il permet de raffiner localement un maillage.
@@ -912,8 +914,8 @@ struct Construct_Node_Local_Ref {
         on décide de couper le côté d'un élément ( i.e. une \a Bar ) si sa longueur est supérieure à d * k + l_min où d est la distance entre le milieu du côté et le centre c.
 */
 template<class T, class Pvec>
-struct Local_refinement_point_w_id {
-    Local_refinement_point_w_id( T length_min, T _k, Pvec _c ) : l_min( length_min ), k( _k ), c( _c ), id( 1 ) {}
+struct Local_refinement_point_id {
+    Local_refinement_point_id( T length_min, T _k, Pvec _c ) : l_min( length_min ), k( _k ), c( _c ), id( 1 ) {}
 
     template<class TE> 
     bool operator()( TE &e ) const {
@@ -947,8 +949,8 @@ struct Local_refinement_point_w_id {
         on décide de couper le côté d'un élément ( i.e. une \a Bar ) si sa longueur est supérieure à d * k + l_min où d est la distance entre le milieu du côté et le cercle de centre c et de rayon R.
 */
 template<class T, class Pvec>
-struct Local_refinement_circle_w_id {
-    Local_refinement_circle_w_id( T length_min, T _k, Pvec _c, T _R ) : l_min( length_min ), k( _k ), c( _c ), R( _R ), id( 1 ) {}
+struct Local_refinement_circle_id {
+    Local_refinement_circle_id( T length_min, T _k, Pvec _c, T _R ) : l_min( length_min ), k( _k ), c( _c ), R( _R ), id( 1 ) {}
 
     template<class TE> 
     bool operator()( TE &e ) const {

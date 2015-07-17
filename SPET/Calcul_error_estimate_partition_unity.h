@@ -22,7 +22,7 @@ using namespace std;
 /// Calcul d'un champ de contrainte admissible, calcul d'un estimateur theta de l'erreur globale pour la methode basee sur la partition de l'unite (SPET)
 ///------------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T>
-void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb, const string &solver, const string &method, T &theta, Vec<T> &theta_elem, Vec< Vec<T> > &E, const bool &debug_method, const bool &verif_solver, const T &tol_solver, const bool &debug_geometry, const bool &debug_error_estimate, const bool &debug_local_effectivity_index, const bool &want_global_discretization_error, const bool &want_local_discretization_error, const bool &want_local_enrichment ) {
+void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb, const string &solver, const string &method, T &theta, Vec<T> &theta_elem, Vec< Vec<T> > &E, const bool verif_solver = false, const T tol_solver = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const bool debug_geometry = false, const bool debug_error_estimate = false, const bool debug_local_effectivity_index = false, const bool debug_method = false ) {
     
     static const unsigned dim = TM::dim;
     

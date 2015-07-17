@@ -23,7 +23,7 @@ using namespace std;
 /// Construction d'un critere geometrique pour le choix des elements dont les densites d'effort doivent etre ameliorees
 ///--------------------------------------------------------------------------------------------------------------------
 template<class TM, class T>
-void construct_geometric_criterium( TM &m, const string &geometric_criterium, Vec<T> &geometric_ratio, const bool &debug_criterium_enhancement ) {
+void construct_geometric_criterium( TM &m, const string &geometric_criterium, Vec<T> &geometric_ratio, const bool debug_criterium_enhancement = false ) {
 
     static const unsigned dim = TM::dim;
 
@@ -166,7 +166,7 @@ void construct_geometric_criterium( TM &m, const string &geometric_criterium, Ve
 /// Construction d'un critere sur l'estimateur d'erreur theta pour le choix des elements dont les densites d'effort doivent etre ameliorees
 ///----------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class T>
-void construct_estimator_criterium( TM &m, Vec<T> &estimator_ratio, const Vec<T> &theta_2_elem, const bool &debug_criterium_enhancement ) {
+void construct_estimator_criterium( TM &m, Vec<T> &estimator_ratio, const Vec<T> &theta_2_elem, const bool debug_criterium_enhancement = false ) {
 
     cout << "----------------------------------------------------------------" << endl;
     cout << "Construction du critere d'amelioration sur l'estimateur d'erreur" << endl;
@@ -198,7 +198,7 @@ void construct_estimator_criterium( TM &m, Vec<T> &estimator_ratio, const Vec<T>
 /// Application du critere d'amelioration geometrique et/ou sur l'estimateur d'erreur theta
 ///----------------------------------------------------------------------------------------
 template<class TM, class T>
-void apply_criterium_enhancement( TM &m, const string &method, const bool &enhancement_with_estimator_criterium, const bool &enhancement_with_geometric_criterium, const Vec<T> &estimator_ratio, const Vec<T> &geometric_ratio, const T &val_estimator_criterium, const T &val_geometric_criterium, Vec<bool> &elem_flag_enh, Vec<bool> &face_flag_enh, Vec<bool> &elem_flag_bal, Vec<unsigned> &elem_list_enh, Vec<unsigned> &face_list_enh, Vec<unsigned> &elem_list_bal, const bool &debug_criterium_enhancement ) {
+void apply_criterium_enhancement( TM &m, const string &method, const bool &enhancement_with_estimator_criterium, const bool &enhancement_with_geometric_criterium, const Vec<T> &estimator_ratio, const Vec<T> &geometric_ratio, const T &val_estimator_criterium, const T &val_geometric_criterium, Vec<bool> &elem_flag_enh, Vec<bool> &face_flag_enh, Vec<bool> &elem_flag_bal, Vec<unsigned> &elem_list_enh, Vec<unsigned> &face_list_enh, Vec<unsigned> &elem_list_bal, const bool debug_criterium_enhancement = false ) {
 	
     Vec<bool> node_flag_enh;
     Vec<unsigned> node_list_enh;

@@ -19,7 +19,7 @@ struct Eta {
             int eta = ( m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[i] )[0] == &elem ? 1 : -1 ); // m.get_children_of( elem, Number<1>() )[i] renvoie l'adresse d'un pointeur vers le i ème enfant de elem (il s'agit de l'adresse d'un pointeur vers un ElementAncestor) //   m.sub_mesh(Number<1>()).get_parents_of_EA( truc )[0] renvoie le 1er element auquel est connecte truc (qui est un ElementAncestor); s'il s'agit de elem , eta = 1, sinon eta = -1
             PRINT( eta );
 //            m.sub_mesh(Number<1>()).get_parents_of( child_elem )[i] renvoie le ieme parent de l'interface child_elem (definie comme un Element)
-//                    cout << *m.sub_mesh(Number<1>()).get_parents_of_EA( m.sub_mesh(Number<1>()).elem_list[i] )[0] << endl << endl; renvoie le 1er parent de la ieme face du maillage
+//            cout << *m.sub_mesh(Number<1>()).get_parents_of_EA( m.sub_mesh(Number<1>()).elem_list[i] )[0] << endl << endl; renvoie le 1er parent de la ieme face du maillage
         }
     }
 };

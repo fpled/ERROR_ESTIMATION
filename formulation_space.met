@@ -91,6 +91,7 @@ if integration_type == "gauss_num"
 class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     dep     := Variable[[dim]]( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="m", unknown=true, tex_name = "U" )
     dep_tot := Variable[[dim]]( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="m", tex_name = "U_{\\text{tot}}" )
+    f_nodal := Variable[[dim]]( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="N/m", tex_name = "F_n" )
     f_surf  := Variable[[dim]]( interpolation="skin_elementary", default_value=0, unit="N/m^2", tex_name = "F_s" )
     f_vol   := Variable[[dim]]( interpolation="global", default_value=0, unit="N/m^3", tex_name = "F_v" )
     density := Variable( interpolation="global", default_value=1, unit="kg/m^3", tex_name = "\\rho" )
@@ -235,7 +236,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
         epsilon_tot = epsilon.expr + epsilon_handbook_PUM.expr
         sigma_tot = sigma.expr + sigma_handbook_PUM.expr
 
-        residual := sigma.expr : epsilon.test * dV - dot( f_vol.expr, dep.test ) * dV - dot( f_surf.expr, dep.test ) * dS
+        residual := sigma.expr : epsilon.test * dV - dot( f_vol.expr, dep.test ) * dV - dot( f_surf.expr, dep.test ) * dS - dot( f_nodal.expr, dep.test ) * dN
 
         residual_extractor := - ( pre_sigma.expr + sigma_hooke_iso( pre_epsilon.expr, young_eff.expr, poisson.expr, type_stress_2D ) ) : epsilon.test * dV - dot( pre_f_vol.expr, dep.test ) * dV - dot( pre_f_nodal.expr, dep.test ) * dN
 

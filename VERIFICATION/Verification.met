@@ -46,10 +46,10 @@ def check_elem_eq_force_fluxes( list_f, rep )
                 res_force[ d ] = e->integration( child_cast(f)->f_vol.expr[ d ] + child_cast(f)->pre_f_vol.expr[ d ], order_diff = degre_poly )
             for n in 0 .. e->nb_nodes
                 nb_elems_node := symbol( "elem_cpt_node[ elem.node( $n )->number ]" )
-                res_force[ d ] += ( child_cast(f)->pre_f_nodal.expr[ d ] ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
+                res_force[ d ] += ( child_cast(f)->f_nodal.expr[ d ] + child_cast(f)->pre_f_nodal.expr[ d ] ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
         if e->dim == 2
             GM_vect_prod_f_vol := vect_prod( GM, child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr )
-            GM_vect_prod_f_nodal := vect_prod( GM, child_cast(f)->pre_f_nodal.expr )
+            GM_vect_prod_f_nodal := vect_prod( GM, child_cast(f)->f_nodal.expr + child_cast(f)->pre_f_nodal.expr )
             degre_poly := ( GM_vect_prod_f_vol ).poly_deg( e->var_inter )
             if integration_type == "gauss_num"
                 res_torque_dim_2 = e->gauss_num_integration( GM_vect_prod_f_vol, order_diff = degre_poly )
@@ -60,7 +60,7 @@ def check_elem_eq_force_fluxes( list_f, rep )
                 res_torque_dim_2 += ( GM_vect_prod_f_nodal ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
         else if e->dim == 3
             GM_vect_prod_f_vol := vect_prod( GM, child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr )
-            GM_vect_prod_f_nodal := vect_prod( GM, child_cast(f)->pre_f_nodal.expr )
+            GM_vect_prod_f_nodal := vect_prod( GM, child_cast(f)->f_nodal.expr + child_cast(f)->pre_f_nodal.expr )
             for d in 0 .. e->dim
                 degre_poly := ( GM_vect_prod_f_vol[ d ] ).poly_deg( e->var_inter )
                 if integration_type == "gauss_num"

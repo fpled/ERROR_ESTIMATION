@@ -24,7 +24,7 @@ using namespace std;
 /// Calcul standard des bornes d'erreur sur la quantite d'interet locale (avec ou sans introduction de sigma_hat_m)
 ///----------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T>
-void calcul_standard_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, const TF &f_adjoint, const string &method, const T &theta, const T &theta_adjoint, const Vec<T> &theta_adjoint_elem, const Vec<unsigned> &correspondance_elem_m_adjoint_to_elem_m, const Vec< Vec<T> > &dep_hat, const T &I_h, const T &I_hh, const bool &want_introduction_sigma_hat_m ) {
+void calcul_standard_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, const TF &f_adjoint, const string &method, const T &theta, const T &theta_adjoint, const Vec<T> &theta_adjoint_elem, const Vec<unsigned> &correspondance_elem_m_adjoint_to_elem_m, const Vec< Vec<T> > &dep_hat, const T &I_h, const T &I_hh, const bool want_introduction_sigma_hat_m = true ) {
     if ( want_introduction_sigma_hat_m == 0 ) {
         cout << "-------------------------------------------------------------------------------------------------------" << endl;
         cout << "Calcul standard des bornes d'erreur sur la quantite d'interet locale (sans introduction de sigma_hat_m)" << endl;
@@ -104,7 +104,7 @@ void calcul_standard_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
 /// Calcul ameliore des bornes d'erreur sur la quantite d'interet locale (avec ou sans introduction de sigma_hat_m)
 ///----------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T, class Pvec>
-void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, const TF &f_adjoint, TM &m_lambda_min, TM &m_lambda_max, TM &m_lambda_opt, TM &m_adjoint_lambda_min, TM &m_adjoint_lambda_opt, const unsigned &deg_p, const string &method, const string &method_adjoint, const string &structure, const string &loading, const string &mesh_size, const unsigned &cost_function, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, const string &geometric_criterium, const unsigned &deg_k, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool &spread_cut, const T &theta, const T &theta_adjoint, const Vec<T> &theta_adjoint_elem, const Vec<unsigned> &correspondance_elem_m_adjoint_to_elem_m, const Vec< Vec<T> > &dep_hat, const Vec< Vec<T> > &dep_adjoint_hat, const T &I_h, const T &I_hh, const string &integration_k, const unsigned &integration_nb_points, const bool &debug_method, const bool &debug_method_enhancement, const bool &debug_geometry, const bool &debug_error_estimate, const bool &want_introduction_sigma_hat_m, const bool &want_solve_eig_local_improvement, const bool &use_mask_eig_local_improvement ) {
+void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, const TF &f_adjoint, TM &m_lambda_min, TM &m_lambda_max, TM &m_lambda_opt, TM &m_adjoint_lambda_min, TM &m_adjoint_lambda_opt, const unsigned &deg_p, const string &method, const string &method_adjoint, const string &structure, const string &loading, const string &mesh_size, const unsigned &cost_function, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, const string &geometric_criterium, const unsigned &deg_k, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool &spread_cut, const T &theta, const T &theta_adjoint, const Vec<T> &theta_adjoint_elem, const Vec<unsigned> &correspondance_elem_m_adjoint_to_elem_m, const Vec< Vec<T> > &dep_hat, const Vec< Vec<T> > &dep_adjoint_hat, const T &I_h, const T &I_hh, const string &integration_k, const unsigned &integration_nb_points, const bool debug_method = false, const bool debug_method_enhancement = false, const bool debug_geometry = false, const bool debug_error_estimate = false, const bool want_introduction_sigma_hat_m = true, const bool want_solve_eig_local_improvement = false, const bool use_mask_eig_local_improvement = false ) {
     
     static const unsigned dim = TM::dim;
     
@@ -522,12 +522,12 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
     if ( local_improvement == "steklov" ) {
         dep_hat_lambda_min.resize( m_lambda_min.elem_list.size() );
         dep_hat_lambda_max.resize( m_lambda_max.elem_list.size() );
-        calcul_error_estimate_lambda( m, m_lambda_min, f, f_lambda_min, "direct", method, shape, k_min, theta_lambda_min, dep_hat, dep_hat_lambda_min, debug_method, debug_method_enhancement, debug_error_estimate, want_display_theta_lambda );
-        calcul_error_estimate_lambda( m, m_lambda_max, f, f_lambda_max, "direct", method, shape, k_max, theta_lambda_max, dep_hat, dep_hat_lambda_max, debug_method, debug_method_enhancement, debug_error_estimate, want_display_theta_lambda );
+        calcul_error_estimate_lambda( m, m_lambda_min, f, f_lambda_min, "direct", method, shape, k_min, theta_lambda_min, dep_hat, dep_hat_lambda_min, want_display_theta_lambda, debug_method, debug_method_enhancement, debug_error_estimate );
+        calcul_error_estimate_lambda( m, m_lambda_max, f, f_lambda_max, "direct", method, shape, k_max, theta_lambda_max, dep_hat, dep_hat_lambda_max, want_display_theta_lambda, debug_method, debug_method_enhancement, debug_error_estimate );
     }
     else if ( local_improvement == "rayleigh" ) {
         dep_hat_lambda_opt.resize( m_lambda_opt.elem_list.size() );
-        calcul_error_estimate_lambda( m, m_lambda_opt, f, f_lambda_opt, "direct", method, shape, k_opt, theta_lambda_opt, dep_hat, dep_hat_lambda_opt, debug_method, debug_method_enhancement, debug_error_estimate, want_display_theta_lambda );
+        calcul_error_estimate_lambda( m, m_lambda_opt, f, f_lambda_opt, "direct", method, shape, k_opt, theta_lambda_opt, dep_hat, dep_hat_lambda_opt, want_display_theta_lambda, debug_method, debug_method_enhancement, debug_error_estimate );
     }
     
     Vec< Vec<T> > dep_adjoint_hat_lambda_min;
@@ -535,15 +535,15 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
 
     if ( local_improvement == "steklov" ) {
         dep_adjoint_hat_lambda_min.resize( m_adjoint_lambda_min.elem_list.size() );
-        calcul_error_estimate_lambda( m_adjoint, m_adjoint_lambda_min, f_adjoint, f_adjoint_lambda_min, "adjoint", method_adjoint, shape, k_min, theta_adjoint_lambda_min, dep_adjoint_hat, dep_adjoint_hat_lambda_min, debug_method, debug_method_enhancement, debug_error_estimate, want_display_theta_lambda );
+        calcul_error_estimate_lambda( m_adjoint, m_adjoint_lambda_min, f_adjoint, f_adjoint_lambda_min, "adjoint", method_adjoint, shape, k_min, theta_adjoint_lambda_min, dep_adjoint_hat, dep_adjoint_hat_lambda_min, want_display_theta_lambda, debug_method, debug_method_enhancement, debug_error_estimate );
     }
     else if ( local_improvement == "rayleigh" ) {
         dep_adjoint_hat_lambda_opt.resize( m_adjoint_lambda_opt.elem_list.size() );
-        calcul_error_estimate_lambda( m_adjoint, m_adjoint_lambda_opt, f_adjoint, f_adjoint_lambda_opt, "adjoint", method, shape, k_opt, theta_adjoint_lambda_opt, dep_adjoint_hat, dep_adjoint_hat_lambda_opt, debug_method, debug_method_enhancement, debug_error_estimate, want_display_theta_lambda );
+        calcul_error_estimate_lambda( m_adjoint, m_adjoint_lambda_opt, f_adjoint, f_adjoint_lambda_opt, "adjoint", method, shape, k_opt, theta_adjoint_lambda_opt, dep_adjoint_hat, dep_adjoint_hat_lambda_opt, want_display_theta_lambda, debug_method, debug_method_enhancement, debug_error_estimate );
     }
     
     T gamma = 0.;
-    calcul_gamma( m, m_adjoint, m_adjoint_lambda_opt, f, f_adjoint, f_adjoint_lambda_opt, deg_p, method, structure, loading, mesh_size, cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, deg_k, local_improvement, shape, k_min, k_max, k_opt, theta_lambda_min, theta_lambda_max, h, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, domain_center, domain_length, spread_cut, dep_hat, dep_adjoint_hat, integration_k, integration_nb_points, debug_method, debug_method_enhancement, debug_geometry, debug_error_estimate, gamma );
+    calcul_gamma( m, m_adjoint, m_adjoint_lambda_opt, f, f_adjoint, f_adjoint_lambda_opt, deg_p, method, local_improvement, shape, k_min, k_max, k_opt, theta_lambda_min, theta_lambda_max, h, domain_center, domain_length, spread_cut, dep_hat, dep_adjoint_hat, integration_k, integration_nb_points, gamma, debug_method, debug_method_enhancement, debug_error_estimate );
     
     T I_hhh = 0.;
     if ( local_improvement == "steklov" ) {

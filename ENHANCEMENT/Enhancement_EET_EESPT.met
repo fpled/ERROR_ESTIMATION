@@ -478,14 +478,14 @@ def calc_elem_vector_b_enh( list_f, rep )
             f_vol_std += f_vol_std_face
         GM_vect_prod_f_vol_std := vect_prod( GM, f_vol_std )
         GM_vect_prod_f_vol := vect_prod( GM, child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr )
-        GM_vect_prod_f_nodal := vect_prod( GM, child_cast(f)->pre_f_nodal.expr )
+        GM_vect_prod_f_nodal := vect_prod( GM, child_cast(f)->f_nodal.expr + child_cast(f)->pre_f_nodal.expr )
         b_enh := Vec[ Op ]()
         for d in 0 .. e->dim
             degre_poly := ( ( child_cast(f)->f_vol.expr[ d ] + child_cast(f)->pre_f_vol.expr[ d ] - f_vol_std[ d ] ) ).poly_deg( e->var_inter )
             b_enh_res := e->gauss_num_integration( child_cast(f)->f_vol.expr[ d ] + child_cast(f)->pre_f_vol.expr[ d ] - f_vol_std[ d ], order_diff = degre_poly )
             for n in 0 .. e->nb_nodes
                 nb_elems_node := symbol( "elem_cpt_node[ elem.node( $n )->number ]" )
-                b_enh_res += ( child_cast(f)->pre_f_nodal.expr[ d ] ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
+                b_enh_res += ( child_cast(f)->f_nodal.expr[ d ] + child_cast(f)->pre_f_nodal.expr[ d ] ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
             b_enh.push_back( b_enh_res )
         if e->dim == 2
             degre_poly := ( GM_vect_prod_f_vol - GM_vect_prod_f_vol_std ).poly_deg( e->var_inter )

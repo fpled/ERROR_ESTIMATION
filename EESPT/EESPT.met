@@ -183,7 +183,7 @@ def calc_vertex_nodal_vector_R( list_f, rep )
                         residual = e->integration( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) : e->grad_sym( lambda_n * v_n ) - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v_n ), order_diff = degre_poly )
                         if want_local_enrichment
                             residual_handbook = e->integration( child_cast(f)->sigma_handbook_PUM_zone_2.expr : e->grad_sym( lambda_n * v_n ), order_diff = degre_poly_handbook )
-                    residual_nodal = - dot( child_cast(f)->pre_f_nodal.expr, lambda_n * v_n ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
+                    residual_nodal = - dot( child_cast(f)->f_nodal.expr + child_cast(f)->pre_f_nodal.expr, lambda_n * v_n ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
                     for unk_v in sym_v
                         R.push_back( residual.diff( unk_v ) )
                         R_nodal.push_back( residual_nodal.diff( unk_v ) )
@@ -210,7 +210,7 @@ def calc_vertex_nodal_vector_R( list_f, rep )
                         residual = e->integration( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) : e->grad_sym( lambda_n * v ) - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v ), order_diff = degre_poly )
                         if want_local_enrichment
                             residual_handbook = e->integration( child_cast(f)->sigma_handbook_PUM_zone_2.expr : e->grad_sym( lambda_n * v ), order_diff = degre_poly_handbook )
-                    residual_nodal = - dot( child_cast(f)->pre_f_nodal.expr, lambda_n * v ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
+                    residual_nodal = - dot( child_cast(f)->f_nodal.expr + child_cast(f)->pre_f_nodal.expr, lambda_n * v ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
                     for unk_v in sym_v
                         R.push_back( residual.diff( unk_v ) )
                         R_nodal.push_back( residual_nodal.diff( unk_v ) )
@@ -747,12 +747,12 @@ def calc_vertex_nodal_matrix_M( list_f, rep )
         if child_cast(f)->young.interpolation == "global"
             young = child_cast(f)->young.expr
         else if child_cast(f)->young.interpolation == "elementary"
-            young = symbol( "(m.sub_mesh(Number<1>()).get_parents_of( elem ).size() != 2 ? m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 0 ]->number ]->get_field( \"young\", StructForType<T >() ) : 0.5*(m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 0 ]->number ]->get_field( \"young\", StructForType<T >() ) + m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 1 ]->number ]->get_field( \"young\", StructForType<T >() )))", tex_name = "E" )
+            young = symbol( "(m.sub_mesh(Number<1>()).get_parents_of( elem ).size() == 1 ? m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 0 ]->number ]->get_field( \"young\", StructForType<T >() ) : 0.5*(m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 0 ]->number ]->get_field( \"young\", StructForType<T >() ) + m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 1 ]->number ]->get_field( \"young\", StructForType<T >() )))", tex_name = "E" )
         poisson := Op( 0 )
         if child_cast(f)->poisson.interpolation == "global"
             poisson = child_cast(f)->poisson.expr
         else if child_cast(f)->poisson.interpolation == "elementary"
-            poisson = symbol( "(m.sub_mesh(Number<1>()).get_parents_of( elem ).size() != 2 ? m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 0 ]->number ]->get_field( \"poisson\", StructForType<T >() ) : 0.5*(m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 0 ]->number ]->get_field( \"poisson\", StructForType<T >() ) + m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 1 ]->number ]->get_field( \"poisson\", StructForType<T >() )))", tex_name = "\\nu" )
+            poisson = symbol( "(m.sub_mesh(Number<1>()).get_parents_of( elem ).size() == 1 ? m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 0 ]->number ]->get_field( \"poisson\", StructForType<T >() ) : 0.5*(m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 0 ]->number ]->get_field( \"poisson\", StructForType<T >() ) + m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 1 ]->number ]->get_field( \"poisson\", StructForType<T >() )))", tex_name = "\\nu" )
         cost_function_2 := inv_meas_2 * ( 1 + poisson ) / ( young ) * ( ( 1 - 2 * poisson ) / ( 1 - poisson ) * pow( Delta_F_normal, 2 ) + 2 * dot( Pi_Delta_F, Pi_Delta_F ) )
         M := Mat[ Op ]( sym_Delta_F.size, sym_Delta_F.size )
         for unk_Delta_F_i, i in sym_Delta_F, 0 .. sym_Delta_F.size

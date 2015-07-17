@@ -21,13 +21,13 @@ using namespace std;
 /// Construction des vecteurs F_hat[ n ] pour chaque element n du maillage
 ///-----------------------------------------------------------------------
 template<class TM, class TF, class T>
-void construct_F_hat( TM &m, const TF &f, const string &pb, const bool &balancing, const Vec<bool> &elem_flag_bal, const Vec<bool> &elem_flag_enh, const Vec< Vec< Vec<T> > > &vec_force_fluxes, Vec< Vec<T> > &F_hat, const bool &want_local_enrichment, const bool &debug_method, const bool &debug_geometry ) {
+void construct_F_hat( TM &m, const TF &f, const string &pb, const bool &balancing, const Vec<bool> &elem_flag_bal, const Vec<bool> &elem_flag_enh, const Vec< Vec< Vec<T> > > &vec_force_fluxes, Vec< Vec<T> > &F_hat, const bool want_local_enrichment = false, const bool debug_method = false, const bool debug_geometry = false ) {
 
-    if ( balancing == 0 ) {
-        cout << "Construction des vecteurs F_hat" << endl << endl;
+    if ( balancing ) {
+        cout << "Construction des vecteurs F_hat avec procedure d'equilibrage" << endl << endl;
     }
     else {
-        cout << "Construction des vecteurs F_hat avec procedure d'equilibrage" << endl << endl;
+        cout << "Construction des vecteurs F_hat" << endl << endl;
     }
 
     Vec<unsigned> node_cpt_face;

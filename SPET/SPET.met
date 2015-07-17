@@ -407,7 +407,7 @@ def calc_vertex_nodal_vector_F( list_f, rep )
                     file_ <<< "    }"
                 residual_nodal := Op( 0 )
                 nb_elems_node := symbol( "elem_list_vertex_node[ connect_node_to_vertex_node[ elem.node( $n )->number ].size()" )
-                residual_nodal = dot( child_cast(f)->pre_f_nodal.expr, lambda_n * ( v - Pi_v ) ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
+                residual_nodal = dot( child_cast(f)->f_nodal.expr + child_cast(f)->pre_f_nodal.expr, lambda_n * ( v - Pi_v ) ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
                 F_nodal := Vec[ Op ]()
                 for unk_v in sym_v
                     dr := residual_nodal.diff( unk_v )

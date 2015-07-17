@@ -143,7 +143,7 @@ def calc_nodal_vector_r( list_f, rep )
                     if want_local_enrichment
                         cw_handbook.add( "r[ elem.node( $n )->number ][ $d ][ elem_ind[ elem.number ][ $d ][ $n ] ]", r_handbook, add )
                 r_nodal := Op( 0 )
-                r_nodal = - ( phi_n * child_cast(f)->pre_f_nodal.expr[ d ] ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
+                r_nodal = - ( phi_n * ( child_cast(f)->f_nodal.expr[ d ] + child_cast(f)->pre_f_nodal.expr[ d ] ) ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
                 cw.add( "r[ elem.node( $n )->number ][ $d ][ elem_ind[ elem.number ][ $d ][ $n ] ]", r_nodal, add )
         file_ <<< "$(cw.to_string( 4 ))"
         if ( integration_type != "gauss_num" or integration_lang != "cpp" ) and want_local_enrichment
@@ -344,12 +344,12 @@ def calc_nodal_matrix_M( list_f, rep )
         if child_cast(f)->young.interpolation == "global"
             young = child_cast(f)->young.expr
         else if child_cast(f)->young.interpolation == "elementary"
-            young = symbol( "(m.sub_mesh(Number<1>()).get_parents_of( elem ).size() != 2 ? m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 0 ]->number ]->get_field( \"young\", StructForType<T >() ) : 0.5*(m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 0 ]->number ]->get_field( \"young\", StructForType<T >() ) + m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 1 ]->number ]->get_field( \"young\", StructForType<T >() )))", tex_name = "E" )
+            young = symbol( "(m.sub_mesh(Number<1>()).get_parents_of( elem ).size() == 1 ? m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 0 ]->number ]->get_field( \"young\", StructForType<T >() ) : 0.5*(m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 0 ]->number ]->get_field( \"young\", StructForType<T >() ) + m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 1 ]->number ]->get_field( \"young\", StructForType<T >() )))", tex_name = "E" )
         poisson := Op( 0 )
         if child_cast(f)->poisson.interpolation == "global"
             poisson = child_cast(f)->poisson.expr
         else if child_cast(f)->poisson.interpolation == "elementary"
-            poisson = symbol( "(m.sub_mesh(Number<1>()).get_parents_of( elem ).size() != 2 ? m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 0 ]->number ]->get_field( \"poisson\", StructForType<T >() ) : 0.5*(m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 0 ]->number ]->get_field( \"poisson\", StructForType<T >() ) + m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 1 ]->number ]->get_field( \"poisson\", StructForType<T >() )))", tex_name = "\\nu" )
+            poisson = symbol( "(m.sub_mesh(Number<1>()).get_parents_of( elem ).size() == 1 ? m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 0 ]->number ]->get_field( \"poisson\", StructForType<T >() ) : 0.5*(m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 0 ]->number ]->get_field( \"poisson\", StructForType<T >() ) + m.elem_list[ m.sub_mesh(Number<1>()).get_parents_of( elem )[ 1 ]->number ]->get_field( \"poisson\", StructForType<T >() )))", tex_name = "\\nu" )
         cost_function_2 := inv_meas_2 * ( 1 + poisson ) / ( young ) * ( ( 1 - 2 * poisson ) / ( 1 - poisson ) * pow( Delta_b_normal, 2 ) + 2 * dot( Pi_Delta_b, Pi_Delta_b ) )
         M := Mat[ Op ]( sym_Delta_b.size, sym_Delta_b.size )
         for unk_Delta_b_node, i in sym_Delta_b, 0 .. sym_Delta_b.size
