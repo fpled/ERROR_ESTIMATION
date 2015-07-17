@@ -6,7 +6,8 @@ SConstruct*
 *.o
 .DS_Store
 build/
-LMT/
+LMT
+DATA_HDF5
 MESH_AVS/
 MESH_GMSH/
 MESH_MASK/
