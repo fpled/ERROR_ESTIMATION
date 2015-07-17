@@ -222,16 +222,16 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     
     for (unsigned j=0;j<nb_vertex_nodes;++j) {
         if ( solver == "CholMod" ) {
-#ifdef WITH_CHOLMOD
+            #ifdef WITH_CHOLMOD
             Mat<T, Sym<>, SparseLine<> > K_sym = K[ j ];
             Mat<T, Sym<>, SparseCholMod > K_Cholmod = K_sym;
             U[ j ] = K_Cholmod.solve( F[ j ] );
             K_sym.clear();
             K_Cholmod.clear();
-#endif
+            #endif
         }
         else if ( solver == "LDL" ) {
-#ifdef WITH_LDL
+            #ifdef WITH_LDL
             Mat<T, Sym<>, SparseLine<> > K_LDL = K[ j ];
             U[ j ] = F[ j ];
             LDL_solver ls;
@@ -242,15 +242,15 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
             Ker.free();
             Pivots.free();
             K_LDL.clear();
-#endif
+            #endif
         }
         else if ( solver == "UMFPACK" ) {
-#ifdef WITH_UMFPACK
+            #ifdef WITH_UMFPACK
             Mat<T, Gen<>, SparseUMFPACK > K_UMFPACK = K[ j ];
             K_UMFPACK.get_factorization();
             U[ j ] = K_UMFPACK.solve( F[ j ] );
             K_UMFPACK.clear();
-#endif
+            #endif
         }
         else if ( solver == "CholFactorize" ) {
             Mat<T, Sym<>, SparseLine<> > K_Chol = K[ j ];

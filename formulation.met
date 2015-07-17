@@ -173,6 +173,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     def formulation( e )
 
         if boundary_condition == "lagrange"
+            assumed_symmetric_matrix = false
             matrix_will_be_definite_positive = false
 
         pos := e.pos

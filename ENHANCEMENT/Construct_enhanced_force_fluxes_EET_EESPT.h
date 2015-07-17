@@ -100,15 +100,15 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
         dep_hat_enh[ n ].resize( nb_unk_local_enh[ n ] );
         for (unsigned i=0;i<nb_unk_local_enh[ n ];++i) {
             if ( solver == "CholMod" ) {
-#ifdef WITH_CHOLMOD
+                #ifdef WITH_CHOLMOD
                 Mat<T, Sym<>, SparseLine<> > K_hat_sym = K_hat[ elem_list_enh[ n ] ];
                 Mat<T, Sym<>, SparseCholMod > K_hat_CholMod = K_hat_sym;
                 K_hat_CholMod.get_factorization();
                 dep_hat_enh[ n ][ i ] = K_hat_CholMod.solve( F_hat_enh[ n ][ i ] );
-#endif
+                #endif
             }
             else if ( solver == "LDL" ) {
-#ifdef WITH_LDL
+                #ifdef WITH_LDL
                 Mat<T, Sym<>, SparseLine<> > K_hat_LDL = K_hat[ elem_list_enh[ n ] ];
                 dep_hat_enh[ n ][ i ] = F_hat_enh[ n ][ i ];
                 LDL_solver ls;
@@ -117,14 +117,14 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
 //                bool want_free_matrix = false;
                 ls.get_factorization( K_hat_LDL, Ker, Pivots/*, want_free_matrix*/ );
                 ls.solve( dep_hat_enh[ n ][ i ] );
-#endif
+                #endif
             }
             else if ( solver == "UMFPACK" ) {
-#ifdef WITH_UMFPACK
+                #ifdef WITH_UMFPACK
                 Mat<T, Gen<>, SparseUMFPACK > K_hat_UMFPACK = K_hat[ elem_list_enh[ n ] ];
                 K_hat_UMFPACK.get_factorization();
                 dep_hat_enh[ n ][ i ] = K_hat_UMFPACK.solve( F_hat_enh[ n ][ i ] );
-#endif
+                #endif
             }
             else if ( solver == "CholFactorize" ) {
                 Mat<T, Sym<>, SparseLine<> > K_hat_Chol = K_hat[ elem_list_enh[ n ] ];
@@ -685,7 +685,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     t_solve_minimization_enhancement.start();
 
     if ( solver_minimisation == "LDL" ) {
-#ifdef WITH_LDL
+        #ifdef WITH_LDL
         Mat<T, Sym<>, SparseLine<> > K_LDL = K_enh;
         U_enh = F_enh;
         LDL_solver ls;
@@ -693,14 +693,14 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
         Vec<int> Pivots;
         ls.get_factorization( K_LDL, Ker, Pivots );
         ls.solve( U_enh );
-#endif
+        #endif
     }
     else if ( solver_minimisation == "UMFPACK" ) {
-#ifdef WITH_UMFPACK
+        #ifdef WITH_UMFPACK
         Mat<T, Gen<>, SparseUMFPACK > K_UMFPACK = K_enh;
         K_UMFPACK.get_factorization();
         U_enh = K_UMFPACK.solve( F_enh );
-#endif
+        #endif
     }
     else if ( solver_minimisation == "Inv" ) {
         Mat<T, Sym<>, SparseLine<> > K_Inv = K_enh;

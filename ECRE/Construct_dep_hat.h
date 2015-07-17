@@ -33,15 +33,15 @@ void construct_dep_hat( const TM &m, const TF &f, const string &method, const st
 
     for (unsigned n=0;n<m.elem_list.size();++n) {
         if ( solver == "CholMod" ) {
-#ifdef WITH_CHOLMOD
+            #ifdef WITH_CHOLMOD
             Mat<T, Sym<>, SparseLine<> > K_hat_sym = K_hat[ n ];
             Mat<T, Sym<>, SparseCholMod > K_hat_CholMod = K_hat_sym;
             K_hat_CholMod.get_factorization();
             dep_hat[ n ] = K_hat_CholMod.solve( F_hat[ n ] );
-#endif
+            #endif
         }
         else if ( solver == "LDL" ) {
-#ifdef WITH_LDL
+            #ifdef WITH_LDL
             Mat<T, Sym<>, SparseLine<> > K_hat_LDL = K_hat[ n ];
             dep_hat[ n ] = F_hat[ n ];
             LDL_solver ls;
@@ -49,14 +49,14 @@ void construct_dep_hat( const TM &m, const TF &f, const string &method, const st
             Vec<int> Pivots;
             ls.get_factorization( K_hat_LDL, Ker, Pivots );
             ls.solve( dep_hat[ n ] );
-#endif
+            #endif
         }
         else if ( solver == "UMFPACK" ) {
-#ifdef WITH_UMFPACK
+            #ifdef WITH_UMFPACK
             Mat<T, Gen<>, SparseUMFPACK > K_hat_UMFPACK = K_hat[ n ];
             K_hat_UMFPACK.get_factorization();
             dep_hat[ n ] = K_hat_UMFPACK.solve( F_hat[ n ] );
-#endif
+            #endif
         }
         else if ( solver == "CholFactorize" ) {
             Mat<T, Sym<>, SparseLine<> > K_hat_Chol = K_hat[ n ];

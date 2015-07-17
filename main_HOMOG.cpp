@@ -39,7 +39,7 @@ int main( int argc, char **argv ) {
     static const unsigned deg_p = 1; // degre de l'analyse elements finis : 1, 2, ...
     static const unsigned deg_k = 3; // degre supplementaire : 1, 2 , 3, ...
     static const string boundary_condition_D = "lagrange"; // methode de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalty
-    static const bool display_constraints = 1; // affichage des contraintes cinematiques
+    static const bool display_constraints = 0; // affichage des contraintes cinematiques
     
     /// Global discretization error
     ///----------------------------
@@ -181,7 +181,7 @@ int main( int argc, char **argv ) {
     static const bool save_vtu = 1;
     static const bool save_pvd = 0;
     static const bool save_vtu_ref = 0;
-    static const bool display_vtu = 0;
+    static const bool display_vtu = 1;
     static const bool display_pvd = 0;
     static const bool display_vtu_ref = 0;
     

@@ -793,15 +793,15 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
         for (unsigned d=0;d<dim;++d) {
             if ( K[ i ][ d ].nb_rows() != 0 ) {
                 if ( minimisation[ i ][ d ] == 0 ) {
-#ifdef WITH_UMFPACK
+                    #ifdef WITH_UMFPACK
                     Mat<T, Gen<>, SparseUMFPACK > K_UMFPACK = K[ i ][ d ];
                     K_UMFPACK.get_factorization();
                     U[ i ][ d ] = K_UMFPACK.solve( F[ i ][ d ] );
-#endif
+                    #endif
                 }
                 else {
                     if ( solver_minimisation == "LDL" ) {
-#ifdef WITH_LDL
+                        #ifdef WITH_LDL
                         Mat<T, Sym<>, SparseLine<> > K_LDL = K[ i ][ d ];
                         U[ i ][ d ] = F[ i ][ d ];
                         LDL_solver ls;
@@ -809,14 +809,14 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
                         Vec<int> Pivots;
                         ls.get_factorization( K_LDL, Ker, Pivots );
                         ls.solve( U[ i ][ d ] );
-#endif
+                        #endif
                     }
                     else if ( solver_minimisation == "UMFPACK" ) {
-#ifdef WITH_UMFPACK
+                        #ifdef WITH_UMFPACK
                         Mat<T, Gen<>, SparseUMFPACK > K_UMFPACK = K[ i ][ d ];
                         K_UMFPACK.get_factorization();
                         U[ i ][ d ] = K_UMFPACK.solve( F[ i ][ d ] );
-#endif
+                        #endif
                     }
                     else if ( solver_minimisation == "Inv" ) {
                         Mat<T, Sym<>, SparseLine<> > K_Inv = K[ i ][ d ];

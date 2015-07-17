@@ -22,8 +22,7 @@ using namespace std;
 template<class TF>
 void check_equilibrium( const TF &f, const string &pb ) {
     typedef typename TF::ScalarType T;
-    Mat<T, Sym<>, SparseLine<> > K = f.matrices(Number<0>());
-    cout << "Verification de l'equilibre global du pb " << pb << " : erreur = " << norm_2( K * f.vectors[0] - f.sollicitation ) << ", erreur relative = " << norm_2( K * f.vectors[0] - f.sollicitation ) / norm_2( f.sollicitation ) << endl << endl;
+    cout << "Verification de l'equilibre global du pb " << pb << " : erreur = " << norm_2( f.matrices(Number<0>()) * f.vectors[0] - f.sollicitation ) << ", erreur relative = " << norm_2( f.matrices(Number<0>()) * f.vectors[0] - f.sollicitation ) / norm_2( f.sollicitation ) << endl << endl;
 }
 
 /// Construction du vecteur de vecteurs residual_force_fluxes

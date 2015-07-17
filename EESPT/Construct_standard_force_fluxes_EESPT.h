@@ -763,15 +763,15 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     for (unsigned j=0;j<nb_vertex_nodes;++j) {
         for (unsigned d=0;d<dim;++d) {
             if ( minimisation[ j ][ d ] == 0 ) {
-#ifdef WITH_UMFPACK
+                #ifdef WITH_UMFPACK
                 Mat<T, Gen<>, SparseUMFPACK > K_UMFPACK = K[ j ][ d ];
                 K_UMFPACK.get_factorization();
                 U[ j ][ d ] = K_UMFPACK.solve( F[ j ][ d ] );
-#endif
+                #endif
             }
             else {
                 if ( solver_minimisation == "LDL" ) {
-#ifdef WITH_LDL
+                    #ifdef WITH_LDL
                     Mat<T, Sym<>, SparseLine<> > K_LDL = K[ j ][ d ];
                     U[ j ][ d ] = F[ j ][ d ];
                     LDL_solver ls;
@@ -779,14 +779,14 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
                     Vec<int> Pivots;
                     ls.get_factorization( K_LDL, Ker, Pivots );
                     ls.solve( U[ j ][ d ] );
-#endif
+                    #endif
                 }
                 else if ( solver_minimisation == "UMFPACK" ) {
-#ifdef WITH_UMFPACK
+                    #ifdef WITH_UMFPACK
                     Mat<T, Gen<>, SparseUMFPACK > K_UMFPACK = K[ j ][ d ];
                     K_UMFPACK.get_factorization();
                     U[ j ][ d ] = K_UMFPACK.solve( F[ j ][ d ] );
-#endif
+                    #endif
                 }
                 else if ( solver_minimisation == "Inv" ) {
                     Mat<T, Sym<>, SparseLine<> > K_Inv = K[ j ][ d ];
