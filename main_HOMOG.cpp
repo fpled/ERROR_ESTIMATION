@@ -32,13 +32,13 @@ int main( int argc, char **argv ) {
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "weight_sensor"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circular_inclusions, circular_holes
+    static const string structure = "square_32"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circular_inclusions, circular_holes
                                                      // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes
     static const string mesh_size = "fine"; // maillage pour les structures plate_hole (2D ou 3D), plate_crack, structure_crack, test_specimen, weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
     static const string loading = "pull"; // chargement pour la structure spot_weld (3D) : pull, shear, peeling et pour la structure plate_crack (2D) : pull, shear
     static const unsigned deg_p = 1; // degre de l'analyse elements finis : 1, 2, ...
     static const unsigned deg_k = 3; // degre supplementaire : 1, 2 , 3, ...
-    static const string boundary_condition_D = "lagrange"; // methode de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalty
+    static const string boundary_condition_D = "penalty"; // methode de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalty
     static const bool display_constraints = 0; // affichage des contraintes cinematiques
     
     /// Global discretization error
@@ -232,52 +232,52 @@ int main( int argc, char **argv ) {
     
     /// Resolution du pb direct
     ///------------------------
-//    f.allocate_matrices();
-//    f.shift();
-//    f.assemble();
-//    f.update_variables();
-//    f.call_after_solve();
+    f.allocate_matrices();
+    f.shift();
+    f.assemble();
+    f.update_variables();
+    f.call_after_solve();
 
-////    cout << "residual =" << endl << endl;
-////    for (unsigned i=0;i<f.vectors[0].size();++i) {
-////        if ( i % 2== 0 )
-////            cout << "node " << i/2 << " :" << endl;
-////        cout << ( f.matrices(Number<0>()) * f.vectors[0] - f.sollicitation )[i] << endl;
-////    }
-////    cout << endl;
-////    cout << "K U =" << endl << endl;
-////    for (unsigned i=0;i<f.vectors[0].size();++i) {
-////        if ( i % 2== 0 )
-////            cout << "node " << i/2 << " :" << endl;
-////        cout << ( f.matrices(Number<0>()) * f.vectors[0] )[i] << endl;
-////    }
-////    cout << endl;
-////    cout << "F =" << endl << endl;
-////    for (unsigned i=0;i<f.vectors[0].size();++i) {
-////        if ( i % 2== 0 )
-////            cout << "node " << i/2 << " :" << endl;
-////        cout << f.sollicitation[i] << endl;
-////    }
-////    cout << endl;
-////    cout << "U =" << endl << endl;
-////    for (unsigned i=0;i<f.vectors[0].size();++i) {
-////        if ( i % 2== 0 )
-////            cout << "node " << i/2 << " :" << endl;
-////        cout << ( f.vectors[0] )[i] << endl;
-////    }
-////    cout << endl;
-////    cout << "K =" << endl << endl;
-////    for (unsigned i=0;i<f.vectors[0].size();++i) {
-////        if ( i % 2== 0 )
-////            cout << "node " << i/2 << " :" << endl;
-////        cout << f.matrices(Number<0>()).row(i) << endl;
-////    }
-////    cout << endl;
+//    cout << "residual =" << endl << endl;
+//    for (unsigned i=0;i<f.vectors[0].size();++i) {
+//        if ( i % 2== 0 )
+//            cout << "node " << i/2 << " :" << endl;
+//        cout << ( f.matrices(Number<0>()) * f.vectors[0] - f.sollicitation )[i] << endl;
+//    }
+//    cout << endl;
+//    cout << "K U =" << endl << endl;
+//    for (unsigned i=0;i<f.vectors[0].size();++i) {
+//        if ( i % 2== 0 )
+//            cout << "node " << i/2 << " :" << endl;
+//        cout << ( f.matrices(Number<0>()) * f.vectors[0] )[i] << endl;
+//    }
+//    cout << endl;
+//    cout << "F =" << endl << endl;
+//    for (unsigned i=0;i<f.vectors[0].size();++i) {
+//        if ( i % 2== 0 )
+//            cout << "node " << i/2 << " :" << endl;
+//        cout << f.sollicitation[i] << endl;
+//    }
+//    cout << endl;
+//    cout << "U =" << endl << endl;
+//    for (unsigned i=0;i<f.vectors[0].size();++i) {
+//        if ( i % 2== 0 )
+//            cout << "node " << i/2 << " :" << endl;
+//        cout << ( f.vectors[0] )[i] << endl;
+//    }
+//    cout << endl;
+//    cout << "K =" << endl << endl;
+//    for (unsigned i=0;i<f.vectors[0].size();++i) {
+//        if ( i % 2== 0 )
+//            cout << "node " << i/2 << " :" << endl;
+//        cout << f.matrices(Number<0>()).row(i) << endl;
+//    }
+//    cout << endl;
 
-//    Vec<T> U = f.vectors[0];
+    Vec<T> U = f.vectors[0];
 
-//    if ( verif_eq )
-//        check_equilibrium( f, "direct" );
+    if ( verif_eq )
+        check_equilibrium( f, "direct" );
 
     TicToc t;
     t.start();
@@ -288,14 +288,19 @@ int main( int argc, char **argv ) {
     t.stop();
     cout << "Temps de calcul du pb direct : " << t.res << endl << endl;
 
-//    cout << "residual =" << endl << endl;
-//    for (unsigned i=0;i<f.vectors[0].size();++i) {
-//        if ( i % 2== 0 )
-//            cout << "node " << i/2 << " :" << endl;
-//        cout << ( f.matrices(Number<0>()) * f.vectors[0] )[i] << " - " << f.sollicitation[i] << " = " << ( f.matrices(Number<0>()) * f.vectors[0] - f.sollicitation )[i] << endl;
-//        cout << ( f.matrices(Number<0>()) * U )[i] << " - " << f.sollicitation[i] << " = " << ( f.matrices(Number<0>()) * U - f.sollicitation )[i] << endl;
-//    }
-//    cout << endl;
+    cout << "size K = " << f.matrices(Number<0>()).nb_rows() << "x" << f.matrices(Number<0>()).nb_cols() << endl;
+    cout << "size F = " << f.sollicitation.size() << endl;
+    cout << "size U = " << U.size() << endl;
+    cout << "size vec = " << f.vectors[0].size() << endl;
+
+    cout << "residual =" << endl << endl;
+    for (unsigned i=0;i<f.vectors[0].size();++i) {
+        if ( i % 2== 0 )
+            cout << "node " << i/2 << " :" << endl;
+        cout << ( f.matrices(Number<0>()) * f.vectors[0] )[i] << " - " << f.sollicitation[i] << " = " << ( f.matrices(Number<0>()) * f.vectors[0] - f.sollicitation )[i] << endl;
+        cout << ( f.matrices(Number<0>()) * U )[i] << " - " << f.sollicitation[i] << " = " << ( f.matrices(Number<0>()) * U - f.sollicitation )[i] << endl;
+    }
+    cout << endl;
 
 //    cout << "K.row(0) = " << f.matrices(Number<0>()).row(0) << endl;
 //    for (unsigned i=0;i<f.matrices(Number<0>()).row(0).size();++i) {
@@ -307,12 +312,12 @@ int main( int argc, char **argv ) {
 //        }
 //    }
 
-//    cout << "U - U =" << endl << endl;
-//    for (unsigned i=0;i<f.vectors[0].size();++i) {
-//        if ( i % 2== 0 )
-//            cout << "node " << i/2 << " :" << endl;
-//        cout << U[i] << " - " << ( f.vectors[0] )[i] << " = "<< U[i] - ( f.vectors[0] )[i] << endl;
-//    }
+    cout << "U - U =" << endl << endl;
+    for (unsigned i=0;i<f.vectors[0].size();++i) {
+        if ( i % 2== 0 )
+            cout << "node " << i/2 << " :" << endl;
+        cout << U[i] << " - " << ( f.vectors[0] )[i] << " = "<< U[i] - ( f.vectors[0] )[i] << endl;
+    }
     
     /// Verification de l'equilibre du pb direct
     ///-----------------------------------------

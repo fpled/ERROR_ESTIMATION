@@ -44,7 +44,7 @@ type_stress_2D := "plane strain"
 
 # Choix de la methode de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalty
 #--------------------------------------------------------------------------------------------------------------------------------------
-boundary_condition := "lagrange"
+boundary_condition := "penalty"
 
 # Choix de la base d'approximation : lagrange, hierarchical
 #----------------------------------------------------------
