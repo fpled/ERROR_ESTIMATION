@@ -3,4 +3,11 @@ SConstruct*
 *.cache
 *.dblite
 *~
+*.o
 .DS_Store
+build/
+LMT/
+MESH_AVS/
+MESH_GMSH/
+MESH_MASK/
+RESULTS/
