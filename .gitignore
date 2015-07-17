@@ -1,6 +1,6 @@
-SConstruct
-SConstruct_PGD
-SConstruct_HOMOG
-ERROR_ESTIMATION.creator.user
+SConstruct*
+*.creator.user
 *.cache
 *.dblite
+*~
+.DS_Store
