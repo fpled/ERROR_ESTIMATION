@@ -114,10 +114,10 @@ void assign_q_mesh( TV &q, TM &mesh ) {
     }
 };
 
-//penalisation de matrice
+// penalisation de matrice
 // a partir des ddls bloques a zero
 template<class T,class Str,class Sto,class OP, class TV>
-void penalisation( Mat<T,Str,Sto,OP>&K, TV &v, T &coef ) {
+void penalty( Mat<T,Str,Sto,OP>&K, TV &v, T &coef ) {
     coef=1e5*max(K.diag());
     for (unsigned i=0;i<v.size();++i)
         K(v[i],v[i])+= coef;
@@ -125,18 +125,18 @@ void penalisation( Mat<T,Str,Sto,OP>&K, TV &v, T &coef ) {
 
 // a partir des ddls bloques, de la matrice A de relation entre ces ddls
 template<class T,class Sto,class OP, class TV, class TMAT2>
-void penalisation( Mat<T,Gen<>,Sto,OP> &K, TV &v, TMAT2 &A, T &coef ) {
+void penalty( Mat<T,Gen<>,Sto,OP> &K, TV &v, TMAT2 &A, T &coef ) {
     coef=1e5*max(A.diag());
     K(v,v)+=coef*trans(A)*A;
 }
 
 template<class T,class Sto,class OP, class TV, class TMAT2>
-void penalisation( Mat<T,Sym<>,Sto,OP> &K, TV &v, TMAT2 &A, T &coef ) {
+void penalty( Mat<T,Sym<>,Sto,OP> &K, TV &v, TMAT2 &A, T &coef ) {
     coef=1e5*max(A.diag());
     K[v]+=coef*trans(A)*A;
 }
 
-//penalisation de vecteur
+// penalisation de vecteur
 // a partir des ddls bloques a zero
 template<class TV1, class TV2>
 void penalisation( TV1 &v, TV2 &rep, typename TV1::T &coef ) {
@@ -244,15 +244,15 @@ struct reordering_nodes_SST {
 
 
 /** \ingroup  Maillages 
-\brief Recherche si un pt est a l'interieur d'une boite d�finie par ses deux extr�mit�s et par une base dont le dernier vecteur est la normale. Une proc�dure est �crite en 2d et une autre en 3d
+\brief Recherche si un pt est a l'interieur d'une boite définie par ses deux extrémités et par une base dont le dernier vecteur est la normale. Une procédure est écrite en 2d et une autre en 3d
 
-Pour le cas 2d, on cherche � d�terminer si le pt M est dans le segment [AB]. Pour cela, on calcul les distances MA et MB puis on v�rifie si \f$ \frac{\vec{MA}.\vec{MB}}{MA MB} =-1 \f$ � epsilon pr�s.
+Pour le cas 2d, on cherche à déterminer si le pt M est dans le segment [AB]. Pour cela, on calcul les distances MA et MB puis on vérifie si \f$ \frac{\vec{MA}.\vec{MB}}{MA MB} =-1 \f$ à epsilon près.
 
-Pour le cas 3d, connaissant la base dont le dernier vecteur est la normale � la surface et les deux autres sont parall�les aux cot�s, on cherche � savoir si le pt M est dans le rectangle d�fini par les deux points extr�mit�s de la boite. On calcule donc :
+Pour le cas 3d, connaissant la base dont le dernier vecteur est la normale à la surface et les deux autres sont parallèles aux cotés, on cherche à savoir si le pt M est dans le rectangle défini par les deux points extrémités de la boite. On calcule donc :
 \f$ (\vec{MA}.\vec{n})x (\vec{MB}.\vec{n}) <=0 \f$
 \f$ (\vec{MA}.\vec{t1})x (\vec{MB}.\vec{t1}) <=0 \f$
 \f$ (\vec{MA}.\vec{t2})x (\vec{MB}.\vec{t2}) <=0 \f$
-Attention il faut n�cessairement que t1 et t2 soient parall�les aux cot�s du rectangle (� construire lorsque l'on cr�e la base). 
+Attention il faut nécessairement que t1 et t2 soient parallèles aux cotés du rectangle (à construire lorsque l'on crée la base).
 */
 template<class T> bool pt_in_box( Vec<T,2> &pt, Vec<Vec<T,2>,2> &box, Vec<Vec<T,2>,2> &base, const double eps=1e-6 ) {
     T la = length(pt-box[0]);
@@ -270,13 +270,13 @@ template<class T> bool pt_in_box( Vec<T,3> &pt, Vec<Vec<T,3>,2> &box, Vec<Vec<T,
 }
 
 /** \ingroup  Maillages 
-\brief Recherche si un pt est a l'interieur d'une boite d�finie par ses deux extr�mit�s (rectangle en 2d et parall�l�pip�de en 3d)
+\brief Recherche si un pt est a l'interieur d'une boite définie par ses deux extrémités (rectangle en 2d et parallélépipède en 3d)
 
-Pour le cas 2d ou 3d, on cherche � savoir si le pt M est dans le rectangle ou (parall�l�pip�de) d�fini par les deux points extr�mit�s de la boite A et B. On calcule donc :
+Pour le cas 2d ou 3d, on cherche à savoir si le pt M est dans le rectangle ou (parallélépipède) défini par les deux points extrémités de la boite A et B. On calcule donc :
 \f$ (\vec{MA}.\vec{x})x (\vec{MB}.\vec{x}) <=0 \f$
 \f$ (\vec{MA}.\vec{y})x (\vec{MB}.\vec{y}) <=0 \f$
 \f$ (\vec{MA}.\vec{z})x (\vec{MB}.\vec{z}) <=0 \f$
-Attention il faut n�cessairement que t1 et t2 soient parall�les aux cot�s du rectangle (� construire lorsque l'on cr�e la base). 
+Attention il faut nécessairement que t1 et t2 soient parallèles aux cotés du rectangle (à construire lorsque l'on crée la base).
 */
 template<class T> bool pt_in_box( Vec<T,2> &pt, Vec<Vec<T,2>,2> &box, const double eps=1e-6 ) {
     bool flag=0;
@@ -308,9 +308,9 @@ template<class T> bool pt_in_box( const Vec<T,3> &pt, Vec<Vec<T,3>,2> &box, cons
 }
 
 
-/** \brief Intersection entre deux boites definies par leurs noeuds extremite. Cette fonction renvoit 1 si les deux boites s'intersectent ou se touchent (� epsilon pr�s), 0 sinon
+/** \brief Intersection entre deux boites definies par leurs noeuds extremite. Cette fonction renvoit 1 si les deux boites s'intersectent ou se touchent (à epsilon près), 0 sinon
 
-Une fonction est �crite pour des boites 2d et une autre pour des boites 3d. Normalement aucune restriction n'est n�cessaire dans l'ordre des points extr�mit�s des boites. Les boites doivent simplement pouvoir �tre repr�sent�es par 2 points et donc align�es sur les axes x, y, z. Cette fonction ne n�cessite en 3d que 3 comparaisons et 2 tests ainsi que l'utilisation de produits scalaires qui sont normalement optimis�s.
+Une fonction est écrite pour des boites 2d et une autre pour des boites 3d. Normalement aucune restriction n'est nécessaire dans l'ordre des points extrémités des boites. Les boites doivent simplement pouvoir être représentées par 2 points et donc alignées sur les axes x, y, z. Cette fonction ne nécessite en 3d que 3 comparaisons et 2 tests ainsi que l'utilisation de produits scalaires qui sont normalement optimisés.
 **/
 template<class T> bool intersection_box( Vec<Vec<T,2>,2> &box1, Vec<Vec<T,2>,2> &box2, const double &eps=1e-6 ) {
     typedef Vec<T,2> TV;
@@ -343,40 +343,5 @@ template<class T> bool intersection_box( Vec<Vec<T,2>,2> &box1, Vec<Vec<T,2>,2> 
 
     return ( (abs(dot(V,x))<=dot(E1,x)+dot(E2,x)+eps) and (abs(dot(V,y))<=dot(E1,y)+dot(E2,y)+eps) and (abs(dot(V,z))<=dot(E1,z)+dot(E2,z)+eps) );
 }
-
-
-/** \ingroup  Maillages 
-\brief Translation des noeuds d'un maillage
-
-On passe le maillage et un vecteur de translation pour modifier la position des noeuds du maillage
-*/
-// template<class TM,class TV> void translate_mesh( TM &m, const TV &trans ) {
-//     for (unsigned i=0;i<m.node_list.size();i++)
-//         m.node_list[i].pos+=trans;
-// }
-// template<class TM,class TV> void translate_mesh( TM &m, TV &trans ) {
-//     for (unsigned i=0;i<m.node_list.size();i++)
-//         m.node_list[i].pos+=trans;
-// }
-
-/** \ingroup  Maillages
-\brief Dilatation/Contraction des noeuds d'un maillage
-
-On passe le maillage et un vecteur de dilatation/contraction pour modifier la position des noeuds du maillage
-*/
-// template<class TM,class TV> void scale_mesh( TM &m, const TV &scale_factor ) {
-//     static const unsigned dim = TM::dim;
-//     for (unsigned i=0;i<m.node_list.size();i++) {
-//         for (unsigned d=0;d<dim;d++)
-//             m.node_list[i].pos[d]*=scale_factor[d];
-//     }
-// }
-// template<class TM,class TV> void scale_mesh( TM &m, TV &scale_factor ) {
-//     static const unsigned dim = TM::dim;
-//     for (unsigned i=0;i<m.node_list.size();i++) {
-//         for (unsigned d=0;d<dim;d++)
-//             m.node_list[i].pos[d]*=scale_factor[d];
-//     }
-// }
 
 #endif //Tools_h

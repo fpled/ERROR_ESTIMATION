@@ -1090,7 +1090,7 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
                     Local_refinement_point_id<T, Pvec> ref( l_min, k, center( *m.elem_list[ elem_list[ n ] ] ) );
                     while( refinement( m_adjoint, ref, spread_cut ) )
                         ref.id++;
-                    for(unsigned i=0;i<(m.elem_list[ elem_list[ n ] ]->nb_nodes_virtual());++i) {
+                    for (unsigned i=0;i<(m.elem_list[ elem_list[ n ] ]->nb_nodes_virtual());++i) {
                         Local_refinement_point_id<T, Pvec> ref( l_min, k, m.elem_list[ elem_list[ n ] ]->node_virtual(i)->pos );
                         while( refinement( m_adjoint, ref, spread_cut ) )
                             ref.id++;
@@ -1147,11 +1147,11 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
             for (unsigned n=0;n<elem_list.size();++n) {
                 unsigned node_layer_cpt_enrichment = 1;
                 elem_list_enrichment_zone_1.push_back( elem_list[ n ] );
-                for(unsigned i=0;i<(m.elem_list[ elem_list[ n ] ]->nb_nodes_virtual());++i)
+                for (unsigned i=0;i<(m.elem_list[ elem_list[ n ] ]->nb_nodes_virtual());++i)
                     node_list_enrichment.push_back( m.elem_list[ elem_list[ n ] ]->node_virtual(i)->number );
                 while ( node_layer_cpt_enrichment < nb_layers_nodes_enrichment ) {
                     Vec<unsigned> node_list_enrichment_tmp = node_list_enrichment;
-                    for(unsigned i=0;i<node_list_enrichment_tmp.size();++i) {
+                    for (unsigned i=0;i<node_list_enrichment_tmp.size();++i) {
                         for (unsigned j=0;j<m.get_node_neighbours( node_list_enrichment_tmp[ i ] ).size();++j) {
                             if ( not find( node_list_enrichment, _1 == m.get_node_neighbours( node_list_enrichment_tmp[ i ] )[ j ]->number ) )
                                 node_list_enrichment.push_back( m.get_node_neighbours( node_list_enrichment[ i ] )[ j ]->number );
@@ -1175,7 +1175,7 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
                     node_list_enrichment.push_back( m.get_node_neighbours( node )[ j ]->number );
                 while ( node_layer_cpt_enrichment < nb_layers_nodes_enrichment ) {
                     Vec<unsigned> node_list_enrichment_tmp = node_list_enrichment;
-                    for(unsigned j=0;j<node_list_enrichment_tmp.size();++j) {
+                    for (unsigned j=0;j<node_list_enrichment_tmp.size();++j) {
                         for (unsigned k=0;k<m.get_node_neighbours( node_list_enrichment_tmp[ j ] ).size();++k) {
                             if ( not find( node_list_enrichment, _1 == m.get_node_neighbours( node_list_enrichment_tmp[ j ] )[ k ]->number ) )
                                 node_list_enrichment.push_back( m.get_node_neighbours( node_list_enrichment[ j ] )[ k ]->number );
@@ -1190,17 +1190,17 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
             }
             else if ( pointwise_interest_quantity == "pos" ) {
                 unsigned num_elem = 0;
-                for(unsigned n=0;n<m.elem_list.size();++n) {
+                for (unsigned n=0;n<m.elem_list.size();++n) {
                     if ( length( center( *m.elem_list[ n ] ) - pos_interest_quantity ) < length( center( *m.elem_list[ num_elem ] ) - pos_interest_quantity ) )
                         num_elem = n;
                 }
                 unsigned node_layer_cpt_enrichment = 1;
                 elem_list_enrichment_zone_1.push_back( num_elem );
-                for(unsigned i=0;i<(m.elem_list[ num_elem ]->nb_nodes_virtual());++i)
+                for (unsigned i=0;i<(m.elem_list[ num_elem ]->nb_nodes_virtual());++i)
                     node_list_enrichment.push_back( m.elem_list[ num_elem ]->node_virtual(i)->number );
                 while ( node_layer_cpt_enrichment < nb_layers_nodes_enrichment ) {
                     Vec<unsigned> node_list_enrichment_tmp = node_list_enrichment;
-                    for(unsigned i=0;i<node_list_enrichment_tmp.size();++i) {
+                    for (unsigned i=0;i<node_list_enrichment_tmp.size();++i) {
                         for (unsigned j=0;j<m.get_node_neighbours( node_list_enrichment_tmp[ i ] ).size();++j) {
                             if ( not find( node_list_enrichment, _1 == m.get_node_neighbours( node_list_enrichment_tmp[ i ] )[ j ]->number ) )
                                 node_list_enrichment.push_back( m.get_node_neighbours( node_list_enrichment[ i ] )[ j ]->number );
@@ -1259,7 +1259,7 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
         ///------------------------------------------------------------
         apply( m_adjoint.elem_list, Construct_Elem_List_Ref(), m, elem_list_enrichment_zone_1, elem_list_adjoint_enrichment_zone_1 );
         for (unsigned n=0;n<elem_list_adjoint_enrichment_zone_1.size();++n) {
-            for(unsigned i=0;i<(m_adjoint.elem_list[ elem_list_adjoint_enrichment_zone_1[ n ] ]->nb_nodes_virtual());++i) {
+            for (unsigned i=0;i<(m_adjoint.elem_list[ elem_list_adjoint_enrichment_zone_1[ n ] ]->nb_nodes_virtual());++i) {
                 if ( not find( node_list_adjoint_enrichment, _1 == m_adjoint.elem_list[ elem_list_adjoint_enrichment_zone_1[ n ] ]->node_virtual(i)->number ) )
                     node_list_adjoint_enrichment.push_back( m_adjoint.elem_list[ elem_list_adjoint_enrichment_zone_1[ n ] ]->node_virtual(i)->number );
             }
@@ -1455,7 +1455,7 @@ void create_structure_local_ref( TM &m, TM &m_ref, const unsigned &deg_p, const 
 //                Local_refinement_point_id<T, Pvec> ref( 0.05, 0.05, center( *m.elem_list[ elem_list[ n ] ] ) );
 //                while( refinement( m_ref, ref, spread_cut ) )
 //                    ref.id++;
-//                for(unsigned i=0;i<(m.elem_list[ elem_list[ n ] ]->nb_nodes_virtual());++i) {
+//                for (unsigned i=0;i<(m.elem_list[ elem_list[ n ] ]->nb_nodes_virtual());++i) {
 //                    Local_refinement_point_id<T, Pvec> ref( 0.05, 0.05, m.elem_list[ elem_list[ n ] ]->node_virtual(i)->pos );
 //                    while( refinement( m_ref, ref, spread_cut ) )
 //                        ref.id++;

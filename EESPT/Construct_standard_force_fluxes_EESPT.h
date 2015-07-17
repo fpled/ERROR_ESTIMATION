@@ -22,7 +22,7 @@ using namespace std;
 /// Construction standard des densites d'effort par la methode EESPT
 ///-----------------------------------------------------------------
 template<class TM, class TF, class T>
-void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &cost_function, const bool &enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, const T &pen_N, const string &pb, Vec< Vec< Vec<T> > > &vec_force_fluxes, const bool want_local_enrichment = false, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool debug_geometry = false, const bool debug_force_fluxes = false, const bool debug_method = false ) {
+void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &cost_function, const bool &enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, const T &penalty_val_N, const string &pb, Vec< Vec< Vec<T> > > &vec_force_fluxes, const bool want_local_enrichment = false, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool debug_geometry = false, const bool debug_force_fluxes = false, const bool debug_method = false ) {
     
     static const unsigned dim = TM::dim;
     
@@ -295,15 +295,15 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     apply( m.elem_list, remove_kernel, m, eq_indep );
 
     for (unsigned j=0;j<nb_vertex_nodes;++j) {
-        for(unsigned d=0;d<dim;++d) {
+        for (unsigned d=0;d<dim;++d) {
             remove_doubles( eq_indep[ j ][ d ] );
             nb_eq_indep[ j ][ d ] = eq_indep[ j ][ d ].size();
         }
     }
 
     if ( debug_method ) {
-        for(unsigned j=0;j<nb_vertex_nodes;++j) {
-            for(unsigned d=0;d<dim;++d) {
+        for (unsigned j=0;j<nb_vertex_nodes;++j) {
+            for (unsigned d=0;d<dim;++d) {
                 cout << "nb d'equations associees au noeud sommet " << j << " dans la direction " << d << " avant suppression du noyau : " << nb_eq[ j ][ d ] << endl;
                 cout << "nb d'equations supprimees associees au noeud sommet " << j << " dans la direction " << d << " : " << ( nb_eq[ j ][ d ] - nb_eq_indep[ j ][ d ] ) << endl;
                 cout << "nb d'equations independantes associees au noeud sommet " << j << " dans la direction " << d << " apres suppression du noyau : " << nb_eq_indep[ j ][ d ] << endl;
@@ -327,24 +327,24 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     Vec< Vec< Mat<T, Gen<>, SparseLine<> > > > A_tilde;
     A_tilde.resize( nb_vertex_nodes );
 
-    for(unsigned j=0;j<nb_vertex_nodes;++j) {
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
         A_tilde[ j ].resize( dim );
-        for(unsigned d=0;d<dim;++d) {
+        for (unsigned d=0;d<dim;++d) {
             A_tilde[ j ][ d ].resize( nb_unk[ j ][ d ], nb_eq_indep[ j ][ d ] );
         }
     }
 
-    for(unsigned j=0;j<nb_vertex_nodes;++j) {
-        for(unsigned d=0;d<dim;++d) {
-            for(unsigned k=0;k<nb_eq_indep[ j ][ d ];++k) {
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
+        for (unsigned d=0;d<dim;++d) {
+            for (unsigned k=0;k<nb_eq_indep[ j ][ d ];++k) {
                 A_tilde[ j ][ d ].col( k ) = A[ j ][ d ].col( eq_indep[ j ][ d ][ k ] );
             }
         }
     }
 
     if ( debug_method ) {
-        for(unsigned j=0;j<nb_vertex_nodes;++j) {
-            for(unsigned d=0;d<dim;++d) {
+        for (unsigned j=0;j<nb_vertex_nodes;++j) {
+            for (unsigned d=0;d<dim;++d) {
                 cout << "dimension de la matrice A_tilde associee au noeud sommet " << j << " dans la direction " << d << " : ( " << nb_unk[ j ][ d ] << ", " << nb_eq_indep[ j ][ d ] << " )" << endl;
                 cout << "matrice A_tilde associee au noeud sommet " << j << " dans la direction " << d << " :" << endl;
                 cout << A_tilde[ j ][ d ] << endl << endl;
@@ -364,25 +364,25 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     Vec< Vec< Vec<T> > > R_tilde;
     R_tilde.resize( nb_vertex_nodes );
 
-    for(unsigned j=0;j<nb_vertex_nodes;++j) {
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
         R_tilde[ j ].resize( dim );
-        for(unsigned d=0;d<dim;++d) {
+        for (unsigned d=0;d<dim;++d) {
             R_tilde[ j ][ d ].resize( nb_eq_indep[ j ][ d ] );
             R_tilde[ j ][ d ].set( 0. );
         }
     }
 
-    for(unsigned j=0;j<nb_vertex_nodes;++j) {
-        for(unsigned d=0;d<dim;++d) {
-            for(unsigned k=0;k<nb_eq_indep[ j ][ d ];++k) {
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
+        for (unsigned d=0;d<dim;++d) {
+            for (unsigned k=0;k<nb_eq_indep[ j ][ d ];++k) {
                 R_tilde[ j ][ d ][ k ] += R[ j ][ d ][ eq_indep[ j ][ d ][ k ] ];
             }
         }
     }
 
     if ( debug_method ) {
-        for(unsigned j=0;j<nb_vertex_nodes;++j) {
-            for(unsigned d=0;d<dim;++d) {
+        for (unsigned j=0;j<nb_vertex_nodes;++j) {
+            for (unsigned d=0;d<dim;++d) {
                 cout << "dimension du vecteur R_tilde associe au noeud sommet " << j << " dans la direction " << d << " : " << nb_eq_indep[ j ][ d ] << endl;
                 cout << "vecteur R_tilde associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
                 cout << R_tilde[ j ][ d ] << endl << endl;
@@ -403,9 +403,9 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     Vec< Vec< Vec<T> > > lambda_F;
     lambda_F.resize( nb_vertex_nodes );
 
-    for(unsigned j=0;j<nb_vertex_nodes;++j) {
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
         lambda_F[ j ].resize( dim );
-        for(unsigned d=0;d<dim;++d) {
+        for (unsigned d=0;d<dim;++d) {
             lambda_F[ j ][ d ].resize( nb_unk[ j ][ d ] );
             lambda_F[ j ][ d ].set( 0. );
         }
@@ -430,9 +430,9 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         Vec< Vec< Vec<T> > > lambda_F_face;
         lambda_F_face.resize( m.sub_mesh(Number<1>()).elem_list.size() );
         
-        for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+        for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
             lambda_F_face[ k ].resize( dim );
-            for(unsigned d=0;d<dim;++d) {
+            for (unsigned d=0;d<dim;++d) {
                 lambda_F_face[ k ][ d ].resize( vertex_node_cpt_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() );
                 lambda_F_face[ k ][ d ].set( 0. );
             }
@@ -446,9 +446,9 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         Vec< Vec< Mat<T, Gen<>, SparseUMFPACK > > > B; 
         B.resize( m.sub_mesh(Number<1>()).elem_list.size() );
         
-        for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+        for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
             B[ k ].resize( dim );
-            for(unsigned d=0;d<dim;++d) {
+            for (unsigned d=0;d<dim;++d) {
                 B[ k ][ d ].resize( vertex_node_cpt_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() );
             }
         }
@@ -456,8 +456,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         apply( m.sub_mesh(Number<1>()).elem_list, Calcul_Skin_Elem_Matrix_B_p_1(), m, B );
         
         if ( debug_method ) {
-            for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
-                for(unsigned d=0;d<dim;++d) {
+            for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+                for (unsigned d=0;d<dim;++d) {
                     cout << "dimension de la matrice B associe a la face " << k << " dans la direction " << d << " : ( " << vertex_node_cpt_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << ", " << vertex_node_cpt_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << " )" << endl;
                     cout << "matrice B associe a la face " << k << " dans la direction " << d << " :" << endl;
                     cout << B[ k ][ d ] << endl << endl;
@@ -473,9 +473,9 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         Vec< Vec< Vec<T> > > Q; 
         Q.resize( m.sub_mesh(Number<1>()).elem_list.size() );
         
-        for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+        for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
             Q[ k ].resize( dim );
-            for(unsigned d=0;d<dim;++d) {
+            for (unsigned d=0;d<dim;++d) {
                 Q[ k ][ d ].resize( vertex_node_cpt_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() );
                 Q[ k ][ d ].set( 0. );
             }
@@ -492,8 +492,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         apply( m.elem_list, calcul_skin_elem_vector_Q_p_1, m, f, Q );
         
         if ( debug_method ) {
-            for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
-                for(unsigned d=0;d<dim;++d) {
+            for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+                for (unsigned d=0;d<dim;++d) {
                     cout << "dimension du vecteur Q associe a la face " << k << " dans la direction " << d << " : " << vertex_node_cpt_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << endl;
                     cout << "vecteur Q associe a la face " << k << " dans la direction " << d << " :" << endl;
                     cout << Q[ k ][ d ] << endl << endl;
@@ -511,8 +511,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         TicToc t_solve_p_1_EESPT;
         t_solve_p_1_EESPT.start();
         
-        for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
-            for(unsigned d=0;d<dim;++d) {
+        for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+            for (unsigned d=0;d<dim;++d) {
                 B[ k ][ d ].get_factorization();
                 lambda_F_face[ k ][ d ] = B[ k ][ d ].solve( Q[ k ][ d ] );
             }
@@ -522,8 +522,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         cout << "Temps de calcul de la resolution des systemes lineaires pour la technique EESPT : " << t_solve_p_1_EESPT.res << endl << endl;
         
         if ( debug_method ) {
-            for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
-                for(unsigned d=0;d<dim;++d) {
+            for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+                for (unsigned d=0;d<dim;++d) {
                     cout << "dimension du vecteur lambda_F_face associe a la face " << k << " dans la direction " << d << " : " << vertex_node_cpt_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << endl;
                     cout << "vecteur lambda_F_face associe a la face " << k << " dans la direction " << d << " :" << endl;
                     cout << lambda_F_face[ k ][ d ] << endl << endl;
@@ -571,8 +571,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     }
 
     if ( debug_method ) {
-        for(unsigned j=0;j<nb_vertex_nodes;++j) {
-            for(unsigned d=0;d<dim;++d) {
+        for (unsigned j=0;j<nb_vertex_nodes;++j) {
+            for (unsigned d=0;d<dim;++d) {
                 cout << "dimension du vecteur lambda_F associe au noeud sommet " << j << " dans la direction " << d << " : " << nb_unk[ j ][ d ] << endl;
                 cout << "vecteur lambda_F associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
                 cout << lambda_F[ j ][ d ] << endl << endl;
@@ -593,13 +593,13 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     Vec< Vec<bool> > minimisation; 
     minimisation.resize( nb_vertex_nodes );
 
-    for(unsigned j=0;j<nb_vertex_nodes;++j) {
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
         minimisation[ j ].resize( dim );
         minimisation[ j ].set( 0 );
     }
 
-    for(unsigned j=0;j<nb_vertex_nodes;++j) {
-        for(unsigned d=0;d<dim;++d) {
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
+        for (unsigned d=0;d<dim;++d) {
              if ( nb_eq_indep[ j ][ d ] < nb_unk[ j ][ d ] ) {
                 minimisation[ j ][ d ] = 1;
             }
@@ -607,8 +607,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     }
 
     if ( debug_method ) {
-        for(unsigned j=0;j<nb_vertex_nodes;++j) {
-            for(unsigned d=0;d<dim;++d) {
+        for (unsigned j=0;j<nb_vertex_nodes;++j) {
+            for (unsigned d=0;d<dim;++d) {
                 cout << "etape de minimisation associee au noeud sommet " << j << " dans la direction " << d << " : " << minimisation[ j ][ d ] << endl << endl;
             }
         }
@@ -619,14 +619,14 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
 
     cout << "Construction des matrices M" << endl << endl;
 
-    cout << "valeur du coefficient de penalisation : " << pen_N << endl << endl;
+    cout << "valeur du coefficient de penalisation : " << penalty_val_N << endl << endl;
 
     Vec< Vec< Mat< T, Diag<> > > > M; 
     M.resize( nb_vertex_nodes );
 
-    for(unsigned j=0;j<nb_vertex_nodes;++j) {
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
         M[ j ].resize( dim );
-        for(unsigned d=0;d<dim;++d) {
+        for (unsigned d=0;d<dim;++d) {
             if ( minimisation[ j ][ d ] ) {
                 M[ j ][ d ].resize( nb_unk[ j ][ d ] );
                 M[ j ][ d ].set( 0. );
@@ -641,14 +641,14 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     calcul_vertex_nodal_matrix_M.face_type = &face_type;
     calcul_vertex_nodal_matrix_M.face_ind = &face_ind;
     calcul_vertex_nodal_matrix_M.cost_function = &cost_function;
-    calcul_vertex_nodal_matrix_M.pen_N = &pen_N;
+    calcul_vertex_nodal_matrix_M.penalty_val_N = &penalty_val_N;
     calcul_vertex_nodal_matrix_M.minimisation = &minimisation;
 
     apply( m.sub_mesh(Number<1>()).elem_list, calcul_vertex_nodal_matrix_M, m, f, M );
 
     if ( debug_method ) {
-        for(unsigned j=0;j<nb_vertex_nodes;++j) {
-            for(unsigned d=0;d<dim;++d) {
+        for (unsigned j=0;j<nb_vertex_nodes;++j) {
+            for (unsigned d=0;d<dim;++d) {
                 if ( minimisation[ j ][ d ] ) {
                     cout << "dimension de la matrice de minimisation M associee au noeud sommet " << j << " dans la direction " << d << " : ( " << nb_unk[ j ][ d ] << ", " << nb_unk[ j ][ d ] << " )" << endl;
                     cout << "matrice M associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
@@ -677,11 +677,11 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     TicToc t_construct_K_F_EESPT;
     t_construct_K_F_EESPT.start();
 
-    for(unsigned j=0;j<nb_vertex_nodes;++j) {
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
         K[ j ].resize( dim );
         F[ j ].resize( dim );
         U[ j ].resize( dim );
-        for(unsigned d=0;d<dim;++d) {
+        for (unsigned d=0;d<dim;++d) {
             if ( minimisation[ j ][ d ] == 0 ) {
                 K[ j ][ d ].resize( nb_unk[ j ][ d ] );
                 F[ j ][ d ].resize( nb_unk[ j ][ d ] );
@@ -699,8 +699,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         }
     }
 
-    for(unsigned j=0;j<nb_vertex_nodes;++j) {
-        for(unsigned d=0;d<dim;++d) {
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
+        for (unsigned d=0;d<dim;++d) {
             if ( minimisation[ j ][ d ] == 0 ) {
                 Vec<unsigned> vec_unk = range( nb_unk[ j ][ d ] );
                 Vec<unsigned> vec_eq_indep = range( nb_eq_indep[ j ][ d ] );
@@ -726,15 +726,15 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     cout << "Temps de calcul de remplissage des matrices K et des vecteurs F associes aux problemes de minimisation pour la technique EESPT : " << t_construct_K_F_EESPT.res << endl << endl;
 
     if ( debug_method ) {
-        for(unsigned j=0;j<nb_vertex_nodes;++j) {
-            for(unsigned d=0;d<dim;++d) {
+        for (unsigned j=0;j<nb_vertex_nodes;++j) {
+            for (unsigned d=0;d<dim;++d) {
                 cout << "dimension de la matrice K associee au noeud sommet " << j << " dans la direction " << d << " : ( " << K[ j ][ d ].nb_rows() << ", " << K[ j ][ d ].nb_cols() << " ) "<< endl;
                 cout << "matrice K associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
                 cout << K[ j ][ d ] << endl << endl;
             }
         }
-        for(unsigned j=0;j<nb_vertex_nodes;++j) {
-            for(unsigned d=0;d<dim;++d) {
+        for (unsigned j=0;j<nb_vertex_nodes;++j) {
+            for (unsigned d=0;d<dim;++d) {
                 cout << "dimension du vecteur F associe au noeud sommet " << j << " dans la direction " << d << " : " << F[ j ][ d ].size() << endl;
                 cout << "vecteur F associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
                 cout << F[ j ][ d ] << endl << endl;
@@ -760,8 +760,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     TicToc t_solve_minimization_EESPT;
     t_solve_minimization_EESPT.start();
 
-    for(unsigned j=0;j<nb_vertex_nodes;++j) {
-        for(unsigned d=0;d<dim;++d) {
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
+        for (unsigned d=0;d<dim;++d) {
             if ( minimisation[ j ][ d ] == 0 ) {
 #ifdef WITH_UMFPACK
                 Mat<T, Gen<>, SparseUMFPACK > K_UMFPACK = K[ j ][ d ];
@@ -816,8 +816,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     cout << "Temps de calcul de la resolution des problemes de minimisation pour la technique EESPT : " << t_solve_minimization_EESPT.res << endl << endl;
 
     if ( debug_method ) {
-        for(unsigned j=0;j<nb_vertex_nodes;++j) {
-            for(unsigned d=0;d<dim;++d) {
+        for (unsigned j=0;j<nb_vertex_nodes;++j) {
+            for (unsigned d=0;d<dim;++d) {
                 cout << "dimension du vecteur U associe au noeud sommet " << j << " dans la direction " << d << " : " << U[ j ][ d ].size() << endl;
                 cout << "vecteur U associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
                 cout << U[ j ][ d ] << endl << endl;
@@ -826,8 +826,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     }
     if ( verif_solver_minimisation ) {
         cout << "Verification de la resolution des problemes de minimisation pour la technique EESPT" << endl << endl;
-        for(unsigned j=0;j<nb_vertex_nodes;++j) {
-            for(unsigned d=0;d<dim;++d) {
+        for (unsigned j=0;j<nb_vertex_nodes;++j) {
+            for (unsigned d=0;d<dim;++d) {
                 if ( norm_2( K[ j ][ d ] * U[ j ][ d ] - F[ j ][ d ] ) / norm_2( F[ j ][ d ] ) > tol_solver_minimisation ) {
                     cout << "residu associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
                     cout << "K * U - F =" << endl;
@@ -851,16 +851,16 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     Vec< Vec< Vec<T> > > lambda_F_hat;
     lambda_F_hat.resize( nb_vertex_nodes );
 
-    for(unsigned j=0;j<nb_vertex_nodes;++j) {
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
         lambda_F_hat[ j ].resize( dim );
-        for(unsigned d=0;d<dim;++d) {
+        for (unsigned d=0;d<dim;++d) {
             lambda_F_hat[ j ][ d ].resize( nb_unk[ j ][ d ] );
             lambda_F_hat[ j ][ d ].set( 0. );
         }
     }
 
-    for(unsigned j=0;j<nb_vertex_nodes;++j) {
-        for(unsigned d=0;d<dim;++d) {
+    for (unsigned j=0;j<nb_vertex_nodes;++j) {
+        for (unsigned d=0;d<dim;++d) {
             Vec<unsigned> vec_unk_lambda_F_hat = range( nb_unk[ j ][ d ] );
             lambda_F_hat[ j ][ d ][ vec_unk_lambda_F_hat ] = U[ j ][ d ][ vec_unk_lambda_F_hat ] * 1.;
         }
@@ -875,8 +875,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     apply( m.sub_mesh(Number<1>()).elem_list, reset_vertex_nodal_vector_lambda_F_hat, m, lambda_F_hat );
 
     if ( debug_method ) {
-        for(unsigned j=0;j<nb_vertex_nodes;++j) {
-            for(unsigned d=0;d<dim;++d) {
+        for (unsigned j=0;j<nb_vertex_nodes;++j) {
+            for (unsigned d=0;d<dim;++d) {
                 cout << "dimension du vecteur lambda_F_hat associee au noeud sommet " << j << " dans la direction " << d << " : " << nb_unk[ j ][ d ] << endl;
                 cout << "vecteur lambda_F_hat associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
                 cout << lambda_F_hat[ j ][ d ] << endl << endl;
@@ -901,9 +901,9 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
 
     vec_force_fluxes.resize( m.sub_mesh(Number<1>()).elem_list.size() );
 
-    for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+    for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
         vec_force_fluxes[ k ].resize( dim );
-        for(unsigned d=0;d<dim;++d) {
+        for (unsigned d=0;d<dim;++d) {
             vec_force_fluxes[ k ][ d ].resize( m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() );
             vec_force_fluxes[ k ][ d ].set( 0. );
         }
@@ -912,7 +912,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     Vec< Mat<T> > mat_force_fluxes;
     mat_force_fluxes.resize( m.sub_mesh(Number<1>()).elem_list.size() );
 
-    for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+    for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
         mat_force_fluxes[ k ].resize( m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual(), dim );
         mat_force_fluxes[ k ].set( 0. );
     }
@@ -925,8 +925,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     apply( m.sub_mesh(Number<1>()).elem_list, calcul_skin_elem_force_fluxes, lambda_F_hat, vec_force_fluxes, mat_force_fluxes );
 
     if ( debug_force_fluxes or debug_method ) {
-        for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
-            for(unsigned d=0;d<dim;++d) {
+        for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+            for (unsigned d=0;d<dim;++d) {
                 cout << "dimension du vecteur des densites d'effort associe a la face " << k << " dans la direction " << d << " : " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << endl;
                 cout << "vecteur des densites d'effort associe a la face " << k << " dans la direction " << d << " :" << endl;
                 cout << vec_force_fluxes[ k ][ d ] << endl << endl;
@@ -934,7 +934,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         }
     }
     if ( debug_force_fluxes or debug_method ) {
-        for(unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
+        for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
             cout << "dimension de la matrice des densites d'effort associee a la face " << k << " : ( " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << ", " << dim << " )" << endl;
             cout << "matrice des densites d'effort associee a la face " << k << " :" << endl;
             cout << mat_force_fluxes[ k ] << endl << endl;

@@ -11,7 +11,7 @@ template<class TM> TM pos_part_mat_diag(const TM &M)
     TM res;
     res.resize(dim);
     res.set(0.);
-    for(unsigned k=0; k<dim; ++k)
+    for (unsigned k=0; k<dim; ++k)
     {
         res(k, k) = LMT::max(M(k, k), 0.);
     }
@@ -26,7 +26,7 @@ template<class TM> TM neg_part_mat_diag(const TM &M)
     TM res;
     res.resize(dim);
     res.set(0.);
-    for(unsigned k=0; k<dim; ++k)
+    for (unsigned k=0; k<dim; ++k)
     {
         res(k, k) = LMT::min(M(k, k), 0.);
     }
@@ -97,7 +97,7 @@ template<class TM> TM inv_mat_diag(const TM &M)
     TM res;
     res.resize(dim);
     res.set(0.);
-    for(unsigned k=0; k<dim; ++k)
+    for (unsigned k=0; k<dim; ++k)
     {
         res(k, k) = 1. / M(k, k);
     }
@@ -112,7 +112,7 @@ template<class TM> TM sqr_root_mat_diag(const TM &M)
     TM res;
     res.resize(dim);
     res.set(0.);
-    for(unsigned k=0; k<dim; ++k)
+    for (unsigned k=0; k<dim; ++k)
     {
         res(k, k) = sqrt(M(k, k));
     }

@@ -700,9 +700,9 @@ def calc_elem_error_estimate_lambda( list_f, rep )
         cw_0.add( "dep_hat_lambda[ elem_lambda.number ]", dep_hat_lambda_e, reassign )
         file_ <<< "    bool same_element = 1;"
         file_ <<< "    Vec<Vec<typename TM::TNode::T, $(e_lambda->dim)>, $(e_lambda->nb_nodes) > pos_nodes_lambda;"
-        file_ <<< "    for(unsigned i=0;i<elem_lambda.nb_nodes;++i)"
+        file_ <<< "    for (unsigned i=0;i<elem_lambda.nb_nodes;++i)"
         file_ <<< "        pos_nodes_lambda[i] = elem_lambda.pos(i);"
-        file_ <<< "    for(unsigned i=0;i<elem.nb_nodes;++i) {"
+        file_ <<< "    for (unsigned i=0;i<elem.nb_nodes;++i) {"
         file_ <<< "        if ( not is_inside_linear( $(e_lambda->name)(), pos_nodes_lambda, elem.pos(i) ) )"
         file_ <<< "            same_element = 0;"
         file_ <<< "    }"
@@ -710,7 +710,7 @@ def calc_elem_error_estimate_lambda( list_f, rep )
         file_ <<< "    if ( same_element ) {"
         file_ <<< "        dep_hat_lambda[ elem_lambda.number ] = dep_hat[ elem.number ];"
         file_ <<< "    }"
-        file_ <<< "    else if ( same_element == 0 ) {"
+        file_ <<< "    else {"
         file_ <<<<
                     Mat<T, Sym<>, SparseLine<> > sigma_hat_proj_tmp;
                     // Mat<T, Sym<>, SparseLine<> > sigma_proj_tmp;
@@ -1145,7 +1145,7 @@ def calc_elem_correction_interest_quantity_lambda( list_f, rep )
             else if integration_type == "formal"
                 corr_I_hhh = 1/2 * ( e_adjoint->integration( sigma_hat_proj : eps_hooke_iso( sigma_adjoint_hat, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_1 ) + e_adjoint->integration( epsilon_proj : sigma_hooke_iso( f_adjoint->epsilon.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_2 ) - e_adjoint->integration( sigma_hat_proj : f_adjoint->epsilon.expr, order_diff = degre_poly_3 ) - e_adjoint->integration( sigma_adjoint_hat : epsilon_proj, order_diff = degre_poly_3 ) )
             file_ <<< "    Vec<Vec<typename TM::TNode::T, $(e->dim)>, $(e->nb_nodes) > pos_nodes;"
-            file_ <<< "    for(unsigned i=0;i<elem.nb_nodes;++i)"
+            file_ <<< "    for (unsigned i=0;i<elem.nb_nodes;++i)"
             file_ <<< "        pos_nodes[i] = elem.pos(i);"
             file_ <<< "    if ( is_inside_linear( $(e->name)(), pos_nodes, center( elem_adjoint ) ) ) {"
             if integration_type == "gauss_num" and integration_lang == "cpp"

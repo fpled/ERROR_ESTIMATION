@@ -21,8 +21,8 @@ template<class TM, class TV> void eigen_values_using_lapack( const TM &A, TV &ei
     char uplo = 'L'; // Lower triangle of A is stored.
     int n = A.nb_rows();
     Vec<double> A_data; A_data.resize( n * n );
-    for(unsigned j=0,c=0;j<A.nb_cols();++j)
-        for(unsigned i=0;i<A.nb_rows();++i,++c)
+    for (unsigned j=0,c=0;j<A.nb_cols();++j)
+        for (unsigned i=0;i<A.nb_rows();++i,++c)
             A_data[ c ] = A( i, j );
     eig_val.resize( n );
     int lwork = 3*n-1;
@@ -36,8 +36,8 @@ template<class TM1, class TV, class TM2> void eigen_problem_using_lapack( const 
     char uplo = 'L'; // Lower triangle of A is stored.
     int n = A.nb_rows();
     Vec<double> A_data; A_data.resize( n * n );
-    for(unsigned j=0,c=0;j<A.nb_cols();++j)
-        for(unsigned i=0;i<A.nb_rows();++i,++c)
+    for (unsigned j=0,c=0;j<A.nb_cols();++j)
+        for (unsigned i=0;i<A.nb_rows();++i,++c)
             A_data[ c ] = A( i, j );
     eig_val.resize( n );
     int lwork = 3*n-1;
@@ -48,8 +48,8 @@ template<class TM1, class TV, class TM2> void eigen_problem_using_lapack( const 
         throw "pb with eig with lapack";
     //
     eig_vec.resize( n, n );
-    for(int i=0,c=0;i<n;++i)
-        for(int j=0;j<n;++j,++c)
+    for (int i=0,c=0;i<n;++i)
+        for (int j=0;j<n;++j,++c)
             eig_vec( i, j ) = A_data[ c ];
 }
 
@@ -58,12 +58,12 @@ template<class TM1, class TM2, class TV> void generalized_eigen_values_using_lap
     char uplo = 'L'; // Lower triangles of A and B are stored.
     int n = A.nb_rows();
     Vec<double> A_data; A_data.resize( n * n );
-    for(unsigned j=0,c=0;j<A.nb_cols();++j)
-        for(unsigned i=0;i<A.nb_rows();++i,++c)
+    for (unsigned j=0,c=0;j<A.nb_cols();++j)
+        for (unsigned i=0;i<A.nb_rows();++i,++c)
             A_data[ c ] = A( i, j );
     Vec<double> B_data; B_data.resize( n * n );
-    for(unsigned j=0,c=0;j<B.nb_cols();++j)
-        for(unsigned i=0;i<B.nb_rows();++i,++c)
+    for (unsigned j=0,c=0;j<B.nb_cols();++j)
+        for (unsigned i=0;i<B.nb_rows();++i,++c)
             B_data[ c ] = B( i, j );
     eig_val.resize( n );
     int lwork = 3*n-1;
@@ -80,12 +80,12 @@ template<class TM1, class TM2, class TV, class TM3> void generalized_eigen_probl
     char uplo = 'L'; // Lower triangles of A and B are stored.
     int n = A.nb_rows();
     Vec<double> A_data; A_data.resize( n * n );
-    for(unsigned j=0,c=0;j<A.nb_cols();++j)
-        for(unsigned i=0;i<A.nb_rows();++i,++c)
+    for (unsigned j=0,c=0;j<A.nb_cols();++j)
+        for (unsigned i=0;i<A.nb_rows();++i,++c)
             A_data[ c ] = A( i, j );
     Vec<double> B_data; B_data.resize( n * n );
-    for(unsigned j=0,c=0;j<B.nb_cols();++j)
-        for(unsigned i=0;i<B.nb_rows();++i,++c)
+    for (unsigned j=0,c=0;j<B.nb_cols();++j)
+        for (unsigned i=0;i<B.nb_rows();++i,++c)
             B_data[ c ] = B( i, j );
     eig_val.resize( n );
     int lwork = 3*n-1;
@@ -97,8 +97,8 @@ template<class TM1, class TM2, class TV, class TM3> void generalized_eigen_probl
         throw "pb with eig with lapack";
     //
     eig_vec.resize( n, n );
-    for(int i=0,c=0;i<n;++i)
-        for(int j=0;j<n;++j,++c)
+    for (int i=0,c=0;i<n;++i)
+        for (int j=0;j<n;++j,++c)
             eig_vec( i, j ) = A_data[ c ];
 }
 

@@ -879,7 +879,7 @@ struct Construct_Elem_List_Ref {
     template<class TE, class TM> void operator()( const TE &elem, TM &m, const Vec<unsigned> &elem_list, Vec<unsigned> &elem_list_ref ) const {
         for (unsigned n=0;n<elem_list.size();++n) {
             Vec<Vec<typename TE::T,TE::dim>, TE::nb_nodes > pos_nodes;
-            for(unsigned i=0;i<(m.elem_list[ elem_list[ n ] ]->nb_nodes_virtual());++i)
+            for (unsigned i=0;i<(m.elem_list[ elem_list[ n ] ]->nb_nodes_virtual());++i)
                 pos_nodes[i] = m.elem_list[ elem_list[ n ] ]->node_virtual(i)->pos;
             if ( is_inside_linear( typename TE::NE(), pos_nodes, center( elem ) ) ) {
                 elem_list_ref.push_back( elem.number );
@@ -894,6 +894,33 @@ struct Construct_Node_Ref {
     template<class TN, class TM> void operator()( const TN &node, TM &m, const unsigned &node_number, unsigned &node_number_ref ) const {
         if ( node.pos == m.node_list[ node_number ].pos ) {
             node_number_ref = node.number ;
+        }
+    }
+};
+
+/// Construction de la correspondance entre la liste des elements du maillage extrait m_extracted et la liste des elements du maillage initial m
+///----------------------------------------------------------------------------------------------------------------------------------------------
+struct Construct_Correspondance_Elem_Mesh_Extracted_To_Elem_Mesh {
+    Vec<unsigned>* correspondance_elem_m_extracted_to_elem_m;
+    template<class TE_extracted, class TE> void operator()( const TE_extracted &elem_extracted, unsigned i, const TE &elem, unsigned j ) const {
+        Vec<Vec<typename TE::T,TE::dim>, TE::nb_nodes > pos_nodes;
+        for (unsigned n=0;n<elem.nb_nodes;++n)
+            pos_nodes[n] = elem.pos(n);
+        if ( is_inside_linear( typename TE::NE(), pos_nodes, center( elem_extracted ) ) ) {
+            (*correspondance_elem_m_extracted_to_elem_m)[ elem_extracted.number ] = elem.number;
+        }
+    }
+};
+
+/// Construction de la liste des elements contenant le point pos
+///-------------------------------------------------------------
+struct Construct_Elem_List_Pos {
+    template<class TE, class Pvec> void operator()( const TE &elem, const Pvec &pos, Vec<unsigned> &elem_list ) const {
+        Vec<Vec<typename TE::T,TE::dim>, TE::nb_nodes > pos_nodes;
+        for (unsigned i=0;i<TE::nb_nodes;++i)
+            pos_nodes[i] = elem.pos(i);
+        if ( is_inside_linear( typename TE::NE(), pos_nodes, pos ) ) {
+            elem_list.push_back( elem.number );
         }
     }
 };
@@ -968,20 +995,6 @@ struct Local_refinement_circle_id {
     T R; /// rayon du cercle
     Pvec c; /// centre du cercle
     unsigned id;
-};
-
-/// Construction de la correspondance entre la liste des elements du maillage extrait (m_extracted) et la liste des elements du maillage original (m)
-///--------------------------------------------------------------------------------------------------------------------------------------------------
-struct Construct_Correspondance_Elem_Mesh_Extracted_To_Elem_Mesh {
-    Vec<unsigned>* correspondance_elem_m_extracted_to_elem_m;
-    template<class TE_extracted, class TE> void operator()( const TE_extracted &elem_extracted, unsigned i, const TE &elem, unsigned j ) const {
-        Vec<Vec<typename TE::T,TE::dim>, TE::nb_nodes > pos_nodes;
-        for(unsigned n=0;n<elem.nb_nodes;++n)
-            pos_nodes[n] = elem.pos(n);
-        if ( is_inside_linear( typename TE::NE(), pos_nodes, center( elem_extracted ) ) ) {
-            (*correspondance_elem_m_extracted_to_elem_m)[ elem_extracted.number ] = elem.number;
-        }
-    }
 };
 
 #endif // Geometry_h

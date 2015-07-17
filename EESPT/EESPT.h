@@ -168,7 +168,7 @@ struct Calcul_Vertex_Nodal_Vector_lambda_F_p_2 {
 /// Construction des matrices de minimisation M[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
 ///-------------------------------------------------------------------------------------------------------------------
 template<class TE, class TM, class TF, class TV, class TVV, class TVVV, class T, class TT, class BVV, class TTMVV>
-void calc_vertex_nodal_matrix_M( const TE &child_elem , const TM &m, const TF &f, const TV &connect_node_to_vertex_node, const TVV face_type, const TVVV &face_ind, const T &cost_function, const TT &pen_N, const BVV &minimisation, TTMVV &M ) {}
+void calc_vertex_nodal_matrix_M( const TE &child_elem , const TM &m, const TF &f, const TV &connect_node_to_vertex_node, const TVV face_type, const TVVV &face_ind, const T &cost_function, const TT &penalty_val_N, const BVV &minimisation, TTMVV &M ) {}
 
 template<class T>
 struct Calcul_Vertex_Nodal_Matrix_M {
@@ -176,10 +176,10 @@ struct Calcul_Vertex_Nodal_Matrix_M {
     const Vec< Vec<unsigned> >* face_type;
     const Vec< Vec< Vec<unsigned> > >* face_ind;
     const unsigned* cost_function;
-    const T* pen_N;
+    const T* penalty_val_N;
     const Vec< Vec<bool> >* minimisation;
     template<class TE, class TM, class TF> void operator()( const TE &child_elem, const TM &m, const TF &f, Vec< Vec< Mat< T, Diag<> > > > &M ) const {
-        calc_vertex_nodal_matrix_M( child_elem, m, f, *connect_node_to_vertex_node, *face_type, *face_ind, *cost_function, *pen_N, *minimisation, M );
+        calc_vertex_nodal_matrix_M( child_elem, m, f, *connect_node_to_vertex_node, *face_type, *face_ind, *cost_function, *penalty_val_N, *minimisation, M );
     }
 };
 

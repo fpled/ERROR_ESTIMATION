@@ -15,9 +15,9 @@ template<class TM> typename TM::T prod_contr (const TM &M1, const TM &M2)
     unsigned dim = M1.nb_rows();
 
     typename TM::T res = 0.;
-    for(unsigned i=0; i<dim; ++i)
+    for (unsigned i=0; i<dim; ++i)
     {
-        for(unsigned j=0; j<dim; ++j)
+        for (unsigned j=0; j<dim; ++j)
         {
             res += M1(i,j) * M2(i,j);
         }
@@ -73,9 +73,9 @@ template<class TV> typename LMT::TypeReduction<LMT::Multiplies,TV>::T self_trace
 template<class TM> typename TM::T norm_inf_mat (const TM &M)
 {
     typename TM::T res = 0.;
-    for(unsigned i=0; i<M.nb_rows(); ++i)
+    for (unsigned i=0; i<M.nb_rows(); ++i)
     {
-        for(unsigned j=0; j<M.nb_cols(); ++j)
+        for (unsigned j=0; j<M.nb_cols(); ++j)
         {
             res = LMT::max(res, LMT::abs(M(i, j)));
         }
@@ -90,7 +90,7 @@ template<class TM> TM pow_mat_sym(const TM &M, const unsigned &p)
     ones.resize(M.nb_cols());
     ones.set(1.);
     LMT::Mat<typename TM::T> res = diag(ones);
-    for(unsigned k=0; k<p; ++k)
+    for (unsigned k=0; k<p; ++k)
     {
         res *= M;
     }
@@ -103,7 +103,7 @@ template<class TV> LMT::Mat<typename LMT::TypeReduction<LMT::Multiplies,TV>::T> 
     unsigned dim = V1.size();
 
     LMT::Mat<typename LMT::TypeReduction<LMT::Multiplies,TV>::T> res( dim );
-    for(unsigned i=0; i<dim; ++i)
+    for (unsigned i=0; i<dim; ++i)
     {
         for (unsigned j=0; j<dim; ++j)
         {

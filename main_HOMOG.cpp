@@ -32,14 +32,13 @@ int main( int argc, char **argv ) {
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "square_32"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circular_inclusions, circular_holes
+    static const string structure = "weight_sensor"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circular_inclusions, circular_holes
                                                      // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes
     static const string mesh_size = "fine"; // maillage pour les structures plate_hole (2D ou 3D), plate_crack, structure_crack, test_specimen, weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
-    static const string loading = "pre_sigma"; // chargement pour la structure spot_weld (3D) : pull, shear, peeling et pour la structure plate_crack (2D) : pull, shear
-                                          // chargement pour la structure square_... (2D) : pre_epsilon, pre_sigma
+    static const string loading = "pull"; // chargement pour la structure spot_weld (3D) : pull, shear, peeling et pour la structure plate_crack (2D) : pull, shear
     static const unsigned deg_p = 1; // degre de l'analyse elements finis : 1, 2, ...
     static const unsigned deg_k = 3; // degre supplementaire : 1, 2 , 3, ...
-    static const string boundary_condition_D = "penalisation"; // methode de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalisation
+    static const string boundary_condition_D = "lagrange"; // methode de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalty
     static const bool display_constraints = 1; // affichage des contraintes cinematiques
     
     /// Global discretization error
@@ -67,7 +66,7 @@ int main( int argc, char **argv ) {
                                              // 0 : norme matricielle sans coefficient de ponderation (matrice identite)
                                              // 1 : norme matricielle avec coeff de ponderation (en 1/mes(face)^2)
                                              // 2 : norme energetique
-    static const T pen_N = 1e6; // coefficient de penalisation pour la prise en compte des conditions aux limites de Neumann (en effort) (methode EESPT)
+    static const T penalty_val_N = 1e6; // coefficient de penalisation pour la prise en compte des conditions aux limites de Neumann (en effort) (methode EESPT)
     static const string solver = "LDL"; // solveur pour la resolution des problemes locaux avec blocage auto du noyau : CholMod (sym, def, pos), LDL (sym) // types de solveur sans blocage auto du noyau (-> ne marche pas!) : CholFactorize (sym, def, pos), LUFactorize, Inv, UMFPACK
     static const string solver_minimisation = "UMFPACK"; // solveur pour la resolution des problemes de minimisation : LDL (sym), UMFPACK, LUFactorize, Inv
     
@@ -233,68 +232,87 @@ int main( int argc, char **argv ) {
     
     /// Resolution du pb direct
     ///------------------------
+//    f.allocate_matrices();
+//    f.shift();
+//    f.assemble();
+//    f.update_variables();
+//    f.call_after_solve();
+
+////    cout << "residual =" << endl << endl;
+////    for (unsigned i=0;i<f.vectors[0].size();++i) {
+////        if ( i % 2== 0 )
+////            cout << "node " << i/2 << " :" << endl;
+////        cout << ( f.matrices(Number<0>()) * f.vectors[0] - f.sollicitation )[i] << endl;
+////    }
+////    cout << endl;
+////    cout << "K U =" << endl << endl;
+////    for (unsigned i=0;i<f.vectors[0].size();++i) {
+////        if ( i % 2== 0 )
+////            cout << "node " << i/2 << " :" << endl;
+////        cout << ( f.matrices(Number<0>()) * f.vectors[0] )[i] << endl;
+////    }
+////    cout << endl;
+////    cout << "F =" << endl << endl;
+////    for (unsigned i=0;i<f.vectors[0].size();++i) {
+////        if ( i % 2== 0 )
+////            cout << "node " << i/2 << " :" << endl;
+////        cout << f.sollicitation[i] << endl;
+////    }
+////    cout << endl;
+////    cout << "U =" << endl << endl;
+////    for (unsigned i=0;i<f.vectors[0].size();++i) {
+////        if ( i % 2== 0 )
+////            cout << "node " << i/2 << " :" << endl;
+////        cout << ( f.vectors[0] )[i] << endl;
+////    }
+////    cout << endl;
+////    cout << "K =" << endl << endl;
+////    for (unsigned i=0;i<f.vectors[0].size();++i) {
+////        if ( i % 2== 0 )
+////            cout << "node " << i/2 << " :" << endl;
+////        cout << f.matrices(Number<0>()).row(i) << endl;
+////    }
+////    cout << endl;
+
+//    Vec<T> U = f.vectors[0];
+
+//    if ( verif_eq )
+//        check_equilibrium( f, "direct" );
+
     TicToc t;
     t.start();
-
-    f.allocate_matrices();
-    f.shift();
-    f.assemble();
-    f.update_variables();
-    f.call_after_solve();
-
-//    cout << f.matrices(Number<0>()) << endl << endl;
-    cout << "residual =" << endl << endl;
-    for(unsigned i=0;i<f.vectors[0].size();++i) {
-        if ( i % 2== 0 )
-            cout << "node " << i/2 << " :" << endl;
-        cout << ( f.matrices(Number<0>()) * f.vectors[0] - f.sollicitation )[i] << endl;
-    }
-    cout << endl;
-    cout << "K U =" << endl << endl;
-    for(unsigned i=0;i<f.vectors[0].size();++i) {
-        if ( i % 2== 0 )
-            cout << "node " << i/2 << " :" << endl;
-        cout << ( f.matrices(Number<0>()) * f.vectors[0] )[i] << endl;
-    }
-    cout << endl;
-    cout << "F =" << endl << endl;
-    for(unsigned i=0;i<f.vectors[0].size();++i) {
-        if ( i % 2== 0 )
-            cout << "node " << i/2 << " :" << endl;
-        cout << f.sollicitation[i] << endl;
-    }
-    cout << endl;
-    cout << "U =" << endl << endl;
-    for(unsigned i=0;i<f.vectors[0].size();++i) {
-        if ( i % 2== 0 )
-            cout << "node " << i/2 << " :" << endl;
-        cout << ( f.vectors[0] )[i] << endl;
-    }
-    cout << endl;
-    cout << "K =" << endl << endl;
-    for(unsigned i=0;i<f.vectors[0].size();++i) {
-        if ( i % 2== 0 )
-            cout << "node " << i/2 << " :" << endl;
-        cout << f.matrices(Number<0>()).row(i) << endl;
-    }
-    cout << endl;
-
-    Vec<T> U = f.vectors[0];
-
     if ( want_iterative_solver == 0 )
         f.solve();
     else
         f.solve( iterative_criterium );
-
-    cout << "U - U =" << endl << endl;
-    for(unsigned i=0;i<f.vectors[0].size();++i) {
-        if ( i % 2== 0 )
-            cout << "node " << i/2 << " :" << endl;
-        cout << U[i] - ( f.vectors[0] )[i] << endl;
-    }
-
     t.stop();
     cout << "Temps de calcul du pb direct : " << t.res << endl << endl;
+
+//    cout << "residual =" << endl << endl;
+//    for (unsigned i=0;i<f.vectors[0].size();++i) {
+//        if ( i % 2== 0 )
+//            cout << "node " << i/2 << " :" << endl;
+//        cout << ( f.matrices(Number<0>()) * f.vectors[0] )[i] << " - " << f.sollicitation[i] << " = " << ( f.matrices(Number<0>()) * f.vectors[0] - f.sollicitation )[i] << endl;
+//        cout << ( f.matrices(Number<0>()) * U )[i] << " - " << f.sollicitation[i] << " = " << ( f.matrices(Number<0>()) * U - f.sollicitation )[i] << endl;
+//    }
+//    cout << endl;
+
+//    cout << "K.row(0) = " << f.matrices(Number<0>()).row(0) << endl;
+//    for (unsigned i=0;i<f.matrices(Number<0>()).row(0).size();++i) {
+//        if ( f.matrices(Number<0>()).row(0)[i] !=0 ) {
+//            cout << "ind = " << i << endl;
+//            cout << "val = " << f.matrices(Number<0>()).row(0)[i] << endl;
+//            cout << "U = " << U[i] << endl;
+//            cout << "vec = " << f.vectors[0][i] << endl;
+//        }
+//    }
+
+//    cout << "U - U =" << endl << endl;
+//    for (unsigned i=0;i<f.vectors[0].size();++i) {
+//        if ( i % 2== 0 )
+//            cout << "node " << i/2 << " :" << endl;
+//        cout << U[i] << " - " << ( f.vectors[0] )[i] << " = "<< U[i] - ( f.vectors[0] )[i] << endl;
+//    }
     
     /// Verification de l'equilibre du pb direct
     ///-----------------------------------------
@@ -341,7 +359,7 @@ int main( int argc, char **argv ) {
         /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe pb direct ///
         ///---------------------------------------------------------------------------------------------------------------///
         
-        calcul_global_error_estimation( f, m, "direct", method, cost_function, pen_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment, debug_geometry, debug_force_fluxes, debug_force_fluxes_enhancement, debug_criterium_enhancement, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
+        calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment, debug_geometry, debug_force_fluxes, debug_force_fluxes_enhancement, debug_criterium_enhancement, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
         
     }
     
@@ -489,7 +507,7 @@ int main( int argc, char **argv ) {
                 T theta_adjoint = 0.;
                 Vec<T> theta_adjoint_elem;
                 Vec< Vec<T> > dep_adjoint_hat;
-                calcul_global_error_estimation( f_adjoint, m_adjoint, "adjoint", method_adjoint, cost_function, pen_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta_adjoint, theta_adjoint_elem, dep_adjoint_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, false, false, want_local_enrichment, debug_geometry_adjoint, debug_force_fluxes_adjoint, debug_force_fluxes_enhancement_adjoint, debug_criterium_enhancement_adjoint, debug_error_estimate_adjoint, debug_local_effectivity_index_adjoint, debug_method_adjoint, debug_method_enhancement_adjoint );
+                calcul_global_error_estimation( f_adjoint, m_adjoint, "adjoint", method_adjoint, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta_adjoint, theta_adjoint_elem, dep_adjoint_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, false, false, want_local_enrichment, debug_geometry_adjoint, debug_force_fluxes_adjoint, debug_force_fluxes_enhancement_adjoint, debug_criterium_enhancement_adjoint, debug_error_estimate_adjoint, debug_local_effectivity_index_adjoint, debug_method_adjoint, debug_method_enhancement_adjoint );
                 
                 /// Construction de la correspondance entre maillages extraits et maillages initiaux direct/adjoint
                 ///------------------------------------------------------------------------------------------------
@@ -517,7 +535,7 @@ int main( int argc, char **argv ) {
                 /// Calcul ameliore des bornes d'erreur sur la quantite d'interet locale I ///
                 ///------------------------------------------------------------------------///
                 if ( want_local_improvement ) {
-                    calcul_enhanced_local_error_bounds( m, m_adjoint, f, f_adjoint, m_lambda_min, m_lambda_max, m_lambda_opt, m_adjoint_lambda_min, m_adjoint_lambda_opt, deg_p, method, method_adjoint, structure, loading, mesh_size, cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, deg_k, local_improvement, shape, k_min, k_max, k_opt, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, theta, theta_adjoint, theta_adjoint_elem, correspondance_elem_m_adjoint_to_elem_m, dep_hat, dep_adjoint_hat, I_h, I_hh, integration_k, integration_nb_points, debug_method_adjoint, debug_method_enhancement_adjoint, debug_geometry_adjoint, debug_error_estimate_adjoint, want_introduction_sigma_hat_m, want_solve_eig_local_improvement, use_mask_eig_local_improvement );
+                    calcul_enhanced_local_error_bounds( m, m_adjoint, f, f_adjoint, m_lambda_min, m_lambda_max, m_lambda_opt, m_adjoint_lambda_min, m_adjoint_lambda_opt, deg_p, method, method_adjoint, local_improvement, shape, k_min, k_max, k_opt, interest_quantity, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, theta, theta_adjoint, dep_hat, dep_adjoint_hat, I_h, I_hh, integration_k, integration_nb_points, debug_method_adjoint, debug_method_enhancement_adjoint, debug_error_estimate_adjoint, want_introduction_sigma_hat_m, want_solve_eig_local_improvement, use_mask_eig_local_improvement );
                 }
             }
         }

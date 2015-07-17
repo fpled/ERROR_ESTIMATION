@@ -16,9 +16,9 @@ template<class MatType, class VecType> void eigen_values_using_lapack(const MatT
     LMT::Vec<double> A_data;
     A_data.resize(dim*dim);
     unsigned A_cpt = 0;
-    for(unsigned j=0; j<dim; j++)
+    for (unsigned j=0; j<dim; j++)
     {
-        for(unsigned i=0; i<dim; i++)
+        for (unsigned i=0; i<dim; i++)
         {
             A_data[A_cpt++] = A(i, j);
         }
@@ -50,9 +50,9 @@ template<class MatType1, class VecType, class MatType2> void eigen_problem_using
     LMT::Vec<double> A_data;
     A_data.resize(dim*dim);
     unsigned A_cpt = 0;
-    for(unsigned j=0; j<dim; j++)
+    for (unsigned j=0; j<dim; j++)
     {
-        for(unsigned i=0; i<dim; i++)
+        for (unsigned i=0; i<dim; i++)
         {
             A_data[A_cpt++] = A(i, j);
         }
@@ -79,9 +79,9 @@ template<class MatType1, class VecType, class MatType2> void eigen_problem_using
 //     PRINT(V);
 
     unsigned P_cpt = 0;
-    for(unsigned j=0; j<dim; j++)
+    for (unsigned j=0; j<dim; j++)
     {
-        for(unsigned i=0; i<dim; i++)
+        for (unsigned i=0; i<dim; i++)
         {
             P(i, j) = A_data[P_cpt++];
         }
@@ -97,9 +97,9 @@ template<class MatType1, class MatType2, class VecType> void generalized_eigen_v
     LMT::Vec<double> A_data;
     A_data.resize(dim*dim);
     unsigned A_cpt = 0;
-    for(unsigned j=0; j<dim; j++)
+    for (unsigned j=0; j<dim; j++)
     {
-        for(unsigned i=0; i<dim; i++)
+        for (unsigned i=0; i<dim; i++)
         {
             A_data[A_cpt++] = A(i, j);
         }
@@ -110,9 +110,9 @@ template<class MatType1, class MatType2, class VecType> void generalized_eigen_v
     LMT::Vec<double> B_data;
     B_data.resize(dim*dim);
     unsigned B_cpt = 0;
-    for(unsigned j=0; j<dim; j++)
+    for (unsigned j=0; j<dim; j++)
     {
-        for(unsigned i=0; i<dim; i++)
+        for (unsigned i=0; i<dim; i++)
         {
             B_data[B_cpt++] = B(i, j);
         }
@@ -145,9 +145,9 @@ template<class MatType1, class MatType2, class VecType, class MatType3> void gen
     LMT::Vec<double> A_data;
     A_data.resize(dim*dim);
     unsigned A_cpt = 0;
-    for(unsigned j=0; j<dim; j++)
+    for (unsigned j=0; j<dim; j++)
     {
-        for(unsigned i=0; i<dim; i++)
+        for (unsigned i=0; i<dim; i++)
         {
             A_data[A_cpt++] = A(i, j);
         }
@@ -158,9 +158,9 @@ template<class MatType1, class MatType2, class VecType, class MatType3> void gen
     LMT::Vec<double> B_data;
     B_data.resize(dim*dim);
     unsigned B_cpt = 0;
-    for(unsigned j=0; j<dim; j++)
+    for (unsigned j=0; j<dim; j++)
     {
-        for(unsigned i=0; i<dim; i++)
+        for (unsigned i=0; i<dim; i++)
         {
             B_data[B_cpt++] = B(i, j);
         }
@@ -185,9 +185,9 @@ template<class MatType1, class MatType2, class VecType, class MatType3> void gen
 //     PRINT(V);
 
     unsigned P_cpt = 0;
-    for(unsigned j=0; j<dim; j++)
+    for (unsigned j=0; j<dim; j++)
     {
-        for(unsigned i=0; i<dim; i++)
+        for (unsigned i=0; i<dim; i++)
         {
             P(i, j) = A_data[P_cpt++];
         }

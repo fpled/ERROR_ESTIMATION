@@ -42,9 +42,9 @@ if not want_local_estimation
 #-------------------------------------------------------------
 type_stress_2D := "plane strain"
 
-# Choix de la methode de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalisation
-#-------------------------------------------------------------------------------------------------------------------------------------------
-boundary_condition := "penalisation"
+# Choix de la methode de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalty
+#--------------------------------------------------------------------------------------------------------------------------------------
+boundary_condition := "lagrange"
 
 # Choix de la base d'approximation : lagrange, hierarchical
 #----------------------------------------------------------
@@ -173,7 +173,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     def formulation( e )
 
         if boundary_condition == "lagrange"
-            assumed_symmetric_matrix = false
+            matrix_will_be_definite_positive = false
 
         pos := e.pos
         epsilon = grad_sym( dep.expr )

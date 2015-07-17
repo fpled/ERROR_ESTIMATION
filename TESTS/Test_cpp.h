@@ -48,7 +48,7 @@ struct Eta {
 //}
 
 
-//for(unsigned n=0;n<m.elem_list.size();++n) {
+//for (unsigned n=0;n<m.elem_list.size();++n) {
 //    Mat<T,Sym<dim> > epsilon_mat, epsilon_mat_new, sigma_mat, sigma_mat_new;
 //    //m.elem_list[n]->set_field( "epsilon", cos( 3.14159 * i / 7 ) );
 //    epsilon_mat  = m.elem_list[n]->get_field( "epsilon", StructForType<Mat<T,Sym<dim> > >() );

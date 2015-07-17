@@ -30,7 +30,7 @@ using namespace std;
 /// Calcul d'un estimateur d'erreur globale
 ///----------------------------------------
 template<class TF, class TM, class T>
-void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const string &method, const unsigned &cost_function, const T &pen_N, const string &solver, const string &solver_minimisation, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const string &geometric_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, T &theta, Vec<T> &theta_elem, Vec< Vec<T> > &dep_hat, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool verif_eq_force_fluxes = false, const T tol_eq_force_fluxes = 1e-6, const bool verif_solver = false, const T tol_solver = 1e-6, const bool verif_solver_enhancement = false, const T tol_solver_enhancement = 1e-6, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_solver_minimisation_enhancement = false, const T tol_solver_minimisation_enhancement = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const bool debug_geometry = false, const bool debug_force_fluxes = false, const bool debug_force_fluxes_enhancement = false, const bool debug_criterium_enhancement = false, const bool debug_error_estimate = false, const bool debug_local_effectivity_index = false, const bool debug_method = false, const bool debug_method_enhancement = false ) {
+void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const string &method, const unsigned &cost_function, const T &penalty_val_N, const string &solver, const string &solver_minimisation, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const string &geometric_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, T &theta, Vec<T> &theta_elem, Vec< Vec<T> > &dep_hat, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool verif_eq_force_fluxes = false, const T tol_eq_force_fluxes = 1e-6, const bool verif_solver = false, const T tol_solver = 1e-6, const bool verif_solver_enhancement = false, const T tol_solver_enhancement = 1e-6, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_solver_minimisation_enhancement = false, const T tol_solver_minimisation_enhancement = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const bool debug_geometry = false, const bool debug_force_fluxes = false, const bool debug_force_fluxes_enhancement = false, const bool debug_criterium_enhancement = false, const bool debug_error_estimate = false, const bool debug_local_effectivity_index = false, const bool debug_method = false, const bool debug_method_enhancement = false ) {
     
     ///-------------///
     /// Methode EET ///
@@ -250,7 +250,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             ///--------------------------------------------
             
             Vec< Vec< Vec<T> > > vec_force_fluxes_standard;
-            construct_standard_force_fluxes_EESPT( m, f, cost_function, enhancement, face_flag_enh, solver_minimisation, pen_N, pb, vec_force_fluxes_standard, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation,  debug_geometry, debug_force_fluxes, debug_method );
+            construct_standard_force_fluxes_EESPT( m, f, cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, pb, vec_force_fluxes_standard, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation,  debug_geometry, debug_force_fluxes, debug_method );
             
             /// Verification de l'equilibre des densites d'effort standard
             ///-----------------------------------------------------------
@@ -297,7 +297,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// Construction de la partie standard des densites d'effort
             ///---------------------------------------------------------
             
-            construct_standard_force_fluxes_EESPT( m, f, cost_function, enhancement, face_flag_enh, solver_minimisation, pen_N, pb, vec_force_fluxes, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, debug_geometry, debug_force_fluxes, debug_method );
+            construct_standard_force_fluxes_EESPT( m, f, cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, pb, vec_force_fluxes, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, debug_geometry, debug_force_fluxes, debug_method );
             
             /// Resolution des problemes locaux associes a la partie standard des densites d'effort avec procedure d'equilibrage
             ///-----------------------------------------------------------------------------------------------------------------

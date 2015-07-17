@@ -43,11 +43,11 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
     typedef typename TM::TNode::T T;
 
     if ( m.node_list.size() ) {
-        T pen;
+        T penalty_val;
         if ( boundary_condition_D == "lagrange" )
-            pen = 0;
-        else if ( boundary_condition_D == "penalisation" )
-            pen = 1e10;
+            penalty_val = 0;
+        else if ( boundary_condition_D == "penalty" )
+            penalty_val = 1e8;
 
         /// Dimension 2
         ///------------
@@ -57,7 +57,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
 //            for (unsigned i=0;i<m.node_list.size();++i) {
 //                if ( m.node_list[i].pos[0] < 1e-6 ) {
 //                    for (unsigned d=0;d<dim;++d) {
-//                        f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen ); // la fonction add_constraint() sert a fixer une contrainte a un noeud
+//                        f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val ); // la fonction add_constraint() sert a fixer une contrainte a un noeud
 //                    }
 //                }
 //            }
@@ -66,7 +66,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
 //            for (unsigned i=0;i<m.node_list.size();++i) {
 //                if ( m.node_list[i].pos[1] < 1e-6 ) {
 //                    for (unsigned d=0;d<dim;++d) {
-//                        f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen ); // la fonction add_constraint() sert a fixer une contrainte a un noeud
+//                        f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val ); // la fonction add_constraint() sert a fixer une contrainte a un noeud
 //                    }
 //                }
 //            }
@@ -75,13 +75,13 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
 //            for (unsigned i=0;i<m.node_list.size();++i) {
 //                if ( 0.5 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.5 + 1e-6 and 0.5 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.5 + 1e-6 ) {
 //                    for (unsigned d=0;d<dim;++d) {
-//                        f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+//                        f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
 //                    }
 //                }
 //            }
 //            for (unsigned i=0;i<m.node_list.size();++i) {
 //                if ( 0.5 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.5 + 1e-6 and m.node_list[i].pos[1] > 1. - 1e-6 ) {
-//                    f.add_constraint( "node["+to_string(i)+"].dep[0]", pen );
+//                    f.add_constraint( "node["+to_string(i)+"].dep[0]", penalty_val );
 //                }
 //            }
             /// blocage du noeud (0.5, 0) dans toutes les directions (x et y) , blocage du noeud (0.5, 1) dans la direction y
@@ -89,13 +89,13 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
 //            for (unsigned i=0;i<m.node_list.size();++i) {
 //                if ( 0.5 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.5 + 1e-6 and m.node_list[i].pos[1] < 1e-6 ) {
 //                    for (unsigned d=0;d<dim;++d) {
-//                        f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+//                        f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
 //                    }
 //                }
 //            }
 //            for (unsigned i=0;i<m.node_list.size();++i) {
 //                if ( 0.5 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.5 + 1e-6 and m.node_list[i].pos[1] > 1. - 1e-6 ) {
-//                    f.add_constraint( "node["+to_string(i)+"].dep[0]", pen );
+//                    f.add_constraint( "node["+to_string(i)+"].dep[0]", penalty_val );
 //                }
 //            }
             /// Plaque rectangulaire 2D en traction
@@ -106,7 +106,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 1e-6 ) {
                         for (unsigned d=0;d<dim;++d) {
-                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen ); // la fonction add_constraint() sert a fixer une contrainte a un noeud
+                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val ); // la fonction add_constraint() sert a fixer une contrainte a un noeud
                         }
                     }
                 }
@@ -117,10 +117,10 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
             else if ( structure == "plate_hole" ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 1e-6 ) {
-                        f.add_constraint( "node["+to_string(i)+"].dep[0]", pen );
+                        f.add_constraint( "node["+to_string(i)+"].dep[0]", penalty_val );
                     }
                     if ( m.node_list[i].pos[1] < 1e-6 ) {
-                        f.add_constraint( "node["+to_string(i)+"].dep[1]", pen );
+                        f.add_constraint( "node["+to_string(i)+"].dep[1]", penalty_val );
                     }
                 }
             }
@@ -135,11 +135,11 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                     for (unsigned i=0;i<m.node_list.size();++i) {
                         if ( -1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 1e-6 and m.node_list[i].pos[0] > 7. - 1e-6 ) {
                             for (unsigned d=0;d<dim;++d) {
-                                f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+                                f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
                             }
                             for (unsigned j=0;j<m.get_node_neighbours( i ).size();++j) {
                                 if ( m.get_node_neighbours( i )[ j ]->pos[0] < m.node_list[i].pos[0] and -1e-6 < m.get_node_neighbours( i )[ j ]->pos[1] and m.get_node_neighbours( i )[ j ]->pos[1] < 1e-6 ) {
-                                    f.add_constraint( "node["+to_string(m.get_node_neighbours( i )[ j ]->number)+"].dep[1]", pen );
+                                    f.add_constraint( "node["+to_string(m.get_node_neighbours( i )[ j ]->number)+"].dep[1]", penalty_val );
                                 }
                             }
                         }
@@ -149,7 +149,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                     for (unsigned i=0;i<m.node_list.size();++i) {
                         if ( m.node_list[i].pos[1] < -8. + 1e-6 ) {
                             for (unsigned d=0;d<dim;++d) {
-                                f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+                                f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
                             }
                         }
                     }
@@ -162,7 +162,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( pow(m.node_list[i].pos[0] - 66.5, 2) + pow(m.node_list[i].pos[1] - 69., 2) < pow(37.8 + 1e-6, 2) ) { // ( x - 66.5 )^2 + ( y - 69 )^2 = 37.8^2
                         for (unsigned d=0;d<dim;++d) {
-                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
                         }
                     }
                 }
@@ -177,32 +177,32 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( pb == "direct" ) {
                         if ( m.node_list[i].pos[0] < 1e-6 ) {
-                            f.add_constraint( "node["+to_string(i)+"].dep[1] + 1", pen );
+                            f.add_constraint( "node["+to_string(i)+"].dep[1] + 1", penalty_val );
                         }
                         if ( m.node_list[i].pos[0] > 3. - 1e-6 ) {
-                            f.add_constraint( "node["+to_string(i)+"].dep[1] - 1", pen );
+                            f.add_constraint( "node["+to_string(i)+"].dep[1] - 1", penalty_val );
                         }
                     }
                     else if (pb == "adjoint" ) {
                         if ( m.node_list[i].pos[0] < 1e-6 ) {
-                            f.add_constraint( "node["+to_string(i)+"].dep[1]", pen );
+                            f.add_constraint( "node["+to_string(i)+"].dep[1]", penalty_val );
                         }
                         if ( m.node_list[i].pos[0] > 3. - 1e-6 ) {
-                            f.add_constraint( "node["+to_string(i)+"].dep[1]", pen );
+                            f.add_constraint( "node["+to_string(i)+"].dep[1]", penalty_val );
                         }
                     }
 //                    if ( pow(m.node_list[i].pos[0] - 1.5, 2) + pow(m.node_list[i].pos[1] + 0.375, 2) < pow(0.625 + 1e-6, 2) ) { // ( x - 1.5 )^2 + ( y + 0.375 )^2 = 0.625^2
 //                        for (unsigned d=0;d<dim;++d) {
-//                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+//                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
 //                        }
 //                    }
 //                    if ( pow(m.node_list[i].pos[0] - 1.5, 2) + pow(m.node_list[i].pos[1] - 1.375, 2) < pow(0.625 + 1e-6, 2) ) { // ( x - 1.5 )^2 + ( y - 1.375 )^2 = 0.625^2
 //                        for (unsigned d=0;d<dim;++d) {
-//                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+//                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
 //                        }
 //                    }
                     if ( 1.5 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 1.5 + 1e-6 and 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) {
-                        f.add_constraint( "node["+to_string(i)+"].dep[0]", pen );
+                        f.add_constraint( "node["+to_string(i)+"].dep[0]", penalty_val );
                     }
                 }
             }
@@ -213,7 +213,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[1] < -1. + 1e-6 ) {
                         for (unsigned d=0;d<dim;++d) {
-                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
                         }
                     }
                 }
@@ -225,7 +225,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 1e-6 ) {
                         for (unsigned d=0;d<dim;++d) {
-                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
                         }
                     }
                 }
@@ -234,8 +234,8 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
             /// application du champ de deplacement u a tous les noeuds
             /// condition de periodicite aux noeuds situés en x = 0 et x = 1
             /// condition de periodicite aux noeuds situés en y = 0 et y = 1
-            /// blocage du noeud (0.25, 0.25) dans toutes les directions
-            ///-------------------------------------------------------------
+            /// blocage des noeuds (0.25, 0.25), (0.25, 0.75), (0.75, 0.25) et (0.75, 0.75) dans toutes les directions
+            ///-------------------------------------------------------------------------------------------------------
             else if ( structure.find("square") != string::npos ) {
                 size_t off = structure.rfind( "_" );
                 string str = structure.substr( off+1 );
@@ -279,7 +279,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                         for (unsigned j=0;j<m.node_list.size();++j) {
                             if ( m.node_list[j].pos[0] > 1 - 1e-6 and abs(m.node_list[j].pos[1] - m.node_list[i].pos[1]) < 1e-6 ) {
                                 for (unsigned d=0;d<dim;++d) {
-                                    f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"] - node["+to_string(j)+"].dep["+to_string(d)+"]", pen );
+                                    f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"] - node["+to_string(j)+"].dep["+to_string(d)+"]", penalty_val );
                                 }
                             }
                         }
@@ -288,14 +288,19 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                         for (unsigned j=0;j<m.node_list.size();++j) {
                             if ( m.node_list[j].pos[1] > 1 - 1e-6 and abs(m.node_list[j].pos[0] - m.node_list[i].pos[0]) < 1e-6 ) {
                                 for (unsigned d=0;d<dim;++d) {
-                                    f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"] - node["+to_string(j)+"].dep["+to_string(d)+"]", pen );
+                                    f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"] - node["+to_string(j)+"].dep["+to_string(d)+"]", penalty_val );
                                 }
                             }
                         }
                     }
-                    else if ( 0.25 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.25 + 1e-6 and 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) {
+//                    else if ( 0.25 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.25 + 1e-6 and 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) {
+//                        for (unsigned d=0;d<dim;++d) {
+//                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
+//                        }
+//                    }
+                    else if ( ( 0.25 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.25 + 1e-6 and ( ( 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) or ( 0.75 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.75 + 1e-6 ) ) ) or ( 0.75 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.75 + 1e-6 and ( ( 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) or ( 0.75 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.75 + 1e-6 ) ) ) ) {
                         for (unsigned d=0;d<dim;++d) {
-                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
                         }
                     }
                 }
@@ -419,54 +424,45 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                 /// pre-deformation ou pre-contrainte appliquee sur tous les elements
                 ///------------------------------------------------------------------
                 else if ( structure.find("square") != string::npos ) {
-                    if ( loading == "pre_epsilon" ) {
-                        Vec<T,unsigned(dim*(dim+1)/2) > pre_eps;
-                        pre_eps.set( 1, -1./2 );
-                        for(unsigned n=0;n<m.elem_list.size();++n)
-                            m.elem_list[n]->set_field( "pre_epsilon", pre_eps );
+                    size_t off = structure.rfind( "_" );
+                    string str = structure.substr( off+1 );
+                    istringstream buffer(str);
+                    int N;
+                    buffer >> N;
+
+                    string filename = "DATA_HDF5/square-" + str + "x" + str + ".hdf5";
+                    bool clear_old = false;
+                    bool read_only = true;
+                    Hdf hdf(filename, clear_old, read_only);
+
+                    Vec<int> s;
+                    hdf.read_size( "/tau", s );
+
+                    Tens3<T> tau;
+                    tau.resize( s );
+                    hdf.read_data( "/tau", tau.ptr(), s, s );
+
+                    Vec<T,unsigned(dim*(dim+1)/2) > pre_sig, pre_eps;
+                    pre_eps.set( 1, -1./2 );
+                    for (unsigned n=0;n<m.elem_list.size();++n) {
+                        int i = int(center( *m.elem_list[n] )[0]*N-1./2);
+                        int j = int(center( *m.elem_list[n] )[1]*N-1./2);
+                        pre_sig[ 0 ] = -tau( 0, j, i );
+                        pre_sig[ 1 ] = -tau( 2, j, i )/sqrt(2.);
+                        pre_sig[ 2 ] = -tau( 1, j, i );
+                        m.elem_list[n]->set_field( "pre_sigma", pre_sig );
+                        m.elem_list[n]->set_field( "pre_epsilon", pre_eps );
                     }
-                    else if ( loading == "pre_sigma" ) {
-                        size_t off = structure.rfind( "_" );
-                        string str = structure.substr( off+1 );
-                        istringstream buffer(str);
-                        int N;
-                        buffer >> N;
 
-                        string filename = "DATA_HDF5/square-" + str + "x" + str + ".hdf5";
-                        bool clear_old = false;
-                        bool read_only = true;
-                        Hdf hdf(filename, clear_old, read_only);
-
-                        Vec<int> s;
-                        hdf.read_size( "/tau", s );
-
-                        Tens3<T> tau;
-                        tau.resize( s );
-                        hdf.read_data( "/tau", tau.ptr(), s, s );
-
-                        Vec<T,unsigned(dim*(dim+1)/2) > pre_sig, pre_eps;
-                        pre_eps.set( 1, -1./2 );
-                        for(unsigned n=0;n<m.elem_list.size();++n) {
-                            int i = int(center( *m.elem_list[n] )[0]*N-1./2);
-                            int j = int(center( *m.elem_list[n] )[1]*N-1./2);
-                            pre_sig[ 0 ] = -tau( 0, j, i );
-                            pre_sig[ 1 ] = -tau( 2, j, i )/sqrt(2.);
-                            pre_sig[ 2 ] = -tau( 1, j, i );
-                            m.elem_list[n]->set_field( "pre_sigma", pre_sig );
-                            m.elem_list[n]->set_field( "pre_epsilon", pre_eps );
-                        }
-
-//                        apply( m.elem_list, Set_Field_f_surf(), m );
-
-//                        for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
-//                            if ( m.sub_mesh(Number<1>()).get_parents_of_EA( m.sub_mesh(Number<1>()).elem_list[i] ).size() == 1 ) {
-//                                unsigned n = m.sub_mesh(Number<1>()).get_parents_of_EA( m.sub_mesh(Number<1>()).elem_list[i] )[0]->number;
-//                                Mat<T,Sym<dim> > pre_sig = m.elem_list[n]->get_field( "pre_sigma", StructForType<Mat<T,Sym<dim> > >() );
-//                                Vec<T,dim> force_surf = pre_sig * m.sub_mesh(Number<1>()).elem_list[i]->sample_normal_virtual() * -1.;
-//                                m.sub_mesh(Number<1>()).elem_list[i]->set_field( "f_surf", force_surf );
-//                            }
+//                    for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
+//                        if ( m.sub_mesh(Number<1>()).get_parents_of_EA( m.sub_mesh(Number<1>()).elem_list[i] ).size() == 1 ) {
+//                            unsigned n = m.sub_mesh(Number<1>()).get_parents_of_EA( m.sub_mesh(Number<1>()).elem_list[i] )[0]->number;
+//                            Mat<T,Sym<dim> > pre_sig = m.elem_list[n]->get_field( "pre_sigma", StructForType<Mat<T,Sym<dim> > >() );
+//                            Vec<T,dim> force_surf = pre_sig * m.sub_mesh(Number<1>()).elem_list[i]->sample_normal_virtual() * -1.;
+//                            m.sub_mesh(Number<1>()).elem_list[i]->set_field( "f_surf", force_surf );
 //                        }
-                    }
+//                    }
+//                    apply( m.elem_list, Set_Field_f_surf(), m );
                 }
             }
         }
@@ -478,7 +474,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
 //            for (unsigned i=0;i<m.node_list.size();++i) {
 //                if ( m.node_list[i].pos[0] < 1e-6 ) {
 //                    for (unsigned d=0;d<dim;++d) {
-//                        f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen ); // la fonction add_constraint() sert a fixer une contrainte a un noeud
+//                        f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val ); // la fonction add_constraint() sert a fixer une contrainte a un noeud
 //                    }
 //                }
 //            }
@@ -486,18 +482,18 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
             ///--------------------------------------------------------------------------------------------------------------------------------------------------------------
 //            for (unsigned i=0;i<m.node_list.size();++i) {
 //                if ( m.node_list[i].pos[0] < 1e-6 ) {
-//                    f.add_constraint( "node["+to_string(i)+"].dep[0]", pen );
+//                    f.add_constraint( "node["+to_string(i)+"].dep[0]", penalty_val );
 //                }
 //            }
 //            for (unsigned i=0;i<m.node_list.size();++i) {
 //                if ( m.node_list[i].pos[0] < 1e-6 and m.node_list[i].pos[1] < 1e-6 and m.node_list[i].pos[2] < 1e-6 ) {
-//                    f.add_constraint( "node["+to_string(i)+"].dep[1]", pen );
-//                    f.add_constraint( "node["+to_string(i)+"].dep[2]", pen );
+//                    f.add_constraint( "node["+to_string(i)+"].dep[1]", penalty_val );
+//                    f.add_constraint( "node["+to_string(i)+"].dep[2]", penalty_val );
 //                }
 //            }
 //            for (unsigned i=0;i<m.node_list.size();++i) {
 //                if ( m.node_list[i].pos[0] < 1e-6 and m.node_list[i].pos[1] < 1e-6 and m.node_list[i].pos[2] > 1-1e-6 ) {
-//                    f.add_constraint( "node["+to_string(i)+"].dep[1]", pen );
+//                    f.add_constraint( "node["+to_string(i)+"].dep[1]", penalty_val );
 //                }
 //            }
             /// Barre rectangulaire en traction 3D
@@ -506,11 +502,11 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
             if ( structure == "beam_traction" ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[2] < 1e-6 ) {
-                        f.add_constraint( "node["+to_string(i)+"].dep[2]", pen );
+                        f.add_constraint( "node["+to_string(i)+"].dep[2]", penalty_val );
                         if ( m.node_list[i].pos[1] < 1e-6 ) {
-                            f.add_constraint( "node["+to_string(i)+"].dep[1]", pen );
+                            f.add_constraint( "node["+to_string(i)+"].dep[1]", penalty_val );
                             if ( m.node_list[i].pos[0] < 1e-6 ) {
-                                f.add_constraint( "node["+to_string(i)+"].dep[0]", pen );
+                                f.add_constraint( "node["+to_string(i)+"].dep[0]", penalty_val );
                             }
                         }
                     }
@@ -524,7 +520,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 1e-6 ) {
                         for (unsigned d=0;d<dim;++d) {
-                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
                         }
                     }
                 }
@@ -535,13 +531,13 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
             else if ( structure == "beam_hole" ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 1e-6 ) {
-                        f.add_constraint( "node["+to_string(i)+"].dep[0]", pen );
+                        f.add_constraint( "node["+to_string(i)+"].dep[0]", penalty_val );
                     }
                     if ( m.node_list[i].pos[1] < 1e-6 ) {
-                        f.add_constraint( "node["+to_string(i)+"].dep[1]", pen );
+                        f.add_constraint( "node["+to_string(i)+"].dep[1]", penalty_val );
                     }
                     if ( m.node_list[i].pos[2] < 1e-6 ) {
-                        f.add_constraint( "node["+to_string(i)+"].dep[2]", pen );
+                        f.add_constraint( "node["+to_string(i)+"].dep[2]", penalty_val );
                     }
                 }
             }
@@ -551,13 +547,13 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
             else if ( structure == "plate_hole" ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 1e-6 ) {
-                        f.add_constraint( "node["+to_string(i)+"].dep[0]", pen );
+                        f.add_constraint( "node["+to_string(i)+"].dep[0]", penalty_val );
                     }
                     if ( m.node_list[i].pos[1] < 1e-6 ) {
-                        f.add_constraint( "node["+to_string(i)+"].dep[1]", pen );
+                        f.add_constraint( "node["+to_string(i)+"].dep[1]", penalty_val );
                     }
                     if ( m.node_list[i].pos[2] < 1e-6 ) {
-                        f.add_constraint( "node["+to_string(i)+"].dep[2]", pen );
+                        f.add_constraint( "node["+to_string(i)+"].dep[2]", penalty_val );
                     }
                 }
             }
@@ -569,12 +565,12 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                 for (unsigned i=0;i<m.node_list.size();++i) {
 //                    if ( m.node_list[i].pos[0] > -123.1 and m.node_list[i].pos[0] < -122.9 and m.node_list[i].pos[2] > -81.1 and m.node_list[i].pos[2] < 81.1 ) {
 //                        for (unsigned d=0;d<dim;++d) {
-//                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+//                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
 //                        }
 //                    }
                     if ( m.node_list[i].pos[2] > -70.1 and m.node_list[i].pos[2] < 70.1 and m.node_list[i].pos[0] < -124 ) {
                         for (unsigned d=0;d<dim;++d) {
-                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
                         }
                     }
                 }
@@ -587,11 +583,11 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 0.433 + 1e-6 ) {
                         for (unsigned d=0;d<dim;++d) {
-                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
                         }
                     }
                     if ( m.node_list[i].pos[2] < 1e-6 or m.node_list[i].pos[2] > 0.05 - 1e-6 ) {
-                        f.add_constraint( "node["+to_string(i)+"].dep[2]", pen );
+                        f.add_constraint( "node["+to_string(i)+"].dep[2]", penalty_val );
                     }
                 }
             }
@@ -604,7 +600,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                     for (unsigned i=0;i<m.node_list.size();++i) {
                         if ( m.node_list[i].pos[1] < -6.3 + 1e-6 ) {
                             for (unsigned d=0;d<dim;++d) {
-                                f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+                                f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
                             }
                         }
                     }
@@ -613,7 +609,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                     for (unsigned i=0;i<m.node_list.size();++i) {
                         if ( m.node_list[i].pos[0] > 9. - 1e-6 ) {
                             for (unsigned d=0;d<dim;++d) {
-                                f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+                                f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
                             }
                         }
                     }
@@ -625,13 +621,13 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
             else if ( structure == "reactor_head" ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 1e-6 ) {
-                        f.add_constraint( "node["+to_string(i)+"].dep[0]", pen );
+                        f.add_constraint( "node["+to_string(i)+"].dep[0]", penalty_val );
                     }
                     if ( m.node_list[i].pos[2] < 1e-6 ) {
-                        f.add_constraint( "node["+to_string(i)+"].dep[2]", pen );
+                        f.add_constraint( "node["+to_string(i)+"].dep[2]", penalty_val );
                     }
                     if ( m.node_list[i].pos[1] < 301. + 1e-6 ) {
-                        f.add_constraint( "node["+to_string(i)+"].dep[1]", pen );
+                        f.add_constraint( "node["+to_string(i)+"].dep[1]", penalty_val );
                     }
                 }
             }
@@ -644,14 +640,14 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( ( m.node_list[i].pos[2] == 0 or m.node_list[i].pos[2] == 50 ) and ( not ( m.node_list[i].pos[0] > 16 and m.node_list[i].pos[1] < 16 ) ) ) {
                         for (unsigned d=0;d<dim;++d) {
-                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
                         }
                     }
                     if ( ( m.node_list[i].pos[2] == 0 or m.node_list[i].pos[2] == 50 ) and ( m.node_list[i].pos[0] > 16 and m.node_list[i].pos[1] < 16 ) ) {
                         for (unsigned d=0;d<2;++d) {
-                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
                         }
-                        f.add_constraint( "node["+to_string(i)+"].dep[2] - 0.2", pen );
+                        f.add_constraint( "node["+to_string(i)+"].dep[2] - 0.2", penalty_val );
                     }
                 }
             }
@@ -661,13 +657,13 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
             else if ( structure == "pipe" ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] > -1e-6 ) {
-                        f.add_constraint( "node["+to_string(i)+"].dep[0]", pen );
+                        f.add_constraint( "node["+to_string(i)+"].dep[0]", penalty_val );
                     }
                     if ( m.node_list[i].pos[1] > 0.528 - 1e-6 ) {
-                        f.add_constraint( "node["+to_string(i)+"].dep[1]", pen );
+                        f.add_constraint( "node["+to_string(i)+"].dep[1]", penalty_val );
                     }
                     if ( m.node_list[i].pos[2] > 0.229 - 1e-6 ) {
-                        f.add_constraint( "node["+to_string(i)+"].dep[2]", pen );
+                        f.add_constraint( "node["+to_string(i)+"].dep[2]", penalty_val );
                     }
                 }
             }
@@ -678,7 +674,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( pow( m.node_list[i].pos[1], 2 ) + pow( m.node_list[i].pos[2], 2 ) > pow( 0.04675, 2 ) - 1e-6 and m.node_list[i].pos[0] > 0.0675 - 1e-6 ) {
                         for (unsigned d=0;d<dim;++d) {
-                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
                         }
                     }
                 }
@@ -690,7 +686,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 1e-6 ) {
                         for (unsigned d=0;d<dim;++d) {
-                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", pen );
+                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
                         }
                     }
                 }

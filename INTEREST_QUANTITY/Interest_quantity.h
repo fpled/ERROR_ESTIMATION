@@ -55,7 +55,7 @@ struct Construct_Extractor_Mean_Sigma {
         typedef typename TE::T T;
         for (unsigned n=0;n<elem_list_interest_quantity.size();++n) {
             Vec<Vec<T,TE::dim>, TE::nb_nodes > pos_nodes;
-            for(unsigned i=0;i<(m.elem_list[ elem_list_interest_quantity[ n ] ]->nb_nodes_virtual());++i)
+            for (unsigned i=0;i<(m.elem_list[ elem_list_interest_quantity[ n ] ]->nb_nodes_virtual());++i)
                 pos_nodes[i] = m.elem_list[ elem_list_interest_quantity[ n ] ]->node_virtual(i)->pos;
             if ( is_inside_linear( typename TE::NE(), pos_nodes, center( elem_adjoint ) ) ) {
                 Vec<T,unsigned(TE::dim*(TE::dim+1)/2) > extractor = m.elem_list[ elem_list_interest_quantity[ n ] ]->get_field( "pre_epsilon", StructForType<Vec<T,unsigned(TE::dim*(TE::dim+1)/2)> >() );
@@ -74,7 +74,7 @@ struct Construct_Extractor_Mean_Epsilon {
         typedef typename TE::T T;
         for (unsigned n=0;n<elem_list_interest_quantity.size();++n) {
             Vec<Vec<T,TE::dim>, TE::nb_nodes > pos_nodes;
-            for(unsigned i=0;i<(m.elem_list[ elem_list_interest_quantity[ n ] ]->nb_nodes_virtual());++i)
+            for (unsigned i=0;i<(m.elem_list[ elem_list_interest_quantity[ n ] ]->nb_nodes_virtual());++i)
                 pos_nodes[i] = m.elem_list[ elem_list_interest_quantity[ n ] ]->node_virtual(i)->pos;
             if ( is_inside_linear( typename TE::NE(), pos_nodes, center( elem_adjoint ) ) ) {
                 Vec<T,unsigned(TE::dim*(TE::dim+1)/2) > extractor = m.elem_list[ elem_list_interest_quantity[ n ] ]->get_field( "pre_sigma", StructForType<Vec<T,unsigned(TE::dim*(TE::dim+1)/2)> >() );
@@ -102,7 +102,7 @@ struct Construct_Extractor_SIF {
         typedef typename TE::T T;
         for (unsigned n=0;n<m_crown.elem_list.size();++n) {
             Vec<Vec<T,TE::dim>, TE::nb_nodes > pos_nodes;
-            for(unsigned i=0;i<(m_crown.elem_list[ n ]->nb_nodes_virtual());++i)
+            for (unsigned i=0;i<(m_crown.elem_list[ n ]->nb_nodes_virtual());++i)
                 pos_nodes[i] = m_crown.elem_list[ n ]->node_virtual(i)->pos;
             if ( is_inside_linear( typename TE::NE(), pos_nodes, center( elem_adjoint ) ) ) {
                 Vec<T,unsigned(TE::dim*(TE::dim+1)/2) > extractor_pre_sigma = m_crown.elem_list[ n ]->get_field( "pre_sigma", StructForType<Vec<T,unsigned(TE::dim*(TE::dim+1)/2)> >() );
@@ -185,7 +185,7 @@ struct Calcul_Interest_Quantity_Pointwise_Dep_Sigma_Epsilon {
     const Pvec* pos_interest_quantity;
     template<class TE, class TM, class TF, class T> void operator()( const TE &elem, const TM &m, const TF &f, T &I ) const {
         Vec<Vec<T,TE::dim>, TE::nb_nodes > pos_nodes;
-        for(unsigned i=0;i<(m.elem_list[ elem.number ]->nb_nodes_virtual());++i)
+        for (unsigned i=0;i<(m.elem_list[ elem.number ]->nb_nodes_virtual());++i)
             pos_nodes[i] = m.elem_list[ elem.number ]->node_virtual(i)->pos;
         if ( is_inside_linear( typename TE::NE(), pos_nodes, *pos_interest_quantity ) ) {
             Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
@@ -324,14 +324,14 @@ struct Calcul_Correction_Interest_Quantity_w_sigma_hat_m {
 /// Construction du centre et de la taille du domaine Omega_lambda selon la forme et la quantite d'interet
 ///-------------------------------------------------------------------------------------------------------
 template<class TM, class T, class Pvec>
-void construct_center_length_domain( TM &m, const unsigned &deg_p, const string &shape, const string &interest_quantity, const Vec<unsigned> &elem_list, const unsigned &node, const Pvec &pos_crack_tip, const T &radius_Re, Pvec &domain_center, Vec<T> &domain_length ) {
+void construct_center_length_domain( TM &m, const unsigned &deg_p, const string &shape, const string &interest_quantity, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list, const unsigned &node, const Pvec &pos, const Pvec &pos_crack_tip, const T &radius_Re, Pvec &domain_center, Vec<T> &domain_length ) {
     
     static const unsigned dim = TM::dim;
     
     m.update_node_neighbours();
     
     if (deg_p == 1) {
-        if ( shape == "circle" or shape == "half_circle" or shape == "circle_crack" or shape == "circle_crack_45" or shape == "circle_crack_30" or shape == "circle_crack_15" )
+        if ( shape.find("circle") != string::npos or shape.find("sphere") != string::npos )
             domain_length.resize( 1 );
         else if ( shape == "square" or shape == "rectangle" or shape == "cube" or shape == "cuboid" )
             domain_length.resize( dim );
@@ -339,7 +339,7 @@ void construct_center_length_domain( TM &m, const unsigned &deg_p, const string 
             cerr << "forme " << shape << " non implementee pour le calcul de la constante dans l'amelioration..." << endl << endl;
         domain_length.set( 0. );
         T domain_size = 0.;
-        if ( interest_quantity == "mean_sigma" or interest_quantity == "mean_epsilon" ) {
+        if ( interest_quantity.find("mean") != string::npos ) {
             /// Construction du vecteur de vecteurs circum_center et du vecteur circum_radius
             /// circum_center[ n ] : position du centre du cercle/sphere circonscrit au n ieme element de la liste elem_list (elem_list[ n ])
             /// circum_radius[ n ] : rayon du cercle/sphere circonscrit au n ieme element de la liste elem_list (elem_list[ n ])
@@ -377,34 +377,38 @@ void construct_center_length_domain( TM &m, const unsigned &deg_p, const string 
             for (unsigned d=0;d<dim;++d) {
                 Vec<T> pos_circum_centers;
                 pos_circum_centers.reserve( elem_list.size() );
-                for (unsigned n=0;n<elem_list.size();++n) {
+                for (unsigned n=0;n<elem_list.size();++n)
                     pos_circum_centers.push_back( circum_center[ n ][ d ] );
-                }
                 domain_center[ d ] = mean( pos_circum_centers );
             }
-            for (unsigned n=0;n<elem_list.size();++n) {
+            for (unsigned n=0;n<elem_list.size();++n)
                 domain_size = max( domain_size, length( circum_center[ n ] - domain_center ) + circum_radius[ n ] );
-            }
-            
         }
-        else if ( interest_quantity == "pointwise_dep" or interest_quantity == "pointwise_sigma" or interest_quantity == "pointwise_epsilon" ) {
-            for (unsigned d=0;d<dim;++d) {
-                domain_center[ d ] = m.node_list[ node ].pos[ d ];
+        else if ( interest_quantity.find("pointwise") != string::npos ) {
+            if ( pointwise_interest_quantity == "node" ) {
+                domain_center = m.node_list[ node ].pos;
+                for (unsigned i=0;i<m.get_node_neighbours( node ).size();++i)
+                    domain_size = max( domain_size, length( m.get_node_neighbours( node )[ i ]->pos - domain_center ) );
             }
-            for (unsigned i=0;i<m.get_node_neighbours( node ).size();++i) {
-                domain_size = max( domain_size, length( m.get_node_neighbours( node )[ i ]->pos - domain_center ) );
+            else if ( pointwise_interest_quantity == "pos" ) {
+                domain_center = pos;
+                Vec<unsigned> elem_list_pos;
+                apply( m.elem_list, Construct_Elem_List_Pos(), pos, elem_list_pos );
+                for (unsigned n=0;n<elem_list_pos.size();++n) {
+                    for (unsigned i=0;i<(m.elem_list[ elem_list_pos[ n ] ]->nb_nodes_virtual());++i)
+                        domain_size = max( domain_size, length( m.elem_list[ elem_list_pos[ n ] ]->node_virtual(i)->pos - domain_center ) );
+                }
             }
         }
         else if ( interest_quantity == "SIF" or interest_quantity == "stress_intensity_factor" ) {
             domain_center = pos_crack_tip;
             domain_size = radius_Re;
         }
-        if ( shape == "circle" or shape == "half_circle" or shape == "circle_crack" or shape == "sphere" )
+        if ( shape.find("circle") != string::npos or shape.find("sphere") != string::npos )
             domain_length[ 0 ] = domain_size;
         else if ( shape == "square" or shape == "rectangle" or shape == "cube" or shape == "cuboid" ) {
-            for (unsigned d=0;d<dim;++d) {
+            for (unsigned d=0;d<dim;++d)
                 domain_length[ d ] = domain_size;
-            }
         }
     }
 }
