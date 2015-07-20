@@ -88,15 +88,12 @@ if integration_type == "gauss_num"
 #-------------------------------
 class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     dep     := Variable[[dim]]( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="m", unknown=true, tex_name = "U" )
-    dep_tot := Variable[[dim]]( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="m", tex_name = "U_{\\text{tot}}" )
     f_nodal := Variable[[dim]]( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="N/m", tex_name = "F_n" )
     f_surf  := Variable[[dim]]( interpolation="skin_elementary", default_value=0, unit="N/m^2", tex_name = "F_s" )
     f_vol   := Variable[[dim]]( interpolation="global", default_value=0, unit="N/m^3", tex_name = "F_v" )
     density := Variable( interpolation="global", default_value=1, unit="kg/m^3", tex_name = "\\rho" )
     epsilon := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="1", tex_name = "\\epsilon" )
-    epsilon_tot := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="1", tex_name = "\\epsilon_{\\text{tot}}" )
     sigma   := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma" )
-    sigma_tot   := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma_{\\text{tot}}" )
     sigma_von_mises   := Variable( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma_{\\text{Von Mises}}" )
     #young   := Variable( interpolation="global", default_value=1, unit="N/m^2", tex_name = "E" )
     #poisson := Variable( interpolation="global", default_value=0.3, unit="1", tex_name = "\\nu" )
@@ -109,9 +106,6 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     sigma_hat_EET   := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "{\hat{\\sigma}}_{\\text{EET}}" )
     sigma_hat_SPET  := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "{\\hat{\\sigma}}_{\\text{SPET}}" )
     sigma_hat_EESPT := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "{\\hat{\\sigma}}_{\\text{EESPT}}" )
-    sigma_hat_tot_EET   := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "{\\hat{\\sigma}}^{\\text{tot}}_{\\text{EET}}" )
-    sigma_hat_tot_SPET  := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "{\\hat{\\sigma}}^{\\text{tot}}_{\\text{SPET}}" )
-    sigma_hat_tot_EESPT := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "{\\hat{\\sigma}}^{\\text{tot}}_{\\text{EESPT}}" )
     ecre_EET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "{e_{\\text{cre}}}_{\\text{EET}}" )
     ecre_elem_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{{e_{\\text{cre}}}^{\\text{elem}}_{\\text{EET}}}^2" )
     ecre_EESPT := Variable( interpolation="global", default_value=0, unit="1", tex_name = "{e_{\\text{cre}}}_{\\text{EESPT}}" )
@@ -134,6 +128,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     eff_index_elem_SPET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "\\eta^{\\text{elem}}_{\\text{SPET}}" )
     eff_index_EESPT := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\eta_{\\text{EESPT}}" )
     eff_index_elem_EESPT := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "\\eta^{\\text{elem}}_{\\text{EESPT}}" )
+
     enhancement_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "enhancement_{\\text{EET}}" )
     enhancement_EESPT := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "enhancement_{\\text{EESPT}}" )
 
@@ -164,6 +159,13 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     phi_elem_handbook_zone_1 := Variable( interpolation="elementary", default_value=0, unit="", tex_name = "\\phi_{\\text{elem}}^{\\text{handbook zone 1}}" )
     phi_elem_handbook_zone_2 := Variable( interpolation="elementary", default_value=0, unit="", tex_name = "\\phi_{\\text{xelem}}^{\\text{handbook zone 2}}" )
     phi_surf_handbook_zone_12 := Variable( interpolation="skin_elementary", default_value=0, unit="", tex_name = "\\phi_{\\text{surf}}^{\\text{handbook zone 12}}" )
+
+    dep_tot := Variable[[dim]]( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="m", tex_name = "U_{\\text{tot}}" )
+    epsilon_tot := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="1", tex_name = "\\epsilon_{\\text{tot}}" )
+    sigma_tot   := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma_{\\text{tot}}" )
+    sigma_hat_tot_EET   := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "{\\hat{\\sigma}}^{\\text{tot}}_{\\text{EET}}" )
+    sigma_hat_tot_SPET  := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "{\\hat{\\sigma}}^{\\text{tot}}_{\\text{SPET}}" )
+    sigma_hat_tot_EESPT := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "{\\hat{\\sigma}}^{\\text{tot}}_{\\text{EESPT}}" )
 
     is_on_skin := Variable( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="", tex_name = "is on skin" )
     normal := Variable[[dim]]( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="1", tex_name = "normal" )
@@ -216,7 +218,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
             epsilon_handbook = grad_sym( dep_handbook_ )
             sigma_handbook = hooke_iso( young.expr, poisson.expr, dim, type_stress_2D ) : epsilon_handbook.expr
 
-            dep_handbook_PUM = dep_handbook_PUM_function( e, dep_handbook_, phi_nodal_handbook.expr, force_fluxes_base )
+            dep_handbook_PUM = dep_handbook_PUM_function( e, dep_handbook_, phi_nodal_handbook.expr, FE_base )
             epsilon_handbook_PUM = grad_sym( dep_handbook_PUM.expr )
             sigma_handbook_PUM = hooke_iso( young.expr, poisson.expr, dim, type_stress_2D ) : epsilon_handbook_PUM.expr
             sigma_handbook_PUM_zone_2 = sigma_handbook_PUM.expr * phi_elem_handbook_zone_2.expr
@@ -227,7 +229,6 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
                 id := symbol( "(f.m->get_children_of( elem, Number<1>())[ $num_child ] == &skin_elem ? 1 : 0)" )
                 f_surf_handbook += sigma_handbook.expr * pc->normal * id
 
-        dep_tot = dep.expr + dep_handbook.expr * phi_nodal_handbook.expr
         epsilon_tot = epsilon.expr + epsilon_handbook_PUM.expr
         sigma_tot = sigma.expr + sigma_handbook_PUM.expr
 

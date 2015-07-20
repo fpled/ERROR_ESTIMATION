@@ -76,10 +76,10 @@ def dep_handbook_function( e, B, la, mu )
 
 # Methode qui permet de calculer la fonction d'enrichissement (Green) dep_handbook_PUM a partir du vecteur dep_handbook
 #----------------------------------------------------------------------------------------------------------------------
-def dep_handbook_PUM_function( e, u_handbook, phi_nodal_handbook, force_fluxes_base )
+def dep_handbook_PUM_function( e, u_handbook, phi_nodal_handbook, base )
     u_handbook_PUM := Vec[ Op, e.dim ]()
     for n in 0 .. e.nb_nodes
-        phi_n := e.get_shape_functions( force_fluxes_base )[ n ]
+        phi_n := e.get_shape_functions( base )[ n ]
         u_handbook_PUM += ( phi_nodal_handbook ).subs( e.var_inter, e.points[ n ] ) * phi_n * u_handbook
     return u_handbook_PUM
 
