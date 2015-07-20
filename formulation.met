@@ -24,9 +24,9 @@ want_method_EET := true
 want_method_SPET := false
 want_method_EESPT := false
 want_enhancement := false
-want_local_estimation := true
-want_local_improvement_steklov := true
-want_local_improvement_rayleigh := true
+want_local_estimation := false
+want_local_improvement_steklov := false
+want_local_improvement_rayleigh := false
 want_compute_eig := false
 want_local_enrichment := true
 
