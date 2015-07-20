@@ -28,7 +28,7 @@ want_local_estimation := false
 want_local_improvement_steklov := false
 want_local_improvement_rayleigh := false
 want_compute_eig := false
-want_local_enrichment := true
+want_local_enrichment := false
 
 if not ( want_method_EET or want_method_EESPT )
     want_enhancement = false
