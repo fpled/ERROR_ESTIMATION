@@ -58,7 +58,7 @@ int main( int argc, char **argv ) {
 
     /// Global error estimation method
     ///-------------------------------
-    static const bool want_global_estimation = 0; // calcul d'un estimateur d'erreur globale (au sens de la norme energetique)
+    static const bool want_global_estimation = 1; // calcul d'un estimateur d'erreur globale (au sens de la norme energetique)
     static const string method = "EET"; //methode de construction de champs admissibles pour le pb direct : EET, SPET, EESPT
     static const string method_adjoint = "EET"; // methode de construction de champs admissibles pour le pb adjoint : EET, SPET, EESPT
 
@@ -139,7 +139,7 @@ int main( int argc, char **argv ) {
     
     /// Verification equilibre / solveur
     ///---------------------------------
-    static const bool verif_eq = 1; // verification de l'equilibre global elements finis
+    static const bool verif_eq = 0; // verification de l'equilibre global elements finis
     static const bool verif_compatibility_conditions = 1; // verification des conditions de compatibilite (equilibre elements finis) (methode EET)
     static const T tol_compatibility_conditions = 1e-6; // tolerance pour la verification des conditions de compatibilite (equilibre elements finis) (methode EET)
     static const bool verif_eq_force_fluxes = 1; // verification de l'equilibre des densites d'effort (methodes EET, EESPT)
@@ -232,92 +232,18 @@ int main( int argc, char **argv ) {
     
     /// Resolution du pb direct
     ///------------------------
-    f.allocate_matrices();
-    f.shift();
-    f.assemble();
+//    TicToc t;
+//    t.start();
+//    if ( want_iterative_solver == 0 )
+//        f.solve();
+//    else
+//        f.solve( iterative_criterium );
+//    t.stop();
+//    cout << "Temps de calcul du pb direct : " << t.res << endl << endl;
+
+    f.get_initial_conditions();
     f.update_variables();
     f.call_after_solve();
-
-//    cout << "residual =" << endl << endl;
-//    for (unsigned i=0;i<f.vectors[0].size();++i) {
-//        if ( i % 2== 0 )
-//            cout << "node " << i/2 << " :" << endl;
-//        cout << ( f.matrices(Number<0>()) * f.vectors[0] - f.sollicitation )[i] << endl;
-//    }
-//    cout << endl;
-//    cout << "K U =" << endl << endl;
-//    for (unsigned i=0;i<f.vectors[0].size();++i) {
-//        if ( i % 2== 0 )
-//            cout << "node " << i/2 << " :" << endl;
-//        cout << ( f.matrices(Number<0>()) * f.vectors[0] )[i] << endl;
-//    }
-//    cout << endl;
-//    cout << "F =" << endl << endl;
-//    for (unsigned i=0;i<f.vectors[0].size();++i) {
-//        if ( i % 2== 0 )
-//            cout << "node " << i/2 << " :" << endl;
-//        cout << f.sollicitation[i] << endl;
-//    }
-//    cout << endl;
-//    cout << "U =" << endl << endl;
-//    for (unsigned i=0;i<f.vectors[0].size();++i) {
-//        if ( i % 2== 0 )
-//            cout << "node " << i/2 << " :" << endl;
-//        cout << ( f.vectors[0] )[i] << endl;
-//    }
-//    cout << endl;
-//    cout << "K =" << endl << endl;
-//    for (unsigned i=0;i<f.vectors[0].size();++i) {
-//        if ( i % 2== 0 )
-//            cout << "node " << i/2 << " :" << endl;
-//        cout << f.matrices(Number<0>()).row(i) << endl;
-//    }
-//    cout << endl;
-
-    Vec<T> U = f.vectors[0];
-
-    if ( verif_eq )
-        check_equilibrium( f, "direct" );
-
-    TicToc t;
-    t.start();
-    if ( want_iterative_solver == 0 )
-        f.solve();
-    else
-        f.solve( iterative_criterium );
-    t.stop();
-    cout << "Temps de calcul du pb direct : " << t.res << endl << endl;
-
-    cout << "size K = " << f.matrices(Number<0>()).nb_rows() << "x" << f.matrices(Number<0>()).nb_cols() << endl;
-    cout << "size F = " << f.sollicitation.size() << endl;
-    cout << "size U = " << U.size() << endl;
-    cout << "size vec = " << f.vectors[0].size() << endl;
-
-    cout << "residual =" << endl << endl;
-    for (unsigned i=0;i<f.vectors[0].size();++i) {
-        if ( i % 2== 0 )
-            cout << "node " << i/2 << " :" << endl;
-        cout << ( f.matrices(Number<0>()) * f.vectors[0] )[i] << " - " << f.sollicitation[i] << " = " << ( f.matrices(Number<0>()) * f.vectors[0] - f.sollicitation )[i] << endl;
-        cout << ( f.matrices(Number<0>()) * U )[i] << " - " << f.sollicitation[i] << " = " << ( f.matrices(Number<0>()) * U - f.sollicitation )[i] << endl;
-    }
-    cout << endl;
-
-//    cout << "K.row(0) = " << f.matrices(Number<0>()).row(0) << endl;
-//    for (unsigned i=0;i<f.matrices(Number<0>()).row(0).size();++i) {
-//        if ( f.matrices(Number<0>()).row(0)[i] !=0 ) {
-//            cout << "ind = " << i << endl;
-//            cout << "val = " << f.matrices(Number<0>()).row(0)[i] << endl;
-//            cout << "U = " << U[i] << endl;
-//            cout << "vec = " << f.vectors[0][i] << endl;
-//        }
-//    }
-
-    cout << "U - U =" << endl << endl;
-    for (unsigned i=0;i<f.vectors[0].size();++i) {
-        if ( i % 2== 0 )
-            cout << "node " << i/2 << " :" << endl;
-        cout << U[i] << " - " << ( f.vectors[0] )[i] << " = "<< U[i] - ( f.vectors[0] )[i] << endl;
-    }
     
     /// Verification de l'equilibre du pb direct
     ///-----------------------------------------

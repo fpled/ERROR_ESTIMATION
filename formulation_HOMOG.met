@@ -20,7 +20,7 @@ import "INTEREST_QUANTITY/Interest_quantity.met"
 # Calcul avec fonctions d'enrichissement (handbook) d'un estimateur de l'erreur locale sur une quantite d'interet : want_local_enrichment := true
 #------------------------------------------------------------------------------------------------------------------------------------------------------------
 want_discretization_error := false
-want_method_EET := false
+want_method_EET := true
 want_method_SPET := false
 want_method_EESPT := false
 want_enhancement := false
@@ -227,6 +227,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
                 id := symbol( "(f.m->get_children_of( elem, Number<1>())[ $num_child ] == &skin_elem ? 1 : 0)" )
                 f_surf_handbook += sigma_handbook.expr * pc->normal * id
 
+        dep_tot = dep.expr + dep_handbook.expr * phi_nodal_handbook.expr
         epsilon_tot = epsilon.expr + epsilon_handbook_PUM.expr
         sigma_tot = sigma.expr + sigma_handbook_PUM.expr
 

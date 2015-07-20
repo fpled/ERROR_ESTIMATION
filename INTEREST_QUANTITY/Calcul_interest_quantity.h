@@ -727,11 +727,11 @@ template<class TM, class T, class S> void calcul_h_alternativeontype( const TM &
 
 /// Calcul du deplacement total
 ///----------------------------
-template<class TM>
-void calcul_dep_tot_after_solve( TM &m ) {
-    for (unsigned i=0;i<m.node_list.size();++i) {
-        m.node_list[i].dep_tot = m.node_list[i].dep + m.node_list[i].dep_handbook * m.node_list[i].phi_nodal_handbook;
-    }
-}
+//template<class TM>
+//void calcul_dep_tot_after_solve( TM &m ) {
+//    for (unsigned i=0;i<m.node_list.size();++i) {
+//        m.node_list[i].dep_tot = m.node_list[i].dep + m.node_list[i].dep_handbook * m.node_list[i].phi_nodal_handbook;
+//    }
+//}
 
 #endif // Calcul_interest_quantity_h

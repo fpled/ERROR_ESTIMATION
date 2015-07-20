@@ -110,19 +110,15 @@ void create_material_properties( TF &f, TM &m, const string &structure, const st
         /// Carre 2D
         ///---------
         else if ( structure.find("square") != string::npos ) {
-            if ( loading == "pre_sigma" ) {
-                for (unsigned n=0;n<m.elem_list.size();++n) {
-                    m.elem_list[n]->set_field( "young", 2*(1+0.3)*0.9 );
-                }
+            for (unsigned n=0;n<m.elem_list.size();++n) {
+                m.elem_list[n]->set_field( "young", 2*(1+0.3)*0.9 );
             }
-            else if ( loading == "pre_epsilon" ) {
-                for (unsigned n=0;n<m.elem_list.size();++n) {
-                    if ( center( *m.elem_list[n] )[0] < 0.5 and center( *m.elem_list[n] )[1] < 0.5 ) // x < 0.5 and y < 0.5
-                        m.elem_list[n]->set_field( "young", 2*(1+0.2)*100. );
-                    else
-                        m.elem_list[n]->set_field( "young", 2*(1+0.3)*1. );
-                }
-            }
+//            for (unsigned n=0;n<m.elem_list.size();++n) {
+//                if ( center( *m.elem_list[n] )[0] < 0.5 and center( *m.elem_list[n] )[1] < 0.5 ) // x < 0.5 and y < 0.5
+//                    m.elem_list[n]->set_field( "young", 2*(1+0.2)*100. );
+//                else
+//                    m.elem_list[n]->set_field( "young", 2*(1+0.3)*1. );
+//            }
         }
         else
             set_field_alternativeontype( m, Number< AreSameType< typename ExtractDM<young_DM>::ReturnType<TM>::T, void >::res >(), young, young_DM() );
@@ -130,19 +126,15 @@ void create_material_properties( TF &f, TM &m, const string &structure, const st
         /// Carre 2D
         ///---------
         if ( structure.find("square") != string::npos ) {
-            if ( loading == "pre_sigma" ) {
-                for (unsigned n=0;n<m.elem_list.size();++n) {
-                    m.elem_list[n]->set_field( "poisson", 0.3 );
-                }
+            for (unsigned n=0;n<m.elem_list.size();++n) {
+                m.elem_list[n]->set_field( "poisson", 0.3 );
             }
-            else if ( loading == "pre_epsilon" ) {
-                for (unsigned n=0;n<m.elem_list.size();++n) {
-                    if ( center( *m.elem_list[n] )[0] < 0.5 and center( *m.elem_list[n] )[1] < 0.5 ) // x < 0.5 and y < 0.5
-                        m.elem_list[n]->set_field( "poisson", 0.2 );
-                    else
-                        m.elem_list[n]->set_field( "poisson", 0.3 );
-                }
-            }
+//            for (unsigned n=0;n<m.elem_list.size();++n) {
+//                if ( center( *m.elem_list[n] )[0] < 0.5 and center( *m.elem_list[n] )[1] < 0.5 ) // x < 0.5 and y < 0.5
+//                    m.elem_list[n]->set_field( "poisson", 0.2 );
+//                else
+//                    m.elem_list[n]->set_field( "poisson", 0.3 );
+//            }
         }
         else
             set_field_alternativeontype( m, Number< AreSameType< typename ExtractDM<poisson_DM>::ReturnType<TM>::T, void >::res >(), poisson, poisson_DM() );

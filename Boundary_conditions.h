@@ -231,49 +231,12 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                 }
             }
             /// Carre 2D
-            /// application du champ de deplacement u a tous les noeuds
             /// condition de periodicite aux noeuds situés en x = 0 et x = 1
             /// condition de periodicite aux noeuds situés en y = 0 et y = 1
             /// blocage des noeuds (0.25, 0.25), (0.25, 0.75), (0.75, 0.25) et (0.75, 0.75) dans toutes les directions
+            /// application du champ de deplacement u a tous les noeuds
             ///-------------------------------------------------------------------------------------------------------
             else if ( structure.find("square") != string::npos ) {
-                size_t off = structure.rfind( "_" );
-                string str = structure.substr( off+1 );
-                istringstream buffer(str);
-                int N;
-                buffer >> N;
-
-                string filename = "DATA_HDF5/square-" + str + "x" + str + ".hdf5";
-                bool clear_old = false;
-                bool read_only = true;
-                Hdf hdf(filename, clear_old, read_only);
-
-                Vec<int> s;
-                hdf.read_size( "/u", s );
-
-                Tens3<T> u;
-                u.resize( s );
-                hdf.read_data( "/u", u.ptr(), s, s );
-
-                for (unsigned i=0;i<m.node_list.size();++i) {
-                    if ( m.node_list[i].pos[0] < 1. - 1e-6 and m.node_list[i].pos[1] < 1. - 1e-6 ) {
-                        for (unsigned d=0;d<dim;++d)
-                            m.node_list[i].dep[ d ] = u( d, int(m.node_list[i].pos[1]*N), int(m.node_list[i].pos[0]*N) );
-                    }
-                    else if ( m.node_list[i].pos[0] > 1. - 1e-6 and m.node_list[i].pos[1] < 1. - 1e-6 ) {
-                        for (unsigned d=0;d<dim;++d)
-                            m.node_list[i].dep[ d ] = u( d, int(m.node_list[i].pos[1]*N), 0 );
-                    }
-                    else if ( m.node_list[i].pos[1] > 1. - 1e-6 and m.node_list[i].pos[0] < 1. - 1e-6 ) {
-                        for (unsigned d=0;d<dim;++d)
-                            m.node_list[i].dep[ d ] = u( d, 0, int(m.node_list[i].pos[0]*N) );
-                    }
-                    else {
-                        for (unsigned d=0;d<dim;++d)
-                            m.node_list[i].dep[ d ] = u( d, 0, 0 );
-                    }
-                }
-
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 1e-6 ) {
                         for (unsigned j=0;j<m.node_list.size();++j) {
@@ -301,6 +264,39 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                     else if ( ( 0.25 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.25 + 1e-6 and ( ( 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) or ( 0.75 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.75 + 1e-6 ) ) ) or ( 0.75 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.75 + 1e-6 and ( ( 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) or ( 0.75 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.75 + 1e-6 ) ) ) ) {
                         for (unsigned d=0;d<dim;++d) {
                             f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
+                        }
+                    }
+
+                    size_t offset = structure.rfind( "_" )+1;
+                    string str = structure.substr( offset );
+                    istringstream buffer(str);
+                    int N;
+                    buffer >> N;
+                    Hdf hdf("DATA_HDF5/square-" + str + "x" + str + ".hdf5");
+
+                    Vec<int> s;
+                    hdf.read_size( "/u", s );
+
+                    Tens3<T> u;
+                    u.resize( s );
+                    hdf.read_data( "/u", u.ptr(), s, s );
+
+                    for (unsigned i=0;i<m.node_list.size();++i) {
+                        if ( m.node_list[i].pos[0] < 1. - 1e-6 and m.node_list[i].pos[1] < 1. - 1e-6 ) {
+                            for (unsigned d=0;d<dim;++d)
+                                m.node_list[i].dep[ d ] = u( d, int(m.node_list[i].pos[1]*N), int(m.node_list[i].pos[0]*N) );
+                        }
+                        else if ( m.node_list[i].pos[0] > 1. - 1e-6 and m.node_list[i].pos[1] < 1. - 1e-6 ) {
+                            for (unsigned d=0;d<dim;++d)
+                                m.node_list[i].dep[ d ] = u( d, int(m.node_list[i].pos[1]*N), 0 );
+                        }
+                        else if ( m.node_list[i].pos[1] > 1. - 1e-6 and m.node_list[i].pos[0] < 1. - 1e-6 ) {
+                            for (unsigned d=0;d<dim;++d)
+                                m.node_list[i].dep[ d ] = u( d, 0, int(m.node_list[i].pos[0]*N) );
+                        }
+                        else {
+                            for (unsigned d=0;d<dim;++d)
+                                m.node_list[i].dep[ d ] = u( d, 0, 0 );
                         }
                     }
                 }
@@ -421,19 +417,15 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                     }
                 }
                 /// Carre 2D
-                /// pre-deformation ou pre-contrainte appliquee sur tous les elements
+                /// pre-deformation et pre-contrainte appliquees sur tous les elements
                 ///------------------------------------------------------------------
                 else if ( structure.find("square") != string::npos ) {
-                    size_t off = structure.rfind( "_" );
-                    string str = structure.substr( off+1 );
+                    size_t offset = structure.rfind( "_" )+1;
+                    const string str = structure.substr( offset );
                     istringstream buffer(str);
                     int N;
                     buffer >> N;
-
-                    string filename = "DATA_HDF5/square-" + str + "x" + str + ".hdf5";
-                    bool clear_old = false;
-                    bool read_only = true;
-                    Hdf hdf(filename, clear_old, read_only);
+                    Hdf hdf("DATA_HDF5/square-" + str + "x" + str + ".hdf5");
 
                     Vec<int> s;
                     hdf.read_size( "/tau", s );
