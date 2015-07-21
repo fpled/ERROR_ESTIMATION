@@ -5,29 +5,15 @@ import "PGD/PGD.met"
 #-----------------------------------------------
 class FormulationParam[ dim ] inherits LmtppFormulation[ dim ]
     dep     := Variable[[dim]]( interpolation="nodal", interpolation_base="lagrange", default_value=0, unit="m", unknown=true, tex_name = "U" )
-    density := Variable( interpolation="global", default_value=1, unit="kg/m^3", tex_name = "\\rho" )
+    phi     := Variable( interpolation="global", default_value=0, unit="", tex_name = "\\phi" )
 
     # Definition de la formulation
     # ----------------------------
     def formulation( e )
 
         pos := e.pos
-        function_param := 1 + param_function( pos )
 
-        residual := function_param * dot( dep.expr, dep.test ) * dV - dep.test[0] * dV
-
-        return residual
-
-# Formulation associee a l'espace des parametres
-#-----------------------------------------------
-class FormulationParam[ dim ] inherits LmtppFormulation[ dim ]
-    dep     := Variable[[dim]]( interpolation="nodal", interpolation_base="lagrange", default_value=0, unit="m", unknown=true, tex_name = "U" )
-
-    # Definition de la formulation
-    # ----------------------------
-    def formulation( e )
-
-        residual := dot( dep.expr, dep.test ) * dV - dep.test[0] * dV
+        residual := ( 1 + param_function( pos ) * phi.expr ) * dot( dep.expr, dep.test ) * dV - dep.test[0] * dV
 
         return residual
 

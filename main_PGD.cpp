@@ -35,8 +35,7 @@ int main( int argc, char **argv ) {
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
     typedef Mesh<Mesh_carac_param<double,1> > TM_param;
-    typedef Formulation<TM_param,FormulationUnknownParam,DefaultBehavior,double,wont_add_nz> TF_unknown_param;
-    typedef Formulation<TM_param,FormulationKnownParam,DefaultBehavior,double,wont_add_nz> TF_known_param;
+    typedef Formulation<TM_param,FormulationParam,DefaultBehavior,double,wont_add_nz> TF_param;
     typedef TM_param::Pvec Pvec_param;
     static const string structure = "circular_inclusions"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circle, circular_inclusions, circular_holes
                                                      // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes
@@ -142,8 +141,8 @@ int main( int argc, char **argv ) {
     static const unsigned max_iter = 20; // nb d'iterations max de l'algorithme de type point fixe
     static const T tol_global_convergence_criterium = 1e-4; // precision pour critere d'arret global (boucle sur les modes)
     static const T tol_local_convergence_criterium = 1e-8; // precision pour critere d'arret local (processus iteratif)
-    static const T min_param = 0.0; // valeur min sur l'intervalle des parametres
-    static const T max_param = 1.0; // valeur max sur l'intervalle des parametres
+    static const T min_param = -2.; // valeur min sur l'intervalle des parametres
+    static const T max_param = 2.; // valeur max sur l'intervalle des parametres
     static const unsigned nb_points_param = 100; // nb de points du maillage parametrique
     static const bool want_verif_kinematic_PGD = 0; // verification de la decomposition PGD cinematique
     static const unsigned nb_vals_param_verif = 1; // nb de valeurs des parametres pris aleatoirement pour la verification de la decomposition PGD
@@ -232,21 +231,17 @@ int main( int argc, char **argv ) {
     /// Construction de la solution elements finis ///
     ///--------------------------------------------///
     
-    /// Maillage du pb direct
-    ///----------------------
+    /// Maillage en espace du pb direct
+    ///--------------------------------
     TM m; // declaration d'un maillage de type TM
     TM m_ref;
     create_structure( m, m_ref, "direct", structure, mesh_size, loading, deg_p, want_global_discretization_error, want_local_discretization_error, refinement_degree_ref, want_solve_ref );
     display_structure( m, m_ref, "direct", structure, deg_p, want_solve_ref );
-    TM_param m_param;
-    create_structure_param( m_param, min_param, max_param, nb_points_param );
     
-    /// Formulation du pb direct
-    ///-------------------------
+    /// Formulation en espace du pb direct
+    ///-----------------------------------
     TF f( m ); // creation d'une formulation du type TF avec le maillage m
     TF f_ref( m_ref );
-    TF_unknown_param f_unknown_param( m_param );
-    TF_known_param f_known_param( m_param );
     
     /// Proprietes materiaux et Conditions aux limites du pb direct
     ///------------------------------------------------------------
@@ -258,26 +253,44 @@ int main( int argc, char **argv ) {
         create_material_properties( f_ref, m_ref, structure, loading );
         create_boundary_conditions( f_ref, m_ref, boundary_condition_D, "direct", structure, loading, mesh_size );
     }
+
+    /// Maillage en parametre du pb direct
+    ///-----------------------------------
+    Vec<TM_param> m_param;
+    m_param.resize( elem_list_parm.size()-1 );
+    for (unsigned p=0;p<elem_list_param.size()-1;++p)
+        create_structure_param( m_param[p], min_param, max_param, nb_points_param );
+
+    /// Formulation en parametre du pb direct
+    ///--------------------------------------
+    Vec<TF_param> f_param;
+    f_param.resize( elem_list_parm.size()-1 );
+    for (unsigned p=0;p<elem_list_param.size()-1;++p)
+        f_param[p]( m_param[p] );
     
     /// Defintion des fonctions a variables separees
     ///---------------------------------------------
     unsigned nb_modes; // nb de modes dans la decomposition
-    Vec< Vec<T> > dep_space, dep_param;
-    Vec< Vec< Vec<T>, max_iter+1 >, max_mode > psi, lambda;
+    Vec< Vec<T> > dep_space;
+    Vec< Vec< Vec<T> > > dep_param;
+    Vec< Vec< Vec<T>, max_iter+1 >, max_mode > psi;
+    Vec< Vec< Vec< Vec<T>, max_iter+1 >, max_mode > > lambda;
     Vec<unsigned> nb_iterations; // nb d'iterations de l'algorithme de type point fixe pour chaque mode
     nb_iterations.resize( max_mode );
     nb_iterations.set( 1 );
     static Vec<T> residual; // residu au sens faible associe a la solution a variables separees pour chaque mode
     residual.resize( max_mode );
     residual.set( 0. );
-    Vec<T> vals_param;
-    for (unsigned i=0;i<m_param.node_list.size();++i)
-        vals_param.push_back( m_param.node_list[i].pos[0] );
-    Vec< DisplayParaview, max_mode > dp_space, dp_param;
+//    Vec<T> vals_param;
+//    for (unsigned i=0;i<m_param.node_list.size();++i)
+//        vals_param.push_back( m_param.node_list[i].pos[0] );
+    Vec< DisplayParaview, max_mode > dp_space;
+    Vec< Vec< DisplayParaview, max_mode > > dp_param;
+    dp_param.resize( elem_list_param.size()-1 );
     Vec< DisplayParaview, nb_vals_param_verif > dp_space_verif;
     string prefix = define_prefix( m, pathname, "direct", structure, loading, mesh_size );
-    string prefix_space = prefix + "_space_mesh";
-    string prefix_param = prefix + "_param_mesh";
+    string prefix_space = prefix + "_space";
+    string prefix_param = prefix + "_param";
     Vec<string> lp_space, lp_param;
     lp_space.push_back( "dep" );
     lp_space.push_back( "young_eff" );
@@ -287,7 +300,9 @@ int main( int argc, char **argv ) {
     Vec<TMatSymSparse> K_space, K_param;
     K_space.resize(elem_list_param.size());
     K_param.resize(elem_list_param.size());
-    Vec<T> F_space, F_param;
+    Vec<T> F_space;
+    Vec< Vec<T> > F_param;
+    F_param.resize(elem_list_param.size());
     
     /// Verification des conditions cinematiques
     ///-----------------------------------------
@@ -309,42 +324,43 @@ int main( int argc, char **argv ) {
         f.shift();
         f.assemble( false, true );
         F_space = f.sollicitation;
-        for (unsigned i=0;i<elem_list_param.size();++i) {
+        for (unsigned p=0;p<elem_list_param.size();++p) {
             for (unsigned n=0;n<m.elem_list.size();++n) {
-                if ( find( elem_list_param[i], _1 == n ) )
+                if ( find( elem_list_param[p], _1 == n ) )
                     m.elem_list[n]->set_field( "alpha", 1. );
                 else
                     m.elem_list[n]->set_field( "alpha", 0. );
             }
             f.assemble( true, false );
-            K_space[i] = f.matrices(Number<0>());
+            K_space[p] = f.matrices(Number<0>());
         }
 
-        f_unknown_param.allocate_matrices();
-        f_unknown_param.shift();
-        f_unknown_param.assemble();
-        K_unk_p = f_unknown_param.matrices(Number<0>());
-        F_p = f_unknown_param.sollicitation;
-        f_known_param.allocate_matrices( true, false );
-        f_known_param.shift();
-        f_known_param.assemble( true, false );
-        K_k_p = f_known_param.matrices(Number<0>());
+        for (unsigned p=0;p<elem_list_param.size();++p) {
+            f_param[p].allocate_matrices();
+            f_param[p].shift();
+            if ( p == 0 )
+                m_param[p].phi = 0;
+            else
+                m_param[p].phi = 1;
+            f_param[p].assemble();
+            F_param[p] = f_param[p].sollicitation;
+            K_param[p] = f_param[p].matrices(Number<0>());
+        }
 
         unsigned n = 0;
         while ( true ) {
             cout << "Mode n = " << n << endl << endl;
-            string prefix_mode = "mode_" + to_string( n );
             
             /// Initialisation
             ///---------------
             unsigned k = 0;
-            lambda[ n ][ 0 ].resize( f_unknown_param.vectors[0].size() );
+            lambda[ n ][ 0 ].resize( f_param.vectors[0].size() );
             lambda[ n ][ 0 ].set( 1. );
             f_unknown_param.vectors[0] = lambda[ n ][ 0 ];
             f_unknown_param.update_variables();
             f_unknown_param.call_after_solve();
             psi[ n ][ 0 ].resize( f.vectors[0].size() );
-            solve_PGD_space( m, f, n, k, nb_iterations, F_s, F_p, K_unk_p, K_k_p, elem_list_param, lambda, psi, want_iterative_solver, iterative_criterium );
+            solve_PGD_space( m, f, n, k, nb_iterations, F_space, F_param, K_param, elem_list_param, lambda, psi, want_iterative_solver, iterative_criterium );
             if ( want_normalization ) {
                 psi[ n ][ k ] /= sqrt( dot( psi[ n ][ k ], K_s * psi[ n ][ k ] ) );
                 f.vectors[0] = psi[ n ][ k ];
@@ -353,14 +369,13 @@ int main( int argc, char **argv ) {
             }
             
             if ( save_pvd_PGD_space or display_pvd_PGD_space )
-                dp_space[ n ].add_mesh_iter( m, prefix_space + "_" + prefix_mode, lp_space, k );
+                dp_space[ n ].add_mesh_iter( m, prefix_space + "_mode_" + to_string( n ), lp_space, k );
             if ( save_pvd_PGD_param or display_pvd_PGD_param )
-                dp_param[ n ].add_mesh_iter( m_param, prefix_param + "_" + prefix_mode, lp_param, k );
+                dp_param[ n ].add_mesh_iter( m_param, prefix_param + "_mode_" + to_string( n ), lp_param, k );
             
             while ( true ) {
                 k++;
                 cout << "Iteration k = " << k << endl << endl;
-                string prefix_iteration = "iteration_" + to_string( k );
                 psi[ n ][ k ].resize( f.vectors[0].size() );
                 lambda[ n ][ k ].resize( f_unknown_param.vectors[0].size() );
                 
@@ -368,11 +383,11 @@ int main( int argc, char **argv ) {
                 
                 /// Construction et resolution du pb en parametre
                 ///----------------------------------------------
-                solve_PGD_param( m_param, f_unknown_param, n, k, nb_iterations, F_p, K_unk_p, K_k_p, F_s, K_unk_s, K_k_s, psi, lambda );
+                solve_PGD_param( m_param, f_unknown_param, n, k, nb_iterations, F_param, K_unk_p, K_k_p, F_space, K_unk_s, K_k_s, psi, lambda );
                 
                 /// Construction et resolution du pb en espace
                 ///-------------------------------------------
-                solve_PGD_space( m, f, n, k, nb_iterations, F_s, F_p, K_unk_p, K_k_p, elem_list_param, lambda, psi, want_iterative_solver, iterative_criterium );
+                solve_PGD_space( m, f, n, k, nb_iterations, F_space, F_param, K_unk_p, K_k_p, elem_list_param, lambda, psi, want_iterative_solver, iterative_criterium );
                 
                 /// Normalisation de la fonction psi en espace
                 ///-------------------------------------------
@@ -389,15 +404,15 @@ int main( int argc, char **argv ) {
 //                cout << lambda[ n ][ k ] << endl << endl;
                 
                 if ( save_pvd_PGD_space or display_pvd_PGD_space )
-                    dp_space[ n ].add_mesh_iter( m, prefix_space + "_" + prefix_mode + "_iteration", lp_space, k );
+                    dp_space[ n ].add_mesh_iter( m, prefix_space + "_mode_" + to_string( n ) + "_iter", lp_space, k );
                 if ( save_pvd_PGD_param or display_pvd_PGD_param )
-                    dp_param[ n ].add_mesh_iter( m_param, prefix_param + "_" + prefix_mode + "_iteration", lp_param, k );
+                    dp_param[ n ].add_mesh_iter( m_param, prefix_param + "_mode_" + to_string( n ) + "_iter", lp_param, k );
                 
                 if ( save_plot_PGD_param ) {
                     static GnuPlot gp;
                     gp.set_terminal( "postscript eps enhanced color" );
                     stringstream graph_name;
-                    graph_name << "'" << prefix_param + "_" + prefix_mode + "_" + prefix_iteration << ".eps'";
+                    graph_name << "'" << prefix_param + "_mode_" + to_string( n ) + "_iter_" + to_string( k ) << ".eps'";
                     gp.set_output(graph_name.str().c_str());
                     gp.set("key left bottom");
                     gp.set("format '%g'");
@@ -435,21 +450,21 @@ int main( int argc, char **argv ) {
             }
             
             if ( display_pvd_PGD_space )
-                dp_space[ n ].exec( prefix_space + "_" + prefix_mode + ".pvd" );
+                dp_space[ n ].exec( prefix_space + "_mode_" + to_string( n ) + ".pvd" );
             else if ( save_pvd_PGD_space )
-                dp_space[ n ].make_pvd_file( prefix_space + "_" + prefix_mode + ".pvd" );
+                dp_space[ n ].make_pvd_file( prefix_space + "_mode_" + to_string( n ) + ".pvd" );
             if ( display_pvd_PGD_param )
-                dp_param[ n ].exec( prefix_param + "_" + prefix_mode + ".pvd" );
+                dp_param[ n ].exec( prefix_param + "_mode_" + to_string( n ) + ".pvd" );
             else if ( save_pvd_PGD_param )
-                dp_param[ n ].make_pvd_file( prefix_param + "_" + prefix_mode + ".pvd" );
+                dp_param[ n ].make_pvd_file( prefix_param + "_mode_" + to_string( n ) + ".pvd" );
             
             /// Residu au sens faible associe a la solution u_n
             ///------------------------------------------------
             T res = 0.;
             T res_sollicitation = 0.;
             for (unsigned i=0;i<n+1;++i) {
-                T gamma_p = dot( F_s, psi[ i ][ nb_iterations[ i ] ] );
-                T gamma_s = dot( F_p, lambda[ i ][ nb_iterations[ i ] ] );
+                T gamma_p = dot( F_space, psi[ i ][ nb_iterations[ i ] ] );
+                T gamma_s = dot( F_param, lambda[ i ][ nb_iterations[ i ] ] );
                 res_sollicitation += gamma_p * gamma_s;
                 res -= gamma_p * gamma_s;
                 for (unsigned j=0;j<n+1;++j) {

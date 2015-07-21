@@ -80,13 +80,13 @@ void define_elem_list_param( TF &f, TM &m, const string &structure, TVV &elem_li
 
 /// Construction et resolution du pb en espace
 ///-------------------------------------------
-template<class TM, class TF, class T, class TV, class TMAT, class TVVV>
-void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_s, const TV &F_p, const TMAT &K_unk_p, const TMAT &K_k_p, const Vec<unsigned> &elem_list_param, const TVVV &lambda, TVVV &psi, const bool want_iterative_solver = false, const T iterative_criterium = 1e-3 ) {
+template<class TM, class TF, class T, class TV, class TVV, class TMATV, class TVVV>
+void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_space, const TVV &F_param, const TMATV &K_param, const Vec<unsigned> &elem_list_param, const TVVV &lambda, TVVV &psi, const bool want_iterative_solver = false, const T iterative_criterium = 1e-3 ) {
 
     /// Construction du pb en espace
     ///-----------------------------
-    T gamma_s = dot( F_p, lambda[ n ][ k ] );
-    f.sollicitation = F_s * gamma_s;
+    T gamma_s = dot( F_param, lambda[ n ][ k ] );
+    f.sollicitation = F_space * gamma_s;
     for (unsigned i=0;i<n;++i) {
 //        Vec<T> alpha_s_i;
 //        for (unsigned p=0;p<m.elem_list.size();++p) {
@@ -128,15 +128,15 @@ void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const 
 /// Construction et resolution du pb en parametre
 ///----------------------------------------------
 template<class TM_param, class TF_unknown_param, class TV, class TMAT, class TVVV>
-void solve_PGD_param( TM_param &m_param, TF_unknown_param &f_unknown_param, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_p, const TMAT &K_unk_p, const TMAT &K_k_p, const TV &F_s, const TMAT &K_unk_s, const TMAT &K_k_s, const TVVV &psi, TVVV &lambda ) {
+void solve_PGD_param( TM_param &m_param, TF_unknown_param &f_unknown_param, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_param, const TMAT &K_unk_p, const TMAT &K_k_p, const TV &F_space, const TMAT &K_unk_s, const TMAT &K_k_s, const TVVV &psi, TVVV &lambda ) {
     typedef typename TM_param::TNode::T T;
     
     /// Construction du pb en parametre
     ///--------------------------------
-    T gamma_p = dot( F_s, psi[ n ][ k ] );
+    T gamma_p = dot( F_space, psi[ n ][ k ] );
     T alpha_p_unk = dot( psi[ n ][ k ], K_unk_s * psi[ n ][ k ] );
     T alpha_p_k = dot( psi[ n ][ k ], K_k_s * psi[ n ][ k ] );
-    f_unknown_param.sollicitation = F_p * gamma_p;
+    f_unknown_param.sollicitation = F_param * gamma_p;
     for (unsigned i=0;i<n;++i) {
         T alpha_p_i_unk = dot( psi[ i ][ nb_iterations[ i ] ], K_unk_s * psi[ n ][ k ] );
         T alpha_p_i_k = dot( psi[ i ][ nb_iterations[ i ] ], K_k_s * psi[ n ][ k ] );
