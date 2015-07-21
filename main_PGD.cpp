@@ -354,11 +354,11 @@ int main( int argc, char **argv ) {
             /// Initialisation
             ///---------------
             unsigned k = 0;
-            lambda[ n ][ 0 ].resize( f_param.vectors[0].size() );
-            lambda[ n ][ 0 ].set( 1. );
-            f_unknown_param.vectors[0] = lambda[ n ][ 0 ];
-            f_unknown_param.update_variables();
-            f_unknown_param.call_after_solve();
+            for (unsigned p=0;p<elem_list_param.size()-1;++p) {
+                lambda[ p ][ n ][ 0 ].resize( f_param[p].vectors[0].size() );
+                lambda[ p ][ n ][ 0 ].set( 1. );
+                f_param[p].vectors[0] = lambda[ n ][ 0 ];
+            }
             psi[ n ][ 0 ].resize( f.vectors[0].size() );
             solve_PGD_space( m, f, n, k, nb_iterations, F_space, F_param, K_param, elem_list_param, lambda, psi, want_iterative_solver, iterative_criterium );
             if ( want_normalization ) {

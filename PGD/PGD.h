@@ -89,8 +89,8 @@ void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const 
     f.sollicitation = F_space * gamma_s;
     for (unsigned i=0;i<n;++i) {
 //        Vec<T> alpha_s_i;
-//        for (unsigned p=0;p<m.elem_list.size();++p) {
-        T alpha_s_i_k = dot( lambda[ i ][ nb_iterations[ i ] ], K_k_p * lambda[ n ][ k ] );
+//        for (unsigned p=0;p<elem_list_param.size();++p) {
+        T alpha_s_i_k = dot( lambda[ p ][ i ][ nb_iterations[ i ] ], K_k_p * lambda[ n ][ k ] );
         T alpha_s_i_unk = dot( lambda[ i ][ nb_iterations[ i ] ], K_unk_p * lambda[ n ][ k ] );
         for (unsigned n=0;n<m.elem_list.size();++n) {
             if ( find( elem_list_param, _1 == n ) )
