@@ -173,7 +173,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     is_on_skin := Variable( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="", tex_name = "is on skin" )
     normal := Variable[[dim]]( interpolation="nodal", interpolation_base=FE_base, default_value=0, unit="1", tex_name = "normal" )
 
-    phi_elem_PGD_unknown_param := Variable( interpolation="elementary", default_value=1, unit="", tex_name = "\\phi_{elem}^{unknown param}" )
+    alpha := Variable( interpolation="elementary", default_value=1, unit="", tex_name = "\\alpha" )
 
     # Definition de la formulation
     # ----------------------------
@@ -183,7 +183,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
             assumed_symmetric_matrix = false
             matrix_will_be_definite_positive = false
 
-        young_eff = young.expr * phi_elem_PGD_unknown_param.expr
+        young_eff = young.expr * alpha.expr
 
         pos := e.pos
         epsilon = grad_sym( dep.expr )

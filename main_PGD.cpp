@@ -137,7 +137,7 @@ int main( int argc, char **argv ) {
     /// Parameters PGD
     ///---------------
     static const bool want_PGD = 1; // methode de reduction de modele PGD
-    static const bool want_normalization_space = 1; // normalisation des fonctions en espace
+    static const bool want_normalization = 1; // normalisation
     static const unsigned max_mode = 5; // nb de modes max dans la decomposition
     static const unsigned max_iter = 20; // nb d'iterations max de l'algorithme de type point fixe
     static const T tol_global_convergence_criterium = 1e-4; // precision pour critere d'arret global (boucle sur les modes)
@@ -252,8 +252,8 @@ int main( int argc, char **argv ) {
     ///------------------------------------------------------------
     create_material_properties( f, m, structure, loading );
     create_boundary_conditions( f, m, boundary_condition_D, "direct", structure, loading, mesh_size );
-    Vec<unsigned> elem_list_PGD_unknown_param; // liste des elements definissant la zone avec parametre materiau inconnu
-    define_unknown_param_zone( f, m, structure, elem_list_PGD_unknown_param );
+    Vec< Vec<unsigned> > elem_list_param; // liste des elements definissant les zones avec parametre materiau inconnu
+    define_unknown_param_zone( f, m, structure, elem_list_param );
     if ( want_solve_ref ) {
         create_material_properties( f_ref, m_ref, structure, loading );
         create_boundary_conditions( f_ref, m_ref, boundary_condition_D, "direct", structure, loading, mesh_size );
@@ -310,19 +310,19 @@ int main( int argc, char **argv ) {
         f.assemble();
         K_s = f.matrices(Number<0>());
         F_s = f.sollicitation;
-        for (unsigned i=0;i<m.elem_list.size();++i) {
-            if ( find( elem_list_PGD_unknown_param, _1 == i ) )
-                m.elem_list[i]->set_field( "phi_elem_PGD_unknown_param", 1. );
+        for (unsigned n=0;n<m.elem_list.size();++n) {
+            if ( find( elem_list_param, _1 == n ) )
+                m.elem_list[n]->set_field( "alpha", 1. );
             else
-                m.elem_list[i]->set_field( "phi_elem_PGD_unknown_param", 0. );
+                m.elem_list[n]->set_field( "alpha", 0. );
         }
         f.assemble( true, false );
         K_unk_s = f.matrices(Number<0>());
-        for (unsigned i=0;i<m.elem_list.size();++i) {
-            if ( find( elem_list_PGD_unknown_param, _1 == i ) )
-                m.elem_list[i]->set_field( "phi_elem_PGD_unknown_param", 0. );
+        for (unsigned n=0;n<m.elem_list.size();++n) {
+            if ( find( elem_list_param, _1 == n ) )
+                m.elem_list[n]->set_field( "alpha", 0. );
             else
-                m.elem_list[i]->set_field( "phi_elem_PGD_unknown_param", 1. );
+                m.elem_list[n]->set_field( "alpha", 1. );
         }
         f.assemble( true, false );
         K_k_s = f.matrices(Number<0>());
@@ -351,8 +351,8 @@ int main( int argc, char **argv ) {
             f_unknown_param.update_variables();
             f_unknown_param.call_after_solve();
             psi[ n ][ 0 ].resize( f.vectors[0].size() );
-            solve_PGD_space( m, f, n, k, nb_iterations, F_s, F_p, K_unk_p, K_k_p, elem_list_PGD_unknown_param, lambda, psi, want_iterative_solver, iterative_criterium );
-            if ( want_normalization_space ) {
+            solve_PGD_space( m, f, n, k, nb_iterations, F_s, F_p, K_unk_p, K_k_p, elem_list_param, lambda, psi, want_iterative_solver, iterative_criterium );
+            if ( want_normalization ) {
                 psi[ n ][ k ] /= sqrt( dot( psi[ n ][ k ], K_s * psi[ n ][ k ] ) );
                 f.vectors[0] = psi[ n ][ k ];
                 f.update_variables();
@@ -379,11 +379,11 @@ int main( int argc, char **argv ) {
                 
                 /// Construction et resolution du pb en espace
                 ///-------------------------------------------
-                solve_PGD_space( m, f, n, k, nb_iterations, F_s, F_p, K_unk_p, K_k_p, elem_list_PGD_unknown_param, lambda, psi, want_iterative_solver, iterative_criterium );
+                solve_PGD_space( m, f, n, k, nb_iterations, F_s, F_p, K_unk_p, K_k_p, elem_list_param, lambda, psi, want_iterative_solver, iterative_criterium );
                 
                 /// Normalisation de la fonction psi en espace
                 ///-------------------------------------------
-                if ( want_normalization_space ) {
+                if ( want_normalization ) {
                     psi[ n ][ k ] /= sqrt( dot( psi[ n ][ k ], K_s * psi[ n ][ k ] ) );
                     f.vectors[ 0 ] = psi[ n ][ k ];
                     f.update_variables();
@@ -498,11 +498,11 @@ int main( int argc, char **argv ) {
             ///---------------------------------------------
             for (unsigned p=0;p<nb_vals_param_verif;++p) {
                 unsigned ind_in_vals_param = rand() % nb_points_param;
-                for (unsigned i=0;i<m.elem_list.size();++i) {
-                    if ( find( elem_list_PGD_unknown_param, _1 == i ) )
-                        m.elem_list[i]->set_field( "phi_elem_PGD_unknown_param", 1. + vals_param[ ind_in_vals_param ] );
+                for (unsigned n=0;n<m.elem_list.size();++n) {
+                    if ( find( elem_list_param, _1 == n ) )
+                        m.elem_list[n]->set_field( "alpha", 1. + vals_param[ ind_in_vals_param ] );
                     else
-                        m.elem_list[i]->set_field( "phi_elem_PGD_unknown_param", 1. );
+                        m.elem_list[n]->set_field( "alpha", 1. );
                 }
                 if ( want_iterative_solver == 0 )
                     f.solve();
@@ -539,7 +539,7 @@ int main( int argc, char **argv ) {
     ///-----------------------------------
     if ( want_PGD ) {
         for (unsigned i=0;i<m.elem_list.size();++i)
-            m.elem_list[i]->set_field( "phi_elem_PGD_unknown_param", 1. );
+            m.elem_list[i]->set_field( "alpha", 1. );
         f.assemble();
         if ( want_iterative_solver == 0 )
             f.solve_system();

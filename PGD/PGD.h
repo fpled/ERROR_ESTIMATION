@@ -19,8 +19,8 @@ using namespace std;
 
 /// Creation des proprietes materiaux
 ///----------------------------------
-template<class TF, class TM, class TV>
-void define_unknown_param_zone( TF &f, TM &m, const string &structure, TV &elem_list_PGD_unknown_param ) {
+template<class TF, class TM, class TVV>
+void define_unknown_param_zone( TF &f, TM &m, const string &structure, TVV &elem_list_param ) {
 
     static const unsigned dim = TM::dim;
     typedef typename TM::TNode::T T;
@@ -32,17 +32,23 @@ void define_unknown_param_zone( TF &f, TM &m, const string &structure, TV &elem_
             /// Plaque rectangulaire 2D en flexion
             ///-----------------------------------
             if ( structure == "plate_flexion" ) {
-                for (unsigned i=0;i<m.elem_list.size();++i) {
-                    if ( center( *m.elem_list[i] )[1] < 0.5 )
-                        elem_list_PGD_unknown_param.push_back( m.elem_list[i]->number );
+                elem_list_param.resize(1);
+                for (unsigned n=0;n<m.elem_list.size();++n) {
+                    if ( center( *m.elem_list[n] )[1] < 0.5 )
+                        elem_list_param[0].push_back( m.elem_list[n]->number );
                 }
             }
             /// Inclusions circulaires 2D
             ///--------------------------
             else if (structure == "circular_inclusions") {
-                for (unsigned i=0;i<m.elem_list.size();++i) {
-                    if ( pow(center( *m.elem_list[i] )[0] - 0.2, 2) + pow(center( *m.elem_list[i] )[1] - 0.2, 2) < pow(0.1 + 1e-6, 2) or pow(center( *m.elem_list[i] )[0] - 0.6, 2) + pow(center( *m.elem_list[i] )[1] - 0.3, 2) < pow(0.1 + 1e-6, 2) or pow(center( *m.elem_list[i] )[0] - 0.4, 2) + pow(center( *m.elem_list[i] )[1] - 0.7, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.2 )^2 + ( y - 0.2 )^2 = (0.1)^2 or ( x - 0.6 )^2 + ( y - 0.3 )^2 = (0.1)^2 or ( x - 0.4 )^2 + ( y - 0.7 )^2 = (0.1)^2
-                        elem_list_PGD_unknown_param.push_back( m.elem_list[i]->number );
+                elem_list_param.resize(3);
+                for (unsigned n=0;n<m.elem_list.size();++n) {
+                    if ( pow(center( *m.elem_list[n] )[0] - 0.2, 2) + pow(center( *m.elem_list[n] )[1] - 0.2, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.2 )^2 + ( y - 0.2 )^2 = (0.1)^2
+                        elem_list_param[0].push_back( m.elem_list[n]->number );
+                    else if ( pow(center( *m.elem_list[n] )[0] - 0.6, 2) + pow(center( *m.elem_list[n] )[1] - 0.3, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.6 )^2 + ( y - 0.3 )^2 = (0.1)^2
+                        elem_list_param[1].push_back( m.elem_list[n]->number );
+                    else if ( pow(center( *m.elem_list[n] )[0] - 0.4, 2) + pow(center( *m.elem_list[n] )[1] - 0.7, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.4 )^2 + ( y - 0.7 )^2 = (0.1)^2
+                        elem_list_param[2].push_back( m.elem_list[n]->number );
                 }
             }
         }
@@ -52,9 +58,14 @@ void define_unknown_param_zone( TF &f, TM &m, const string &structure, TV &elem_
             /// Inclusions spheriques 3D
             ///-------------------------
             if (structure == "spherical_inclusions") {
-                for (unsigned i=0;i<m.elem_list.size();++i) {
-                    if ( pow(center( *m.elem_list[i] )[0] - 0.2, 2) + pow(center( *m.elem_list[i] )[1] - 0.2, 2) + pow(center( *m.elem_list[i] )[2] - 0.2, 2) < pow(0.1 + 1e-6, 2) or pow(center( *m.elem_list[i] )[0] - 0.6, 2) + pow(center( *m.elem_list[i] )[1] - 0.3, 2) + pow(center( *m.elem_list[i] )[2] - 0.5, 2) < pow(0.1 + 1e-6, 2) or pow(center( *m.elem_list[i] )[0] - 0.4, 2) + pow(center( *m.elem_list[i] )[1] - 0.7, 2) + pow(center( *m.elem_list[i] )[2] - 0.8, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.2 )^2 + ( y - 0.2 )^2 + ( z - 0.2 )^2 = (0.1)^2 or ( x - 0.6 )^2 + ( y - 0.3 )^2 + ( z - 0.5 )^2 = (0.1)^2 or ( x - 0.4 )^2 + ( y - 0.7 )^2 + ( z - 0.8 )^2 = (0.1)^2
-                        elem_list_PGD_unknown_param.push_back( m.elem_list[i]->number );
+                elem_list_param.resize(3);
+                for (unsigned n=0;n<m.elem_list.size();++n) {
+                    if ( pow(center( *m.elem_list[n] )[0] - 0.2, 2) + pow(center( *m.elem_list[n] )[1] - 0.2, 2) + pow(center( *m.elem_list[n] )[2] - 0.2, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.2 )^2 + ( y - 0.2 )^2 + ( z - 0.2 )^2 = (0.1)^2
+                        elem_list_param[0].push_back( m.elem_list[n]->number );
+                    else if ( pow(center( *m.elem_list[n] )[0] - 0.6, 2) + pow(center( *m.elem_list[n] )[1] - 0.3, 2) + pow(center( *m.elem_list[n] )[2] - 0.5, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.6 )^2 + ( y - 0.3 )^2 + ( z - 0.5 )^2 = (0.1)^2
+                        elem_list_param[1].push_back( m.elem_list[n]->number );
+                    else if ( pow(center( *m.elem_list[n] )[0] - 0.4, 2) + pow(center( *m.elem_list[n] )[1] - 0.7, 2) + pow(center( *m.elem_list[n] )[2] - 0.8, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.4 )^2 + ( y - 0.7 )^2 + ( z - 0.8 )^2 = (0.1)^2
+                        elem_list_param[2].push_back( m.elem_list[n]->number );
                 }
             }
         }
@@ -64,7 +75,7 @@ void define_unknown_param_zone( TF &f, TM &m, const string &structure, TV &elem_
 /// Construction et resolution du pb en espace
 ///-------------------------------------------
 template<class TM, class TF, class T, class TV, class TMAT, class TVVV>
-void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_s, const TV &F_p, const TMAT &K_unk_p, const TMAT &K_k_p, const Vec<unsigned> &elem_list_PGD_unknown_param, const TVVV &lambda, TVVV &psi, const bool want_iterative_solver = false, const T iterative_criterium = 1e-3 ) {
+void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_s, const TV &F_p, const TMAT &K_unk_p, const TMAT &K_k_p, const Vec<unsigned> &elem_list_param, const TVVV &lambda, TVVV &psi, const bool want_iterative_solver = false, const T iterative_criterium = 1e-3 ) {
 
     /// Construction du pb en espace
     ///-----------------------------
@@ -72,14 +83,14 @@ void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const 
     f.sollicitation = F_s * gamma_s;
     for (unsigned i=0;i<n;++i) {
 //        Vec<T> alpha_s_i;
-//        for (unsigned p=0;p<m.elem_list.size();++j) {
+//        for (unsigned p=0;p<m.elem_list.size();++p) {
         T alpha_s_i_k = dot( lambda[ i ][ nb_iterations[ i ] ], K_k_p * lambda[ n ][ k ] );
         T alpha_s_i_unk = dot( lambda[ i ][ nb_iterations[ i ] ], K_unk_p * lambda[ n ][ k ] );
-        for (unsigned j=0;j<m.elem_list.size();++j) {
-            if ( find( elem_list_PGD_unknown_param, _1 == j ) )
-                m.elem_list[j]->set_field( "phi_elem_PGD_unknown_param", alpha_s_i_unk );
+        for (unsigned n=0;n<m.elem_list.size();++n) {
+            if ( find( elem_list_param, _1 == n ) )
+                m.elem_list[n]->set_field( "alpha", alpha_s_i_unk );
             else
-                m.elem_list[j]->set_field( "phi_elem_PGD_unknown_param", alpha_s_i_k );
+                m.elem_list[n]->set_field( "alpha", alpha_s_i_k );
         }
         f.assemble( true, false );
         f.sollicitation -= f.matrices(Number<0>()) * psi[ i ][ nb_iterations[ i ] ];
@@ -87,10 +98,10 @@ void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const 
     T alpha_s_unk = dot( lambda[ n ][ k ], K_unk_p * lambda[ n ][ k ] );
     T alpha_s_k = dot( lambda[ n ][ k ], K_k_p * lambda[ n ][ k ] );
     for (unsigned i=0;i<m.elem_list.size();++i) {
-        if ( find( elem_list_PGD_unknown_param, _1 == i ) )
-            m.elem_list[i]->set_field( "phi_elem_PGD_unknown_param", alpha_s_unk );
+        if ( find( elem_list_param, _1 == n ) )
+            m.elem_list[i]->set_field( "alpha", alpha_s_unk );
         else
-            m.elem_list[i]->set_field( "phi_elem_PGD_unknown_param", alpha_s_k );
+            m.elem_list[i]->set_field( "alpha", alpha_s_k );
     }
     f.assemble( true, false );
     
