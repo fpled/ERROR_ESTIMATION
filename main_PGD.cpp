@@ -252,8 +252,8 @@ int main( int argc, char **argv ) {
     ///------------------------------------------------------------
     create_material_properties( f, m, structure, loading );
     create_boundary_conditions( f, m, boundary_condition_D, "direct", structure, loading, mesh_size );
-    Vec< Vec<unsigned> > elem_list_param; // liste des elements definissant les zones avec parametre materiau inconnu
-    define_unknown_param_zone( f, m, structure, elem_list_param );
+    Vec< Vec<unsigned> > elem_list_param; // liste des elements definissant les zones avec parametre inconnu
+    define_elem_list_param( f, m, structure, elem_list_param );
     if ( want_solve_ref ) {
         create_material_properties( f_ref, m_ref, structure, loading );
         create_boundary_conditions( f_ref, m_ref, boundary_condition_D, "direct", structure, loading, mesh_size );
@@ -262,32 +262,32 @@ int main( int argc, char **argv ) {
     /// Defintion des fonctions a variables separees
     ///---------------------------------------------
     unsigned nb_modes; // nb de modes dans la decomposition
-    Vec< Vec<T> > dep_space;
-    Vec< Vec<T> > dep_param;
-    Vec< Vec< Vec<T>, max_iter+1 >, max_mode > psi;
-    Vec< Vec< Vec<T>, max_iter+1 >, max_mode > lambda;
+    Vec< Vec<T> > dep_space, dep_param;
+    Vec< Vec< Vec<T>, max_iter+1 >, max_mode > psi, lambda;
     Vec<unsigned> nb_iterations; // nb d'iterations de l'algorithme de type point fixe pour chaque mode
     nb_iterations.resize( max_mode );
     nb_iterations.set( 1 );
-    static Vec<T> residual_mode; // residu au sens faible associe a la solution a variables separees pour chaque mode
-    residual_mode.resize( max_mode );
-    residual_mode.set( 0. );
+    static Vec<T> residual; // residu au sens faible associe a la solution a variables separees pour chaque mode
+    residual.resize( max_mode );
+    residual.set( 0. );
     Vec<T> vals_param;
     for (unsigned i=0;i<m_param.node_list.size();++i)
         vals_param.push_back( m_param.node_list[i].pos[0] );
     Vec< DisplayParaview, max_mode > dp_space, dp_param;
     Vec< DisplayParaview, nb_vals_param_verif > dp_space_verif;
-    string prefix_space = define_prefix( m, pathname, "direct", structure, loading, mesh_size ) + "_space_mesh";
-    string prefix_param = define_prefix( m, pathname, "direct", structure, loading, mesh_size ) + "_param_mesh";
-    Vec<string> lp_space;
+    string prefix = define_prefix( m, pathname, "direct", structure, loading, mesh_size );
+    string prefix_space = prefix + "_space_mesh";
+    string prefix_param = prefix + "_param_mesh";
+    Vec<string> lp_space, lp_param;
     lp_space.push_back( "dep" );
     lp_space.push_back( "young_eff" );
-    Vec<string> lp_param;
     lp_param.push_back( "dep" );
     
     typedef Mat<T, Sym<>, SparseLine<> > TMatSymSparse;
-    TMatSymSparse K_s, K_unk_s, K_k_s, K_unk_p, K_k_p;
-    Vec<T> F_s, F_p;
+    Vec<TMatSymSparse> K_space, K_param;
+    K_space.resize(elem_list_param.size());
+    K_param.resize(elem_list_param.size());
+    Vec<T> F_space, F_param;
     
     /// Verification des conditions cinematiques
     ///-----------------------------------------
@@ -307,25 +307,18 @@ int main( int argc, char **argv ) {
     else {
         f.allocate_matrices();
         f.shift();
-        f.assemble();
-        K_s = f.matrices(Number<0>());
-        F_s = f.sollicitation;
-        for (unsigned n=0;n<m.elem_list.size();++n) {
-            if ( find( elem_list_param, _1 == n ) )
-                m.elem_list[n]->set_field( "alpha", 1. );
-            else
-                m.elem_list[n]->set_field( "alpha", 0. );
+        f.assemble( false, true );
+        F_space = f.sollicitation;
+        for (unsigned i=0;i<elem_list_param.size();++i) {
+            for (unsigned n=0;n<m.elem_list.size();++n) {
+                if ( find( elem_list_param[i], _1 == n ) )
+                    m.elem_list[n]->set_field( "alpha", 1. );
+                else
+                    m.elem_list[n]->set_field( "alpha", 0. );
+            }
+            f.assemble( true, false );
+            K_space[i] = f.matrices(Number<0>());
         }
-        f.assemble( true, false );
-        K_unk_s = f.matrices(Number<0>());
-        for (unsigned n=0;n<m.elem_list.size();++n) {
-            if ( find( elem_list_param, _1 == n ) )
-                m.elem_list[n]->set_field( "alpha", 0. );
-            else
-                m.elem_list[n]->set_field( "alpha", 1. );
-        }
-        f.assemble( true, false );
-        K_k_s = f.matrices(Number<0>());
 
         f_unknown_param.allocate_matrices();
         f_unknown_param.shift();
@@ -452,13 +445,13 @@ int main( int argc, char **argv ) {
             
             /// Residu au sens faible associe a la solution u_n
             ///------------------------------------------------
-            T residual = 0.;
-            T residual_sollicitation = 0.;
+            T res = 0.;
+            T res_sollicitation = 0.;
             for (unsigned i=0;i<n+1;++i) {
                 T gamma_p = dot( F_s, psi[ i ][ nb_iterations[ i ] ] );
                 T gamma_s = dot( F_p, lambda[ i ][ nb_iterations[ i ] ] );
-                residual_sollicitation += gamma_p * gamma_s;
-                residual -= gamma_p * gamma_s;
+                res_sollicitation += gamma_p * gamma_s;
+                res -= gamma_p * gamma_s;
                 for (unsigned j=0;j<n+1;++j) {
                     T alpha_p_unk = dot( psi[ i ][ nb_iterations[ i ] ], K_unk_s * psi[ j ][ nb_iterations[ j ] ] );
                     T alpha_p_k = dot( psi[ i ][ nb_iterations[ i ] ], K_k_s * psi[ j ][ nb_iterations[ j ] ] );
@@ -466,19 +459,19 @@ int main( int argc, char **argv ) {
                     T alpha_s_unk = dot( lambda[ i ][ nb_iterations[ i ] ], K_unk_p * lambda[ j ][ nb_iterations[ j ] ] );
                     T alpha_s_k = dot( lambda[ i ][ nb_iterations[ i ] ], K_k_p * lambda[ j ][ nb_iterations[ j ] ] );
                     
-                    residual += alpha_p_unk * alpha_s_unk + alpha_p_k * alpha_s_k;
+                    res += alpha_p_unk * alpha_s_unk + alpha_p_k * alpha_s_k;
                 }
             }
             
 //            cout << "mode " << n << endl;
 //            cout << "iteration " << k << endl;
 //            cout << "residu =" << endl;
-//            cout << residual << endl;
-//            cout << residual_sollicitation << endl;
-            residual = fabs( residual ) / fabs( residual_sollicitation );
-            residual_mode[ n ] = residual;
-            cout << "Residu au sens faible associe a la solution u_" << n << " = " << residual_mode[ n ] << endl << endl;
-            if ( /*fabs( residual_mode[ n ] ) < tol_global_convergence_criterium or*/ n >= max_mode-1 ) {
+//            cout << res << endl;
+//            cout << res_sollicitation << endl;
+            res = fabs( res ) / fabs( res_sollicitation );
+            residual[ n ] = res;
+            cout << "Residu au sens faible associe a la solution u_" << n << " = " << residual[ n ] << endl << endl;
+            if ( /*fabs( residual[ n ] ) < tol_global_convergence_criterium or*/ n >= max_mode-1 ) {
                 nb_modes = n+1;
                 cout << "nb de modes = " << nb_modes << endl << endl;
                 break;

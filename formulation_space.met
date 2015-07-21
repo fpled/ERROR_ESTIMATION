@@ -79,7 +79,7 @@ integration_lang := "cpp"
 # Choix du degre polynomial pour integration des fonctions d'enrichissement (handbook)
 #-------------------------------------------------------------------------------------
 degre_poly_handbook := 1
-if want_local_enrichement
+if want_local_enrichment
     degre_poly_handbook = 10
 
 # Hyptothese sur le jacobien : false, true
