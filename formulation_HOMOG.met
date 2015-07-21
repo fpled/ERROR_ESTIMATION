@@ -77,6 +77,8 @@ integration_lang := "cpp"
 # Choix du degre polynomial pour integration des fonctions d'enrichissement (handbook)
 #-------------------------------------------------------------------------------------
 degre_poly_handbook := 1
+if want_local_enrichement
+    degre_poly_handbook = 10
 
 # Hyptothese sur le jacobien : false, true
 #-----------------------------------------
@@ -209,10 +211,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
 
         f_surf_handbook := Vec[ Op, dim ]()
         if want_local_enrichment
-            pos_handbook := Vec[ Op, dim ]()
-            for d in 0 .. dim
-                pos_handbook[ d ] = symbol( "f.m->pos_handbook[ $d ]", tex_name = "P_{$d}" )
-            OM := pos - pos_handbook
+            OM := pos - pos_handbook.expr
             Galerkin_vector := Galerkin_vector_function( dim, OM, mu.expr, phi_handbook_for_pointwise_force_in_infinite_domain.expr, phi_handbook_for_pointwise_pre_sigma_in_infinite_domain.expr, phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain.expr )
             dep_handbook_ := dep_handbook_function( e, Galerkin_vector, la.expr, mu.expr )
             epsilon_handbook = grad_sym( dep_handbook_ )

@@ -20,7 +20,7 @@ using namespace std;
 /// Creation des proprietes materiaux
 ///----------------------------------
 template<class TF, class TM, class TVV>
-void define_unknown_param_zone( TF &f, TM &m, const string &structure, TVV &elem_list_param ) {
+void define_elem_list_param( TF &f, TM &m, const string &structure, TVV &elem_list_param ) {
 
     static const unsigned dim = TM::dim;
     typedef typename TM::TNode::T T;
@@ -35,6 +35,8 @@ void define_unknown_param_zone( TF &f, TM &m, const string &structure, TVV &elem
                 elem_list_param.resize(1);
                 for (unsigned n=0;n<m.elem_list.size();++n) {
                     if ( center( *m.elem_list[n] )[1] < 0.5 )
+                        elem_list_param[1].push_back( m.elem_list[n]->number );
+                    else
                         elem_list_param[0].push_back( m.elem_list[n]->number );
                 }
             }
@@ -44,11 +46,13 @@ void define_unknown_param_zone( TF &f, TM &m, const string &structure, TVV &elem
                 elem_list_param.resize(3);
                 for (unsigned n=0;n<m.elem_list.size();++n) {
                     if ( pow(center( *m.elem_list[n] )[0] - 0.2, 2) + pow(center( *m.elem_list[n] )[1] - 0.2, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.2 )^2 + ( y - 0.2 )^2 = (0.1)^2
-                        elem_list_param[0].push_back( m.elem_list[n]->number );
-                    else if ( pow(center( *m.elem_list[n] )[0] - 0.6, 2) + pow(center( *m.elem_list[n] )[1] - 0.3, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.6 )^2 + ( y - 0.3 )^2 = (0.1)^2
                         elem_list_param[1].push_back( m.elem_list[n]->number );
-                    else if ( pow(center( *m.elem_list[n] )[0] - 0.4, 2) + pow(center( *m.elem_list[n] )[1] - 0.7, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.4 )^2 + ( y - 0.7 )^2 = (0.1)^2
+                    else if ( pow(center( *m.elem_list[n] )[0] - 0.6, 2) + pow(center( *m.elem_list[n] )[1] - 0.3, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.6 )^2 + ( y - 0.3 )^2 = (0.1)^2
                         elem_list_param[2].push_back( m.elem_list[n]->number );
+                    else if ( pow(center( *m.elem_list[n] )[0] - 0.4, 2) + pow(center( *m.elem_list[n] )[1] - 0.7, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.4 )^2 + ( y - 0.7 )^2 = (0.1)^2
+                        elem_list_param[3].push_back( m.elem_list[n]->number );
+                    else
+                        elem_list_param[0].push_back( m.elem_list[n]->number );
                 }
             }
         }
@@ -61,11 +65,13 @@ void define_unknown_param_zone( TF &f, TM &m, const string &structure, TVV &elem
                 elem_list_param.resize(3);
                 for (unsigned n=0;n<m.elem_list.size();++n) {
                     if ( pow(center( *m.elem_list[n] )[0] - 0.2, 2) + pow(center( *m.elem_list[n] )[1] - 0.2, 2) + pow(center( *m.elem_list[n] )[2] - 0.2, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.2 )^2 + ( y - 0.2 )^2 + ( z - 0.2 )^2 = (0.1)^2
-                        elem_list_param[0].push_back( m.elem_list[n]->number );
-                    else if ( pow(center( *m.elem_list[n] )[0] - 0.6, 2) + pow(center( *m.elem_list[n] )[1] - 0.3, 2) + pow(center( *m.elem_list[n] )[2] - 0.5, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.6 )^2 + ( y - 0.3 )^2 + ( z - 0.5 )^2 = (0.1)^2
                         elem_list_param[1].push_back( m.elem_list[n]->number );
-                    else if ( pow(center( *m.elem_list[n] )[0] - 0.4, 2) + pow(center( *m.elem_list[n] )[1] - 0.7, 2) + pow(center( *m.elem_list[n] )[2] - 0.8, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.4 )^2 + ( y - 0.7 )^2 + ( z - 0.8 )^2 = (0.1)^2
+                    else if ( pow(center( *m.elem_list[n] )[0] - 0.6, 2) + pow(center( *m.elem_list[n] )[1] - 0.3, 2) + pow(center( *m.elem_list[n] )[2] - 0.5, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.6 )^2 + ( y - 0.3 )^2 + ( z - 0.5 )^2 = (0.1)^2
                         elem_list_param[2].push_back( m.elem_list[n]->number );
+                    else if ( pow(center( *m.elem_list[n] )[0] - 0.4, 2) + pow(center( *m.elem_list[n] )[1] - 0.7, 2) + pow(center( *m.elem_list[n] )[2] - 0.8, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.4 )^2 + ( y - 0.7 )^2 + ( z - 0.8 )^2 = (0.1)^2
+                        elem_list_param[3].push_back( m.elem_list[n]->number );
+                    else
+                        elem_list_param[0].push_back( m.elem_list[n]->number );
                 }
             }
         }

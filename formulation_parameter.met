@@ -1,25 +1,26 @@
 import "LMT/LmtppFormulation.met"
 import "PGD/PGD.met"
 
-# Formulation associee a l'espace des parametres inconnus
-#--------------------------------------------------------
-class FormulationUnknownParam[ dim ] inherits LmtppFormulation[ dim ]
+# Formulation associee a l'espace des parametres
+#-----------------------------------------------
+class FormulationParam[ dim ] inherits LmtppFormulation[ dim ]
     dep     := Variable[[dim]]( interpolation="nodal", interpolation_base="lagrange", default_value=0, unit="m", unknown=true, tex_name = "U" )
+    density := Variable( interpolation="global", default_value=1, unit="kg/m^3", tex_name = "\\rho" )
 
     # Definition de la formulation
     # ----------------------------
     def formulation( e )
 
         pos := e.pos
-        function_param := 1 + param_function( pos[0] )
+        function_param := 1 + param_function( pos )
 
         residual := function_param * dot( dep.expr, dep.test ) * dV - dep.test[0] * dV
 
         return residual
 
-# Formulation associee a l'espace des parametres connus
-#------------------------------------------------------
-class FormulationKnownParam[ dim ] inherits LmtppFormulation[ dim ]
+# Formulation associee a l'espace des parametres
+#-----------------------------------------------
+class FormulationParam[ dim ] inherits LmtppFormulation[ dim ]
     dep     := Variable[[dim]]( interpolation="nodal", interpolation_base="lagrange", default_value=0, unit="m", unknown=true, tex_name = "U" )
 
     # Definition de la formulation
@@ -36,7 +37,7 @@ pb_name := "param"
 
 # Liste de formulations
 #----------------------
-formList := [ FormulationUnknownParam, FormulationKnownParam ]
+formList := [ FormulationParam ]
 
 # Liste d'elements
 #-----------------
