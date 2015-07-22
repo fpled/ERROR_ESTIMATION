@@ -247,8 +247,8 @@ int main( int argc, char **argv ) {
     ///------------------------------------------------------------
     create_material_properties( f, m, structure, loading );
     create_boundary_conditions( f, m, boundary_condition_D, "direct", structure, loading, mesh_size );
-    Vec< Vec<unsigned> > elem_list_param; // liste des elements definissant les zones avec parametre inconnu
-    define_elem_list_param( f, m, structure, elem_list_param );
+    Vec< Vec<unsigned> > elem_list; // liste des elements definissant les zones avec parametre inconnu
+    partition_elem_list( m, structure, elem_list );
     if ( want_solve_ref ) {
         create_material_properties( f_ref, m_ref, structure, loading );
         create_boundary_conditions( f_ref, m_ref, boundary_condition_D, "direct", structure, loading, mesh_size );
@@ -258,14 +258,14 @@ int main( int argc, char **argv ) {
     ///-----------------------------------
     Vec<TM_param> m_param;
     m_param.resize( elem_list_parm.size()-1 );
-    for (unsigned p=0;p<elem_list_param.size()-1;++p)
+    for (unsigned p=0;p<elem_list.size()-1;++p)
         create_structure_param( m_param[p], min_param, max_param, nb_points_param );
 
     /// Formulation en parametre du pb direct
     ///--------------------------------------
     Vec<TF_param> f_param;
     f_param.resize( elem_list_parm.size()-1 );
-    for (unsigned p=0;p<elem_list_param.size()-1;++p)
+    for (unsigned p=0;p<elem_list.size()-1;++p)
         f_param[p]( m_param[p] );
     
     /// Defintion des fonctions a variables separees
@@ -286,7 +286,7 @@ int main( int argc, char **argv ) {
 //        vals_param.push_back( m_param.node_list[i].pos[0] );
     Vec< DisplayParaview, max_mode > dp_space;
     Vec< Vec< DisplayParaview, max_mode > > dp_param;
-    dp_param.resize( elem_list_param.size()-1 );
+    dp_param.resize( elem_list.size()-1 );
     Vec< DisplayParaview, nb_vals_param_verif > dp_space_verif;
     string prefix = define_prefix( m, pathname, "direct", structure, loading, mesh_size );
     string prefix_space = prefix + "_space";
@@ -297,12 +297,13 @@ int main( int argc, char **argv ) {
     lp_param.push_back( "dep" );
     
     typedef Mat<T, Sym<>, SparseLine<> > TMatSymSparse;
-    Vec<TMatSymSparse> K_space, K_param;
-    K_space.resize(elem_list_param.size());
-    K_param.resize(elem_list_param.size());
+    Vec<TMatSymSparse> K_space;
+    K_space.resize(elem_list.size());
+    Vec< Vec<TMatSymSparse,2> > K_param;
+    K_param.resize(elem_list.size()-1);
     Vec<T> F_space;
     Vec< Vec<T> > F_param;
-    F_param.resize(elem_list_param.size());
+    F_param.resize(elem_list.size()-1);
     
     /// Verification des conditions cinematiques
     ///-----------------------------------------
@@ -324,27 +325,28 @@ int main( int argc, char **argv ) {
         f.shift();
         f.assemble( false, true );
         F_space = f.sollicitation;
-        for (unsigned p=0;p<elem_list_param.size();++p) {
+        for (unsigned j=0;j<elem_list.size();++j) {
             for (unsigned n=0;n<m.elem_list.size();++n) {
-                if ( find( elem_list_param[p], _1 == n ) )
+                if ( find( elem_list[j], _1 == n ) )
                     m.elem_list[n]->set_field( "alpha", 1. );
                 else
                     m.elem_list[n]->set_field( "alpha", 0. );
             }
             f.assemble( true, false );
-            K_space[p] = f.matrices(Number<0>());
+            K_space[j] = f.matrices(Number<0>());
         }
 
-        for (unsigned p=0;p<elem_list_param.size();++p) {
+        for (unsigned p=0;p<elem_list.size()-1;++p) {
             f_param[p].allocate_matrices();
             f_param[p].shift();
-            if ( p == 0 )
-                m_param[p].phi = 0;
-            else
-                m_param[p].phi = 1;
-            f_param[p].assemble();
+            f_param[p].assemble( false, true );
             F_param[p] = f_param[p].sollicitation;
-            K_param[p] = f_param[p].matrices(Number<0>());
+            m_param[p].phi = 0;
+            f_param[p].assemble( true, false );
+            K_param[p][0] = f_param[p].matrices(Number<0>());
+            m_param[p].phi = 1;
+            f_param[p].assemble( true, false );
+            K_param[p][1] = f_param[p].matrices(Number<0>());
         }
 
         unsigned n = 0;
@@ -354,13 +356,12 @@ int main( int argc, char **argv ) {
             /// Initialisation
             ///---------------
             unsigned k = 0;
-            for (unsigned p=0;p<elem_list_param.size()-1;++p) {
+            for (unsigned p=0;p<elem_list.size()-1;++p) {
                 lambda[ p ][ n ][ 0 ].resize( f_param[p].vectors[0].size() );
                 lambda[ p ][ n ][ 0 ].set( 1. );
-                f_param[p].vectors[0] = lambda[ n ][ 0 ];
             }
             psi[ n ][ 0 ].resize( f.vectors[0].size() );
-            solve_PGD_space( m, f, n, k, nb_iterations, F_space, F_param, K_param, elem_list_param, lambda, psi, want_iterative_solver, iterative_criterium );
+            solve_PGD_space( m, f, n, k, nb_iterations, F_space, F_param, K_param, elem_list, lambda, psi, want_iterative_solver, iterative_criterium );
             if ( want_normalization ) {
                 psi[ n ][ k ] /= sqrt( dot( psi[ n ][ k ], K_s * psi[ n ][ k ] ) );
                 f.vectors[0] = psi[ n ][ k ];
@@ -370,8 +371,10 @@ int main( int argc, char **argv ) {
             
             if ( save_pvd_PGD_space or display_pvd_PGD_space )
                 dp_space[ n ].add_mesh_iter( m, prefix_space + "_mode_" + to_string( n ), lp_space, k );
-            if ( save_pvd_PGD_param or display_pvd_PGD_param )
-                dp_param[ n ].add_mesh_iter( m_param, prefix_param + "_mode_" + to_string( n ), lp_param, k );
+            if ( save_pvd_PGD_param or display_pvd_PGD_param ) {
+                for (unsigned p=0;p<elem_list.size()-1;++p)
+                    dp_param[ p ][ n ].add_mesh_iter( m_param, prefix_param + "_mode_" + to_string( n ), lp_param, k );
+            }
             
             while ( true ) {
                 k++;
@@ -381,13 +384,16 @@ int main( int argc, char **argv ) {
                 
                 psi[ n ][ k ] = psi[ n ][ k-1 ];
                 
-                /// Construction et resolution du pb en parametre
-                ///----------------------------------------------
-                solve_PGD_param( m_param, f_unknown_param, n, k, nb_iterations, F_param, K_unk_p, K_k_p, F_space, K_unk_s, K_k_s, psi, lambda );
+                /// Construction et resolution des pbs en parametre
+                ///------------------------------------------------
+                for (unsigned p=0;p<elem_list.size()-1;++p) {
+                    m_param[p].phi = 1;
+                    solve_PGD_param( m_param[p], f_param[p], n, k, nb_iterations, F_param, K_param, F_space, K_space, psi, lambda );
+                }
                 
                 /// Construction et resolution du pb en espace
                 ///-------------------------------------------
-                solve_PGD_space( m, f, n, k, nb_iterations, F_space, F_param, K_unk_p, K_k_p, elem_list_param, lambda, psi, want_iterative_solver, iterative_criterium );
+                solve_PGD_space( m, f, n, k, nb_iterations, F_space, F_param, K_param, elem_list, lambda, psi, want_iterative_solver, iterative_criterium );
                 
                 /// Normalisation de la fonction psi en espace
                 ///-------------------------------------------
@@ -507,7 +513,7 @@ int main( int argc, char **argv ) {
             for (unsigned p=0;p<nb_vals_param_verif;++p) {
                 unsigned ind_in_vals_param = rand() % nb_points_param;
                 for (unsigned n=0;n<m.elem_list.size();++n) {
-                    if ( find( elem_list_param, _1 == n ) )
+                    if ( find( elem_list, _1 == n ) )
                         m.elem_list[n]->set_field( "alpha", 1. + vals_param[ ind_in_vals_param ] );
                     else
                         m.elem_list[n]->set_field( "alpha", 1. );

@@ -19,8 +19,8 @@ using namespace std;
 
 /// Creation des proprietes materiaux
 ///----------------------------------
-template<class TF, class TM, class TVV>
-void define_elem_list_param( TF &f, TM &m, const string &structure, TVV &elem_list_param ) {
+template<class TM, class TVV>
+void partition_elem_list( TM &m, const string &structure, TVV &elem_list ) {
 
     static const unsigned dim = TM::dim;
     typedef typename TM::TNode::T T;
@@ -32,27 +32,27 @@ void define_elem_list_param( TF &f, TM &m, const string &structure, TVV &elem_li
             /// Plaque rectangulaire 2D en flexion
             ///-----------------------------------
             if ( structure == "plate_flexion" ) {
-                elem_list_param.resize(1);
+                elem_list.resize(2);
                 for (unsigned n=0;n<m.elem_list.size();++n) {
                     if ( center( *m.elem_list[n] )[1] < 0.5 )
-                        elem_list_param[1].push_back( m.elem_list[n]->number );
+                        elem_list[0].push_back( m.elem_list[n]->number );
                     else
-                        elem_list_param[0].push_back( m.elem_list[n]->number );
+                        elem_list[1].push_back( m.elem_list[n]->number );
                 }
             }
             /// Inclusions circulaires 2D
             ///--------------------------
             else if (structure == "circular_inclusions") {
-                elem_list_param.resize(3);
+                elem_list.resize(4);
                 for (unsigned n=0;n<m.elem_list.size();++n) {
                     if ( pow(center( *m.elem_list[n] )[0] - 0.2, 2) + pow(center( *m.elem_list[n] )[1] - 0.2, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.2 )^2 + ( y - 0.2 )^2 = (0.1)^2
-                        elem_list_param[1].push_back( m.elem_list[n]->number );
+                        elem_list[0].push_back( m.elem_list[n]->number );
                     else if ( pow(center( *m.elem_list[n] )[0] - 0.6, 2) + pow(center( *m.elem_list[n] )[1] - 0.3, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.6 )^2 + ( y - 0.3 )^2 = (0.1)^2
-                        elem_list_param[2].push_back( m.elem_list[n]->number );
+                        elem_list[1].push_back( m.elem_list[n]->number );
                     else if ( pow(center( *m.elem_list[n] )[0] - 0.4, 2) + pow(center( *m.elem_list[n] )[1] - 0.7, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.4 )^2 + ( y - 0.7 )^2 = (0.1)^2
-                        elem_list_param[3].push_back( m.elem_list[n]->number );
+                        elem_list[2].push_back( m.elem_list[n]->number );
                     else
-                        elem_list_param[0].push_back( m.elem_list[n]->number );
+                        elem_list[3].push_back( m.elem_list[n]->number );
                 }
             }
         }
@@ -62,16 +62,16 @@ void define_elem_list_param( TF &f, TM &m, const string &structure, TVV &elem_li
             /// Inclusions spheriques 3D
             ///-------------------------
             if (structure == "spherical_inclusions") {
-                elem_list_param.resize(3);
+                elem_list.resize(4);
                 for (unsigned n=0;n<m.elem_list.size();++n) {
                     if ( pow(center( *m.elem_list[n] )[0] - 0.2, 2) + pow(center( *m.elem_list[n] )[1] - 0.2, 2) + pow(center( *m.elem_list[n] )[2] - 0.2, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.2 )^2 + ( y - 0.2 )^2 + ( z - 0.2 )^2 = (0.1)^2
-                        elem_list_param[1].push_back( m.elem_list[n]->number );
+                        elem_list[0].push_back( m.elem_list[n]->number );
                     else if ( pow(center( *m.elem_list[n] )[0] - 0.6, 2) + pow(center( *m.elem_list[n] )[1] - 0.3, 2) + pow(center( *m.elem_list[n] )[2] - 0.5, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.6 )^2 + ( y - 0.3 )^2 + ( z - 0.5 )^2 = (0.1)^2
-                        elem_list_param[2].push_back( m.elem_list[n]->number );
+                        elem_list[1].push_back( m.elem_list[n]->number );
                     else if ( pow(center( *m.elem_list[n] )[0] - 0.4, 2) + pow(center( *m.elem_list[n] )[1] - 0.7, 2) + pow(center( *m.elem_list[n] )[2] - 0.8, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.4 )^2 + ( y - 0.7 )^2 + ( z - 0.8 )^2 = (0.1)^2
-                        elem_list_param[3].push_back( m.elem_list[n]->number );
+                        elem_list[2].push_back( m.elem_list[n]->number );
                     else
-                        elem_list_param[0].push_back( m.elem_list[n]->number );
+                        elem_list[3].push_back( m.elem_list[n]->number );
                 }
             }
         }
@@ -80,34 +80,45 @@ void define_elem_list_param( TF &f, TM &m, const string &structure, TVV &elem_li
 
 /// Construction et resolution du pb en espace
 ///-------------------------------------------
-template<class TM, class TF, class T, class TV, class TVV, class TMATV, class TVVV>
-void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_space, const TVV &F_param, const TMATV &K_param, const Vec<unsigned> &elem_list_param, const TVVV &lambda, TVVV &psi, const bool want_iterative_solver = false, const T iterative_criterium = 1e-3 ) {
+template<class TM, class TF, class T, class TV, class TVV, class TMATV, class TVVV, class TVVVV>
+void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_space, const TVV &F_param, const TMATVV &K_param, const Vec<unsigned> &elem_list, const TVVVV &lambda, TVVV &psi, const bool want_iterative_solver = false, const T iterative_criterium = 1e-3 ) {
 
     /// Construction du pb en espace
     ///-----------------------------
-    T gamma_s = dot( F_param, lambda[ n ][ k ] );
+    T gamma_s = 1.;
+    for (unsigned p=0;p<elem_list.size()-1;++p)
+        gamma_s *= dot( F_param[ p ], lambda[ p ][ n ][ k ] );
     f.sollicitation = F_space * gamma_s;
     for (unsigned i=0;i<n;++i) {
-//        Vec<T> alpha_s_i;
-//        for (unsigned p=0;p<elem_list_param.size();++p) {
-        T alpha_s_i_k = dot( lambda[ p ][ i ][ nb_iterations[ i ] ], K_k_p * lambda[ n ][ k ] );
-        T alpha_s_i_unk = dot( lambda[ i ][ nb_iterations[ i ] ], K_unk_p * lambda[ n ][ k ] );
-        for (unsigned n=0;n<m.elem_list.size();++n) {
-            if ( find( elem_list_param, _1 == n ) )
-                m.elem_list[n]->set_field( "alpha", alpha_s_i_unk );
-            else
-                m.elem_list[n]->set_field( "alpha", alpha_s_i_k );
+        for (unsigned j=0;j<elem_list.size();++j) {
+            T alpha_s = 1.;
+            for (unsigned p=0;p<elem_list.size()-1;++p) {
+                if ( j == p )
+                    alpha_s *= dot( lambda[ p ][ i ][ nb_iterations[ i ] ], K_param[p][1] * lambda[ p ][ n ][ k ] );
+                else
+                    alpha_s *= dot( lambda[ p ][ i ][ nb_iterations[ i ] ], K_param[p][0] * lambda[ p ][ n ][ k ] );
+            }
+            for (unsigned n=0;n<m.elem_list.size();++n) {
+                if ( find( elem_list[j], _1 == n ) )
+                    m.elem_list[n]->set_field( "alpha", alpha_s );
+            }
         }
         f.assemble( true, false );
         f.sollicitation -= f.matrices(Number<0>()) * psi[ i ][ nb_iterations[ i ] ];
     }
-    T alpha_s_unk = dot( lambda[ n ][ k ], K_unk_p * lambda[ n ][ k ] );
-    T alpha_s_k = dot( lambda[ n ][ k ], K_k_p * lambda[ n ][ k ] );
-    for (unsigned i=0;i<m.elem_list.size();++i) {
-        if ( find( elem_list_param, _1 == n ) )
-            m.elem_list[i]->set_field( "alpha", alpha_s_unk );
-        else
-            m.elem_list[i]->set_field( "alpha", alpha_s_k );
+
+    for (unsigned j=0;j<elem_list.size()-1;++j) {
+        T alpha_s = 1.;
+        for (unsigned p=0;p<elem_list.size()-1;++p) {
+            if ( j == p )
+                alpha_s *= dot( lambda[ p ][ n ][ k ], K_param[p][1] * lambda[ p ][ n ][ k ] );
+            else
+                alpha_s *= dot( lambda[ p ][ n ][ k ], K_param[p][0] * lambda[ p ][ n ][ k ] );
+        }
+        for (unsigned n=0;n<m.elem_list.size();++n) {
+            if ( find( elem_list[j], _1 == n ) )
+                m.elem_list[n]->set_field( "alpha", alpha_s );
+        }
     }
     f.assemble( true, false );
     
@@ -127,8 +138,8 @@ void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const 
 
 /// Construction et resolution du pb en parametre
 ///----------------------------------------------
-template<class TM_param, class TF_unknown_param, class TV, class TMAT, class TVVV>
-void solve_PGD_param( TM_param &m_param, TF_unknown_param &f_unknown_param, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_param, const TMAT &K_unk_p, const TMAT &K_k_p, const TV &F_space, const TMAT &K_unk_s, const TMAT &K_k_s, const TVVV &psi, TVVV &lambda ) {
+template<class TM_param, class TF_param, class TV, class TMATV, class TVVV, class TVVVV>
+void solve_PGD_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_param, const TMATV &K_param, const TV &F_space, const TMATV &K_space, const TVVV &psi, TVVVV &lambda ) {
     typedef typename TM_param::TNode::T T;
     
     /// Construction du pb en parametre
@@ -136,23 +147,23 @@ void solve_PGD_param( TM_param &m_param, TF_unknown_param &f_unknown_param, cons
     T gamma_p = dot( F_space, psi[ n ][ k ] );
     T alpha_p_unk = dot( psi[ n ][ k ], K_unk_s * psi[ n ][ k ] );
     T alpha_p_k = dot( psi[ n ][ k ], K_k_s * psi[ n ][ k ] );
-    f_unknown_param.sollicitation = F_param * gamma_p;
+    f_param.sollicitation = F_param * gamma_p;
     for (unsigned i=0;i<n;++i) {
         T alpha_p_i_unk = dot( psi[ i ][ nb_iterations[ i ] ], K_unk_s * psi[ n ][ k ] );
         T alpha_p_i_k = dot( psi[ i ][ nb_iterations[ i ] ], K_k_s * psi[ n ][ k ] );
-        f_unknown_param.sollicitation -= ( alpha_p_i_unk * K_unk_p + alpha_p_i_k * K_k_p ) * lambda[ i ][ nb_iterations[ i ] ];
+        f_param.sollicitation -= ( alpha_p_i_unk * K_unk_p + alpha_p_i_k * K_k_p ) * lambda[ i ][ nb_iterations[ i ] ];
     }
-    f_unknown_param.matrices(Number<0>()) = TMAT( alpha_p_unk * K_unk_p + alpha_p_k * K_k_p );
+    f_param.matrices(Number<0>()) = TMAT( alpha_p_unk * K_unk_p + alpha_p_k * K_k_p );
     
     /// Resolution du pb en parametre
     ///------------------------------
-    f_unknown_param.solve_system();
-    f_unknown_param.update_variables();
-    f_unknown_param.call_after_solve();
+    f_param.solve_system();
+    f_param.update_variables();
+    f_param.call_after_solve();
     
     /// Fonction lambda en parametre
     ///-----------------------------
-    lambda[ n ][ k ] = f_unknown_param.vectors[0];
+    lambda[ n ][ k ] = f_param.vectors[0];
     
 //     /// Resolution explicite du pb en parametre
 //     ///----------------------------------------
