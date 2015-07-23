@@ -1,0 +1,97 @@
+#
+# Metil Interface: SPET_met
+#
+# Description: construction de champs admissibles, methode SPET
+#
+#
+# Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2009
+#
+# Copyright: See COPYING file that comes with this distribution
+#
+#
+
+# Methode qui genere un fichier calc_elem_error_estimate_SPET_$(f->name).$(e->dim).$(e->name).h pour construire un champ de contrainte admissible et calculer la contribution d'un element a l'estimateur d'erreur
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_elem_error_estimate_SPET_init( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "calc_elem_error_estimate_SPET_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/calc_elem_error_estimate_SPET_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_elem_error_estimate_SPET_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_elem_error_estimate_SPET_$(f->name)_$(e->dim)_$(e->name)_h"
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_NodalElement.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Bar.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Triangle.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Quad.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Tetra.h\""
+            file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class T>"
+        file_ <<< "void calc_elem_error_estimate_SPET( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<T> > &E, const TTVV &vectors, const Vec<unsigned> &indices, Vec<T> &theta_elem, T &theta ) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+        deg_p := max( e->order_interpolation )
+        base := e->get_upper_degree_shape_functions( "hierarchical", deg_p + deg_k )
+        sym_e_e_expr := Vec[ Op ]()
+        e_e_expr := e->new_variable( "e", interpolation_type = "enriched_nodal", deg = deg_p + deg_k, nb_dim = [ e->dim ], sym = sym_e_e_expr, interpolation_base = "hierarchical" )
+        sym_e_e := Vec[ Op ]()
+        for i in 0 .. sym_e_e_expr.size
+            sy := Op()
+            sy = symbol( "E[ elem.number ][ $i ]" )
+            sym_e_e.push_back( sy )
+        e_e := e_e_expr.subs( sym_e_e_expr, sym_e_e )
+        sigma_hat := child_cast(f)->sigma.expr + sigma_hooke_iso( e->grad_sym( e_e ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_const_in_elem := sigma_hat.subs( e->var_inter, e->get_center_of_var_inter() )
+        cw_0 := CodeWriterAlt( "T" )
+        cw_0.add( "elem.sigma_hat_SPET", sigma_hat_const_in_elem, reassign )
+        file_ <<< "    {"
+        file_ <<< "$(cw_0.to_string( 4 ))"
+        file_ <<< "    elem.sigma_hat_tot_SPET = elem.sigma_hat_SPET + elem.sigma_handbook_PUM;"
+        file_ <<< "    }"
+        theta := Op( 0 )
+
+        e->assume_const_jac = true
+        theta_const_jac := e->grad_sym( e_e ) : sigma_hooke_iso( e->grad_sym( e_e ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        e->assume_const_jac = hyp_const_jac
+        degre_poly := theta_const_jac.poly_deg( e->var_inter )
+
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "    Vec<double> poids;"
+            file_ <<< "    Vec<Vec<double, $(e->dim)> > valeurs;"
+            file_ <<< "    gauss_points( $(e->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
+        if integration_type == "gauss_num"
+            if integration_lang == "metil"
+                theta = e->gauss_num_integration( e->grad_sym( e_e ) : sigma_hooke_iso( e->grad_sym( e_e ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly )
+            else if integration_lang == "cpp"
+                theta = e->grad_sym( e_e ) : sigma_hooke_iso( e->grad_sym( e_e ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) * e->jac
+        else if integration_type == "formal"
+            theta = e->integration( e->grad_sym( e_e ) : sigma_hooke_iso( e->grad_sym( e_e ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly )
+        if integration_type == "gauss_num" and integration_lang == "cpp"
+            file_ <<< "    for (unsigned n=0; n<poids.size(); ++n) {"
+            file_ <<< "        Vec<double> var_inter( valeurs[ n ] );"
+            file_ <<< "        T theta_tmp = 0.0;"
+            cw := CodeWriterAlt( "T" )
+            cw.add( "theta_tmp", theta, reassign )
+            file_ <<<<
+                $(cw.to_string( 8 ))
+                        theta += poids[ n ] * theta_tmp;
+                        theta_elem[ elem.number ] += poids[ n ] * theta_tmp;
+            file_ <<< "    }"
+        else
+            cw := CodeWriterAlt( "T" )
+            cw.add( "theta_elem[ elem.number ]", theta, reassign )
+            file_ <<<<
+                    {
+                $(cw.to_string( 4 ))
+                    theta += theta_elem[ elem.number ];
+                    }
+        file_ <<<<
+                elem.theta_elem_SPET = theta_elem[ elem.number ];
+                elem.theta_elem_rel_SPET = theta_elem[ elem.number ] * pow( elem.measure_virtual(), -1 );
+        file_ <<< "    #undef PNODE"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names

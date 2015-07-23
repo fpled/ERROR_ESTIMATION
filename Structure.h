@@ -1297,7 +1297,7 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
             switch ( dim ) {
             case 1 :
                 if ( direction_extractor == "x" )
-                    m_adjoint.phi_handbook_for_pointwise_force_in_infinite_domain[ 0 ] = 1;
+                    m_adjoint.phi_handbook_pointwise_force_in_infinite_domain[ 0 ] = 1;
                 else {
                     cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << dim << " n'est pas implementee..." << endl << endl;
                     throw "Anguille sous coquille...";
@@ -1305,9 +1305,9 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
                 break;
             case 2 :
                 if ( direction_extractor == "x" )
-                    m_adjoint.phi_handbook_for_pointwise_force_in_infinite_domain[ 0 ] = 1;
+                    m_adjoint.phi_handbook_pointwise_force_in_infinite_domain[ 0 ] = 1;
                 else if ( direction_extractor == "y" )
-                    m_adjoint.phi_handbook_for_pointwise_force_in_infinite_domain[ 1 ] = 1;
+                    m_adjoint.phi_handbook_pointwise_force_in_infinite_domain[ 1 ] = 1;
                 else {
                     cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << dim << " n'est pas implementee..." << endl << endl;
                     throw "Anguille sous coquille...";
@@ -1315,53 +1315,11 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
                 break;
             case 3 :
                 if ( direction_extractor == "x" )
-                    m_adjoint.phi_handbook_for_pointwise_force_in_infinite_domain[ 0 ] = 1;
+                    m_adjoint.phi_handbook_pointwise_force_in_infinite_domain[ 0 ] = 1;
                 else if ( direction_extractor == "y" )
-                    m_adjoint.phi_handbook_for_pointwise_force_in_infinite_domain[ 1 ] = 1;
+                    m_adjoint.phi_handbook_pointwise_force_in_infinite_domain[ 1 ] = 1;
                 else if ( direction_extractor == "z" )
-                    m_adjoint.phi_handbook_for_pointwise_force_in_infinite_domain[ 2 ] = 1;
-                else {
-                    cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << dim << " n'est pas implementee..." << endl << endl;
-                    throw "Anguille sous coquille...";
-                }
-                break;
-            }
-        }
-        else if ( interest_quantity == "pointwise_sigma" ) {
-            switch ( dim ) {
-            case 1 :
-                if ( direction_extractor == "xx" )
-                    m_adjoint.phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain( 0, 0 ) = 1;
-                else {
-                    cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << dim << " n'est pas implementee..." << endl << endl;
-                    throw "Anguille sous coquille...";
-                }
-                break;
-            case 2 :
-                if ( direction_extractor == "xx" )
-                    m_adjoint.phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain( 0, 0 ) = 1;
-                else if ( direction_extractor == "xy" or direction_extractor == "yx" )
-                    m_adjoint.phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain( 0, 1 ) = 1;
-                else if ( direction_extractor == "yy" )
-                    m_adjoint.phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain( 1, 1 ) = 1;
-                else {
-                    cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << dim << " n'est pas implementee..." << endl << endl;
-                    throw "Anguille sous coquille...";
-                }
-                break;
-            case 3 :
-                if ( direction_extractor == "xx" )
-                    m_adjoint.phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain( 0, 0 ) = 1;
-                else if ( direction_extractor == "xy" or direction_extractor == "yx" )
-                    m_adjoint.phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain( 0, 1 ) = 1;
-                else if ( direction_extractor == "yy" )
-                    m_adjoint.phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain( 1, 1 ) = 1;
-                else if ( direction_extractor == "xz" or direction_extractor == "zx" )
-                    m_adjoint.phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain( 0, 2 ) = 1;
-                else if ( direction_extractor == "yz" or direction_extractor == "zy" )
-                    m_adjoint.phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain( 1, 2 ) = 1;
-                else if ( direction_extractor == "zz" )
-                    m_adjoint.phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain( 2, 2 ) = 1;
+                    m_adjoint.phi_handbook_pointwise_force_in_infinite_domain[ 2 ] = 1;
                 else {
                     cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << dim << " n'est pas implementee..." << endl << endl;
                     throw "Anguille sous coquille...";
@@ -1373,7 +1331,7 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
             switch ( dim ) {
             case 1 :
                 if ( direction_extractor == "xx" )
-                    m_adjoint.phi_handbook_for_pointwise_pre_sigma_in_infinite_domain( 0, 0 ) = 1;
+                    m_adjoint.phi_handbook_pointwise_pre_sigma_in_infinite_domain( 0, 0 ) = 1;
                 else {
                     cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << dim << " n'est pas implementee..." << endl << endl;
                     throw "Anguille sous coquille...";
@@ -1381,11 +1339,11 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
                 break;
             case 2 :
                 if ( direction_extractor == "xx" )
-                    m_adjoint.phi_handbook_for_pointwise_pre_sigma_in_infinite_domain( 0, 0 ) = 1;
+                    m_adjoint.phi_handbook_pointwise_pre_sigma_in_infinite_domain( 0, 0 ) = 1;
                 else if ( direction_extractor == "xy" or direction_extractor == "yx" )
-                    m_adjoint.phi_handbook_for_pointwise_pre_sigma_in_infinite_domain( 0, 1 ) = 1;
+                    m_adjoint.phi_handbook_pointwise_pre_sigma_in_infinite_domain( 0, 1 ) = 1;
                 else if ( direction_extractor == "yy" )
-                    m_adjoint.phi_handbook_for_pointwise_pre_sigma_in_infinite_domain( 1, 1 ) = 1;
+                    m_adjoint.phi_handbook_pointwise_pre_sigma_in_infinite_domain( 1, 1 ) = 1;
                 else {
                     cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << dim << " n'est pas implementee..." << endl << endl;
                     throw "Anguille sous coquille...";
@@ -1393,17 +1351,59 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
                 break;
             case 3 :
                 if ( direction_extractor == "xx" )
-                    m_adjoint.phi_handbook_for_pointwise_pre_sigma_in_infinite_domain( 0, 0 ) = 1;
+                    m_adjoint.phi_handbook_pointwise_pre_sigma_in_infinite_domain( 0, 0 ) = 1;
                 else if ( direction_extractor == "xy" or direction_extractor == "yx" )
-                    m_adjoint.phi_handbook_for_pointwise_pre_sigma_in_infinite_domain( 0, 1 ) = 1;
+                    m_adjoint.phi_handbook_pointwise_pre_sigma_in_infinite_domain( 0, 1 ) = 1;
                 else if ( direction_extractor == "yy" )
-                    m_adjoint.phi_handbook_for_pointwise_pre_sigma_in_infinite_domain( 1, 1 ) = 1;
+                    m_adjoint.phi_handbook_pointwise_pre_sigma_in_infinite_domain( 1, 1 ) = 1;
                 else if ( direction_extractor == "xz" or direction_extractor == "zx" )
-                    m_adjoint.phi_handbook_for_pointwise_pre_sigma_in_infinite_domain( 0, 2 ) = 1;
+                    m_adjoint.phi_handbook_pointwise_pre_sigma_in_infinite_domain( 0, 2 ) = 1;
                 else if ( direction_extractor == "yz" or direction_extractor == "zy" )
-                    m_adjoint.phi_handbook_for_pointwise_pre_sigma_in_infinite_domain( 1, 2 ) = 1;
+                    m_adjoint.phi_handbook_pointwise_pre_sigma_in_infinite_domain( 1, 2 ) = 1;
                 else if ( direction_extractor == "zz" )
-                    m_adjoint.phi_handbook_for_pointwise_pre_sigma_in_infinite_domain( 2, 2 ) = 1;
+                    m_adjoint.phi_handbook_pointwise_pre_sigma_in_infinite_domain( 2, 2 ) = 1;
+                else {
+                    cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << dim << " n'est pas implementee..." << endl << endl;
+                    throw "Anguille sous coquille...";
+                }
+                break;
+            }
+        }
+        else if ( interest_quantity == "pointwise_sigma" ) {
+            switch ( dim ) {
+            case 1 :
+                if ( direction_extractor == "xx" )
+                    m_adjoint.phi_handbook_pointwise_pre_epsilon_in_infinite_domain( 0, 0 ) = 1;
+                else {
+                    cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << dim << " n'est pas implementee..." << endl << endl;
+                    throw "Anguille sous coquille...";
+                }
+                break;
+            case 2 :
+                if ( direction_extractor == "xx" )
+                    m_adjoint.phi_handbook_pointwise_pre_epsilon_in_infinite_domain( 0, 0 ) = 1;
+                else if ( direction_extractor == "xy" or direction_extractor == "yx" )
+                    m_adjoint.phi_handbook_pointwise_pre_epsilon_in_infinite_domain( 0, 1 ) = 1;
+                else if ( direction_extractor == "yy" )
+                    m_adjoint.phi_handbook_pointwise_pre_epsilon_in_infinite_domain( 1, 1 ) = 1;
+                else {
+                    cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << dim << " n'est pas implementee..." << endl << endl;
+                    throw "Anguille sous coquille...";
+                }
+                break;
+            case 3 :
+                if ( direction_extractor == "xx" )
+                    m_adjoint.phi_handbook_pointwise_pre_epsilon_in_infinite_domain( 0, 0 ) = 1;
+                else if ( direction_extractor == "xy" or direction_extractor == "yx" )
+                    m_adjoint.phi_handbook_pointwise_pre_epsilon_in_infinite_domain( 0, 1 ) = 1;
+                else if ( direction_extractor == "yy" )
+                    m_adjoint.phi_handbook_pointwise_pre_epsilon_in_infinite_domain( 1, 1 ) = 1;
+                else if ( direction_extractor == "xz" or direction_extractor == "zx" )
+                    m_adjoint.phi_handbook_pointwise_pre_epsilon_in_infinite_domain( 0, 2 ) = 1;
+                else if ( direction_extractor == "yz" or direction_extractor == "zy" )
+                    m_adjoint.phi_handbook_pointwise_pre_epsilon_in_infinite_domain( 1, 2 ) = 1;
+                else if ( direction_extractor == "zz" )
+                    m_adjoint.phi_handbook_pointwise_pre_epsilon_in_infinite_domain( 2, 2 ) = 1;
                 else {
                     cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << dim << " n'est pas implementee..." << endl << endl;
                     throw "Anguille sous coquille...";

@@ -1277,7 +1277,7 @@ def calc_dep_handbook_in_infinite_domain( list_f, rep )
     for f in list_f
         e := child_cast( f->pe )
         OM := e->pos - child_cast(f)->pos_handbook.expr
-        Galerkin_vector := Galerkin_vector_function( e->dim, OM, child_cast(f)->mu.expr, child_cast(f)->phi_handbook_for_pointwise_force_in_infinite_domain.expr, child_cast(f)->phi_handbook_for_pointwise_pre_sigma_in_infinite_domain.expr, child_cast(f)->phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain.expr )
+        Galerkin_vector := Galerkin_vector_function( e->dim, OM, child_cast(f)->mu.expr, child_cast(f)->phi_handbook_pointwise_force_in_infinite_domain.expr, child_cast(f)->phi_handbook_pointwise_pre_epsilon_in_infinite_domain.expr, child_cast(f)->phi_handbook_pointwise_pre_sigma_in_infinite_domain.expr )
         u_handbook := dep_handbook_function( @e, Galerkin_vector, child_cast(f)->la.expr, child_cast(f)->mu.expr )
         file_name := "calc_dep_handbook_in_infinite_domain_$(f->name).$(e->dim).$(e->name).h"
         file_names.push_back( file_name )

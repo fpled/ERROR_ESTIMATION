@@ -854,7 +854,7 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
                         solve_using_lu_factorize( K_LU, /*vector_permutation,*/ F[ i ][ d ], U[ i ][ d ] );
                     }
                     else {
-                        cerr << "Bing. Error : type de solveur pour la minimisation non implemente" << endl << endl;
+                        cerr << "Bing. Error : solveur " << solver_minimisation << " pour la minimisation non implemente" << endl << endl;
                     }
                 }
             }

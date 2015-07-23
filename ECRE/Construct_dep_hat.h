@@ -75,7 +75,7 @@ void construct_dep_hat( const TM &m, const TF &f, const string &method, const st
             dep_hat[ n ] = inv( K_hat_Inv ) * F_hat[ n ];
         }
         else {
-            cerr << "Bing. Error : type de solveur pour la resolution des problemes locaux non implemente" << endl << endl;
+            cerr << "Bing. Error : solveur " << solver << " pour la resolution des problemes locaux non implemente" << endl << endl;
         }
     }
 

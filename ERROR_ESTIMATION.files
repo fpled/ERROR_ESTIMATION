@@ -58,6 +58,9 @@ generated/Triangle_6.3.met
 GEOMETRY/Calcul_geometry.h
 GEOMETRY/Geometry.h
 GEOMETRY/Geometry.met
+HOMOG/ECRE.met
+HOMOG/Material_properties.h
+HOMOG/SPET.met
 INTEREST_QUANTITY/Calcul_interest_quantity.h
 INTEREST_QUANTITY/Interest_quantity.h
 INTEREST_QUANTITY/Interest_quantity.met

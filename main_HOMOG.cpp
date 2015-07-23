@@ -12,6 +12,7 @@
 #include "build/problem_error_estimation/all_in_one.h" // sert a forcer le logiciel scons a generer le repertoire build et ses codes sources .h et .cpp correspondant a la formulation
 #include "Structure.h"
 #include "Material_properties.h"
+#include "HOMOG/Material_properties.h"
 #include "Boundary_conditions.h"
 #include "GEOMETRY/Calcul_geometry.h"
 #include "GEOMETRY/Geometry.h"
@@ -219,6 +220,7 @@ int main( int argc, char **argv ) {
     /// Proprietes materiaux et Conditions aux limites du pb direct
     ///------------------------------------------------------------
     set_material_properties( f, m, structure );
+    set_material_properties_init( f, m, structure );
     set_boundary_conditions( f, m, boundary_condition_D, "direct", structure, loading, mesh_size );
     if ( want_solve_ref ) {
         set_material_properties( f_ref, m_ref, structure );

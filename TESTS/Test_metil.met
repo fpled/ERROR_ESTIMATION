@@ -106,17 +106,17 @@ e.pos_nodes[3] = [110 22] # 33
 # integration_type := "gauss_num"
 # integration_lang := "cpp"
 
-# phi_handbook_for_pointwise_force_in_infinite_domain := Vec[ Op, dim ]()
-# phi_handbook_for_pointwise_pre_sigma_in_infinite_domain := Mat[ Op, Sym[dim] ]()
-# phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain := Mat[ Op, Sym[dim] ]()
+# phi_handbook_pointwise_force_in_infinite_domain := Vec[ Op, dim ]()
+# phi_handbook_pointwise_pre_sigma_in_infinite_domain := Mat[ Op, Sym[dim] ]()
+# phi_handbook_pointwise_pre_epsilon_in_infinite_domain := Mat[ Op, Sym[dim] ]()
 # for i in 0 .. dim
-    # phi_handbook_for_pointwise_force_in_infinite_domain[ i ] = 1
+    # phi_handbook_pointwise_force_in_infinite_domain[ i ] = 1
     # for j in 0 .. i+1
-        # phi_handbook_for_pointwise_pre_sigma_in_infinite_domain[ i, j ] = 1
-        # phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain[ i, j ] = 1
+        # phi_handbook_pointwise_pre_sigma_in_infinite_domain[ i, j ] = 1
+        # phi_handbook_pointwise_pre_epsilon_in_infinite_domain[ i, j ] = 1
 
 
-# Galerkin_vector := Galerkin_vector_function( dim, OM, mu,phi_handbook_for_pointwise_force_in_infinite_domain, phi_handbook_for_pointwise_pre_sigma_in_infinite_domain, phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain )
+# Galerkin_vector := Galerkin_vector_function( dim, OM, mu,phi_handbook_pointwise_force_in_infinite_domain, phi_handbook_pointwise_pre_epsilon_in_infinite_domain, phi_handbook_pointwise_pre_sigma_in_infinite_domain )
 # dep_handbook_ := dep_handbook_function( e, Galerkin_vector, la, mu )
 # epsilon_handbook := e.grad_sym( dep_handbook_ )
 # # sigma_handbook := sigma_hooke_iso( epsilon_handbook, young, poisson, type_stress_2D )

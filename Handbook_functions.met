@@ -12,7 +12,7 @@
 
 # Methode qui permet de calculer le vecteur de Galerkin B pour une force ponctuelle dans un domaine infini
 #---------------------------------------------------------------------------------------------------------
-def Galerkin_vector_for_pointwise_force_in_infinite_domain( dim, pos, mu )
+def Galerkin_vector_pointwise_force_in_infinite_domain( dim, pos, mu )
     B := Vec[ Vec[ Op, dim ], dim ]()
     r := norm_2( pos )
     if dim == 2
@@ -33,7 +33,7 @@ def Galerkin_vector_for_pointwise_force_in_infinite_domain( dim, pos, mu )
 
 # Methode qui permet de calculer le vecteur de Galerkin B pour une pre-contrainte ponctuelle dans un domaine infini
 #------------------------------------------------------------------------------------------------------------------
-def Galerkin_vector_for_pointwise_pre_sigma_in_infinite_domain( dim, pos, mu )
+def Galerkin_vector_pointwise_pre_sigma_in_infinite_domain( dim, pos, mu )
     B := Mat[ Vec[ Op, dim ], Sym[dim] ]()
     r := norm_2( pos )
     if dim == 2
@@ -58,14 +58,14 @@ def Galerkin_vector_for_pointwise_pre_sigma_in_infinite_domain( dim, pos, mu )
 
 # Methode qui permet de calculer le vecteur de Galerkin B generalise
 #-------------------------------------------------------------------
-def Galerkin_vector_function( dim, pos, mu, phi_handbook_for_pointwise_force_in_infinite_domain, phi_handbook_for_pointwise_pre_sigma_in_infinite_domain, phi_handbook_for_pointwise_pre_epsilon_in_infinite_domain )
-    B_for_pointwise_force_in_infinite_domain := Galerkin_vector_for_pointwise_force_in_infinite_domain( dim, pos, mu )
-    B_for_pointwise_pre_sigma_in_infinite_domain := Galerkin_vector_for_pointwise_pre_sigma_in_infinite_domain( dim, pos, mu )
+def Galerkin_vector_function( dim, pos, mu, phi_handbook_pointwise_force_in_infinite_domain, phi_handbook_pointwise_pre_epsilon_in_infinite_domain, phi_handbook_pointwise_pre_sigma_in_infinite_domain )
+    B_pointwise_force_in_infinite_domain := Galerkin_vector_pointwise_force_in_infinite_domain( dim, pos, mu )
+    B_pointwise_pre_sigma_in_infinite_domain := Galerkin_vector_pointwise_pre_sigma_in_infinite_domain( dim, pos, mu )
     B := Vec[ Op, dim ]()
     for i in 0 .. dim
-        B += B_for_pointwise_force_in_infinite_domain[ i ] * phi_handbook_for_pointwise_force_in_infinite_domain[ i ]
+        B += B_pointwise_force_in_infinite_domain[ i ] * phi_handbook_pointwise_force_in_infinite_domain[ i ]
         for j in 0 .. i+1
-            B += B_for_pointwise_pre_sigma_in_infinite_domain[ i, j ] * phi_handbook_for_pointwise_pre_sigma_in_infinite_domain[ i, j ]
+            B += B_pointwise_pre_sigma_in_infinite_domain[ i, j ] * phi_handbook_pointwise_pre_sigma_in_infinite_domain[ i, j ]
     return B
 
 # Methode qui permet de calculer la fonction d'enrichissement (Green) dep_handbook a partir du vecteur de Galerkin B
@@ -85,7 +85,7 @@ def dep_handbook_PUM_function( e, u_handbook, phi_nodal_handbook, base )
 
 # Methode qui permet de calculer les fonctions d'enrichissement (Green) dep_handbook pour une force ponctuelle selon x en 2D et selon z en 3D dans un domaine infini
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------
-def dep_handbook_for_pointwise_force_in_infinite_domain( dim, pos, poisson, mu, type_stress_2D )
+def dep_handbook_pointwise_force_in_infinite_domain( dim, pos, poisson, mu, type_stress_2D )
     u_handbook := Vec[ Op, dim ]()
     r := norm_2( pos )
     if dim == 2
@@ -104,7 +104,7 @@ def dep_handbook_for_pointwise_force_in_infinite_domain( dim, pos, poisson, mu, 
 
 # Methode qui permet de calculer les fonctions d'enrichissement (Green) dep_handbook pour une pre-contrainte ponctuelle selon xx en 2D et selon zz en 3D dans un domaine infini
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-def dep_handbook_for_pointwise_pre_sigma_in_infinite_domain( dim, pos, poisson, mu, type_stress_2D )
+def dep_handbook_pointwise_pre_sigma_in_infinite_domain( dim, pos, poisson, mu, type_stress_2D )
     u_handbook := Vec[ Op, dim ]()
     r := norm_2( pos )
     if dim == 2

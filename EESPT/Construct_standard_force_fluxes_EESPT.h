@@ -804,7 +804,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
                     solve_using_incomplete_chol_factorize( K_fact, K_sym, F[ j ][ d ], U[ j ][ d ] );
                 }
                 else {
-                    cerr << "Bing. Error : type de solveur pour la minimisation non implemente" << endl << endl;
+                    cerr << "Bing. Error : solveur " << solver_minimisation << " pour la minimisation non implemente" << endl << endl;
                 }
             }
         }

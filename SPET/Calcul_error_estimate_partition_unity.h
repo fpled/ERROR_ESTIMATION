@@ -273,7 +273,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
             K_sym.clear();
         }
         else {
-            cerr << "Bing. Error : type de solveur pour la resolution locaux non implemente" << endl << endl;
+            cerr << "Bing. Error : solveur " << solver << " pour la resolution des problemes locaux non implemente" << endl << endl;
         }
         if ( debug_method == 0 and verif_solver == 0 ) {
             K[ j ].clear();

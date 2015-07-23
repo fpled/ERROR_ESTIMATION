@@ -143,7 +143,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
                 dep_hat_enh[ n ][ i ] = inv( K_hat_Inv ) * F_hat_enh[ n ][ i ];
             }
             else {
-                cerr << "Bing. Error : type de solveur pour la resolution locaux non implemente" << endl << endl;
+                cerr << "Bing. Error : solveur " << solver << " pour la resolution des problemes locaux non implemente" << endl << endl;
             }
         }
     }
@@ -714,7 +714,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
         solve_using_lu_factorize( K_LU, /*vector_permutation,*/ F_enh, U_enh );
     }
     else {
-        cerr << "Bing. Error : type de solveur pour la minimisation globale non implemente" << endl << endl;
+        cerr << "Bing. Error : solveur " << solver_minimisation << " pour la minimisation non implemente" << endl << endl;
     }
 
     t_solve_minimization_enhancement.stop();
