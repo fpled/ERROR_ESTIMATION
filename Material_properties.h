@@ -138,9 +138,8 @@ void change_material_properties( TF &f, TM &m, const string &structure ) {
                     m.elem_list[n]->set_field( "poisson", 0.3 );
                 }
             }
+            calc_material_coefficients_alternativeontype( m, f, Number< AreSameType< typename ExtractDM<young_DM>::ReturnType<TM>::T, void >::res >(), Number< AreSameType< typename ExtractDM<poisson_DM>::ReturnType<TM>::T, void >::res >() );
         }
-
-        calc_material_coefficients_alternativeontype( m, f, Number< AreSameType< typename ExtractDM<young_DM>::ReturnType<TM>::T, void >::res >(), Number< AreSameType< typename ExtractDM<poisson_DM>::ReturnType<TM>::T, void >::res >() );
     }
 }
 
