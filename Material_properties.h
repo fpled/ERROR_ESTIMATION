@@ -63,9 +63,8 @@ template<class TM, class TF> void calc_material_coefficients_alternativeontype( 
 /// Creation des proprietes materiaux
 ///----------------------------------
 template<class TF, class TM>
-void create_material_properties( TF &f, TM &m, const string &structure, const string &loading ) {
+void set_material_properties( TF &f, TM &m, const string &structure ) {
 
-    static const unsigned dim = TM::dim;
     typedef typename TM::TNode::T T;
 
     if ( m.node_list.size() ) {
@@ -92,34 +91,54 @@ void create_material_properties( TF &f, TM &m, const string &structure, const st
         if ( structure.find("square") != string::npos ) {
             for (unsigned n=0;n<m.elem_list.size();++n) {
                 m.elem_list[n]->set_field( "young", 2*(1+0.3)*0.9 );
-            }
-//            for (unsigned n=0;n<m.elem_list.size();++n) {
-//                if ( center( *m.elem_list[n] )[0] < 0.5 and center( *m.elem_list[n] )[1] < 0.5 ) // x < 0.5 and y < 0.5
-//                    m.elem_list[n]->set_field( "young", 2*(1+0.2)*100. );
-//                else
-//                    m.elem_list[n]->set_field( "young", 2*(1+0.3)*1. );
-//            }
-        }
-        else
-            set_field_alternativeontype( m, Number< AreSameType< typename ExtractDM<young_DM>::ReturnType<TM>::T, void >::res >(), young, young_DM() );
-
-        /// Carre 2D
-        ///---------
-        if ( structure.find("square") != string::npos ) {
-            for (unsigned n=0;n<m.elem_list.size();++n) {
                 m.elem_list[n]->set_field( "poisson", 0.3 );
             }
 //            for (unsigned n=0;n<m.elem_list.size();++n) {
-//                if ( center( *m.elem_list[n] )[0] < 0.5 and center( *m.elem_list[n] )[1] < 0.5 ) // x < 0.5 and y < 0.5
+//                if ( center( *m.elem_list[n] )[0] < 0.5 and center( *m.elem_list[n] )[1] < 0.5 ) { // x < 0.5 and y < 0.5
+//                    m.elem_list[n]->set_field( "young", 2*(1+0.2)*100. );
 //                    m.elem_list[n]->set_field( "poisson", 0.2 );
-//                else
+//                }
+//                else {
+//                    m.elem_list[n]->set_field( "young", 2*(1+0.3)*1. );
 //                    m.elem_list[n]->set_field( "poisson", 0.3 );
+//                }
 //            }
         }
-        else
+        else {
+            set_field_alternativeontype( m, Number< AreSameType< typename ExtractDM<young_DM>::ReturnType<TM>::T, void >::res >(), young, young_DM() );
             set_field_alternativeontype( m, Number< AreSameType< typename ExtractDM<poisson_DM>::ReturnType<TM>::T, void >::res >(), poisson, poisson_DM() );
+        }
 
         set_field_alternativeontype( m, Number< AreSameType< typename ExtractDM<density_DM>::ReturnType<TM>::T, void >::res >(), density, density_DM() );
+
+        calc_material_coefficients_alternativeontype( m, f, Number< AreSameType< typename ExtractDM<young_DM>::ReturnType<TM>::T, void >::res >(), Number< AreSameType< typename ExtractDM<poisson_DM>::ReturnType<TM>::T, void >::res >() );
+    }
+}
+
+template<class TF, class TM>
+void change_material_properties( TF &f, TM &m, const string &structure ) {
+
+    typedef typename TM::TNode::T T;
+
+    if ( m.node_list.size() ) {
+        /// Carre 2D
+        ///---------
+        if ( structure.find("square") != string::npos ) {
+//            for (unsigned n=0;n<m.elem_list.size();++n) {
+//                m.elem_list[n]->set_field( "young", 2*(1+0.3)*0.9 );
+//                m.elem_list[n]->set_field( "poisson", 0.3 );
+//            }
+            for (unsigned n=0;n<m.elem_list.size();++n) {
+                if ( center( *m.elem_list[n] )[0] < 0.5 and center( *m.elem_list[n] )[1] < 0.5 ) { // x < 0.5 and y < 0.5
+                    m.elem_list[n]->set_field( "young", 2*(1+0.2)*100. );
+                    m.elem_list[n]->set_field( "poisson", 0.2 );
+                }
+                else {
+                    m.elem_list[n]->set_field( "young", 2*(1+0.3)*1. );
+                    m.elem_list[n]->set_field( "poisson", 0.3 );
+                }
+            }
+        }
 
         calc_material_coefficients_alternativeontype( m, f, Number< AreSameType< typename ExtractDM<young_DM>::ReturnType<TM>::T, void >::res >(), Number< AreSameType< typename ExtractDM<poisson_DM>::ReturnType<TM>::T, void >::res >() );
     }

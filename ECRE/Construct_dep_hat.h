@@ -21,7 +21,7 @@ using namespace std;
 /// Construction des vecteurs dep_hat[ n ] pour chaque element n du maillage
 ///-------------------------------------------------------------------------
 template<class TM, class TF, class T>
-void construct_dep_hat( const TM &m, const TF &f, const string &method, const string &solver, Vec< Mat<T, Sym<> > > &K_hat, Vec< Vec<T> > &F_hat, Vec< Vec<T> > &dep_hat, const bool debug_method = false, const bool verif_solver = false, const T tol_solver = 1e-6 ) {
+void construct_dep_hat( const TM &m, const TF &f, const string &method, const string &solver, Vec< Mat<T, Sym<> > > &K_hat, Vec< Vec<T> > &F_hat, Vec< Vec<T> > &dep_hat, const bool verif_solver = false, const T tol_solver = 1e-6, const bool debug_method = false ) {
 
     cout << "Resolution des problemes locaux pour la technique " << method << endl;
     cout << "Construction des vecteurs dep_hat" << endl << endl;

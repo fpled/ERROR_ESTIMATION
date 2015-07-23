@@ -352,9 +352,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         }
     }
 
-    if ( debug_method == 0 ) {
+    if ( debug_method == 0 )
         A.free();
-    }
 
     /// Construction des vecteurs R_tilde[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
     ///---------------------------------------------------------------------------------------------------------
@@ -391,9 +390,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     }
 
     eq_indep.free();
-    if ( debug_method == 0 ) {
+    if ( debug_method == 0 )
         R.free();
-    }
 
     /// Construction des vecteurs lambda_F[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
     ///-------------------------------------------------------------------------------------------------------------

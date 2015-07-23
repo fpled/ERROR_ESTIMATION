@@ -245,13 +245,13 @@ int main( int argc, char **argv ) {
     
     /// Proprietes materiaux et Conditions aux limites du pb direct
     ///------------------------------------------------------------
-    create_material_properties( f, m, structure, loading );
-    create_boundary_conditions( f, m, boundary_condition_D, "direct", structure, loading, mesh_size );
+    set_material_properties( f, m, structure );
+    set_boundary_conditions( f, m, boundary_condition_D, "direct", structure, loading, mesh_size );
     Vec< Vec<unsigned> > elem_list; // liste des elements definissant les zones avec parametre inconnu
     partition_elem_list( m, structure, elem_list );
     if ( want_solve_ref ) {
-        create_material_properties( f_ref, m_ref, structure, loading );
-        create_boundary_conditions( f_ref, m_ref, boundary_condition_D, "direct", structure, loading, mesh_size );
+        set_material_properties( f_ref, m_ref, structure );
+        set_boundary_conditions( f_ref, m_ref, boundary_condition_D, "direct", structure, loading, mesh_size );
     }
 
     /// Maillage en parametre du pb direct
@@ -659,8 +659,8 @@ int main( int argc, char **argv ) {
             
 //            /// Proprietes materiaux et Conditions aux limites du pb de reference local
 //            ///------------------------------------------------------------------------
-//            create_material_properties( f_local_ref, m_local_ref, structure, loading );
-//            create_boundary_conditions( f_local_ref, m_local_ref, boundary_condition_D, "direct", structure, loading, mesh_size );
+//            set_material_properties( f_local_ref, m_local_ref, structure );
+//            set_boundary_conditions( f_local_ref, m_local_ref, boundary_condition_D, "direct", structure, loading, mesh_size );
             
 //            /// Resolution du pb de reference local
 //            ///------------------------------------
@@ -716,11 +716,11 @@ int main( int argc, char **argv ) {
 //            ///--------------------------
 //            TF f_adjoint( m_adjoint );
             
-//            /// Conditions aux limites du pb adjoint
-//            ///-------------------------------------
-//            create_material_properties( f_adjoint, m_adjoint, structure, loading );
-//            create_boundary_conditions( f_adjoint, m_adjoint, boundary_condition_D, "adjoint", structure, loading, mesh_size );
-//            create_load_conditions( m_adjoint, f_adjoint, m, m_crown, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, interest_quantity, direction_extractor, pointwise_interest_quantity, want_local_enrichment );
+//            /// Proprietes materiaux et Conditions aux limites du pb adjoint
+//            ///-------------------------------------------------------------
+//            set_material_properties( f_adjoint, m_adjoint, structure );
+//            set_boundary_conditions( f_adjoint, m_adjoint, boundary_condition_D, "adjoint", structure, loading, mesh_size );
+//            set_load_conditions( m_adjoint, f_adjoint, m, m_crown, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, interest_quantity, direction_extractor, pointwise_interest_quantity, want_local_enrichment );
             
 //            /// Verification des contraintes cinematiques
 //            ///------------------------------------------

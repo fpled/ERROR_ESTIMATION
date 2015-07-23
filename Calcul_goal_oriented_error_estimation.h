@@ -522,12 +522,12 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
     if ( local_improvement == "steklov" ) {
         dep_hat_lambda_min.resize( m_lambda_min.elem_list.size() );
         dep_hat_lambda_max.resize( m_lambda_max.elem_list.size() );
-        calcul_error_estimate_lambda( m, m_lambda_min, f, f_lambda_min, "direct", method, shape, k_min, theta_lambda_min, dep_hat, dep_hat_lambda_min, want_display_theta_lambda, debug_method, debug_method_enhancement, debug_error_estimate );
-        calcul_error_estimate_lambda( m, m_lambda_max, f, f_lambda_max, "direct", method, shape, k_max, theta_lambda_max, dep_hat, dep_hat_lambda_max, want_display_theta_lambda, debug_method, debug_method_enhancement, debug_error_estimate );
+        calcul_error_estimate_lambda( m, m_lambda_min, f, f_lambda_min, "direct", method, shape, k_min, theta_lambda_min, dep_hat, dep_hat_lambda_min, want_display_theta_lambda, debug_error_estimate, debug_method, debug_method_enhancement );
+        calcul_error_estimate_lambda( m, m_lambda_max, f, f_lambda_max, "direct", method, shape, k_max, theta_lambda_max, dep_hat, dep_hat_lambda_max, want_display_theta_lambda, debug_error_estimate, debug_method, debug_method_enhancement );
     }
     else if ( local_improvement == "rayleigh" ) {
         dep_hat_lambda_opt.resize( m_lambda_opt.elem_list.size() );
-        calcul_error_estimate_lambda( m, m_lambda_opt, f, f_lambda_opt, "direct", method, shape, k_opt, theta_lambda_opt, dep_hat, dep_hat_lambda_opt, want_display_theta_lambda, debug_method, debug_method_enhancement, debug_error_estimate );
+        calcul_error_estimate_lambda( m, m_lambda_opt, f, f_lambda_opt, "direct", method, shape, k_opt, theta_lambda_opt, dep_hat, dep_hat_lambda_opt, want_display_theta_lambda, debug_error_estimate, debug_method, debug_method_enhancement );
     }
     
     Vec< Vec<T> > dep_adjoint_hat_lambda_min;
@@ -535,11 +535,11 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
 
     if ( local_improvement == "steklov" ) {
         dep_adjoint_hat_lambda_min.resize( m_adjoint_lambda_min.elem_list.size() );
-        calcul_error_estimate_lambda( m_adjoint, m_adjoint_lambda_min, f_adjoint, f_adjoint_lambda_min, "adjoint", method_adjoint, shape, k_min, theta_adjoint_lambda_min, dep_adjoint_hat, dep_adjoint_hat_lambda_min, want_display_theta_lambda, debug_method, debug_method_enhancement, debug_error_estimate );
+        calcul_error_estimate_lambda( m_adjoint, m_adjoint_lambda_min, f_adjoint, f_adjoint_lambda_min, "adjoint", method_adjoint, shape, k_min, theta_adjoint_lambda_min, dep_adjoint_hat, dep_adjoint_hat_lambda_min, want_display_theta_lambda, debug_error_estimate, debug_method, debug_method_enhancement );
     }
     else if ( local_improvement == "rayleigh" ) {
         dep_adjoint_hat_lambda_opt.resize( m_adjoint_lambda_opt.elem_list.size() );
-        calcul_error_estimate_lambda( m_adjoint, m_adjoint_lambda_opt, f_adjoint, f_adjoint_lambda_opt, "adjoint", method, shape, k_opt, theta_adjoint_lambda_opt, dep_adjoint_hat, dep_adjoint_hat_lambda_opt, want_display_theta_lambda, debug_method, debug_method_enhancement, debug_error_estimate );
+        calcul_error_estimate_lambda( m_adjoint, m_adjoint_lambda_opt, f_adjoint, f_adjoint_lambda_opt, "adjoint", method, shape, k_opt, theta_adjoint_lambda_opt, dep_adjoint_hat, dep_adjoint_hat_lambda_opt, want_display_theta_lambda, debug_error_estimate, debug_method, debug_method_enhancement );
     }
     
     T gamma = 0.;

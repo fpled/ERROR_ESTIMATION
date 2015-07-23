@@ -37,7 +37,7 @@ using namespace std;
 /// Creation des conditions aux limites
 ///------------------------------------
 template<class TF, class TM>
-void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, const string &pb, const string &structure, const string &loading, const string &mesh_size ) {
+void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, const string &pb, const string &structure, const string &loading, const string &mesh_size ) {
 
     static const unsigned dim = TM::dim;
     typedef typename TM::TNode::T T;
@@ -907,7 +907,7 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
 /// Creation des conditions de chargement du pb adjoint a partir de l'extracteur
 ///-----------------------------------------------------------------------------
 template<class TM, class TF, class Pvec>
-void create_load_conditions( TM &m_adjoint, const TF &f_adjoint, const TM &m, const TM &m_crown, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const bool want_local_enrichment = false ) {
+void set_load_conditions( TM &m_adjoint, const TF &f_adjoint, const TM &m, const TM &m_crown, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const bool want_local_enrichment = false ) {
     
     if ( want_local_enrichment and interest_quantity.find("pointwise") != string::npos ) {
         if ( pointwise_interest_quantity == "node" )
@@ -977,7 +977,7 @@ void check_constraints( const TF &f ) {
 /// Creation des conditions de chargement nul
 ///------------------------------------------
 template<class TF, class TM>
-void create_null_load_conditions( TF &f, TM &m, const bool debug_geometry = false ) {
+void reset_load_conditions( TF &f, TM &m, const bool debug_geometry = false ) {
     
     static const unsigned dim = TM::dim;
     typedef typename TM::TNode::T T;

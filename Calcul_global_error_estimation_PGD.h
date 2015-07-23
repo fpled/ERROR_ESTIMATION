@@ -109,7 +109,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             balancing = 0;
             construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes_standard, F_hat, want_local_enrichment, debug_method, debug_geometry );
             
-            construct_dep_hat( m, f, "EET", solver, K_hat, F_hat, dep_part_hat, debug_method, verif_solver, tol_solver );
+            construct_dep_hat( m, f, "EET", solver, K_hat, F_hat, dep_part_hat, verif_solver, tol_solver, debug_method );
             
             for (unsigned n=0;n<nb_modes;++n) {
                 
@@ -117,7 +117,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
                 cout << "Construction d'un champ de contrainte admissible a 0 associe au mode " << n << endl;
                 cout << "-----------------------------------------------------------------------" << endl << endl;
                 
-                create_null_load_conditions( f, m, debug_geometry );
+                reset_load_conditions( f, m, debug_geometry );
                 
                 /// Construction des densites d'effort standard
                 ///--------------------------------------------
@@ -136,13 +136,13 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
                 balancing = 0;
                 construct_F_hat( m, f, pb, equilibrium, participation_elem_equilibrium, participation_elem_enhancement, vec_force_fluxes_standard_mode, F_hat, want_local_enrichment, debug_method, debug_geometry );
                 
-                construct_dep_hat( m, f, "EET", type_solver, K_hat, F_hat, dep_psi_hat[ n ], debug_method, verif_solver, tol_solver );
+                construct_dep_hat( m, f, "EET", type_solver, K_hat, F_hat, dep_psi_hat[ n ], verif_solver, tol_solver, debug_method );
             }
            
             /// Construction d'un champ de contrainte admissible par element, Calcul d'un estimateur d'erreur globale
             ///------------------------------------------------------------------------------------------------------
             
-            calcul_error_estimate_prolongation_condition( m, f, pb, "EET", theta, theta_elem, dep_part_hat, dep_psi_hat, debug_method, debug_method_enhancement, debug_error_estimate, debug_local_effectivity_index, want_global_discretization_error, want_local_discretization_error );
+            calcul_error_estimate_prolongation_condition( m, f, pb, "EET", theta, theta_elem, dep_part_hat, dep_psi_hat, want_global_discretization_error, want_local_discretization_error, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
 /*             
             if ( enhancement_with_estimator_criterium ) {
            
@@ -182,12 +182,12 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             balancing = 1;
             construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes, F_hat, want_local_enrichment, debug_method, debug_geometry );
             
-            construct_dep_hat( m, f, "EET", solver, K_hat, F_hat, dep_hat, debug_method, verif_solver, tol_solver );
+            construct_dep_hat( m, f, "EET", solver, K_hat, F_hat, dep_hat, verif_solver, tol_solver, debug_method );
             
             /// Construction de la partie amelioree des densites d'effort
             ///----------------------------------------------------------
             
-            construct_enhanced_force_fluxes_EET_EESPT( m, f, "EET", elem_flag_enh, face_flag_enh, elem_flag_bal, elem_list_enh, face_list_enh, elem_list_bal, K_hat, dep_hat, vec_force_fluxes, solver, solver_minimisation, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, debug_geometry, debug_force_fluxes_enhancement, debug_method_enhancement );
+            construct_enhanced_force_fluxes_EET_EESPT( m, f, "EET", elem_flag_enh, face_flag_enh, elem_flag_bal, elem_list_enh, face_list_enh, elem_list_bal, K_hat, dep_hat, vec_force_fluxes, solver, solver_minimisation, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, debug_force_fluxes_enhancement, debug_method_enhancement, debug_geometry );
             
             /// Verification de l'equilibre des densites d'effort standard + ameliorees
             ///-------------------------------------------------------------------------
@@ -200,12 +200,12 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             balancing = 0;
             construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes, F_hat, want_local_enrichment, debug_method_enhancement, debug_geometry );
             
-            construct_dep_hat( m, f, "EET", solver, K_hat, F_hat, dep_hat, debug_method_enhancement, verif_solver_enhancement, tol_solver_enhancement );
+            construct_dep_hat( m, f, "EET", solver, K_hat, F_hat, dep_hat, verif_solver_enhancement, tol_solver_enhancement, debug_method_enhancement );
             
             /// Construction d'un champ de contrainte admissible par element, Calcul d'un estimateur d'erreur globale
             ///------------------------------------------------------------------------------------------------------
             
-            calcul_error_estimate_prolongation_condition( m, f, pb, "EET", theta, theta_elem, dep_hat, debug_method, debug_method_enhancement, debug_error_estimate, debug_local_effectivity_index, want_global_discretization_error, want_local_discretization_error );
+            calcul_error_estimate_prolongation_condition( m, f, pb, "EET", theta, theta_elem, dep_hat, want_global_discretization_error, want_local_discretization_error, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
             
         }
 */
@@ -302,12 +302,12 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             balancing = 0;
             construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes_standard, F_hat, want_local_enrichment, debug_method, debug_geometry );
             
-            construct_dep_hat( m, f, "EESPT", solver, K_hat, F_hat, dep_hat, debug_method, verif_solver, tol_solver );
+            construct_dep_hat( m, f, "EESPT", solver, K_hat, F_hat, dep_hat, verif_solver, tol_solver, debug_method );
             
             /// Construction d'un champ de contrainte admissible par element, Calcul d'un estimateur d'erreur globale
             ///------------------------------------------------------------------------------------------------------
             
-            calcul_error_estimate_prolongation_condition( m, f, pb, "EESPT", theta, theta_elem, dep_hat, debug_method, debug_method_enhancement, debug_error_estimate, debug_local_effectivity_index, want_global_discretization_error, want_local_discretization_error );
+            calcul_error_estimate_prolongation_condition( m, f, pb, "EESPT", theta, theta_elem, dep_hat, want_global_discretization_error, want_local_discretization_error, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
             
             if ( enhancement_with_estimator_criterium ) {
                 
@@ -346,12 +346,12 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             balancing = 1;
             construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes, F_hat, want_local_enrichment, debug_method, debug_geometry );
             
-            construct_dep_hat( m, f, "EESPT", solver, K_hat, F_hat, dep_hat, debug_method, verif_solver, tol_solver );
+            construct_dep_hat( m, f, "EESPT", solver, K_hat, F_hat, dep_hat, verif_solver, tol_solver, debug_method );
             
             /// Construction de la partie amelioree des densites d'effort
             ///----------------------------------------------------------
             
-            construct_enhanced_force_fluxes_EET_EESPT( m, f, "EESPT", elem_flag_enh, face_flag_enh, elem_flag_bal, elem_list_enh, face_list_enh, elem_list_bal, K_hat, dep_hat, vec_force_fluxes, solver, solver_minimisation, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, debug_geometry, debug_force_fluxes_enhancement, debug_method_enhancement );
+            construct_enhanced_force_fluxes_EET_EESPT( m, f, "EESPT", elem_flag_enh, face_flag_enh, elem_flag_bal, elem_list_enh, face_list_enh, elem_list_bal, K_hat, dep_hat, vec_force_fluxes, solver, solver_minimisation, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, debug_force_fluxes_enhancement, debug_method_enhancement, debug_geometry );
             
             /// Verification de l'equilibre des densites d'effort standard + ameliorees
             ///-------------------------------------------------------------------------
@@ -364,12 +364,12 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             balancing = 0;
             construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes, F_hat, want_local_enrichment, debug_method_enhancement, debug_geometry );
             
-            construct_dep_hat( m, f, "EESPT", solver, K_hat, F_hat, dep_hat, debug_method_enhancement, verif_solver_enhancement, tol_solver_enhancement );
+            construct_dep_hat( m, f, "EESPT", solver, K_hat, F_hat, dep_hat, verif_solver_enhancement, tol_solver_enhancement, debug_method_enhancement );
             
             /// Construction d'un champ de contrainte admissible par element, Calcul d'un estimateur d'erreur globale
             ///------------------------------------------------------------------------------------------------------
             
-            calcul_error_estimate_prolongation_condition( m, f, pb, "EESPT", theta, theta_elem, dep_hat, debug_method, debug_method_enhancement, debug_error_estimate, debug_local_effectivity_index, want_global_discretization_error, want_local_discretization_error );
+            calcul_error_estimate_prolongation_condition( m, f, pb, "EESPT", theta, theta_elem, dep_hat, want_global_discretization_error, want_local_discretization_error, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
             
         }
         
