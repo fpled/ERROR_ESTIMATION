@@ -239,6 +239,8 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
         epsilon_tot = epsilon.expr + epsilon_handbook_PUM.expr
         sigma_tot = sigma.expr + sigma_handbook_PUM.expr
 
+        sigma_init = sigma.expr - pre_sigma.expr
+
         residual := sigma.expr : epsilon.test * dV - dot( f_vol.expr, dep.test ) * dV - dot( f_surf.expr, dep.test ) * dS - dot( f_nodal.expr, dep.test ) * dN
 
         residual_extractor := - ( pre_sigma.expr + sigma_hooke_iso( pre_epsilon.expr, young.expr, poisson.expr, type_stress_2D ) ) : epsilon.test * dV - dot( pre_f_vol.expr, dep.test ) * dV - dot( pre_f_surf.expr, dep.test ) * dS - dot( pre_f_nodal.expr, dep.test ) * dN

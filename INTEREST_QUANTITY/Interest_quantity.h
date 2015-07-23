@@ -50,6 +50,25 @@ struct Calcul_Dep_Handbook_In_Infinite_Domain {
 
 /// Construction du chargement du pb adjoint a partir de l'extracteur
 ///------------------------------------------------------------------
+struct Construct_Extractor_Mean_Epsilon {
+template<class TE, class TM> void operator()( TE &elem_adjoint, const TM &m, const Vec<unsigned> &elem_list_interest_quantity ) const {
+    typedef typename TE::T T;
+    for (unsigned n=0;n<elem_list_interest_quantity.size();++n) {
+        Vec<Vec<T,TE::dim>, TE::nb_nodes > pos_nodes;
+        for (unsigned i=0;i<(m.elem_list[ elem_list_interest_quantity[ n ] ]->nb_nodes_virtual());++i)
+            pos_nodes[i] = m.elem_list[ elem_list_interest_quantity[ n ] ]->node_virtual(i)->pos;
+        if ( is_inside_linear( typename TE::NE(), pos_nodes, center( elem_adjoint ) ) ) {
+            Vec<T,unsigned(TE::dim*(TE::dim+1)/2) > extractor = m.elem_list[ elem_list_interest_quantity[ n ] ]->get_field( "pre_sigma", StructForType<Vec<T,unsigned(TE::dim*(TE::dim+1)/2)> >() );
+            elem_adjoint.set_field( "pre_sigma", extractor );
+//                cout << "pre sigma = " << endl;
+//                cout << extractor << endl;
+//                Mat<T,Sym<TE::dim > > pre_sig = elem_adjoint.get_field( "pre_sigma", StructForType<Mat<T,Sym<TE::dim > > >() );
+//                cout << pre_sig << endl;
+        }
+    }
+}
+};
+
 struct Construct_Extractor_Mean_Sigma {
     template<class TE, class TM> void operator()( TE &elem_adjoint, const TM &m, const Vec<unsigned> &elem_list_interest_quantity ) const {
         typedef typename TE::T T;
@@ -64,25 +83,6 @@ struct Construct_Extractor_Mean_Sigma {
 //                cout << extractor << endl;
 //                Mat<T,Sym<TE::dim > > pre_eps = elem_adjoint.get_field( "pre_epsilon", StructForType<Mat<T,Sym<TE::dim > > >() );
 //                cout << pre_eps << endl;
-            }
-        }
-    }
-};
-
-struct Construct_Extractor_Mean_Epsilon {
-    template<class TE, class TM> void operator()( TE &elem_adjoint, const TM &m, const Vec<unsigned> &elem_list_interest_quantity ) const {
-        typedef typename TE::T T;
-        for (unsigned n=0;n<elem_list_interest_quantity.size();++n) {
-            Vec<Vec<T,TE::dim>, TE::nb_nodes > pos_nodes;
-            for (unsigned i=0;i<(m.elem_list[ elem_list_interest_quantity[ n ] ]->nb_nodes_virtual());++i)
-                pos_nodes[i] = m.elem_list[ elem_list_interest_quantity[ n ] ]->node_virtual(i)->pos;
-            if ( is_inside_linear( typename TE::NE(), pos_nodes, center( elem_adjoint ) ) ) {
-                Vec<T,unsigned(TE::dim*(TE::dim+1)/2) > extractor = m.elem_list[ elem_list_interest_quantity[ n ] ]->get_field( "pre_sigma", StructForType<Vec<T,unsigned(TE::dim*(TE::dim+1)/2)> >() );
-                elem_adjoint.set_field( "pre_sigma", extractor );
-//                cout << "pre sigma = " << endl;
-//                cout << extractor << endl;
-//                Mat<T,Sym<TE::dim > > pre_sig = elem_adjoint.get_field( "pre_sigma", StructForType<Mat<T,Sym<TE::dim > > >() );
-//                cout << pre_sig << endl;
             }
         }
     }

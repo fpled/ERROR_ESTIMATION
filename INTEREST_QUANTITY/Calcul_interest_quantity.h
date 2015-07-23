@@ -52,10 +52,10 @@ void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const strin
                         cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << dim << " n'est pas implementee..." << endl << endl;
                         throw "Anguille sous coquille...";
                     }
-                    if ( interest_quantity == "mean_sigma" )
-                        m.elem_list[n]->set_field( "pre_epsilon", extractor );
-                    else if ( interest_quantity == "mean_epsilon" )
+                    if ( interest_quantity == "mean_epsilon" )
                         m.elem_list[n]->set_field( "pre_sigma", extractor );
+                    else if ( interest_quantity == "mean_sigma" )
+                        m.elem_list[n]->set_field( "pre_epsilon", extractor );
                 }
                 else if ( dim == 2 ) {
                     Vec<T,3> extractor;
@@ -70,10 +70,10 @@ void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const strin
                         cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << dim << " n'est pas implementee..." << endl << endl;
                         throw "Anguille sous coquille...";
                     }
-                    if ( interest_quantity == "mean_sigma" )
-                        m.elem_list[n]->set_field( "pre_epsilon", extractor );
-                    else if ( interest_quantity == "mean_epsilon" )
+                    if ( interest_quantity == "mean_epsilon" )
                         m.elem_list[n]->set_field( "pre_sigma", extractor );
+                    else if ( interest_quantity == "mean_sigma" )
+                        m.elem_list[n]->set_field( "pre_epsilon", extractor );
                 }
                 else if ( dim == 3 ) {
                     Vec<T,6> extractor;
@@ -94,10 +94,10 @@ void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const strin
                         cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << dim << " n'est pas implementee..." << endl << endl;
                         throw "Anguille sous coquille...";
                     }
-                    if ( interest_quantity == "mean_sigma" )
-                        m.elem_list[n]->set_field( "pre_epsilon", extractor );
-                    else if ( interest_quantity == "mean_epsilon" )
+                    if ( interest_quantity == "mean_epsilon" )
                         m.elem_list[n]->set_field( "pre_sigma", extractor );
+                    else if ( interest_quantity == "mean_sigma" )
+                        m.elem_list[n]->set_field( "pre_epsilon", extractor );
                 }
 //                Mat<T,Sym<dim> > pre_eps = m.elem_list[n]->get_field( "pre_epsilon", StructForType<Mat<T,Sym<dim> > >() );
 //                cout << pre_eps << endl;
