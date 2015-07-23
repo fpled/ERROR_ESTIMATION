@@ -12,7 +12,7 @@
 
 # Methode qui genere un fichier calc_elem_error_estimate_EET_EESPT_$(f->name).$(e->dim).$(e->name).h pour construire un champ de contrainte admissible et calculer la contribution d'un element a l'estimateur d'erreur
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-def calc_elem_error_estimate_EET_EESPT_init( list_f, rep )
+def calc_elem_error_estimate_init_EET_EESPT( list_f, rep )
     file_names := Vec[String]()
     for f in list_f
         e := child_cast( f->pe )
@@ -43,18 +43,24 @@ def calc_elem_error_estimate_EET_EESPT_init( list_f, rep )
             sy = symbol( "dep_hat[ elem.number ][ $i ]", tex_name = "\\hat{U}[ elem.number ][ $i ]" )
             sym_dep_hat.push_back( sy )
         sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
+        sigma_hat_init := sigma_hat - child_cast(f)->pre_sigma.expr
         sigma_hat_const_in_elem := sigma_hat.subs( e->var_inter, e->get_center_of_var_inter() )
+        sigma_hat_init_const_in_elem := sigma_hat_init.subs( e->var_inter, e->get_center_of_var_inter() )
         cw_0 := CodeWriterAlt( "T" )
         cw_0.add( "sigma_hat_tmp", sigma_hat_const_in_elem, reassign )
+        cw_0.add( "sigma_hat_init_tmp", sigma_hat_init_const_in_elem, reassign )
         file_ <<<<
                 Mat<T, Sym<>, SparseLine<> > sigma_hat_tmp;
+                Mat<T, Sym<>, SparseLine<> > sigma_hat_init_tmp;
                 sigma_hat_tmp.resize( $(e->dim) );
+                sigma_hat_init_tmp.resize( $(e->dim) );
                 {
         file_ <<< "$(cw_0.to_string( 4 ))"
         file_ <<<<
                 if ( method == "EET" ) {
                     elem.sigma_hat_EET = sigma_hat_tmp;
                     elem.sigma_hat_tot_EET = sigma_hat_tmp + elem.sigma_handbook_PUM;
+                    elem.sigma_hat_init_EET = sigma_hat_tmp;
                 }
                 if ( method == "EESPT" ) {
                     elem.sigma_hat_EESPT = sigma_hat_tmp;

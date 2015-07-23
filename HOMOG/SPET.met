@@ -12,7 +12,7 @@
 
 # Methode qui genere un fichier calc_elem_error_estimate_SPET_$(f->name).$(e->dim).$(e->name).h pour construire un champ de contrainte admissible et calculer la contribution d'un element a l'estimateur d'erreur
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-def calc_elem_error_estimate_SPET_init( list_f, rep )
+def calc_elem_error_estimate_init_SPET( list_f, rep )
     file_names := Vec[String]()
     for f in list_f
         e := child_cast( f->pe )
