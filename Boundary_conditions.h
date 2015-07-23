@@ -266,38 +266,38 @@ void create_boundary_conditions( TF &f, TM &m, const string &boundary_condition_
                             f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
                         }
                     }
+                }
 
-                    size_t offset = structure.rfind( "_" )+1;
-                    string str = structure.substr( offset );
-                    istringstream buffer(str);
-                    int N;
-                    buffer >> N;
-                    Hdf hdf("DATA_HDF5/square-" + str + "x" + str + ".hdf5");
+                size_t offset = structure.rfind( "_" )+1;
+                string str = structure.substr( offset );
+                istringstream buffer(str);
+                int N;
+                buffer >> N;
+                Hdf hdf("DATA_HDF5/square-" + str + "x" + str + ".hdf5");
 
-                    Vec<int> s;
-                    hdf.read_size( "/u", s );
+                Vec<int> s;
+                hdf.read_size( "/u", s );
 
-                    Tens3<T> u;
-                    u.resize( s );
-                    hdf.read_data( "/u", u.ptr(), s, s );
+                Tens3<T> u;
+                u.resize( s );
+                hdf.read_data( "/u", u.ptr(), s, s );
 
-                    for (unsigned i=0;i<m.node_list.size();++i) {
-                        if ( m.node_list[i].pos[0] < 1. - 1e-6 and m.node_list[i].pos[1] < 1. - 1e-6 ) {
-                            for (unsigned d=0;d<dim;++d)
-                                m.node_list[i].dep[ d ] = u( d, int(m.node_list[i].pos[1]*N), int(m.node_list[i].pos[0]*N) );
-                        }
-                        else if ( m.node_list[i].pos[0] > 1. - 1e-6 and m.node_list[i].pos[1] < 1. - 1e-6 ) {
-                            for (unsigned d=0;d<dim;++d)
-                                m.node_list[i].dep[ d ] = u( d, int(m.node_list[i].pos[1]*N), 0 );
-                        }
-                        else if ( m.node_list[i].pos[1] > 1. - 1e-6 and m.node_list[i].pos[0] < 1. - 1e-6 ) {
-                            for (unsigned d=0;d<dim;++d)
-                                m.node_list[i].dep[ d ] = u( d, 0, int(m.node_list[i].pos[0]*N) );
-                        }
-                        else {
-                            for (unsigned d=0;d<dim;++d)
-                                m.node_list[i].dep[ d ] = u( d, 0, 0 );
-                        }
+                for (unsigned i=0;i<m.node_list.size();++i) {
+                    if ( m.node_list[i].pos[0] < 1. - 1e-6 and m.node_list[i].pos[1] < 1. - 1e-6 ) {
+                        for (unsigned d=0;d<dim;++d)
+                            m.node_list[i].dep[ d ] = u( d, int(m.node_list[i].pos[1]*N), int(m.node_list[i].pos[0]*N) );
+                    }
+                    else if ( m.node_list[i].pos[0] > 1. - 1e-6 and m.node_list[i].pos[1] < 1. - 1e-6 ) {
+                        for (unsigned d=0;d<dim;++d)
+                            m.node_list[i].dep[ d ] = u( d, int(m.node_list[i].pos[1]*N), 0 );
+                    }
+                    else if ( m.node_list[i].pos[1] > 1. - 1e-6 and m.node_list[i].pos[0] < 1. - 1e-6 ) {
+                        for (unsigned d=0;d<dim;++d)
+                            m.node_list[i].dep[ d ] = u( d, 0, int(m.node_list[i].pos[0]*N) );
+                    }
+                    else {
+                        for (unsigned d=0;d<dim;++d)
+                            m.node_list[i].dep[ d ] = u( d, 0, 0 );
                     }
                 }
             }
