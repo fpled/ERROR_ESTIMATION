@@ -286,9 +286,9 @@ void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &
         DisplayParaview dp;
         dp.add_mesh( m, prefix_ );
         if ( display_pvd )
-            dp.exec( prefix_ + ".pvd" );
+            dp.exec( prefix_ );
         else
-            dp.make_pvd_file( prefix_ + ".pvd" );
+            dp.make_pvd_file( prefix_ );
     }
     if ( display_vtu_ref ) {
         display( m_ref, prefix_ref_ );

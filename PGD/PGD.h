@@ -131,8 +131,8 @@ void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const 
     f.update_variables();
     f.call_after_solve();
     
-    /// Fonction psi en espace
-    ///-----------------------
+    /// Fonction en espace
+    ///-------------------
     psi[ n ][ k ] = f.vectors[0];
 }
 
@@ -140,19 +140,27 @@ void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const 
 ///----------------------------------------------
 template<class TM_param, class TF_param, class TV, class TMATV, class TVVV, class TVVVV>
 void solve_PGD_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_param, const TMATV &K_param, const TV &F_space, const TMATV &K_space, const TVVV &psi, TVVVV &lambda ) {
+
     typedef typename TM_param::TNode::T T;
     
     /// Construction du pb en parametre
     ///--------------------------------
     T gamma_p = dot( F_space, psi[ n ][ k ] );
-    T alpha_p_unk = dot( psi[ n ][ k ], K_unk_s * psi[ n ][ k ] );
-    T alpha_p_k = dot( psi[ n ][ k ], K_k_s * psi[ n ][ k ] );
+    for (unsigned q=0;q<elem_list.size()-1;++q) {
+        if ( q != p )
+            gamma_p *= dot( F_param[ q ], lambda[ q ][ n ][ k ] );
+    }
     f_param.sollicitation = F_param * gamma_p;
     for (unsigned i=0;i<n;++i) {
+        Vec<T,2> alpha_p;
+        for (unsigned j=0;j<elem_list.size();++j) {
         T alpha_p_i_unk = dot( psi[ i ][ nb_iterations[ i ] ], K_unk_s * psi[ n ][ k ] );
         T alpha_p_i_k = dot( psi[ i ][ nb_iterations[ i ] ], K_k_s * psi[ n ][ k ] );
-        f_param.sollicitation -= ( alpha_p_i_unk * K_unk_p + alpha_p_i_k * K_k_p ) * lambda[ i ][ nb_iterations[ i ] ];
+        }
+        f_param.sollicitation -= ( alpha_p[0] * K_param[p][0] + alpha_p[1] * K_param[p][1] ) * lambda[ i ][ nb_iterations[ i ] ];
     }
+    T alpha_p_unk = dot( psi[ n ][ k ], K_unk_s * psi[ n ][ k ] );
+    T alpha_p_k = dot( psi[ n ][ k ], K_k_s * psi[ n ][ k ] );
     f_param.matrices(Number<0>()) = TMAT( alpha_p_unk * K_unk_p + alpha_p_k * K_k_p );
     
     /// Resolution du pb en parametre
@@ -161,8 +169,8 @@ void solve_PGD_param( TM_param &m_param, TF_param &f_param, const unsigned &p, c
     f_param.update_variables();
     f_param.call_after_solve();
     
-    /// Fonction lambda en parametre
-    ///-----------------------------
+    /// Fonction en parametre
+    ///----------------------
     lambda[ n ][ k ] = f_param.vectors[0];
     
 //     /// Resolution explicite du pb en parametre

@@ -144,7 +144,7 @@ int main( int argc, char **argv ) {
     static const T min_param = -2.; // valeur min sur l'intervalle des parametres
     static const T max_param = 2.; // valeur max sur l'intervalle des parametres
     static const unsigned nb_points_param = 100; // nb de points du maillage parametrique
-    static const bool want_verif_kinematic_PGD = 0; // verification de la decomposition PGD cinematique
+    static const bool want_verif_PGD = 0; // verification de la decomposition PGD cinematique
     static const unsigned nb_vals_param_verif = 1; // nb de valeurs des parametres pris aleatoirement pour la verification de la decomposition PGD
     
     /// Parameters for iterative solver
@@ -288,13 +288,11 @@ int main( int argc, char **argv ) {
     Vec< Vec< DisplayParaview, max_mode > > dp_param;
     dp_param.resize( elem_list.size()-1 );
     Vec< DisplayParaview, nb_vals_param_verif > dp_space_verif;
-    string prefix = define_prefix( m, pathname, "direct", structure, loading, mesh_size );
-    string prefix_space = prefix + "_space";
-    string prefix_param = prefix + "_param";
     Vec<string> lp_space, lp_param;
     lp_space.push_back( "dep" );
     lp_space.push_back( "young_eff" );
     lp_param.push_back( "dep" );
+    string prefix = define_prefix( m, pathname, "direct", structure, loading, mesh_size );
     
     typedef Mat<T, Sym<>, SparseLine<> > TMatSymSparse;
     Vec<TMatSymSparse> K_space;
@@ -357,39 +355,33 @@ int main( int argc, char **argv ) {
             ///---------------
             unsigned k = 0;
             for (unsigned p=0;p<elem_list.size()-1;++p) {
-                lambda[ p ][ n ][ 0 ].resize( f_param[p].vectors[0].size() );
-                lambda[ p ][ n ][ 0 ].set( 1. );
+                lambda[ p ][ n ][ k ].resize( f_param[p].vectors[0].size() );
+                lambda[ p ][ n ][ k ].set( 1. );
             }
-            psi[ n ][ 0 ].resize( f.vectors[0].size() );
+            psi[ n ][ k ].resize( f.vectors[0].size() );
             solve_PGD_space( m, f, n, k, nb_iterations, F_space, F_param, K_param, elem_list, lambda, psi, want_iterative_solver, iterative_criterium );
-            if ( want_normalization ) {
-                psi[ n ][ k ] /= sqrt( dot( psi[ n ][ k ], K_s * psi[ n ][ k ] ) );
-                f.vectors[0] = psi[ n ][ k ];
-                f.update_variables();
-                f.call_after_solve();
-            }
             
             if ( save_pvd_PGD_space or display_pvd_PGD_space )
-                dp_space[ n ].add_mesh_iter( m, prefix_space + "_mode_" + to_string( n ), lp_space, k );
+                dp_space[ n ].add_mesh_iter( m, prefix + "_space_mode_" + to_string( n ) + "_iter", lp_space, k );
             if ( save_pvd_PGD_param or display_pvd_PGD_param ) {
                 for (unsigned p=0;p<elem_list.size()-1;++p)
-                    dp_param[ p ][ n ].add_mesh_iter( m_param, prefix_param + "_mode_" + to_string( n ), lp_param, k );
+                    dp_param[ p ][ n ].add_mesh_iter( m_param[p], prefix + "_param_" + to_string( p ) + "_mode_" + to_string( n ) + "_iter", lp_param, k );
             }
             
             while ( true ) {
                 k++;
                 cout << "Iteration k = " << k << endl << endl;
+                for (unsigned p=0;p<elem_list.size()-1;++p) {
+                    lambda[ p ][ n ][ k ].resize( f_param[p].vectors[0].size() );
+                    lambda[ p ][ n ][ k ] = lambda[ p ][ n ][ k-1 ];
+                }
                 psi[ n ][ k ].resize( f.vectors[0].size() );
-                lambda[ n ][ k ].resize( f_unknown_param.vectors[0].size() );
-                
                 psi[ n ][ k ] = psi[ n ][ k-1 ];
                 
                 /// Construction et resolution des pbs en parametre
                 ///------------------------------------------------
-                for (unsigned p=0;p<elem_list.size()-1;++p) {
-                    m_param[p].phi = 1;
-                    solve_PGD_param( m_param[p], f_param[p], n, k, nb_iterations, F_param, K_param, F_space, K_space, psi, lambda );
-                }
+                for (unsigned p=0;p<elem_list.size()-1;++p)
+                    solve_PGD_param( m_param[p], f_param[p], p, n, k, nb_iterations, F_param, K_param, F_space, K_space, psi, lambda );
                 
                 /// Construction et resolution du pb en espace
                 ///-------------------------------------------
@@ -404,30 +396,36 @@ int main( int argc, char **argv ) {
                     f.call_after_solve();
                 }
                 
-//                cout << "psi_" + to_string( k ) << " =" << endl;
-//                cout << psi[ n ][ k ] << endl;
-//                cout << "lambda_" + to_string( k ) << " =" << endl;
-//                cout << lambda[ n ][ k ] << endl << endl;
+                cout << "Fonction en espace =" << endl;
+                cout << psi[ n ][ k ] << endl;
+                for (unsigned p=0;p<elem_list.size()-1;++p) {
+                    cout << "Fonction en parametre " + to_string( p ) << " =" << endl;
+                    cout << lambda[ p ][ n ][ k ] << endl << endl;
+                }
                 
                 if ( save_pvd_PGD_space or display_pvd_PGD_space )
-                    dp_space[ n ].add_mesh_iter( m, prefix_space + "_mode_" + to_string( n ) + "_iter", lp_space, k );
-                if ( save_pvd_PGD_param or display_pvd_PGD_param )
-                    dp_param[ n ].add_mesh_iter( m_param, prefix_param + "_mode_" + to_string( n ) + "_iter", lp_param, k );
+                    dp_space[ n ].add_mesh_iter( m, prefix + "_space_mode_" + to_string( n ) + "_iter", lp_space, k );
+                if ( save_pvd_PGD_param or display_pvd_PGD_param ) {
+                    for (unsigned p=0;p<elem_list.size()-1;++p)
+                        dp_param[ p ][ n ].add_mesh_iter( m_param[p], prefix + "_param_" + to_string( p ) + "_mode_" + to_string( n ) + "_iter", lp_param, k );
+                }
                 
                 if ( save_plot_PGD_param ) {
-                    static GnuPlot gp;
-                    gp.set_terminal( "postscript eps enhanced color" );
-                    stringstream graph_name;
-                    graph_name << "'" << prefix_param + "_mode_" + to_string( n ) + "_iter_" + to_string( k ) << ".eps'";
-                    gp.set_output(graph_name.str().c_str());
-                    gp.set("key left bottom");
-                    gp.set("format '%g'");
-                    gp.set("font \"Times-Roman\"");
-                    gp.set_xlabel("'{/Symbol q}'");
-                    gp.set_ylabel("'{/Symbol l}'");
-                    gp.hold_on();
-                    gp.plot( vals_param, lambda[ n ][ k ], "title '{/Symbol l}({/Symbol q})' axes x1y1 w l lt 1 lw 1" );
-                    gp.hold_off();
+                    for (unsigned p=0;p<elem_list.size()-1;++p) {
+                        static GnuPlot gp;
+                        gp.set_terminal( "postscript eps enhanced color" );
+                        stringstream graph_name;
+                        graph_name << "'" << prefix + "_param_" + to_string( p ) + "_mode_" + to_string( n ) + "_iter_" + to_string( k ) << ".eps'";
+                        gp.set_output(graph_name.str().c_str());
+                        gp.set("key left bottom");
+                        gp.set("format '%g'");
+                        gp.set("font \"Times-Roman\"");
+                        gp.set_xlabel("'{/Symbol q}'");
+                        gp.set_ylabel("'{/Symbol l}'");
+                        gp.hold_on();
+                        gp.plot( vals_param, lambda[ n ][ k ], "title '{/Symbol l}({/Symbol q})' axes x1y1 w l lt 1 lw 1" );
+                        gp.hold_off();
+                    }
                 }
                 
                 T alpha_p_unk = dot( psi[ n ][ k ], K_unk_s * psi[ n ][ k ] );
@@ -456,13 +454,17 @@ int main( int argc, char **argv ) {
             }
             
             if ( display_pvd_PGD_space )
-                dp_space[ n ].exec( prefix_space + "_mode_" + to_string( n ) + ".pvd" );
+                dp_space[ n ].exec( prefix + "_space_mode_" + to_string( n ) );
             else if ( save_pvd_PGD_space )
-                dp_space[ n ].make_pvd_file( prefix_space + "_mode_" + to_string( n ) + ".pvd" );
-            if ( display_pvd_PGD_param )
-                dp_param[ n ].exec( prefix_param + "_mode_" + to_string( n ) + ".pvd" );
-            else if ( save_pvd_PGD_param )
-                dp_param[ n ].make_pvd_file( prefix_param + "_mode_" + to_string( n ) + ".pvd" );
+                dp_space[ n ].make_pvd_file( prefix + "_space_mode_" + to_string( n ) );
+            if ( display_pvd_PGD_param ) {
+                for (unsigned p=0;p<elem_list.size()-1;++p)
+                    dp_param[ p ][ n ].exec( prefix + "_param_" + to_string( p )+ "_mode_" + to_string( n ) );
+            }
+            else if ( save_pvd_PGD_param ) {
+                for (unsigned p=0;p<elem_list.size()-1;++p)
+                    dp_param[ p ][ n ].make_pvd_file( prefix + "_param_" + to_string( p ) + "_mode_" + to_string( n ) );
+            }
             
             /// Residu au sens faible associe a la solution u_n
             ///------------------------------------------------
@@ -507,7 +509,7 @@ int main( int argc, char **argv ) {
             dep_param[ n ] = lambda[ n ][ nb_iterations[ n ] ];
         }
         
-        if ( want_verif_kinematic_PGD ) {
+        if ( want_verif_PGD ) {
             /// Verification pour un jeu connu de parametres
             ///---------------------------------------------
             for (unsigned p=0;p<nb_vals_param_verif;++p) {
@@ -523,7 +525,7 @@ int main( int argc, char **argv ) {
                 else
                     f.solve( iterative_criterium );
                 if ( save_pvd_PGD_space_verif or display_pvd_PGD_space_verif )
-                    dp_space_verif[ p ].add_mesh_iter( m, prefix_space + "_verification_param_REF_" + to_string( vals_param[ ind_in_vals_param ] ), lp_space, 0 );
+                    dp_space_verif[ p ].add_mesh_iter( m, prefix + "_space_verif_param_REF_" + to_string( vals_param[ ind_in_vals_param ] ), lp_space, 0 );
                 f.vectors[0].set( 0. );
                 for (unsigned n=0;n<nb_modes;++n) {
                     f.vectors[0] += dep_space[ n ] * dep_param[ n ][ ind_in_vals_param ];
@@ -531,12 +533,12 @@ int main( int argc, char **argv ) {
                 f.update_variables();
                 f.call_after_solve();
                 if ( save_pvd_PGD_space_verif or display_pvd_PGD_space_verif )
-                    dp_space_verif[ p ].add_mesh_iter( m, prefix_space + "_verification_param_PGD_" + to_string( vals_param[ ind_in_vals_param ] ), lp_space, 1 );
+                    dp_space_verif[ p ].add_mesh_iter( m, prefix + "_space_verif_param_PGD_" + to_string( vals_param[ ind_in_vals_param ] ), lp_space, 1 );
                 
                 if ( display_pvd_PGD_space_verif )
-                    dp_space_verif[ p ].exec( prefix_space + "_verification_param_" + to_string( vals_param[ ind_in_vals_param ] ) + ".pvd" );
+                    dp_space_verif[ p ].exec( prefix + "_space_verif_param_" + to_string( vals_param[ ind_in_vals_param ] ) );
                 else if ( save_pvd_PGD_space_verif )
-                    dp_space_verif[ p ].make_pvd_file( prefix_space + "_verification_param_" + to_string( vals_param[ ind_in_vals_param ] ) + ".pvd" );
+                    dp_space_verif[ p ].make_pvd_file( prefix + "_space_verif_param_" + to_string( vals_param[ ind_in_vals_param ] ) );
             }
         }
         
