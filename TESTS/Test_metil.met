@@ -100,7 +100,7 @@ e.pos_nodes[3] = [110 22] # 33
 # la := lame_coeff_lambda( young, poisson, dim, type_stress_2D )
 # sym_phi := Vec[Op]()
 # phi_nodal_handbook := e.new_variable( "\\phi", nb_dim = [1], sym = sym_phi, interpolation_type = "nodal" )
-# FE_base := "lagrange"
+# base := "lagrange"
 # force_fluxes_base := "lagrange"
 # degre_poly_handbook := 2
 # integration_type := "gauss_num"
@@ -122,7 +122,7 @@ e.pos_nodes[3] = [110 22] # 33
 # # sigma_handbook := sigma_hooke_iso( epsilon_handbook, young, poisson, type_stress_2D )
 # sigma_handbook := hooke_iso( young, poisson, dim, type_stress_2D ) : epsilon_handbook
 
-# dep_handbook_PUM := dep_handbook_PUM_function( e, dep_handbook_, phi_nodal_handbook, FE_base )
+# dep_handbook_PUM := dep_handbook_PUM_function( e, dep_handbook_, phi_nodal_handbook, base )
 # epsilon_handbook_PUM := e.grad_sym( dep_handbook_PUM )
 # # sigma_handbook_PUM := sigma_hooke_iso( epsilon_handbook_PUM, young, poisson, type_stress_2D )
 # sigma_handbook_PUM := hooke_iso( young, poisson, dim, type_stress_2D ) : epsilon_handbook_PUM
@@ -345,10 +345,10 @@ e.pos_nodes[3] = [110 22] # 33
 # deg_p := max( e.order_interpolation )
 # deg_k := 3
 # force_fluxes_base := "hierarchical"
-# recovery_base := "lagrange"
+# admissible_field_base := "lagrange"
 # dep_hat_test := Vec[ Op, e.dim ]()
 # base := Vec[ Op ]()
-# base = e.get_upper_degree_shape_functions( recovery_base, deg_p + deg_k )
+# base = e.get_upper_degree_shape_functions( admissible_field_base, deg_p + deg_k )
 # infon base.size
 # coeffs_dep_hat_test := Vec[ Vec[ Op, base.size ], e.dim ]()
 # sym_dep_hat_test := Vec[ Op ]()
@@ -576,7 +576,7 @@ e.pos_nodes[3] = [110 22] # 33
 # f_vol_enhanced.display_tex( "f_vol_" + cpt++ )
 # dep_hat_test := Vec[ Op, e.dim ]()
 # base := Vec[ Op ]()
-# base = e.get_upper_degree_shape_functions( recovery_base, deg_p + deg_k )
+# base = e.get_upper_degree_shape_functions( admissible_field_base, deg_p + deg_k )
 # coeffs_dep_hat_test := Vec[ Vec[ Op, base.size ], e.dim ]()
 # sym_dep_hat_test := Vec[ Op ]()
 # for d in 0 .. e.dim
@@ -654,7 +654,7 @@ e.pos_nodes[3] = [110 22] # 33
 # points := e.upper_degree_points( deg_p + deg_k )
 # for p in 0 .. points.size
 #     infon e.point_is_on_edge( points[ p ] )
-# hierarchic_base := Vec[ Op, points.size ]()
+# hierarchical_base := Vec[ Op, points.size ]()
 # canonical_base := Vec[ Op ]()
 # for order in 0...
     # infon order
@@ -662,7 +662,7 @@ e.pos_nodes[3] = [110 22] # 33
         # canonical_base.push_back( product( e.var_inter ^ comb ) )
     # if canonical_base.size >= points.size
         # infon canonical_base.size
-        # if e.construct_hierarchic_FE_base_using_canonical_base_( e.nb_vertex_nodes, points.size, points, e.var_inter, hierarchic_base, canonical_base )
+        # if e.construct_hierarchical_shape_function_using_current_base_( points.size, points, e.var_inter, hierarchical_base, canonical_base )
             # break
 # lagrange_base := Vec[ Op, points.size ]()
 # canonical_base := Vec[ Op ]()
@@ -672,7 +672,7 @@ e.pos_nodes[3] = [110 22] # 33
         # canonical_base.push_back( product( e.var_inter ^ comb ) )
     # if canonical_base.size >= points.size
         # infon canonical_base.size
-        # if e.construct_lagrange_FE_base_using_canonical_base_( points.size, points, e.var_inter, lagrange_base, canonical_base )
+        # if e.construct_lagrange_shape_function_using_current_base_( points.size, points, e.var_inter, lagrange_base, canonical_base )
             # break
 
 # infon e.upper_degree_points(4).size
@@ -690,7 +690,7 @@ e.pos_nodes[3] = [110 22] # 33
     # for comb in ConstantSumList( sum = order, list_size = e.nvi )
         # canonical_base.push_back( product( e.var_inter ^ comb ) )
     # if canonical_base.size >= points.size
-        # if e.construct_hierarchic_FE_base_using_canonical_base_( e.nb_vertex_nodes, points.size, points, e.var_inter, base, canonical_base )
+        # if e.construct_hierarchical_shape_function_using_current_base_( points.size, points, e.var_inter, base, canonical_base )
             # break
 # base.display_tex( "tmp_" + cpt++ )
 # base_vertex := Vec[ Op, points.size ]()
@@ -721,7 +721,6 @@ e.pos_nodes[3] = [110 22] # 33
     # for d in 0 .. e.dim
         # sym_e_i_patch.push_back( coeffs_e_i_patch[ d ][ x ] )
         # sym_u_star_patch.push_back( coeffs_u_star_patch[ d ][ x ] )
-
         # sym_u_star_patch_test.push_back( coeffs_u_star_patch_test[ d ][ x ] )
 # base_vertex := Vec[ Op ]()
 # coeffs_vertex_e_i_patch := Vec[ Vec[ Op ], e.dim ]()
@@ -966,8 +965,6 @@ e.pos_nodes[3] = [110 22] # 33
 # mes_symboles := Vec[Op]()
 # dep := e.new_variable( "dep", nb_dim = [e.dim], sym = mes_symboles, interpolation_type = "nodal" )
 # dep.display_tex( "x_" + cpt++ )
-# res := e.projection_on_linear_FE_base( dep[ 0 ] )
-# res.display_tex( "x_" + cpt++ )
 # eps := e.grad_sym( dep )
 # omega := e.grad_asym( dep )
 # infon eps.type
@@ -1266,40 +1263,40 @@ for gamma_ in e.children( 1 )
 # cw_1.add( "sigma_from_eps_hat", sigma_from_eps_hat, __print__ )
 
 
-young := 1
-poisson := 0.3
-type_stress_2D := "plane stress"
-recovery_base := "canonical"
-integration_type := "gauss_num"
-integration_lang := "metil"
-hyp_const_jac := true
-if integration_type == "gauss_num"
-    hyp_const_jac = false
-deg_p := max( e.order_interpolation )
-deg_k := 0
-canonical_base := Vec[ Op ]()
-for order in 0 .. (deg_p+deg_k+1)
-    for comb in ConstantSumList( sum = order, list_size = e.nvi )
-        canonical_base.push_back( product( e.var_inter ^ comb ) )
-canonical_base.display_tex()
+#young := 1
+#poisson := 0.3
+#type_stress_2D := "plane stress"
+#admissible_field_base := "canonical"
+#integration_type := "gauss_num"
+#integration_lang := "metil"
+#hyp_const_jac := true
+#if integration_type == "gauss_num"
+    #hyp_const_jac = false
+#deg_p := max( e.order_interpolation )
+#deg_k := 0
+#canonical_base := Vec[ Op ]()
+#for order in 0 .. (deg_p+deg_k+1)
+    #for comb in ConstantSumList( sum = order, list_size = e.nvi )
+        #canonical_base.push_back( product( e.var_inter ^ comb ) )
+#canonical_base.display_tex()
 
-sym_dep_hat_expr := Vec[ Op ]()
-dep_hat_expr := e.new_variable( "\\hat{U}", interpolation_type = "canonical", deg = deg_p + deg_k, nb_dim = [ e.dim ], sym = sym_dep_hat_expr )
-dep_hat_expr.display_tex()
-sym_dep_hat_expr.display_tex()
-sym_dep_hat_test := Vec[ Op ]()
-dep_hat_test := e.new_variable( "{\\hat{U}}^{\\ast}", interpolation_type = "canonical", deg = deg_p + deg_k, nb_dim = [ e.dim ], sym = sym_dep_hat_test )
-epsilon_hat_expr := e.grad_sym( dep_hat_expr )
-epsilon_hat_test := e.grad_sym( dep_hat_test )
-sigma_hat_expr := sigma_hooke_iso( epsilon_hat_expr, young, poisson, type_stress_2D )
-H := hooke_iso( young, poisson, e.dim, type_stress_2D )
-# H.display_tex()
-infon H
+#sym_dep_hat_expr := Vec[ Op ]()
+#dep_hat_expr := e.new_variable( "\\hat{U}", interpolation_type = "canonical", deg = deg_p + deg_k, nb_dim = [ e.dim ], sym = sym_dep_hat_expr )
+#dep_hat_expr.display_tex()
+#sym_dep_hat_expr.display_tex()
+#sym_dep_hat_test := Vec[ Op ]()
+#dep_hat_test := e.new_variable( "{\\hat{U}}^{\\ast}", interpolation_type = "canonical", deg = deg_p + deg_k, nb_dim = [ e.dim ], sym = sym_dep_hat_test )
+#epsilon_hat_expr := e.grad_sym( dep_hat_expr )
+#epsilon_hat_test := e.grad_sym( dep_hat_test )
+#sigma_hat_expr := sigma_hooke_iso( epsilon_hat_expr, young, poisson, type_stress_2D )
+#H := hooke_iso( young, poisson, e.dim, type_stress_2D )
+## H.display_tex()
+#infon H
 
-H_simplified := Tensor[ Float96, [e.dim,e.dim,e.dim,e.dim] ]( H )
-infon H_simplified
-eps := Mat[ Op, Gen[e.dim,e.dim] ]( function = x => symbol("e_{$(x)}") )
-s := sigma_hooke_iso( eps, young, poisson, type_stress_2D )
+# H_simplified := Tensor[ Float96, [e.dim,e.dim,e.dim,e.dim] ]( H )
+# infon H_simplified
+# eps := Mat[ Op, Gen[e.dim,e.dim] ]( function = x => symbol("e_{$(x)}") )
+# s := sigma_hooke_iso( eps, young, poisson, type_stress_2D )
 # s.display_tex()
 # -> sigma.diff( epsilon )
 # for ind_s, val_s in s
@@ -1314,47 +1311,47 @@ s := sigma_hooke_iso( eps, young, poisson, type_stress_2D )
         # H_simplified[i,j] = H[i,j]
 # H_simplified.display_tex()
 
-energie_K := Op( 0 )
+#energie_K := Op( 0 )
 
-e.assume_const_jac = true
-epsilon_hat_test_const_jac := e.grad_sym( dep_hat_test )
-sigma_hat_expr_const_jac := sigma_hooke_iso( e.grad_sym( dep_hat_expr ), young, poisson, type_stress_2D )
-e.assume_const_jac = hyp_const_jac
-degre_poly := ( sigma_hat_expr_const_jac : epsilon_hat_test_const_jac ).poly_deg( e.var_inter )
-infon degre_poly
+#e.assume_const_jac = true
+#epsilon_hat_test_const_jac := e.grad_sym( dep_hat_test )
+#sigma_hat_expr_const_jac := sigma_hooke_iso( e.grad_sym( dep_hat_expr ), young, poisson, type_stress_2D )
+#e.assume_const_jac = hyp_const_jac
+#degre_poly := ( sigma_hat_expr_const_jac : epsilon_hat_test_const_jac ).poly_deg( e.var_inter )
+#infon degre_poly
 
-jacobian := e.get_jac_mat()
-jaco := Mat[ Float96, Gen[ jacobian.nb_rows, jacobian.nb_cols ] ]()
-infon e.get_jac()
+#jacobian := e.get_jac_mat()
+#jaco := Mat[ Float96, Gen[ jacobian.nb_rows, jacobian.nb_cols ] ]()
+#infon e.get_jac()
 
-if integration_type == "gauss_num"
-    if integration_lang == "metil"
-        energie_K = e.gauss_num_integration( sigma_hat_expr : epsilon_hat_test, mul_by_jac = true, order_diff = degre_poly )
-    else if integration_lang == "cpp"
-        energie_K = sigma_hat_expr : epsilon_hat_test * e.jac
-else if integration_type == "formal"
-    energie_K = e.integration( sigma_hat_expr : epsilon_hat_test, order_diff = degre_poly )
-K := Mat[Op]()
-F := Vec[Op]()
-K.resize( sym_dep_hat_test.size, sym_dep_hat_expr.size )
-F.resize( sym_dep_hat_test.size )
-for test_symbol, cpt_test in sym_dep_hat_test, 0...
-    F[ cpt_test ] = energie_K.diff( test_symbol )
-for expr_symbol, cpt_expr in sym_dep_hat_expr, 0...
-    K.col( cpt_expr ) = diff( F, expr_symbol )
-# K.display_tex()
-mat := Mat[ Float96, Gen[ K.nb_rows, K.nb_cols ] ]()
-for i in 0 .. K.nb_rows
-    for j in 0 .. K.nb_cols
-        mat[i,j] = Float96( K[i,j] )
-mat.display_tex( "mat" )
+#if integration_type == "gauss_num"
+    #if integration_lang == "metil"
+        #energie_K = e.gauss_num_integration( sigma_hat_expr : epsilon_hat_test, mul_by_jac = true, order_diff = degre_poly )
+    #else if integration_lang == "cpp"
+        #energie_K = sigma_hat_expr : epsilon_hat_test * e.jac
+#else if integration_type == "formal"
+    #energie_K = e.integration( sigma_hat_expr : epsilon_hat_test, order_diff = degre_poly )
+#K := Mat[Op]()
+#F := Vec[Op]()
+#K.resize( sym_dep_hat_test.size, sym_dep_hat_expr.size )
+#F.resize( sym_dep_hat_test.size )
+#for test_symbol, cpt_test in sym_dep_hat_test, 0...
+    #F[ cpt_test ] = energie_K.diff( test_symbol )
+#for expr_symbol, cpt_expr in sym_dep_hat_expr, 0...
+    #K.col( cpt_expr ) = diff( F, expr_symbol )
+## K.display_tex()
+#mat := Mat[ Float96, Gen[ K.nb_rows, K.nb_cols ] ]()
+#for i in 0 .. K.nb_rows
+    #for j in 0 .. K.nb_cols
+        #mat[i,j] = Float96( K[i,j] )
+#mat.display_tex( "mat" )
 
-K_hat_mul_dep_hat_expr := energie_K.diff( sym_dep_hat_test )
-K_hat := K_hat_mul_dep_hat_expr.diff( sym_dep_hat_expr )
-mat_hat := Mat[ Float96, Gen[ K_hat.nb_rows, K_hat.nb_cols ] ]()
-for i in 0 .. K_hat.nb_rows
-    for j in 0 .. K_hat.nb_cols
-        mat_hat[i,j] = Float96( K_hat[i,j] )
-mat_hat.display_tex( "mat_hat" )
+#K_hat_mul_dep_hat_expr := energie_K.diff( sym_dep_hat_test )
+#K_hat := K_hat_mul_dep_hat_expr.diff( sym_dep_hat_expr )
+#mat_hat := Mat[ Float96, Gen[ K_hat.nb_rows, K_hat.nb_cols ] ]()
+#for i in 0 .. K_hat.nb_rows
+    #for j in 0 .. K_hat.nb_cols
+        #mat_hat[i,j] = Float96( K_hat[i,j] )
+#mat_hat.display_tex( "mat_hat" )
 
 

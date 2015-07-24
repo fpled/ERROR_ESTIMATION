@@ -79,7 +79,7 @@ def check_elem_eq_force_fluxes( list_f, rep )
             face := child_cast( face_ )
             deg_p := max( face->order_interpolation )
             eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)" )
-            sym_force_surf := Vec[ Vec[ Op, face->dim ], face->nb_nodes ]()
+            sym_f_surf := Vec[ Vec[ Op, face->dim ], face->nb_nodes ]()
             file_ <<< "    vec_force_fluxes_local[ $( face->num_child ) ].resize( $(face->dim) );"
             for d in 0 .. face->dim
                 file_ <<< "    vec_force_fluxes_local[ $( face->num_child ) ][ $d ].resize( m.sub_mesh(Number<1>()).elem_list[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ]->nb_nodes_virtual(), 0. );"
@@ -90,29 +90,29 @@ def check_elem_eq_force_fluxes( list_f, rep )
                 for d in 0 .. face->dim
                     s := Op()
                     s = symbol( "vec_force_fluxes_local[ $( face->num_child ) ][ $d ][ $i ]", tex_name = "F_s[ $( face->num_child ) ][ $d ][ $i ]" )
-                    sym_force_surf[ i ][ d ] = s
-            force_surf := Vec[ Op, face->dim ]( face->interpolation( sym_force_surf, force_fluxes_base ) )
+                    sym_f_surf[ i ][ d ] = s
+            f_surf := Vec[ Op, face->dim ]( face->interpolation( sym_f_surf, force_fluxes_base ) )
             for d in 0 .. e->dim
-                degre_poly := ( force_surf[ d ] ).poly_deg( face->var_inter )
+                degre_poly := ( f_surf[ d ] ).poly_deg( face->var_inter )
                 if integration_type == "gauss_num"
-                    res_force[ d ] += face->gauss_num_integration( force_surf[ d ], order_diff = degre_poly )
+                    res_force[ d ] += face->gauss_num_integration( f_surf[ d ], order_diff = degre_poly )
                 else if integration_type == "formal"
-                    res_force[ d ] += face->integration( force_surf[ d ], order_diff = degre_poly )
+                    res_force[ d ] += face->integration( f_surf[ d ], order_diff = degre_poly )
             if e->dim == 2
-                GM_vect_prod_force_surf := vect_prod( GM, force_surf )
-                degre_poly := ( e->projection_on_child_elem( GM_vect_prod_force_surf, face ) ).poly_deg( face->var_inter )
+                GM_vect_prod_f_surf := vect_prod( GM, f_surf )
+                degre_poly := ( e->projection_on_child_elem( GM_vect_prod_f_surf, face ) ).poly_deg( face->var_inter )
                 if integration_type == "gauss_num"
-                    res_torque_dim_2 += face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_force_surf, face ), order_diff = degre_poly )
+                    res_torque_dim_2 += face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_f_surf, face ), order_diff = degre_poly )
                 else if integration_type == "formal"
-                    res_torque_dim_2 += face->integration( e->projection_on_child_elem( GM_vect_prod_force_surf, face ), order_diff = degre_poly )
+                    res_torque_dim_2 += face->integration( e->projection_on_child_elem( GM_vect_prod_f_surf, face ), order_diff = degre_poly )
             else if e->dim == 3
-                GM_vect_prod_force_surf := vect_prod( GM, force_surf )
+                GM_vect_prod_f_surf := vect_prod( GM, f_surf )
                 for d in 0 .. e->dim
-                    degre_poly := ( e->projection_on_child_elem( GM_vect_prod_force_surf[ d ], face ) ).poly_deg( face->var_inter )
+                    degre_poly := ( e->projection_on_child_elem( GM_vect_prod_f_surf[ d ], face ) ).poly_deg( face->var_inter )
                     if integration_type == "gauss_num"
-                        res_torque_dim_3[ d ] += face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_force_surf[ d ], face ), order_diff = degre_poly )
+                        res_torque_dim_3[ d ] += face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_f_surf[ d ], face ), order_diff = degre_poly )
                     else if integration_type == "formal"
-                        res_torque_dim_3[ d ] += face->integration( e->projection_on_child_elem( GM_vect_prod_force_surf[ d ], face ), order_diff = degre_poly )
+                        res_torque_dim_3[ d ] += face->integration( e->projection_on_child_elem( GM_vect_prod_f_surf[ d ], face ), order_diff = degre_poly )
         for d in 0 .. e->dim
             cw.add( "residual_force_fluxes[ elem.number ][ $d ]", res_force[ d ], add )
         if e->dim == 2
@@ -136,52 +136,52 @@ def check_elem_eq_force_fluxes( list_f, rep )
                 res_force_handbook := Vec[ Op, e->dim ]()
                 res_torque_handbook_dim_2 := Op( 0 )
                 res_torque_handbook_dim_3 := Vec[ Op, e->dim ]()
-                force_surf_handbook := e->projection_on_child_elem( child_cast(f)->sigma_handbook.expr, face ) * ( - face->normal )
-                force_surf_handbook_linear_part := e->projection_on_shape_functions_with_equilibrium( force_surf_handbook, degre_poly_handbook, face, force_fluxes_base )
+                f_surf_handbook := e->projection_on_child_elem( child_cast(f)->sigma_handbook.expr, face ) * ( - face->normal )
+                f_surf_handbook_linear_part := e->projection_on_shape_functions_with_equilibrium( f_surf_handbook, degre_poly_handbook, face, force_fluxes_base )
                 degre_poly_handbook_linear_part := Op( 0 )
                 for d in 0 .. e->dim
-                    degre_poly_handbook_linear_part = ( force_surf_handbook_linear_part[ d ] ).poly_deg( face->var_inter )
+                    degre_poly_handbook_linear_part = ( f_surf_handbook_linear_part[ d ] ).poly_deg( face->var_inter )
                     if integration_type == "gauss_num"
                         if integration_lang == "metil"
-                            res_force_handbook[ d ] = face->gauss_num_integration( force_surf_handbook_linear_part[ d ], order_diff = degre_poly_handbook_linear_part )
-                            # res_force_handbook[ d ] = face->gauss_num_integration( force_surf_handbook[ d ], order_diff = degre_poly_handbook )
+                            res_force_handbook[ d ] = face->gauss_num_integration( f_surf_handbook_linear_part[ d ], order_diff = degre_poly_handbook_linear_part )
+                            # res_force_handbook[ d ] = face->gauss_num_integration( f_surf_handbook[ d ], order_diff = degre_poly_handbook )
                         else if integration_lang == "cpp"
-                            res_force_handbook[ d ] = force_surf_handbook_linear_part[ d ] * face->jac
-                            # res_force_handbook[ d ] = force_surf_handbook[ d ] * face->jac
+                            res_force_handbook[ d ] = f_surf_handbook_linear_part[ d ] * face->jac
+                            # res_force_handbook[ d ] = f_surf_handbook[ d ] * face->jac
                     else if integration_type == "formal"
-                        res_force_handbook[ d ] = face->integration( force_surf_handbook_linear_part[ d ], order_diff = degre_poly_handbook_linear_part )
-                        # res_force_handbook[ d ] = face->integration( force_surf_handbook[ d ], order_diff = degre_poly_handbook )
+                        res_force_handbook[ d ] = face->integration( f_surf_handbook_linear_part[ d ], order_diff = degre_poly_handbook_linear_part )
+                        # res_force_handbook[ d ] = face->integration( f_surf_handbook[ d ], order_diff = degre_poly_handbook )
                 if e->dim == 2
-                    GM_vect_prod_force_surf_handbook_linear_part := vect_prod( GM, force_surf_handbook_linear_part )
-                    # GM_vect_prod_force_surf_handbook := vect_prod( GM, force_surf_handbook )
-                    degre_poly_handbook_linear_part_ := ( e->projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part, face ) ).poly_deg( face->var_inter )
+                    GM_vect_prod_f_surf_handbook_linear_part := vect_prod( GM, f_surf_handbook_linear_part )
+                    # GM_vect_prod_f_surf_handbook := vect_prod( GM, f_surf_handbook )
+                    degre_poly_handbook_linear_part_ := ( e->projection_on_child_elem( GM_vect_prod_f_surf_handbook_linear_part, face ) ).poly_deg( face->var_inter )
                     degre_poly_handbook_linear_part = max( degre_poly_handbook_linear_part, degre_poly_handbook_linear_part_ )
                     if integration_type == "gauss_num"
                         if integration_lang == "metil"
-                            res_torque_handbook_dim_2 = face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part, face ), order_diff = degre_poly_handbook_linear_part_ )
-                            # res_torque_handbook_dim_2 = face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_force_surf_handbook, face ), order_diff = degre_poly_handbook )
+                            res_torque_handbook_dim_2 = face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_f_surf_handbook_linear_part, face ), order_diff = degre_poly_handbook_linear_part_ )
+                            # res_torque_handbook_dim_2 = face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_f_surf_handbook, face ), order_diff = degre_poly_handbook )
                         else if integration_lang == "cpp"
-                            res_torque_handbook_dim_2 = e->projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part, face ) * face->jac
-                            # res_torque_handbook_dim_2 = e->projection_on_child_elem( GM_vect_prod_force_surf_handbook, face ) * face->jac
+                            res_torque_handbook_dim_2 = e->projection_on_child_elem( GM_vect_prod_f_surf_handbook_linear_part, face ) * face->jac
+                            # res_torque_handbook_dim_2 = e->projection_on_child_elem( GM_vect_prod_f_surf_handbook, face ) * face->jac
                     else if integration_type == "formal"
-                        res_torque_handbook_dim_2 = face->integration( e->projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part, face ), order_diff = degre_poly_handbook_linear_part_ )
-                        # res_torque_handbook_dim_2 = face->integration( e->projection_on_child_elem( GM_vect_prod_force_surf_handbook, face ), order_diff = degre_poly_handbook )
+                        res_torque_handbook_dim_2 = face->integration( e->projection_on_child_elem( GM_vect_prod_f_surf_handbook_linear_part, face ), order_diff = degre_poly_handbook_linear_part_ )
+                        # res_torque_handbook_dim_2 = face->integration( e->projection_on_child_elem( GM_vect_prod_f_surf_handbook, face ), order_diff = degre_poly_handbook )
                 else if e->dim == 3
-                    GM_vect_prod_force_surf_handbook_linear_part := vect_prod( GM, force_surf_handbook_linear_part )
-                    # GM_vect_prod_force_surf_handbook := vect_prod( GM, force_surf_handbook )
+                    GM_vect_prod_f_surf_handbook_linear_part := vect_prod( GM, f_surf_handbook_linear_part )
+                    # GM_vect_prod_f_surf_handbook := vect_prod( GM, f_surf_handbook )
                     for d in 0 .. e->dim
-                        degre_poly_handbook_linear_part_ := ( e->projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part[ d ], face ) ).poly_deg( face->var_inter )
+                        degre_poly_handbook_linear_part_ := ( e->projection_on_child_elem( GM_vect_prod_f_surf_handbook_linear_part[ d ], face ) ).poly_deg( face->var_inter )
                         degre_poly_handbook_linear_part = max( degre_poly_handbook_linear_part, degre_poly_handbook_linear_part_ )
                         if integration_type == "gauss_num"
                             if integration_lang == "metil"
-                                res_torque_handbook_dim_3[ d ] = face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part[ d ], face ), order_diff = degre_poly_handbook_linear_part_ )
-                                # res_torque_handbook_dim_3[ d ] = face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_force_surf_handbook[ d ], face ), order_diff = degre_poly_handbook )
+                                res_torque_handbook_dim_3[ d ] = face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_f_surf_handbook_linear_part[ d ], face ), order_diff = degre_poly_handbook_linear_part_ )
+                                # res_torque_handbook_dim_3[ d ] = face->gauss_num_integration( e->projection_on_child_elem( GM_vect_prod_f_surf_handbook[ d ], face ), order_diff = degre_poly_handbook )
                             else if integration_lang == "cpp"
-                                res_torque_handbook_dim_3[ d ] = e->projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part[ d ], face ) * face->jac
-                                # res_torque_handbook_dim_3[ d ] = e->projection_on_child_elem( GM_vect_prod_force_surf_handbook[ d ], face ) * face->jac
+                                res_torque_handbook_dim_3[ d ] = e->projection_on_child_elem( GM_vect_prod_f_surf_handbook_linear_part[ d ], face ) * face->jac
+                                # res_torque_handbook_dim_3[ d ] = e->projection_on_child_elem( GM_vect_prod_f_surf_handbook[ d ], face ) * face->jac
                         else if integration_type == "formal"
-                            res_torque_handbook_dim_3[ d ] = face->integration( e->projection_on_child_elem( GM_vect_prod_force_surf_handbook_linear_part[ d ], face ), order_diff = degre_poly_handbook_linear_part_ )
-                            # res_torque_handbook_dim_3[ d ] = face->integration( e->projection_on_child_elem( GM_vect_prod_force_surf_handbook[ d ], face ), order_diff = degre_poly_handbook )
+                            res_torque_handbook_dim_3[ d ] = face->integration( e->projection_on_child_elem( GM_vect_prod_f_surf_handbook_linear_part[ d ], face ), order_diff = degre_poly_handbook_linear_part_ )
+                            # res_torque_handbook_dim_3[ d ] = face->integration( e->projection_on_child_elem( GM_vect_prod_f_surf_handbook[ d ], face ), order_diff = degre_poly_handbook )
                 if integration_type == "gauss_num" and integration_lang == "cpp"
                     file_ <<< "            gauss_points( $(face->name_for_gauss_point)(), $(degre_poly_handbook_linear_part), poids_face, valeurs_face );"
                     # file_ <<< "            gauss_points( $(face->name_for_gauss_point)(), $(degre_poly_handbook), poids_face, valeurs_face );"

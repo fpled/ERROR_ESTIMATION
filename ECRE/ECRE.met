@@ -34,9 +34,9 @@ def calc_elem_matrix_K_hat( list_f, rep )
         file_ <<< "    #define PNODE(N) elem.node(N)"
         deg_p := max( e->order_interpolation )
         sym_dep_hat_expr := Vec[ Op ]()
-        dep_hat_expr := e->new_variable( "\\hat{U}", interpolation_type = "enriched_nodal", deg = deg_p + deg_k, nb_dim = [ e->dim ], sym = sym_dep_hat_expr, interpolation_base = recovery_base )
+        dep_hat_expr := e->new_variable( "\\hat{U}", interpolation_type = "enriched_nodal", deg = deg_p + deg_k, nb_dim = [ e->dim ], sym = sym_dep_hat_expr, interpolation_base = admissible_field_base )
         sym_dep_hat_test := Vec[ Op ]()
-        dep_hat_test := e->new_variable( "{\\hat{U}}^{\\ast}", interpolation_type = "enriched_nodal", deg = deg_p + deg_k, nb_dim = [ e->dim ], sym = sym_dep_hat_test, interpolation_base = recovery_base )
+        dep_hat_test := e->new_variable( "{\\hat{U}}^{\\ast}", interpolation_type = "enriched_nodal", deg = deg_p + deg_k, nb_dim = [ e->dim ], sym = sym_dep_hat_test, interpolation_base = admissible_field_base )
         epsilon_hat_expr := e->grad_sym( dep_hat_expr )
         epsilon_hat_test := e->grad_sym( dep_hat_test )
         sigma_hat_expr := sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
@@ -154,7 +154,7 @@ def calc_elem_vector_F_hat( list_f, rep )
                     f_vol_std[ d ] -= f_vol_std_torque[ d ]
 
         sym_dep_hat_test := Vec[ Op ]()
-        dep_hat_test := e->new_variable( "{\\hat{U}}^{\\ast}", interpolation_type = "enriched_nodal", deg = deg_p + deg_k, nb_dim = [ e->dim ], sym = sym_dep_hat_test, interpolation_base = recovery_base )
+        dep_hat_test := e->new_variable( "{\\hat{U}}^{\\ast}", interpolation_type = "enriched_nodal", deg = deg_p + deg_k, nb_dim = [ e->dim ], sym = sym_dep_hat_test, interpolation_base = admissible_field_base )
         epsilon_hat_test := e->grad_sym( dep_hat_test )
         residual := Op( 0 )
         residual_handbook := Op( 0 )
@@ -360,7 +360,7 @@ def calc_elem_error_estimate_EET_EESPT( list_f, rep )
         file_ <<< "    #define PNODE(N) elem.node(N)"
         deg_p := max( e->order_interpolation )
         sym_dep_hat_expr := Vec[ Op ]()
-        dep_hat_expr := e->new_variable( "\\hat{U}", interpolation_type = "enriched_nodal", deg = deg_p + deg_k, nb_dim = [ e->dim ], sym = sym_dep_hat_expr, interpolation_base = recovery_base )
+        dep_hat_expr := e->new_variable( "\\hat{U}", interpolation_type = "enriched_nodal", deg = deg_p + deg_k, nb_dim = [ e->dim ], sym = sym_dep_hat_expr, interpolation_base = admissible_field_base )
         epsilon_hat_expr := e->grad_sym( dep_hat_expr )
         sigma_hat_expr := sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
         sym_dep_hat := Vec[ Op ]()
@@ -371,20 +371,20 @@ def calc_elem_error_estimate_EET_EESPT( list_f, rep )
         sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
         sigma_hat_const_in_elem := sigma_hat.subs( e->var_inter, e->get_center_of_var_inter() )
         cw_0 := CodeWriterAlt( "T" )
-        cw_0.add( "sigma_hat_tmp", sigma_hat_const_in_elem, reassign )
+        cw_0.add( "sigma_hat", sigma_hat_const_in_elem, reassign )
         file_ <<<<
-                Mat<T, Sym<>, SparseLine<> > sigma_hat_tmp;
-                sigma_hat_tmp.resize( $(e->dim) );
+                Mat<T, Sym<>, SparseLine<> > sigma_hat;
+                sigma_hat.resize( $(e->dim) );
                 {
         file_ <<< "$(cw_0.to_string( 4 ))"
         file_ <<<<
                 if ( method == "EET" ) {
-                    elem.sigma_hat_EET = sigma_hat_tmp;
-                    elem.sigma_hat_tot_EET = sigma_hat_tmp + elem.sigma_handbook_PUM;
+                    elem.sigma_hat_EET = sigma_hat;
+                    elem.sigma_hat_tot_EET = sigma_hat + elem.sigma_handbook_PUM;
                 }
                 if ( method == "EESPT" ) {
-                    elem.sigma_hat_EESPT = sigma_hat_tmp;
-                    elem.sigma_hat_tot_EESPT = sigma_hat_tmp + elem.sigma_handbook_PUM;
+                    elem.sigma_hat_EESPT = sigma_hat;
+                    elem.sigma_hat_tot_EESPT = sigma_hat + elem.sigma_handbook_PUM;
                 }
                 }
         theta := Op( 0 )
