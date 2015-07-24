@@ -186,8 +186,9 @@ def calc_elem_matrix_A_enh( list_f, rep )
 
         e->assume_const_jac = true
         epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
-        degre_poly := ( ( epsilon_hat_const_jac : epsilon_hat_const_jac ) ).poly_deg( e->var_inter )
+        sigma_hat_const_jac := sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
         e->assume_const_jac = hyp_const_jac
+        degre_poly := ( sigma_hat_const_jac : epsilon_hat_const_jac ).poly_deg( e->var_inter )
 
         if integration_type == "gauss_num" and integration_lang == "cpp"
             file_ <<< "        Vec<double> poids;"
@@ -282,9 +283,12 @@ def calc_elem_vector_d_enh( list_f, rep )
         epsilon_hat := epsilon_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
 
         e->assume_const_jac = true
+        epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
+        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
         epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
-        degre_poly := ( ( epsilon_hat_const_jac : epsilon_hat_const_jac ) ).poly_deg( e->var_inter )
+        sigma_hat_const_jac := sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
         e->assume_const_jac = hyp_const_jac
+        degre_poly := ( sigma_hat_const_jac : eps_hooke_iso( ( sigma_const_jac - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) - sigma_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ).poly_deg( e->var_inter )
         if want_local_enrichment
             degre_poly = degre_poly_handbook
 

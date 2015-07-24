@@ -30,14 +30,15 @@ def add_elem_norm_dep( list_f, rep )
 
         e->assume_const_jac = true
         epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
-        norm_dep_const_jac := epsilon_const_jac : epsilon_const_jac
+        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        norm_dep_const_jac := epsilon_const_jac : sigma_const_jac
         e->assume_const_jac = hyp_const_jac
         degre_poly := norm_dep_const_jac.poly_deg( e->var_inter )
 
         if integration_type == "gauss_num"
             norm_dep = e->gauss_num_integration( child_cast(f)->epsilon.expr : child_cast(f)->sigma.expr, order_diff = degre_poly  )
         else if integration_type == "formal"
-            norm_dep = e->integration( child_cast(f)->epsilon.expr : sigma_hooke_iso( child_cast(f)->epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly  )
+            norm_dep = e->integration( child_cast(f)->epsilon.expr : child_cast(f)->sigma.expr, order_diff = degre_poly  )
         cw := CodeWriterAlt( "T" )
         cw.add( "norm_dep", norm_dep, add )
         file_ <<< "$(cw.to_string( 4 ))"
@@ -60,6 +61,11 @@ def calc_elem_discretization_error( list_f, rep )
         file_ <<< "#define calc_elem_discretization_error_$(f->name)_$(e->dim)_$(e->name)_h"
         file_ <<< "namespace LMT {"
         deg_p := max( e->order_interpolation )
+        e->assume_const_jac = true
+        epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
+        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        e->assume_const_jac = hyp_const_jac
+
         for _f_ref in list_f
             _e_ref := child_cast( _f_ref->pe )
             e_ref := new SymbolicElement[ _e_ref->name, _e_ref->dim ]( name_elem = "elem_ref", tex_symbol_pos = "P_{\\text{ref}}", node_numbers_to_node_numbers_in_parent_cpp = range(_e_ref->nb_nodes).map( _e_ref->corr_cpp ) )
@@ -104,21 +110,24 @@ def calc_elem_discretization_error( list_f, rep )
             # file_ <<< "        }"
             # file_ <<< "    }"
             e_var_inter := e->var_inter_for_pos( e_ref->pos, 1 )
-            f_epsilon_expr := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
-            f_sigma_expr := ( child_cast(f)->sigma.expr ).subs( e->var_inter, e_var_inter )
+            epsilon_proj := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
+            sigma_proj := ( child_cast(f)->sigma.expr ).subs( e->var_inter, e_var_inter )
             deg_p_ref := max( e_ref->order_interpolation )
             discretization_error_ref := Op( 0 )
 
-            e->assume_const_jac = true
-            epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
-            discretization_error_ref_const_jac := epsilon_const_jac : epsilon_const_jac
-            e->assume_const_jac = hyp_const_jac
-            degre_poly := discretization_error_ref_const_jac.poly_deg( e->var_inter )
+            e_ref->assume_const_jac = true
+            epsilon_proj_const_jac := ( epsilon_const_jac ).subs( e->var_inter, e_var_inter )
+            sigma_proj_const_jac := ( sigma_const_jac ).subs( e->var_inter, e_var_inter )
+            epsilon_ref_const_jac := e_ref->grad_sym( f_ref->dep.expr )
+            sigma_ref_const_jac := sigma_hooke_iso( epsilon_ref_const_jac, f_ref->young.expr, f_ref->poisson.expr, type_stress_2D )
+            discretization_error_ref_const_jac := ( epsilon_ref_const_jac - epsilon_proj_const_jac ) : ( sigma_ref_const_jac - sigma_proj_const_jac )
+            e_ref->assume_const_jac = hyp_const_jac
+            degre_poly := discretization_error_ref_const_jac.poly_deg( e_ref->var_inter )
 
             if integration_type == "gauss_num"
-                discretization_error_ref = e_ref->gauss_num_integration( ( f_ref->epsilon.expr - f_epsilon_expr ) : ( f_ref->sigma.expr - f_sigma_expr ), order_diff = degre_poly )
+                discretization_error_ref = e_ref->gauss_num_integration( ( f_ref->epsilon.expr - epsilon_proj ) : ( f_ref->sigma.expr - sigma_proj ), order_diff = degre_poly )
             else if integration_type == "formal"
-                discretization_error_ref = e_ref->integration( ( f_ref->epsilon.expr - f_epsilon_expr ) : ( f_ref->sigma.expr - f_sigma_expr ), order_diff = degre_poly )
+                discretization_error_ref = e_ref->integration( ( f_ref->epsilon.expr - epsilon_proj ) : ( f_ref->sigma.expr - sigma_proj ), order_diff = degre_poly )
             file_ <<< "    if ( recovery_test_elem != 0 ) {"
             cw := CodeWriterAlt( "T" )
             cw.add( "discretization_error_elem[ elem.number ]", discretization_error_ref, add )
@@ -127,14 +136,14 @@ def calc_elem_discretization_error( list_f, rep )
             # Calcul exact de l'erreur de discretisation locale sur chaque element
             #---------------------------------------------------------------------
             # e_var_inter := e->var_inter_for_pos( e_ref->pos, 1 )
-            # f_epsilon_expr := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
-            # f_sigma_expr := ( child_cast(f)->sigma.expr ).subs( e->var_inter, e_var_inter )
+            # epsilon_proj := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
+            # sigma_proj := ( child_cast(f)->sigma.expr ).subs( e->var_inter, e_var_inter )
             # deg_p_ref := max( e_ref->order_interpolation )
             # discretization_error_ref := Op( 0 )
             # if integration_type == "gauss_num"
-                # discretization_error_ref = e_ref->gauss_num_integration( ( f_ref->epsilon.expr - f_epsilon_expr ) : ( f_ref->sigma.expr - f_sigma_expr ) * e->point_is_inside( e_ref->pos, 1 ), order_diff = degre_poly )
+                # discretization_error_ref = e_ref->gauss_num_integration( ( f_ref->epsilon.expr - epsilon_proj ) : ( f_ref->sigma.expr - sigma_proj ) * e->point_is_inside( e_ref->pos, 1 ), order_diff = degre_poly )
             # else if integration_type == "formal"
-                # discretization_error_ref = e_ref->integration( ( f_ref->epsilon.expr - f_epsilon_expr ) : ( f_ref->sigma.expr - f_sigma_expr ) * e->point_is_inside( e_ref->pos, 1 ), order_diff = degre_poly )
+                # discretization_error_ref = e_ref->integration( ( f_ref->epsilon.expr - epsilon_proj ) : ( f_ref->sigma.expr - sigma_proj ) * e->point_is_inside( e_ref->pos, 1 ), order_diff = degre_poly )
             # cw := CodeWriterAlt( "T" )
             # cw.add( "discretization_error_elem[ elem.number ]", discretization_error_ref, add )
             # file_ <<< "$(cw.to_string( 4 ))"

@@ -17,6 +17,12 @@ face := SymbolicElement[ Bar, dim ]()
 # e.grad_sym(dep).display_tex()
 # e_bar := SymbolicElement[ Bar ]()
 
+e_ref := new SymbolicElement[ Quad, dim ]( name_elem = "elem_ref", tex_symbol_pos = "P_{\\text{ref}}" )
+infon e_ref->assume_const_jac
+
+toto := symbol( "toto", tex_name = "\\varphi_{\\text{local enrichment}}^{\\text{handbook} \\tilde{\\sigma}}")
+toto.display_tex("test")
+
 # Test de l'ensemble des méthodes de SymbolicElement
 #---------------------------------------------------
 
@@ -69,10 +75,18 @@ e.pos_nodes[3] = [110 22] # 33
 # for n in 0 .. e.nb_nodes
     # infon e.pos_nodes[ n ]
 
-# infon e.var_inter_for_pos( e.pos, 1 )
-# infon e.var_inter_for_pos( e.pos, 2 )
-# infon e.var_inter_for_pos( e.pos, 3 )
-# infon e.var_inter_for_pos( e.pos, 4 )
+#infon e.var_inter_for_pos( e.pos, 1 )
+#infon e.var_inter_for_pos( e.pos, 2 )
+#infon e.var_inter_for_pos( e.pos, 3 )
+#infon e.var_inter_for_pos( e.pos, 4 )
+
+#e_ref->pos_nodes[0] = [1 0]
+#e_ref->pos_nodes[1] = [2 1]
+#e_ref->pos_nodes[2] = [1 4]
+#infon e.var_inter_for_pos( e_ref->pos, 1 )
+#infon e.var_inter_for_pos( e_ref->pos, 2 )
+#infon e.var_inter_for_pos( e_ref->pos, 3 )
+#infon e.var_inter_for_pos( e_ref->pos, 4 )
 
 # base := Vec[ Op ]()
 # nb_var := 20
@@ -1290,7 +1304,7 @@ for gamma_ in e.children( 1 )
 #epsilon_hat_test := e.grad_sym( dep_hat_test )
 #sigma_hat_expr := sigma_hooke_iso( epsilon_hat_expr, young, poisson, type_stress_2D )
 #H := hooke_iso( young, poisson, e.dim, type_stress_2D )
-## H.display_tex()
+#H.display_tex()
 #infon H
 
 # H_simplified := Tensor[ Float96, [e.dim,e.dim,e.dim,e.dim] ]( H )
@@ -1339,7 +1353,7 @@ for gamma_ in e.children( 1 )
     #F[ cpt_test ] = energie_K.diff( test_symbol )
 #for expr_symbol, cpt_expr in sym_dep_hat_expr, 0...
     #K.col( cpt_expr ) = diff( F, expr_symbol )
-## K.display_tex()
+# K.display_tex()
 #mat := Mat[ Float96, Gen[ K.nb_rows, K.nb_cols ] ]()
 #for i in 0 .. K.nb_rows
     #for j in 0 .. K.nb_cols
