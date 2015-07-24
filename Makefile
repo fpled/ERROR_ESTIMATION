@@ -49,7 +49,7 @@ default:
 	cd LMT/include/codegen; scons -j 1
 	scons --sconstruct=$(scons_file) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
 	time ./main
-	
+
 PGD:
 # 	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation_PGD.met
 	cd LMT/include/codegen; scons -j 1
