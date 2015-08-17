@@ -52,14 +52,15 @@ default:
 
 # PGD ---------------------------
 all_pgd:
-#	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation.met
+#	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation_space.met
+#	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation_parameter.met
 #	cd LMT/include/codegen; scons -j 1
 	scons --sconstruct=$(scons_file_pgd) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
 	time ./main_pgd
 
 # HOMOG ---------------------------
 all_homog:
-#	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation_PGD.met
+#	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation_homog.met
 	cd LMT/include/codegen; scons -j 1
 	scons --sconstruct=$(scons_file_homog) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
 	time ./main_homog
@@ -79,12 +80,13 @@ compile:
 	scons --sconstruct=$(scons_file) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
 
 compile_pgd:
-#	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation_PGD.met
+#	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation_space.met
+#	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation_parameter.met
 	cd LMT/include/codegen; scons -j 1
 	scons --sconstruct=$(scons_file_pgd) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
 
 compile_homog:
-#	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation_PGD.met
+#	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation_homog.met
 	cd LMT/include/codegen; scons -j 1
 	scons --sconstruct=$(scons_file_homog) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
 
