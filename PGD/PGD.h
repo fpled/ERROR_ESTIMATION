@@ -80,7 +80,7 @@ void partition_elem_list( TM &m, const string &structure, TVV &elem_list ) {
 
 /// Construction et resolution du pb en espace
 ///-------------------------------------------
-template<class TM, class TF, class T, class TV, class TVV, class TMATV, class TVVV, class TVVVV>
+template<class TM, class TF, class T, class TV, class TVV, class TMATVV, class TVVV, class TVVVV>
 void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_space, const TVV &F_param, const TMATVV &K_param, const Vec<unsigned> &elem_list, const TVVVV &lambda, TVVV &psi, const bool want_iterative_solver = false, const T iterative_criterium = 1e-3 ) {
 
     /// Construction du pb en espace
@@ -138,8 +138,8 @@ void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const 
 
 /// Construction et resolution du pb en parametre
 ///----------------------------------------------
-template<class TM_param, class TF_param, class TV, class TMATV, class TVVV, class TVVVV>
-void solve_PGD_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_param, const TMATV &K_param, const TV &F_space, const TMATV &K_space, const TVVV &psi, TVVVV &lambda ) {
+template<class TM_param, class TF_param, class TV, class TMATVV, class TVVV, class TVVVV>
+void solve_PGD_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_param, const TMATVV &K_param, const TV &F_space, const TMATV &K_space, const TVVV &psi, TVVVV &lambda ) {
 
     typedef typename TM_param::TNode::T T;
     
@@ -154,8 +154,8 @@ void solve_PGD_param( TM_param &m_param, TF_param &f_param, const unsigned &p, c
     for (unsigned i=0;i<n;++i) {
         Vec<T,2> alpha_p;
         for (unsigned j=0;j<elem_list.size();++j) {
-        T alpha_p_i_unk = dot( psi[ i ][ nb_iterations[ i ] ], K_unk_s * psi[ n ][ k ] );
-        T alpha_p_i_k = dot( psi[ i ][ nb_iterations[ i ] ], K_k_s * psi[ n ][ k ] );
+            T alpha_p_i_unk = dot( psi[ i ][ nb_iterations[ i ] ], K_unk_s * psi[ n ][ k ] );
+            T alpha_p_i_k = dot( psi[ i ][ nb_iterations[ i ] ], K_k_s * psi[ n ][ k ] );
         }
         f_param.sollicitation -= ( alpha_p[0] * K_param[p][0] + alpha_p[1] * K_param[p][1] ) * lambda[ i ][ nb_iterations[ i ] ];
     }
