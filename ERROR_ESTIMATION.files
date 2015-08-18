@@ -1036,6 +1036,11 @@ MESH_MASK/half_circle.png
 MESH_MASK/rectangle.png
 PGD/PGD.h
 PGD/PGD.met
+RESULTS/square_128_Quad_direct_EET_k_3_J0.vtu
+RESULTS/square_256_Quad_direct_EET_k_3_J0.vtu
+RESULTS/square_32_Quad_direct_EET_k_3_J0.vtu
+RESULTS/square_512_Quad_direct_EET_k_3_J0.vtu
+RESULTS/square_64_Quad_direct_EET_k_3_J0.vtu
 SPET/Calcul_error_estimate_partition_unity.h
 SPET/Construct_connectivity_patch.h
 SPET/SPET.h
