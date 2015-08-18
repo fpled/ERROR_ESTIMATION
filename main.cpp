@@ -43,8 +43,8 @@ int main( int argc, char **argv ) {
     
     /// Global discretization error
     ///----------------------------
-    static const bool want_global_discretization_error = 1; // calcul de l'erreur de discretisation globale du pb direct
-    static const bool want_local_discretization_error = 1; // calcul de l'erreur de discretisation locale du pb direct
+    static const bool want_global_discretization_error = 0; // calcul de l'erreur de discretisation globale du pb direct
+    static const bool want_local_discretization_error = 0; // calcul de l'erreur de discretisation locale du pb direct
     static const bool want_solve_ref = 0; // calcul d'une solution de reference sur un maillage de reference (tres fin)
     static const unsigned refinement_degree_ref = 2; // degre du h-refinement pour la construction du maillage de reference du pb de reference :
                                                      // 1 -> sous-decoupage en 4/8 elements en 2D/3D
@@ -59,7 +59,7 @@ int main( int argc, char **argv ) {
     /// Global error estimation method
     ///-------------------------------
     static const bool want_global_estimation = 1; // calcul d'un estimateur d'erreur globale (au sens de la norme energetique)
-    static const string method = "EET_SPET_EESPT"; //methode de construction de champs admissibles pour le pb direct : EET, SPET, EESPT
+    static const string method = "EET"; //methode de construction de champs admissibles pour le pb direct : EET, SPET, EESPT
     static const string method_adjoint = "EET"; // methode de construction de champs admissibles pour le pb adjoint : EET, SPET, EESPT
 
     static const unsigned cost_function = 0; // fonction-cout pour les methodes EET, EESPT :
@@ -81,7 +81,7 @@ int main( int argc, char **argv ) {
     
     /// Goal-oriented error estimation method
     ///--------------------------------------
-    static const bool want_local_estimation = 1; // calcul de l'erreur locale sur une quantite d'interet
+    static const bool want_local_estimation = 0; // calcul de l'erreur locale sur une quantite d'interet
     static const bool want_interest_quantity_only = 0; // calcul de la quantite d'interet uniquement
     static const bool want_handbook_only = 0; // calcul de la solution handbook uniquement
     static const bool want_introduction_sigma_hat_m = 1; // introduction de sigma_hat_m pour le calcul de l'erreur sur une quantite d'interet locale
