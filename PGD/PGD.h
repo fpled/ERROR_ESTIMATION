@@ -81,13 +81,13 @@ void partition_elem_list( TM &m, const string &structure, TVV &elem_list ) {
 /// Construction et resolution du pb en espace
 ///-------------------------------------------
 template<class TM, class TF, class T, class TV, class TVV, class TMATVV, class TVVV, class TVVVV>
-void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_space, const TVV &F_param, const TMATVV &K_param, const Vec<unsigned> &elem_list, const TVVVV &lambda, TVVV &psi, const bool want_iterative_solver = false, const T iterative_criterium = 1e-3 ) {
+void solve_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_space, const TVV &F_param, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_list, const TVVVV &lambda, TVVV &psi, const bool want_iterative_solver = false, const T iterative_criterium = 1e-3 ) {
 
     /// Construction du pb en espace
     ///-----------------------------
     T gamma_s = 1.;
     for (unsigned p=0;p<elem_list.size()-1;++p)
-        gamma_s *= dot( F_param[ p ], lambda[ p ][ n ][ k ] );
+        gamma_s *= dot( F_param[p], lambda[ p ][ n ][ k ] );
     f.sollicitation = F_space * gamma_s;
     for (unsigned i=0;i<n;++i) {
         for (unsigned j=0;j<elem_list.size();++j) {
@@ -107,7 +107,7 @@ void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const 
         f.sollicitation -= f.matrices(Number<0>()) * psi[ i ][ nb_iterations[ i ] ];
     }
 
-    for (unsigned j=0;j<elem_list.size()-1;++j) {
+    for (unsigned j=0;j<elem_list.size();++j) {
         T alpha_s = 1.;
         for (unsigned p=0;p<elem_list.size()-1;++p) {
             if ( j == p )
@@ -138,30 +138,53 @@ void solve_PGD_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const 
 
 /// Construction et resolution du pb en parametre
 ///----------------------------------------------
-template<class TM_param, class TF_param, class TV, class TMATVV, class TVVV, class TVVVV>
-void solve_PGD_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_param, const TMATVV &K_param, const TV &F_space, const TMATV &K_space, const TVVV &psi, TVVVV &lambda ) {
+template<class TM_param, class TF_param, class TV, class TVV, class TMATV, class TMATVV, class TVVV, class TVVVV>
+void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_space, const TVV &F_param, const TMATV &K_space, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_list, const TVVV &psi, TVVVV &lambda ) {
 
     typedef typename TM_param::TNode::T T;
+    typedef Mat<T, Sym<>, SparseLine<> > TMatSymSparse;
     
     /// Construction du pb en parametre
     ///--------------------------------
     T gamma_p = dot( F_space, psi[ n ][ k ] );
     for (unsigned q=0;q<elem_list.size()-1;++q) {
         if ( q != p )
-            gamma_p *= dot( F_param[ q ], lambda[ q ][ n ][ k ] );
+            gamma_p *= dot( F_param[q], lambda[ q ][ n ][ k ] );
     }
-    f_param.sollicitation = F_param * gamma_p;
+    f_param.sollicitation = F_param[p] * gamma_p;
     for (unsigned i=0;i<n;++i) {
-        Vec<T,2> alpha_p;
         for (unsigned j=0;j<elem_list.size();++j) {
-            T alpha_p_i_unk = dot( psi[ i ][ nb_iterations[ i ] ], K_unk_s * psi[ n ][ k ] );
-            T alpha_p_i_k = dot( psi[ i ][ nb_iterations[ i ] ], K_k_s * psi[ n ][ k ] );
+            T alpha_p = dot( psi[ i ][ nb_iterations[ i ] ], K_space[j] * psi[ i ][ k ] );
+            for (unsigned q=0;q<elem_list.size()-1;++q) {
+                if ( q != p ) {
+                    if ( j == q )
+                        alpha_p *= dot( lambda[ q ][ i ][ nb_iterations[ i ] ], K_param[q][1] * lambda[ q ][ n ][ k ] );
+                    else
+                        alpha_p *= dot( lambda[ q ][ i ][ nb_iterations[ i ] ], K_param[q][0] * lambda[ q ][ n ][ k ] );
+                }
+            }
+            if ( j == p )
+                f_param.sollicitation -= alpha_p * K_param[p][1] * lambda[ p ][ i ][ nb_iterations[ i ] ];
+            else
+                f_param.sollicitation -= alpha_p * K_param[p][0] * lambda[ p ][ i ][ nb_iterations[ i ] ];
         }
-        f_param.sollicitation -= ( alpha_p[0] * K_param[p][0] + alpha_p[1] * K_param[p][1] ) * lambda[ i ][ nb_iterations[ i ] ];
     }
-    T alpha_p_unk = dot( psi[ n ][ k ], K_unk_s * psi[ n ][ k ] );
-    T alpha_p_k = dot( psi[ n ][ k ], K_k_s * psi[ n ][ k ] );
-    f_param.matrices(Number<0>()) = TMAT( alpha_p_unk * K_unk_p + alpha_p_k * K_k_p );
+    f_param.clean_mats();
+    for (unsigned j=0;j<elem_list.size();++j) {
+        T alpha_p = dot( psi[ n ][ k ], K_space[j] * psi[ n ][ k ] );
+        for (unsigned q=0;q<elem_list.size()-1;++q) {
+            if ( q != p ) {
+                if ( j == q )
+                    alpha_p *= dot( lambda[ q ][ n ][ k ], K_param[q][1] * lambda[ q ][ n ][ k ] );
+                else
+                    alpha_p *= dot( lambda[ q ][ n ][ k ], K_param[q][0] * lambda[ q ][ n ][ k ] );
+            }
+        }
+        if ( j == p )
+            f_param.matrices(Number<0>()) += TMatSymSparse( alpha_p * K_param[p][1] );
+        else
+            f_param.matrices(Number<0>()) += TMatSymSparse( alpha_p * K_param[p][0] );
+    }
     
     /// Resolution du pb en parametre
     ///------------------------------
@@ -171,7 +194,7 @@ void solve_PGD_param( TM_param &m_param, TF_param &f_param, const unsigned &p, c
     
     /// Fonction en parametre
     ///----------------------
-    lambda[ n ][ k ] = f_param.vectors[0];
+    lambda[ p ][ n ][ k ] = f_param.vectors[0];
     
 //     /// Resolution explicite du pb en parametre
 //     ///----------------------------------------
