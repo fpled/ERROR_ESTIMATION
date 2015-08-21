@@ -19,7 +19,7 @@ class FormulationParam[ dim ] inherits LmtppFormulation[ dim ]
 
 # Nom du probleme
 #----------------
-pb_name := "param"
+pb_name := "parameter"
 
 # Liste de formulations
 #----------------------

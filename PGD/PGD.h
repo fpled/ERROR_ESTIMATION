@@ -181,9 +181,9 @@ void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const
             }
         }
         if ( j == p )
-            f_param.matrices(Number<0>()) += TMatSymSparse( alpha_p * K_param[p][1] );
+            f_param.matrices(Number<0>()) = TMatSymSparse( f_param.matrices(Number<0>()) + alpha_p * K_param[p][1] ); //f_param.matrices(Number<0>()) += TMatSymSparse( alpha_p * K_param[p][1] );
         else
-            f_param.matrices(Number<0>()) += TMatSymSparse( alpha_p * K_param[p][0] );
+            f_param.matrices(Number<0>()) = TMatSymSparse( f_param.matrices(Number<0>()) + alpha_p * K_param[p][0] ); //f_param.matrices(Number<0>()) += TMatSymSparse( alpha_p * K_param[p][0] );
     }
     
     /// Resolution du pb en parametre

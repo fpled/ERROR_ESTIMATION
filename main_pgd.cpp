@@ -10,7 +10,7 @@
 //
 //
 #include "build/problem_space/all_in_one.h" // sert a forcer le logiciel scons a generer le repertoire build et ses codes sources .h et .cpp correspondant a la formulation
-#include "build/problem_param/all_in_one.h" // sert a forcer le logiciel scons a generer le repertoire build et ses codes sources .h et .cpp correspondant a la formulation
+#include "build/problem_parameter/all_in_one.h" // sert a forcer le logiciel scons a generer le repertoire build et ses codes sources .h et .cpp correspondant a la formulation
 #include "Structure.h"
 #include "Material_properties.h"
 #include "Boundary_conditions.h"
@@ -34,7 +34,7 @@ int main( int argc, char **argv ) {
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    typedef Mesh<Mesh_carac_param<double,1> > TM_param;
+    typedef Mesh<Mesh_carac_parameter<double,1> > TM_param;
     typedef Formulation<TM_param,FormulationParam,DefaultBehavior,double,wont_add_nz> TF_param;
     typedef TM_param::Pvec Pvec_param;
     static const string structure = "circular_inclusions"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circle, circular_inclusions, circular_holes
@@ -265,88 +265,90 @@ int main( int argc, char **argv ) {
     ///--------------------------------------
     Vec<TF_param> f_param;
     f_param.resize( elem_list.size()-1 );
-    for (unsigned p=0;p<elem_list.size()-1;++p)
-        f_param[p]( m_param[p] );
+//    for (unsigned p=0;p<elem_list.size()-1;++p) {
+//        TF_param f_param_p( m_param[p] );
+//        std::cout << f_param_p.get_name() << std::endl;
+//    }
     
     /// Defintion des fonctions a variables separees
     ///---------------------------------------------
-    unsigned nb_modes; // nb de modes dans la decomposition
-    Vec< Vec<T> > dep_space;
-    Vec< Vec< Vec<T> > > dep_param;
-    Vec< Vec< Vec<T>, max_iter+1 >, max_mode > psi;
-    Vec< Vec< Vec< Vec<T>, max_iter+1 >, max_mode > > lambda;
-    Vec<unsigned> nb_iterations; // nb d'iterations de l'algorithme de type point fixe pour chaque mode
-    nb_iterations.resize( max_mode );
-    nb_iterations.set( 1 );
-    static Vec<T> residual; // residu au sens faible associe a la solution a variables separees pour chaque mode
-    residual.resize( max_mode );
-    residual.set( 0. );
-//    Vec<T> vals_param;
-//    for (unsigned i=0;i<m_param.node_list.size();++i)
-//        vals_param.push_back( m_param.node_list[i].pos[0] );
-    Vec< DisplayParaview, max_mode > dp_space;
-    Vec< Vec< DisplayParaview, max_mode > > dp_param;
-    dp_param.resize( elem_list.size()-1 );
-    Vec< DisplayParaview, nb_vals_param_verif > dp_space_verif;
-    Vec<string> lp_space, lp_param;
-    lp_space.push_back( "dep" );
-    lp_space.push_back( "young_eff" );
-    lp_param.push_back( "dep" );
-    string prefix = define_prefix( m, pathname, "direct", structure, loading, mesh_size );
+//    unsigned nb_modes; // nb de modes dans la decomposition
+//    Vec< Vec<T> > dep_space;
+//    Vec< Vec< Vec<T> > > dep_param;
+//    Vec< Vec< Vec<T>, max_iter+1 >, max_mode > psi;
+//    Vec< Vec< Vec< Vec<T>, max_iter+1 >, max_mode > > lambda;
+//    Vec<unsigned> nb_iterations; // nb d'iterations de l'algorithme de type point fixe pour chaque mode
+//    nb_iterations.resize( max_mode );
+//    nb_iterations.set( 1 );
+//    static Vec<T> residual; // residu au sens faible associe a la solution a variables separees pour chaque mode
+//    residual.resize( max_mode );
+//    residual.set( 0. );
+////    Vec<T> vals_param;
+////    for (unsigned i=0;i<m_param.node_list.size();++i)
+////        vals_param.push_back( m_param.node_list[i].pos[0] );
+//    Vec< DisplayParaview, max_mode > dp_space;
+//    Vec< Vec< DisplayParaview, max_mode > > dp_param;
+//    dp_param.resize( elem_list.size()-1 );
+//    Vec< DisplayParaview, nb_vals_param_verif > dp_space_verif;
+//    Vec<string> lp_space, lp_param;
+//    lp_space.push_back( "dep" );
+//    lp_space.push_back( "young_eff" );
+//    lp_param.push_back( "dep" );
+//    string prefix = define_prefix( m, pathname, "direct", structure, loading, mesh_size );
     
-    typedef Mat<T, Sym<>, SparseLine<> > TMatSymSparse;
-    Vec<TMatSymSparse> K_space;
-    K_space.resize(elem_list.size());
-    Vec< Vec<TMatSymSparse,2> > K_param;
-    K_param.resize(elem_list.size()-1);
-    Vec<T> F_space;
-    Vec< Vec<T> > F_param;
-    F_param.resize(elem_list.size()-1);
+//    typedef Mat<T, Sym<>, SparseLine<> > TMatSymSparse;
+//    Vec<TMatSymSparse> K_space;
+//    K_space.resize(elem_list.size());
+//    Vec< Vec<TMatSymSparse,2> > K_param;
+//    K_param.resize(elem_list.size()-1);
+//    Vec<T> F_space;
+//    Vec< Vec<T> > F_param;
+//    F_param.resize(elem_list.size()-1);
     
     /// Verification des conditions cinematiques
     ///-----------------------------------------
-    if ( display_constraints )
-        check_constraints( f );
+//    if ( display_constraints )
+//        check_constraints( f );
     
     /// Resolution du pb direct
     ///------------------------
-    TicToc t;
-    t.start();
-    if ( want_PGD == 0 ) {
-        if ( want_iterative_solver == 0 )
-            f.solve();
-        else
-            f.solve( iterative_criterium );
-    }
-    else {
-        f.allocate_matrices();
-        f.shift();
-        f.assemble( false, true );
-        F_space = f.sollicitation;
-        for (unsigned j=0;j<elem_list.size();++j) {
-            for (unsigned n=0;n<m.elem_list.size();++n) {
-                if ( find( elem_list[j], _1 == n ) )
-                    m.elem_list[n]->set_field( "alpha", 1. );
-                else
-                    m.elem_list[n]->set_field( "alpha", 0. );
-            }
-            f.assemble( true, false );
-            K_space[j] = f.matrices(Number<0>());
-        }
+//    TicToc t;
+//    t.start();
+//    if ( want_PGD == 0 ) {
+//        if ( want_iterative_solver == 0 )
+//            f.solve();
+//        else
+//            f.solve( iterative_criterium );
+//    }
+//    else {
+//        f.allocate_matrices();
+//        f.shift();
+//        f.assemble( false, true );
+//        F_space = f.sollicitation;
+//        for (unsigned j=0;j<elem_list.size();++j) {
+//            for (unsigned n=0;n<m.elem_list.size();++n) {
+//                if ( find( elem_list[j], _1 == n ) )
+//                    m.elem_list[n]->set_field( "alpha", 1. );
+//                else
+//                    m.elem_list[n]->set_field( "alpha", 0. );
+//            }
+//            f.assemble( true, false );
+//            K_space[j] = f.matrices(Number<0>());
+//        }
 
-        for (unsigned p=0;p<elem_list.size()-1;++p) {
-            f_param[p].allocate_matrices();
-            f_param[p].shift();
-            f_param[p].assemble( false, true );
-            F_param[p] = f_param[p].sollicitation;
-            m_param[p].phi = 0;
-            f_param[p].assemble( true, false );
-            K_param[p][0] = f_param[p].matrices(Number<0>());
-            m_param[p].phi = 1;
-            f_param[p].assemble( true, false );
-            K_param[p][1] = f_param[p].matrices(Number<0>());
-        }
-
+//        for (unsigned p=0;p<elem_list.size()-1;++p) {
+//            f_param[p].allocate_matrices();
+//            f_param[p].shift();
+//            f_param[p].assemble( false, true );
+//            F_param[p] = f_param[p].sollicitation;
+//            m_param[p].phi = 0;
+//            f_param[p].assemble( true, false );
+//            K_param[p][0] = f_param[p].matrices(Number<0>());
+//            m_param[p].phi = 1;
+//            f_param[p].assemble( true, false );
+//            K_param[p][1] = f_param[p].matrices(Number<0>());
+//        }
+/*
         unsigned n = 0;
         while ( true ) {
             cout << "Mode n = " << n << endl << endl;
@@ -380,8 +382,8 @@ int main( int argc, char **argv ) {
                 
                 /// Construction et resolution des pbs en parametre
                 ///------------------------------------------------
-                for (unsigned p=0;p<elem_list.size()-1;++p)
-                    solve_param( m_param[p], f_param[p], p, n, k, nb_iterations, F_space, F_param, K_space, K_param, elem_list, psi, lambda );
+//                for (unsigned p=0;p<elem_list.size()-1;++p)
+//                    solve_param( m_param[p], f_param[p], p, n, k, nb_iterations, F_space, F_param, K_space, K_param, elem_list, psi, lambda );
                 
                 /// Construction et resolution du pb en espace
                 ///-------------------------------------------
@@ -494,14 +496,14 @@ int main( int argc, char **argv ) {
 //            res = fabs( res ) / fabs( res_sollicitation );
 //            residual[ n ] = res;
 //            cout << "Residu au sens faible associe a la solution u_" << n << " = " << residual[ n ] << endl << endl;
-//            if ( /*fabs( residual[ n ] ) < tol_global_convergence_criterium or*/ n >= max_mode-1 ) {
+//            if ( n >= max_mode-1 ) { //if ( fabs( residual[ n ] ) < tol_global_convergence_criterium or n >= max_mode-1 ) {
 //                nb_modes = n+1;
 //                cout << "nb de modes = " << nb_modes << endl << endl;
 //                break;
 //            }
             n++;
         }
-        
+
         dep_space.resize( nb_modes );
         dep_param.resize( nb_modes );
         for (unsigned n=0;n<nb_modes;++n) {
@@ -799,7 +801,7 @@ int main( int argc, char **argv ) {
 //            }
 //        }
 //    }
-    
+*/
     t_total.stop();
     cout << "Temps de calcul total : " << t_total.res << endl << endl;
     
