@@ -193,21 +193,24 @@ void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const
     /// Fonction en parametre
     ///----------------------
     lambda[ p ][ n ][ k ] = f_param.vectors[0];
-//    cout << "Fonction en parametre " << p << " =" << endl;
-//    cout << lambda[ p ][ n ][ k ] << endl << endl;
+    cout << "Fonction en parametre " << p << " =" << endl;
+    cout << lambda[ p ][ n ][ k ] << endl << endl;
     
      /// Resolution explicite du pb en parametre
      ///----------------------------------------
-//     for (unsigned j=0;j<m_param.node_list.size();++j) {
-//         T function = 1 + m_param.node_list[ j ].pos[ 0 ];
-//         lambda[ p ][ n ][ k ][ j ] = gamma;
-//         for (unsigned i=0;i<n;++i) {
-//             T alpha_p_i_unk = dot( psi[ i ][ nb_iterations[i] ], K_space[p] * psi[ n ][ k ] );
-//             T alpha_p_i_k = dot( psi[ i ][ nb_iterations[i] ], K_k_s * psi[ n ][ k ] );
-//             lambda[ n ][ k ][ j ] -= ( alpha_p_i_unk * function + alpha_p_i_k ) * lambda[ p ][ i ][ nb_iterations[i] ][ j ];
-//         }
-//         lambda[ n ][ k ][ j ] /= alpha_p_unk * function + alpha_p_k;
-//     }
+     for (unsigned j=0;j<m_param.node_list.size();++j) {
+         T function = 1 + m_param.node_list[ j ].pos[ 0 ];
+         lambda[ p ][ n ][ k ][ j ] = gamma;
+         for (unsigned i=0;i<n;++i) {
+             T alpha_p_i_unk = dot( psi[ i ][ nb_iterations[i] ], K_space[p] * psi[ n ][ k ] );
+             T alpha_p_i_k = dot( psi[ i ][ nb_iterations[i] ], K_space[p+1] * psi[ n ][ k ] );
+             lambda[ n ][ k ][ j ] -= ( alpha_p_i_unk * function + alpha_p_i_k ) * lambda[ p ][ i ][ nb_iterations[i] ][ j ];
+         }
+         lambda[ p ][ n ][ k ][ j ] /= dot( psi[ n ][ k ], K_space[p] * psi[ n ][ k ] ) * function + dot( psi[ n ][ k ], K_space[p+1] * psi[ n ][ k ] );
+     }
+
+     cout << "Fonction en parametre " << p << " =" << endl;
+     cout << lambda[ p ][ n ][ k ] << endl << endl;
 }
 
 /// Construction des coefficients alpha, gamma associes au pb spatial
