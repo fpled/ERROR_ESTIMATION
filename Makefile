@@ -49,6 +49,7 @@ default:
 	cd LMT/include/codegen; scons -j 1
 	scons --sconstruct=$(scons_file) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
 	time ./main
+	$(MAKE) move_results
 
 # PGD ---------------------------
 all_pgd:
@@ -57,6 +58,7 @@ all_pgd:
 #	cd LMT/include/codegen; scons -j 1
 	scons --sconstruct=$(scons_file_pgd) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
 	time ./main_pgd
+	$(MAKE) move_results
 
 # HOMOG ---------------------------
 all_homog:
@@ -64,6 +66,7 @@ all_homog:
 	cd LMT/include/codegen; scons -j 1
 	scons --sconstruct=$(scons_file_homog) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
 	time ./main_homog
+	$(MAKE) move_results
 
 # Codegen ---------------------------
 codegen:
@@ -96,10 +99,11 @@ test:
 
 # Move ---------------------------
 move_results:
-	-mv *.vtu RESULTS
-	-mv *.pvd RESULTS
-	-mv *.log RESULTS
-	-mv *.eps RESULTS
+	-find . -maxdepth 1 -name "*.vtu" -exec mv {} RESULTS \;
+	-find . -maxdepth 1 -name "*.pvd" -exec mv {} RESULTS \;
+	-find . -maxdepth 1 -name "*.log" -exec mv {} RESULTS \;
+	-find . -maxdepth 1 -name "*.out" -exec mv {} RESULTS \;
+	-find . -maxdepth 1 -name "*.eps" -exec mv {} RESULTS \;
 
 # Clean ---------------------------
 clean:
@@ -113,10 +117,9 @@ clean_results:
 	-rm -r RESULTS/*
 
 clean_all:
-	scons -c
-	cd LMT/include/codegen; scons -c
-	-rm -r build
-	-rm -r RESULTS/*
+	$(MAKE) clean
+	$(MAKE) clean_codegen
+	$(MAKE) clean_results
 	-rm  ./*.o
 
 clean_generated:
