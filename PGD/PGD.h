@@ -79,7 +79,7 @@ void partition_elem_list( TM &m, const string &structure, Vec< Vec<unsigned> > &
 
 /// Construction et resolution du pb en espace
 ///-------------------------------------------
-template<class TM, class TF, class T, class TV, class TVV, class TMATVV, class TVVV, class TVVVV>
+template<class TM, class TF, class T, class TV, class TVV, class TMATVV, class TVVVV, class TVVV>
 void solve_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_space, const TVV &F_param, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TVVVV &lambda, TVVV &psi, const bool want_iterative_solver = false, const T iterative_criterium = 1e-3 ) {
 
     /// Construction du pb en espace
@@ -140,7 +140,7 @@ template<class TM_param, class TF_param, class TV, class TVV, class TMATV, class
 void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_space, const TVV &F_param, const TMATV &K_space, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TVVV &psi, TVVVV &lambda ) {
 
     typedef typename TM_param::TNode::T T;
-    typedef Mat<T, Sym<>, SparseLine<> > TMatSymSparse;
+    typedef Mat<T, Sym<>, SparseLine<> > TMAT;
     
     /// Construction du pb en parametre
     ///--------------------------------
@@ -152,7 +152,7 @@ void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const
     f_param.sollicitation = F_param[p] * gamma;
     for (unsigned i=0;i<n;++i) {
         for (unsigned g=0;g<elem_group.size();++g) {
-            T alpha = dot( psi[ i ][ nb_iterations[i] ], K_space[g] * psi[ i ][ k ] );
+            T alpha = dot( psi[ i ][ nb_iterations[i] ], K_space[g] * psi[ n ][ k ] );
             for (unsigned q=0;q<elem_group.size()-1;++q) {
                 if ( q != p ) {
                     if ( g == q )
@@ -167,7 +167,8 @@ void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const
                 f_param.sollicitation -= alpha * K_param[p][0] * lambda[ p ][ i ][ nb_iterations[i] ];
         }
     }
-    f_param.clean_mats();
+    TMAT K = f_param.matrices(Number<0>());
+    K.clear();
     for (unsigned g=0;g<elem_group.size();++g) {
         T alpha = dot( psi[ n ][ k ], K_space[g] * psi[ n ][ k ] );
         for (unsigned q=0;q<elem_group.size()-1;++q) {
@@ -179,10 +180,11 @@ void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const
             }
         }
         if ( g == p )
-            f_param.matrices(Number<0>()) = TMatSymSparse( f_param.matrices(Number<0>()) + alpha * K_param[p][1] ); //f_param.matrices(Number<0>()) += TMatSymSparse( alpha * K_param[p][1] );
+            K += alpha * K_param[p][1];
         else
-            f_param.matrices(Number<0>()) = TMatSymSparse( f_param.matrices(Number<0>()) + alpha * K_param[p][0] ); //f_param.matrices(Number<0>()) += TMatSymSparse( alpha * K_param[p][0] );
+            K += alpha * K_param[p][0];
     }
+    f_param.matrices(Number<0>()) = K;
     
     /// Resolution du pb en parametre
     ///------------------------------
@@ -193,24 +195,138 @@ void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const
     /// Fonction en parametre
     ///----------------------
     lambda[ p ][ n ][ k ] = f_param.vectors[0];
-    cout << "Fonction en parametre " << p << " =" << endl;
-    cout << lambda[ p ][ n ][ k ] << endl << endl;
+//    cout << "Fonction en parametre " << p << " =" << endl;
+//    cout << lambda[ p ][ n ][ k ] << endl << endl;
     
      /// Resolution explicite du pb en parametre
      ///----------------------------------------
-     for (unsigned j=0;j<m_param.node_list.size();++j) {
-         T function = 1 + m_param.node_list[ j ].pos[ 0 ];
-         lambda[ p ][ n ][ k ][ j ] = gamma;
-         for (unsigned i=0;i<n;++i) {
-             T alpha_p_i_unk = dot( psi[ i ][ nb_iterations[i] ], K_space[p] * psi[ n ][ k ] );
-             T alpha_p_i_k = dot( psi[ i ][ nb_iterations[i] ], K_space[p+1] * psi[ n ][ k ] );
-             lambda[ n ][ k ][ j ] -= ( alpha_p_i_unk * function + alpha_p_i_k ) * lambda[ p ][ i ][ nb_iterations[i] ][ j ];
-         }
-         lambda[ p ][ n ][ k ][ j ] /= dot( psi[ n ][ k ], K_space[p] * psi[ n ][ k ] ) * function + dot( psi[ n ][ k ], K_space[p+1] * psi[ n ][ k ] );
-     }
+//     for (unsigned j=0;j<m_param.node_list.size();++j) {
+//         m_param.node_list[ j ].fun = 1 + m_param.node_list[ j ].pos[ 0 ];
+//         lambda[ p ][ n ][ k ][ j ] = gamma;
+//         for (unsigned i=0;i<n;++i) {
+//             for (unsigned g=0;g<elem_group.size();++g) {
+//                 T alpha = dot( psi[ i ][ nb_iterations[i] ], K_space[g] * psi[ n ][ k ] );
+//                 for (unsigned q=0;q<elem_group.size()-1;++q) {
+//                     if ( q != p ) {
+//                         if ( g == q )
+//                             alpha *= dot( lambda[ q ][ i ][ nb_iterations[i] ], K_param[q][1] * lambda[ q ][ n ][ k ] );
+//                         else
+//                             alpha *= dot( lambda[ q ][ i ][ nb_iterations[i] ], K_param[q][0] * lambda[ q ][ n ][ k ] );
+//                     }
+//                 }
+//                 if ( g == p )
+//                     lambda[ p ][ n ][ k ][ j ] -= alpha * m_param.node_list[ j ].fun * lambda[ p ][ i ][ nb_iterations[i] ][ j ];
+//                 else
+//                     lambda[ p ][ n ][ k ][ j ] -= alpha * lambda[ p ][ i ][ nb_iterations[i] ][ j ];
+//             }
+//         }
+//         T delta = 0.;
+//         for (unsigned g=0;g<elem_group.size();++g) {
+//             T alpha = dot( psi[ n ][ k ], K_space[g] * psi[ n ][ k ] );
+//             for (unsigned q=0;q<elem_group.size()-1;++q) {
+//                 if ( q != p ) {
+//                     if ( g == q )
+//                         alpha *= dot( lambda[ q ][ n ][ k ], K_param[q][1] * lambda[ q ][ n ][ k ] );
+//                     else
+//                         alpha *= dot( lambda[ q ][ n ][ k ], K_param[q][0] * lambda[ q ][ n ][ k ] );
+//                 }
+//             }
+//             if ( g == p )
+//                 delta += alpha * m_param.node_list[ j ].fun;
+//             else
+//                 delta += alpha;
+//         }
+//         lambda[ p ][ n ][ k ][ j ] /= delta;
+//     }
 
-     cout << "Fonction en parametre " << p << " =" << endl;
-     cout << lambda[ p ][ n ][ k ] << endl << endl;
+//     cout << "Fonction en parametre " << p << " =" << endl;
+//     cout << lambda[ p ][ n ][ k ] << endl << endl;
+}
+
+/// Calcul de l'indicateur de stagnation
+///-------------------------------------
+template<class TM, class TF, class T, class TMATVV, class TVVVV, class TVVV>
+void calc_stagnation_indicator( TM &m, TF &f, const unsigned &n, const unsigned &k, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TVVVV &lambda, const TVVV &psi, T &stagnation_indicator ) {
+    stagnation_indicator = 0.;
+    for (unsigned g=0;g<elem_group.size();++g) {
+        T alpha = 1.;
+        for (unsigned p=0;p<elem_group.size()-1;++p) {
+            if ( g == p )
+                alpha *= dot( lambda[ p ][ n ][ k ], K_param[p][1] * lambda[ p ][ n ][ k ] );
+            else
+                alpha *= dot( lambda[ p ][ n ][ k ], K_param[p][0] * lambda[ p ][ n ][ k ] );
+        }
+        for (unsigned j=0;j<m.elem_list.size();++j) {
+            if ( find( elem_group[g], _1 == j ) )
+                m.elem_list[j]->set_field( "alpha", alpha );
+        }
+    }
+    f.assemble( true, false );
+    stagnation_indicator += dot( psi[ n ][ k ], f.matrices(Number<0>()) * psi[ n ][ k ] );
+    for (unsigned g=0;g<elem_group.size();++g) {
+        T alpha = 1.;
+        for (unsigned p=0;p<elem_group.size()-1;++p) {
+            if ( g == p )
+                alpha *= dot( lambda[ p ][ n ][ k-1 ], K_param[p][1] * lambda[ p ][ n ][ k-1 ] );
+            else
+                alpha *= dot( lambda[ p ][ n ][ k-1 ], K_param[p][0] * lambda[ p ][ n ][ k-1 ] );
+        }
+        for (unsigned j=0;j<m.elem_list.size();++j) {
+            if ( find( elem_group[g], _1 == j ) )
+                m.elem_list[j]->set_field( "alpha", alpha );
+        }
+    }
+    f.assemble( true, false );
+    stagnation_indicator += dot( psi[ n ][ k-1 ], f.matrices(Number<0>()) * psi[ n ][ k-1 ] );
+    for (unsigned g=0;g<elem_group.size();++g) {
+        T alpha = 1.;
+        for (unsigned p=0;p<elem_group.size()-1;++p) {
+            if ( g == p )
+                alpha *= dot( lambda[ p ][ n ][ k ], K_param[p][1] * lambda[ p ][ n ][ k-1 ] );
+            else
+                alpha *= dot( lambda[ p ][ n ][ k ], K_param[p][0] * lambda[ p ][ n ][ k-1 ] );
+        }
+        for (unsigned j=0;j<m.elem_list.size();++j) {
+            if ( find( elem_group[g], _1 == j ) )
+                m.elem_list[j]->set_field( "alpha", alpha );
+        }
+    }
+    f.assemble( true, false );
+    stagnation_indicator -= 2 * dot( psi[ n ][ k ], f.matrices(Number<0>()) * psi[ n ][ k-1 ] );
+    stagnation_indicator = sqrt( fabs( stagnation_indicator ) );
+}
+
+/// Calcul de l'indicateur d'erreur
+///--------------------------------
+template<class TM, class TF, class T, class TV, class TVV, class TMATVV, class TVVVV, class TVVV>
+void calc_error_indicator( TM &m, TF &f, const unsigned &n, const Vec<unsigned> &nb_iterations, const TV &F_space, const TVV &F_param, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TVVVV &lambda, const TVVV &psi, T &residual, T &error_indicator ) {
+    residual = 0.;
+    T sollicitation = 0.;
+    for (unsigned i=0;i<n+1;++i) {
+        T sollicitation_mode = dot( F_space, psi[ i ][ nb_iterations[i] ] );
+        for (unsigned p=0;p<elem_group.size()-1;++p)
+            sollicitation_mode *= dot( F_param[p], lambda[ p ][ i ][ nb_iterations[i] ] );
+        sollicitation += sollicitation_mode;
+        residual -= sollicitation_mode;
+        for (unsigned j=0;j<n+1;++j) {
+            for (unsigned g=0;g<elem_group.size();++g) {
+                T alpha = 1.;
+                for (unsigned p=0;p<elem_group.size()-1;++p) {
+                    if ( g == p )
+                        alpha *= dot( lambda[ p ][ i ][ nb_iterations[i] ], K_param[p][1] * lambda[ p ][ j ][ nb_iterations[j] ] );
+                    else
+                        alpha *= dot( lambda[ p ][ i ][ nb_iterations[i] ], K_param[p][0] * lambda[ p ][ j ][ nb_iterations[j] ] );
+                }
+                for (unsigned l=0;l<m.elem_list.size();++l) {
+                    if ( find( elem_group[g], _1 == l ) )
+                        m.elem_list[l]->set_field( "alpha", alpha );
+                }
+            }
+            f.assemble( true, false );
+            residual += dot( psi[ i ][ nb_iterations[i] ], f.matrices(Number<0>()) * psi[ j ][ nb_iterations[j] ] );
+        }
+    }
+    error_indicator = fabs( residual ) / fabs( sollicitation );
 }
 
 /// Construction des coefficients alpha, gamma associes au pb spatial

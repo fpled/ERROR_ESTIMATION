@@ -582,7 +582,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
         cout << "        = " << chi_sup << endl << endl;
     }
     else if ( local_improvement == "rayleigh" ) {
-        T zeta =0.;
+        T zeta = 0.;
         if ( want_introduction_sigma_hat_m ) {
             zeta = theta / 2 * sqrt( pow( gamma, 2 ) + pow( theta_adjoint, 2 ) - pow( theta_adjoint_lambda_opt, 2 ) ) + theta_lambda_opt / 2 * ( gamma + theta_adjoint_lambda_opt );
             cout << "zeta = " << theta / 2 << " * ( " << pow( gamma, 2 ) << " + " << pow( theta_adjoint, 2 ) - pow( theta_adjoint_lambda_opt, 2 ) << " )^1/2 + " << theta_lambda_opt / 2 << " * ( " << gamma << " + " << theta_adjoint_lambda_opt << " )" << endl;

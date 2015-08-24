@@ -13,7 +13,7 @@
 # Methode qui permet de definir la fonction f(parametre)
 #-------------------------------------------------------
 def param_function( pos )
-    res := 0.1 * pos[0];
+    res := pos[0];
     return res
 
 # Methode qui genere un fichier eval_dep_lambda_$(f->name).$(e->dim).$(e->name).h pour evaluer les fonctions associees au pb en parametre en certains parametres
