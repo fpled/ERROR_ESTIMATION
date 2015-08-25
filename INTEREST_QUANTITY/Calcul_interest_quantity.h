@@ -28,7 +28,7 @@ using namespace LMT;
 using namespace std;
 
 /// Definition de l'extracteur
-///---------------------------
+/// --------------------------
 template<class TM, class TF, class T, class Pvec>
 void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re, const bool want_local_enrichment = false ) {
     
@@ -163,7 +163,7 @@ void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const strin
 }
 
 /// Calcul de la quantite d'interet locale I
-///-----------------------------------------
+/// ----------------------------------------
 template<class TM, class TF, class T, class Pvec>
 void calcul_interest_quantity( const TM &m, const TM &m_crown, const TF &f, const TF &f_crown, const string &pb, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re, T &I_h ) {
     I_h = 0.;
@@ -236,7 +236,7 @@ void calcul_interest_quantity( const TM &m, const TM &m_crown, const TF &f, cons
 }
 
 /// Calcul de la correction I_hh sur la quantite d'interet locale I (avec ou sans introduction de sigma_hat_m)
-///-----------------------------------------------------------------------------------------------------------
+/// ----------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T, class TV, class TVV>
 void calcul_correction_interest_quantity( TM &m, TM &m_adjoint, const TF &f, const TF &f_adjoint, const string &interest_quantity, const string &method, const string &method_adjoint, const T &theta, const T &theta_adjoint, const TV &theta_elem_adjoint, const Vec<unsigned> &correspondance_elem_m_adjoint_to_elem_m, const TVV &dep_hat, const TVV &dep_adjoint_hat, const T &I_h, T &I_hh, const bool want_local_enrichment = false, const bool want_introduction_sigma_hat_m = true ) {
     I_hh = 0.;
@@ -296,16 +296,16 @@ void calcul_correction_interest_quantity( TM &m, TM &m_adjoint, const TF &f, con
 }
 
 /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale sur la structure extraite, Affichage de l'estimateur
-///--------------------------------------------------------------------------------------------------------------------------------------------------
+/// -------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T>
 void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const T &k, T &theta_lambda, const Vec< Vec<T> > &dep_hat, Vec< Vec<T> > &dep_hat_lambda, const bool want_display = false, const bool debug_error_estimate = false, const bool debug_method = false, const bool debug_method_enhancement = false ) {
     
-    ///-----------------------------------------------------------------------------------------------------------------------------------///
+    /// --------------------------------------------------------------------------------------------------------------------------------- ///
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale sur la structure extraite ///
-    ///-----------------------------------------------------------------------------------------------------------------------------------///
+    /// --------------------------------------------------------------------------------------------------------------------------------- ///
     
     /// Construction de la correspondance entre maillages extraits et maillages initiaux direct/adjoint
-    ///------------------------------------------------------------------------------------------------
+    /// -----------------------------------------------------------------------------------------------
     Vec<unsigned> correspondance_elem_m_lambda_to_elem_m;
     correspondance_elem_m_lambda_to_elem_m.resize( m_lambda.elem_list.size() );
     
@@ -317,7 +317,7 @@ void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f
     t_error_estimate_lambda.start();
     
     /// Calcul d'un estimateur d'erreur globale sur les maillages extraits des maillages initiaux direct/adjoint
-    ///---------------------------------------------------------------------------------------------------------
+    /// --------------------------------------------------------------------------------------------------------
     f_lambda.allocate_matrices();
     f_lambda.shift();
     f_lambda.assemble();
@@ -366,7 +366,7 @@ void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f
     t_error_estimate_lambda.stop();
     if ( want_display ) {
         /// Affichage de l'estimateur d'erreur globale sur les maillages extraits des maillages initiaux direct/adjoint
-        ///------------------------------------------------------------------------------------------------------------
+        /// -----------------------------------------------------------------------------------------------------------
         cout << "estimateur d'erreur globale sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " :" << endl;
         cout << "theta = " << theta_lambda << endl << endl;
         
@@ -375,16 +375,16 @@ void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f
 }
 
 /// Calcul d'un estimateur pondere d'erreur globale weighted_theta
-///---------------------------------------------------------------
+/// --------------------------------------------------------------
 template<class TM, class TF, class T, class Pvec>
 void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const T &h, const Pvec &domain_center, const Vec<T> &domain_length, const T &k_min, T &weighted_theta_lambda, const Vec< Vec<T> > &dep_hat, const bool want_display = false, const bool debug_error_estimate = false, const bool debug_method = false, const bool debug_method_enhancement = false ) {
     
-    ///-------------------------------------------------------------------------------------------------------------------------------------------///
+    /// ----------------------------------------------------------------------------------------------------------------------------------------- ///
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur pondere d'erreur globale sur la structure extraite ///
-    ///-------------------------------------------------------------------------------------------------------------------------------------------///
+    /// ----------------------------------------------------------------------------------------------------------------------------------------- ///
     
     /// Construction de la correspondance entre maillages extraits et maillages initiaux direct/adjoint
-    ///------------------------------------------------------------------------------------------------
+    /// -----------------------------------------------------------------------------------------------
     Vec<unsigned> correspondance_elem_m_lambda_to_elem_m;
     correspondance_elem_m_lambda_to_elem_m.resize( m_lambda.elem_list.size() );
     
@@ -396,7 +396,7 @@ void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF 
     t_weighted_error_estimate_lambda.start();
     
     /// Calcul d'un estimateur pondere wieghted_theta de l'erreur globale sur les maillages extraits des maillages initiaux direct/adjoint
-    ///-----------------------------------------------------------------------------------------------------------------------------------------
+    /// ----------------------------------------------------------------------------------------------------------------------------------------
     f_lambda.allocate_matrices();
     f_lambda.shift();
     f_lambda.assemble();
@@ -431,7 +431,7 @@ void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF 
     t_weighted_error_estimate_lambda.stop();
     if ( want_display ) {
         /// Affichage de l'estimateur pondere weighted_theta de l'erreur globale au carre sur les maillages extraits des maillages initiaux direct/adjoint
-        ///---------------------------------------------------------------------------------------------------------------------------------------------------
+        /// --------------------------------------------------------------------------------------------------------------------------------------------------
         cout << "estimateur pondere d'erreur globale au carre sur la structure extraite associee au pb " << pb << " de type " << shape << " :" << endl;
         cout << "weighted_theta^2 = " << weighted_theta_lambda << endl << endl;
         
@@ -440,16 +440,16 @@ void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF 
 }
 
 /// Construction d'un champ de contrainte admissible, Calcul d'un estimateur d'erreur globale sur le bord de la structure extraite, Affichage de l'estimateur
-///----------------------------------------------------------------------------------------------------------------------------------------------------------
+/// ---------------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T, class Pvec>
 void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const Pvec &domain_center, const T &k, T &theta_lambda_boundary, const Vec< Vec<T> > &dep_hat, const bool want_display = false, const bool debug_error_estimate = false, const bool debug_method = false, const bool debug_method_enhancement = false ) {
     
-    ///----------------------------------------------------------------------------------------------------------------------------------------------///
+    /// -------------------------------------------------------------------------------------------------------------------------------------------- ///
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale sur le bord de la structure extraite ///
-    ///----------------------------------------------------------------------------------------------------------------------------------------------///
+    /// -------------------------------------------------------------------------------------------------------------------------------------------- ///
     
     /// Construction de la correspondance entre maillages extraits et maillages initiaux direct/adjoint
-    ///------------------------------------------------------------------------------------------------
+    /// -----------------------------------------------------------------------------------------------
     Vec<unsigned> correspondance_elem_m_lambda_to_elem_m;
     correspondance_elem_m_lambda_to_elem_m.resize( m_lambda.elem_list.size() );
     
@@ -461,7 +461,7 @@ void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF 
     t_error_estimate_lambda_boundary.start();
     
     /// Calcul d'un estimateur d'erreur globale sur le bord des maillages extraits des maillages initiaux direct/adjoint
-    ///-----------------------------------------------------------------------------------------------------------------
+    /// ----------------------------------------------------------------------------------------------------------------
     f_lambda.allocate_matrices();
     f_lambda.shift();
     f_lambda.assemble();
@@ -503,7 +503,7 @@ void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF 
     t_error_estimate_lambda_boundary.stop();
     if ( want_display ) {
         /// Affichage de l'estimateur d'erreur globale sur les maillages extraits des maillages initiaux direct/adjoint
-        ///------------------------------------------------------------------------------------------------------------
+        /// -----------------------------------------------------------------------------------------------------------
         cout << "estimateur d'erreur globale sur le bord de la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " :" << endl;
         cout << "theta = " << theta_lambda_boundary << endl << endl;
         
@@ -512,7 +512,7 @@ void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF 
 }
 
 /// Calcul du terme gamma pour le calcul des bornes locales ameliorees
-///-------------------------------------------------------------------
+/// ------------------------------------------------------------------
 template<class TM, class TF, class T, class Pvec>
 void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, const TF &f_adjoint, TF &f_adjoint_lambda_, const unsigned &deg_p, const string &method, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const T &theta_lambda_min, const T &theta_lambda_max, const T &h, const Pvec &domain_center, const Vec<T> &domain_length, const bool &spread_cut, const Vec< Vec<T> > &dep_hat, const Vec< Vec<T> > &dep_adjoint_hat, const string &integration_k, const unsigned &integration_nb_points, T &gamma, const bool debug_method = false, const bool debug_method_enhancement = false, const bool debug_error_estimate = false ) {
     
@@ -598,7 +598,7 @@ void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, cons
 }
 
 /// Calcul de la correction I_hhh sur la quantite d'interet locale I pour le calcul des bornes locales ameliorees
-///--------------------------------------------------------------------------------------------------------------
+/// -------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T>
 void calcul_correction_interest_quantity_lambda( const TM &m_lambda_min, const TM &m_adjoint_lambda_min, const TF &f_lambda_min, const TF &f_adjoint_lambda_min, const string &interest_quantity, const string &method, const string &method_adjoint, const Vec< Vec<T> > &dep_hat_lambda_min, const Vec< Vec<T> > &dep_adjoint_hat_lambda_min, T &I_hhh ) {
     I_hhh = 0.;
@@ -632,7 +632,7 @@ void calcul_correction_interest_quantity_lambda( const TM &m_lambda_min, const T
 }
 
 /// Calcul de la constante h pour le calcul des bornes locales ameliorees
-///----------------------------------------------------------------------
+/// ---------------------------------------------------------------------
 template<class TM, unsigned n1, unsigned n2, class T, class S> void calcul_h_alternativeontype( const TM &m, const Number<n1> &, const Number<n2> &, T &h, const S &shape );
 
 template<class TM, class T, class S> void calcul_h_alternativeontype( const TM &m, Number<0>, Number<0>, T &h, const S &shape ) {
@@ -726,7 +726,7 @@ template<class TM, class T, class S> void calcul_h_alternativeontype( const TM &
 }
 
 /// Calcul du deplacement total
-///----------------------------
+/// ---------------------------
 template<class TM>
 void calcul_dep_tot_after_solve( TM &m ) {
     for (unsigned i=0;i<m.node_list.size();++i) {

@@ -20,7 +20,7 @@ using namespace LMT;
 using namespace std;
 
 /// Calcul d'un champ de contrainte admissible, calcul d'un estimateur theta de l'erreur globale pour la methode basee sur la partition de l'unite (SPET)
-///------------------------------------------------------------------------------------------------------------------------------------------------------
+/// -----------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T>
 void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb, const string &solver, const string &method, T &theta, Vec<T> &theta_elem, Vec< Vec<T> > &E, const bool verif_solver = false, const T tol_solver = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const bool debug_geometry = false, const bool debug_error_estimate = false, const bool debug_local_effectivity_index = false, const bool debug_method = false ) {
     
@@ -44,7 +44,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     construct_face_type( m, f, face_type, debug_geometry );
     
     /// Construction de la table de connectivite de chaque patch
-    ///---------------------------------------------------------
+    /// --------------------------------------------------------
     
     Vec< Vec<unsigned> > face_list_patch;
     Vec<unsigned> nb_points_face;
@@ -60,7 +60,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     elem_cpt_vertex_node.free();
     
     /// Construction des contraintes cinematiques pour chaque noeud sommet j du maillage et chaque direction d
-    ///-------------------------------------------------------------------------------------------------------
+    /// ------------------------------------------------------------------------------------------------------
     
     cout << "Construction des contraintes cinematiques" << endl << endl;
     
@@ -102,7 +102,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     nb_constraints_patch.free();
     
     /// Construction des matrices K[ j ] pour chaque noeud sommet j du maillage
-    ///------------------------------------------------------------------------
+    /// -----------------------------------------------------------------------
     
     cout << "Construction des matrices K" << endl << endl;
     
@@ -125,7 +125,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     apply( m.elem_list, calcul_vertex_nodal_matrix_K, m, f, K );
     
     /// Prise en compte des conditions aux limites dans les matrices K[ j ] pour chaque noeud sommet j du maillage
-    ///-----------------------------------------------------------------------------------------------------------
+    /// ----------------------------------------------------------------------------------------------------------
     
     for (unsigned j=0;j<nb_vertex_nodes;++j) {
         Vec<unsigned> vec_unk_patch = range( nb_points_patch[ j ] * dim );
@@ -153,7 +153,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     }
     
     /// Construction des vecteurs F[ j ] pour chaque noeud sommet j du maillage
-    ///------------------------------------------------------------------------
+    /// -----------------------------------------------------------------------
     
     cout << "Construction des vecteurs F" << endl << endl;
     
@@ -178,7 +178,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     face_type.free();
     
     /// Prise en compte des conditions aux limites dans les vecteurs F[ j ] pour chaque noeud sommet j du maillage
-    ///-----------------------------------------------------------------------------------------------------------
+    /// ----------------------------------------------------------------------------------------------------------
     
     for (unsigned j=0;j<nb_vertex_nodes;++j) {
         for (unsigned d=0;d<dim;++d) {
@@ -204,7 +204,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     
     /// Resolution des problemes locaux K[ j ] * U[ j ] = F[ j ] pour chaque noeud sommet j du maillage
     /// Construction des vecteurs U[ j ] pour chaque noeud sommet j du maillage
-    ///--------------------------------------------------------------------------------------------------
+    /// -------------------------------------------------------------------------------------------------
     
     cout << "Resolution des problemes locaux K * U = F" << endl;
     cout << "Construction des vecteurs U" << endl << endl;
@@ -309,7 +309,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     F.free();
     
     /// Construction des vecteurs E[ n ] pour chaque element n du maillage
-    ///-------------------------------------------------------------------
+    /// ------------------------------------------------------------------
     
     cout << "Construction des vecteurs E" << endl << endl;
     
@@ -341,9 +341,9 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     connect_node_to_vertex_node.free();
     elem_list_vertex_node.free();
     
-    ///---------------------------------------------------------------------------------------------------------///
+    /// ------------------------------------------------------------------------------------------------------- ///
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale ///
-    ///---------------------------------------------------------------------------------------------------------///
+    /// ------------------------------------------------------------------------------------------------------- ///
     
     cout << "------------------------------------------------------------" << endl;
     cout << "Construction d'un champ de contrainte admissible par element" << endl;

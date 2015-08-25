@@ -20,7 +20,7 @@ using namespace LMT;
 using namespace std;
 
 /// Construction standard des densites d'effort par la methode EET
-///---------------------------------------------------------------
+/// --------------------------------------------------------------
 template<class TM, class TF, class T>
 void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, const unsigned &cost_function, const bool &enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, Vec< Vec< Vec<T> > > &vec_force_fluxes, const bool want_local_enrichment = false, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool debug_geometry = false, const bool debug_force_fluxes = false, const bool debug_method = false ) {
     
@@ -57,9 +57,9 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     Vec< Vec<unsigned> > node_type;
     construct_node_type( m, f, face_type, node_type, debug_geometry );
 
-    ///----------------------------------------------------///
+    /// -------------------------------------------------- ///
     /// Construction des projections des densites d'effort ///
-    ///----------------------------------------------------///
+    /// -------------------------------------------------- ///
 
     cout << "-----------------------------------------------------------" << endl;
     cout << "Construction des projections des densites d'effort standard" << endl;
@@ -67,7 +67,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
 
     /// Reperage pour chaque face k et chaque direction d de l'indice de debut de ligne dans les vecteurs b[ i ][ d ] et de debut de colonne dans les matrices B[ i ][ d ] : face_ind[ k ][ d ]
     /// Calcul du nb de lignes du vecteur b[ i ][ d ] et de colonnes de la matrice B[ i ][ d ] : nb_unk[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
-    ///----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     cout << "Calcul des vecteurs nb_unk" << endl << endl;
 
@@ -106,7 +106,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
 
     /// Reperage pour chaque element n et chaque direction d de l'indice de debut de ligne dans les vecteurs r[ i ][ d ] et dans les matrices B[ i ][ d ] : elem_ind[ n ][ d ]
     /// Calcul du nb de lignes du vecteur r[ i ][ d ] et de la matrice B[ i ][ d ] : nb_eq[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
-    ///-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     cout << "Calcul des vecteurs nb_eq" << endl << endl;
 
@@ -144,7 +144,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     }
 
     /// Construction des matrices B[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
-    ///--------------------------------------------------------------------------------------------
+    /// -------------------------------------------------------------------------------------------
 
     cout << "Construction des matrices B" << endl << endl;
 
@@ -176,7 +176,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     }
 
     /// Construction des vecteurs r[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
-    ///--------------------------------------------------------------------------------------------
+    /// -------------------------------------------------------------------------------------------
 
     cout << "Construction des vecteurs r" << endl << endl;
 
@@ -213,7 +213,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     elem_ind.free();
 
     /// Verification des conditions de compatibilite (equilibre elements finis) pour les noeuds interieurs (type 0)
-    ///------------------------------------------------------------------------------------------------------------
+    /// -----------------------------------------------------------------------------------------------------------
 
     if ( verif_compatibility_conditions ) {
         
@@ -252,7 +252,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
 
     /// Reperage pour chaque face k connectee au noeud i et chaque direction d de l'indice de debut de ligne dans les matrices C[ i ][ d ] et de debut de ligne dans les vecteurs q[ i ][ d ] : nodal_ind[ i ][ d ][ k ]
     /// Calcul du nb de lignes de la matrice C[ i ][ d ] et du vecteur q[ i ][ d ] : nb_eq_imp[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
-    ///-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     cout << "Calcul des vecteurs nb_eq_imp" << endl << endl;
 
@@ -300,7 +300,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     }
 
     /// Construction des matrices C[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
-    ///--------------------------------------------------------------------------------------------
+    /// -------------------------------------------------------------------------------------------
 
     cout << "Construction des matrices C" << endl << endl;
 
@@ -335,7 +335,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     }
 
     /// Construction des vecteurs q[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
-    ///--------------------------------------------------------------------------------------------
+    /// -------------------------------------------------------------------------------------------
 
     cout << "Construction des vecteurs q" << endl << endl;
 
@@ -371,7 +371,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     }
 
     /// Verification des conditions de compatibilite (equilibre elements finis) pour les noeuds sur la frontière de Neumann (type 2)
-    ///-----------------------------------------------------------------------------------------------------------------------------
+    /// ----------------------------------------------------------------------------------------------------------------------------
 
     if ( verif_compatibility_conditions ) {
         
@@ -425,7 +425,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     face_list_node.free();
 
     /// Calcul du nb d'equations independantes : nb_eq_indep[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
-    ///---------------------------------------------------------------------------------------------------------------------
+    /// --------------------------------------------------------------------------------------------------------------------
 
     cout << "Calcul des vecteurs nb_eq_indep" << endl << endl;
 
@@ -457,7 +457,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     }
 
     /// Condition de minimsation
-    ///-------------------------
+    /// ------------------------
 
     cout << "Condition de minimsation" << endl << endl; // si minimisation[ i ][ d ] = 0, alors il n'y a pas d'etape de minimisation d'une fonction-cout pour le noeud i du maillage dans la direction d
                                                         // si minimisation[ i ][ d ] = 1, il y a une etape de minimisation d'une fonction-cout pour le noeud i du maillage dans la direction d
@@ -471,14 +471,14 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     }
 
     /// Si node_type[ i ][ d ] = 0 ou node_type[ i ][ d ] = 1,
-    ///------------------------------------------------------
+    /// -----------------------------------------------------
 //    - si i est un noeud sommet (en 2D ou 3D) ou i est un noeud interieur a une arete (en 3D), alors il y a une etape de minimsation : minimisation[ i ][ d ] = 1
 //    - si i est un noeud non sommet (en 2D) ou i est un noeud interieur a une face (en 3D), alors il n'y a pas d'etape de minimsation : minimisation[ i ][ d ] = 0
 //    autrement dit :
 //    - si nb_eq_indep[ i ][ d ] < nb_unk[ i ][ d ], alors minimisation[ i ][ d ] = 1
 //    - sinon nb_eq_indep[ i ][ d ] = nb_unk[ i ][ d ], alors minimisation[ i ][ d ] = 0
     /// Si node_type[ i ][ d ] = 12 ou node_type[ i ][ d ] = 2,
-    ///-------------------------------------------------------
+    /// ------------------------------------------------------
 //    - si nb_eq_imp[ i ][ d ] = nb_unk[ i ][ d ] ( toutes les faces connectees au noeud i dans la direction d sont de type 2, possible uniquement pour node_type[ i ][ d ] = 2 ), alors il n'y a pas d'etape de minimsation : minimisation[ i ][ d ] = 0
 //    - sinon,
 //    - si nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] >= nb_unk[ i ][ d ], alors il n'y a pas d'etape de minimsation : minimisation[ i ][ d ] = 0
@@ -512,7 +512,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     }
 
     /// Construction des matrices de minimisation M[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
-    ///------------------------------------------------------------------------------------------------------------
+    /// -----------------------------------------------------------------------------------------------------------
 
     cout << "Construction des matrices M" << endl << endl;
 
@@ -551,7 +551,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     }
 
     /// Construction des vecteurs de minimisation b[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
-    ///------------------------------------------------------------------------------------------------------------
+    /// -----------------------------------------------------------------------------------------------------------
 
     cout << "Construction des vecteurs b" << endl << endl;
 
@@ -594,7 +594,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     face_type.free();
 
     /// Construction des matrices K[ i ][ d ] et des vecteurs F[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
-    ///------------------------------------------------------------------------------------------------------------------------
+    /// -----------------------------------------------------------------------------------------------------------------------
 
     cout << "Construction des matrices K et des vecteurs F" << endl << endl;
 
@@ -776,7 +776,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
 
     /// Resolution des problemes de minimisation K[ i ][ d ] * U[ i ][ d ] = F[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
     /// Construction des vecteurs U[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
-    ///---------------------------------------------------------------------------------------------------------------------------------------
+    /// --------------------------------------------------------------------------------------------------------------------------------------
 
     if ( enhancement == 0 ) {
         cout << "Resolution des problemes de minimisation K * U = F" << endl;
@@ -879,7 +879,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     minimisation.free();
 
     /// Construction des vecteurs de projection b_hat[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
-    ///--------------------------------------------------------------------------------------------------------------
+    /// -------------------------------------------------------------------------------------------------------------
 
     cout << "Construction des vecteurs b_hat" << endl << endl;
 
@@ -923,7 +923,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     correspondance_node_to_vertex_node.free();
 
     /// Construction des vecteurs de projection b_face[ k ][ d ] pour chaque face k du maillage et chaque direction d
-    ///--------------------------------------------------------------------------------------------------------------
+    /// -------------------------------------------------------------------------------------------------------------
 
     cout << "Construction des vecteurs b_face" << endl << endl;
 
@@ -953,15 +953,15 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     face_ind.free();
     b_hat.free();
 
-    ///-------------------------------------------------------------------------------------///
+    /// ----------------------------------------------------------------------------------- ///
     /// Construction standard (de la partie standard si amelioration) des densites d'effort ///
-    ///-------------------------------------------------------------------------------------///
+    /// ----------------------------------------------------------------------------------- ///
     cout << "-------------------------------------------" << endl;
     cout << "Construction standard des densites d'effort" << endl;
     cout << "-------------------------------------------" << endl << endl;
 
     /// Construction des matrices K_face[ k ][ d ] pour chaque face k du maillage et chaque direction d
-    ///------------------------------------------------------------------------------------------------
+    /// -----------------------------------------------------------------------------------------------
 
     cout << "Construction des matrices K_face" << endl << endl;
 
@@ -989,7 +989,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     /// Resolution des systemes lineaires K_face[ k ][ d ] * vec_force_fluxes[ k ][ d ] = b_face[ k ][ d ]
     /// Construction des vecteurs vec_force_fluxes[ k ][ d ] pour chaque face k du maillage et chaque direction d
     /// Construction des matrices mat_force_fluxes[ k ] pour chaque face k du maillage
-    ///----------------------------------------------------------------------------------------------------------
+    /// ---------------------------------------------------------------------------------------------------------
 
     cout << "Resolution des systemes lineaires K_face * vec_force_fluxes_std = b_face" << endl;
     cout << "Construction des vecteurs vec_force_fluxes_std et des matrices mat_force_fluxes_std" << endl << endl;

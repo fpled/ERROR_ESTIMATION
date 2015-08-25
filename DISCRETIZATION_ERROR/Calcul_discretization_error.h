@@ -19,7 +19,7 @@ using namespace LMT;
 using namespace std;
 
 /// Calcul de la mesure de l'erreur de discretisation globale et locale
-///--------------------------------------------------------------------
+/// -------------------------------------------------------------------
 template<class TM, class TF>
 void calcul_discretization_error( TM &m, const TM &m_ref, const TF &f, const TF &f_ref, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_solve_ref = false, const bool debug_discretization_error = false ) {
     
@@ -57,7 +57,7 @@ void calcul_discretization_error( TM &m, const TM &m_ref, const TF &f, const TF 
                 t_global_discretization_error.start();
 
                 /// Calcul de la norme du champ de deplacement approche
-                ///----------------------------------------------------
+                /// ---------------------------------------------------
 
                 cout << "Calcul de la norme du champ de deplacement approche" << endl << endl;
 
@@ -69,7 +69,7 @@ void calcul_discretization_error( TM &m, const TM &m_ref, const TF &f, const TF 
                 cout << "||u_h||^2 = " << norm_dep << endl << endl;
 
                 /// Calcul de la norme du champ de deplacement de reference
-                ///--------------------------------------------------------
+                /// -------------------------------------------------------
 
                 cout << "Calcul de la norme du champ de deplacement de reference" << endl << endl;
 
@@ -81,7 +81,7 @@ void calcul_discretization_error( TM &m, const TM &m_ref, const TF &f, const TF 
                 cout << "||u_ex||^2 = " << norm_dep_ref << endl << endl;
 
                 /// Calcul exact de la mesure de l'erreur de discretisation globale
-                ///----------------------------------------------------------------
+                /// ---------------------------------------------------------------
 
                 cout << "Calcul exact de la mesure de l'erreur de discretisation globale" << endl << endl;
 
@@ -101,7 +101,7 @@ void calcul_discretization_error( TM &m, const TM &m_ref, const TF &f, const TF 
             if ( want_local_discretization_error ) {
 
                 /// Calcul approche des mesures (elementaires) de l'erreur de discretisation locale
-                ///--------------------------------------------------------------------------------
+                /// -------------------------------------------------------------------------------
 
                 TicToc t_local_discretization_error;
                 t_local_discretization_error.start();
@@ -137,7 +137,7 @@ void calcul_discretization_error( TM &m, const TM &m_ref, const TF &f, const TF 
                 cout << "Temps de calcul des mesures (elementaires) de l'erreur de discretisation locale : " << t_local_discretization_error.res << endl << endl;
 
                 /// Calcul approche de la mesure de l'erreur de discretisation globale comme somme de contributions locales
-                ///--------------------------------------------------------------------------------------------------------
+                /// -------------------------------------------------------------------------------------------------------
 
                 if ( want_global_discretization_error and all_Dirichlet_boundary_conditions_equal_to_zero == 0 ) {
 

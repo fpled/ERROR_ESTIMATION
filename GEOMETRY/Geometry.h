@@ -24,7 +24,7 @@ using namespace std;
 
 /// Compteur du nb de faces connectees a l'element n du maillage : cpt
 /// Liste des faces connectees a l'element n du maillage : list
-///-------------------------------------------------------------------
+/// ------------------------------------------------------------------
 struct Counter_Child {
     template<class TE, class TM> void operator()( const TE &elem, const TM &m, Vec<unsigned> &cpt, Vec< Vec<unsigned> > &list ) const {
         cpt[ elem.number ] = NbChildrenElement<typename TE::NE,1>::res;
@@ -36,7 +36,7 @@ struct Counter_Child {
 
 /// Compteur du nb d'elements ( ou de faces ) connectes au noeud i du maillage : cpt
 /// Liste des elements (ou des face ) connectes au noeud i du maillage : list
-///---------------------------------------------------------------------------------
+/// --------------------------------------------------------------------------------
 struct Counter {
     template<class TE> void operator()( const TE &elem, Vec<unsigned> &cpt, Vec< Vec<unsigned> > &list ) const {
         for (unsigned i=0;i<elem.nb_nodes;++i) {
@@ -47,7 +47,7 @@ struct Counter {
 };
 
 /// Construction de la correspondance entre noeuds et noeuds sommets du maillage
-///-----------------------------------------------------------------------------
+/// ----------------------------------------------------------------------------
 template<class TE, class BV> 
 void construct_correspondance_node_to_vertex_node( const TE &elem, BV &correspondance_node_to_vertex_node ) {}
 
@@ -59,7 +59,7 @@ struct Construct_Correspondance_Node_To_Vertex_Node {
 
 /// Compteur du nb d'elements ( ou de faces ) connectes au noeud sommet j du maillage : cpt
 /// Liste des elements (ou des face ) connectes au noeud sommet j du maillage : list
-///----------------------------------------------------------------------------------------
+/// ---------------------------------------------------------------------------------------
 struct Counter_Vertex {
     const Vec<bool>* correspondance_node_to_vertex_node;
     template<class TE> void operator()( const TE &elem, const Vec<unsigned> &connect_node_to_vertex_node, Vec<unsigned> &cpt, Vec< Vec<unsigned> > &list ) const {
@@ -74,7 +74,7 @@ struct Counter_Vertex {
 
 /// Compteur du nb de noeuds sommets connectes a l'element e ( ou a la face face ) du maillage : cpt
 /// Liste des noeuds sommets connectes a l'element e ( ou a la face face ) du maillage : list
-///-------------------------------------------------------------------------------------------------
+/// ------------------------------------------------------------------------------------------------
 struct Counter_Vertex_Node {
     const Vec<bool>* correspondance_node_to_vertex_node;
     template<class TE> void operator()( const TE &elem, const Vec<unsigned> &connect_node_to_vertex_node, Vec<unsigned> &cpt, Vec< Vec<unsigned> > &list ) const {
@@ -90,7 +90,7 @@ struct Counter_Vertex_Node {
 
 /// Compteur du nb de noeuds connectes a l'element e ( ou a la face face ) du maillage : cpt
 /// Liste des noeuds connectes a l'element e ( ou a la face face ) du maillage : list
-///-----------------------------------------------------------------------------------------
+/// ----------------------------------------------------------------------------------------
 struct Counter_Node {
     template<class TE> void operator()( const TE &elem, Vec<unsigned> &cpt, Vec< Vec<unsigned> > &list ) const {
         unsigned elem_nb_nodes = TE::nb_nodes; // nb de noeuds de l'element elem
@@ -104,7 +104,7 @@ struct Counter_Node {
 };
 
 /// Construction de la correspondance entre noeuds sommets et noeuds sommets appartenant a delta_Omega : correspondance_vertex_node_to_skin_vertex_node
-///----------------------------------------------------------------------------------------------------------------------------------------------------
+/// ---------------------------------------------------------------------------------------------------------------------------------------------------
 struct Construct_Correspondance_Vertex_Node_To_Skin_Vertex_Node {
     Vec<bool>* correspondance_node_to_vertex_node;
     template<class TE> void operator()( const TE &skin_node, const Vec<unsigned> &correspondance_node_to_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, Vec<bool> &correspondance_vertex_node_to_skin_vertex_node ) const {
@@ -115,7 +115,7 @@ struct Construct_Correspondance_Vertex_Node_To_Skin_Vertex_Node {
 };
 
 /// Construction du vecteur face_type
-///----------------------------------
+/// ---------------------------------
 struct Construct_Face_Type {
     template<class TE, class TM, class TF> void operator()( const TE &child_elem, const TM &m, const TF &f, Vec< Vec<unsigned> > &face_type ) const {
         if ( m.sub_mesh(Number<1>()).get_parents_of( child_elem ).size() == 1 ) {
@@ -135,7 +135,7 @@ struct Construct_Face_Type {
 };
 
 /// Construction du vecteur node_type
-///----------------------------------
+/// ---------------------------------
 struct Construct_Node_Type {
     const Vec< Vec<unsigned> >* face_type;
     const Vec<unsigned>* face_cpt_node;
@@ -167,7 +167,7 @@ struct Construct_Node_Type {
 };
 
 /// Construction du maillage de ref pour un maillage comportant des Triangle : subdivision de chaque Triangle du maillage en 4 Triangle dans le maillage de ref
-///------------------------------------------------------------------------------------------------------------------------------------------------------------
+/// -----------------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TE,class TM>
 void divide_element_Triangle(TE &e, const TM &m, TM &m_ref) {}
 
@@ -198,7 +198,7 @@ struct Divide_element_Triangle {
 };
 
 /// Construction du maillage de ref pour un maillage comportant des Quad : subdivision de chaque Quad du maillage en 4 Quad dans le maillage de ref
-///------------------------------------------------------------------------------------------------------------------------------------------------
+/// -----------------------------------------------------------------------------------------------------------------------------------------------
 template<class TE,class TM>
 void divide_element_Quad(TE &e, const TM &m, TM &m_ref) {}
 
@@ -230,7 +230,7 @@ struct Divide_element_Quad {
 };
 
 /// Construction du maillage de ref pour un maillage comportant des Tetra : subdivision de chaque Tetra du maillage en 8 Tetra dans le maillage de ref
-///---------------------------------------------------------------------------------------------------------------------------------------------------
+/// --------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TE,class TM>
 void divide_element_Tetra(TE &e, const TM &m, TM &m_ref) {}
 
@@ -265,7 +265,7 @@ struct Divide_element_Tetra {
 };
 
 /// Construction du maillage de ref pour un maillage comportant des Hexa : subdivision de chaque Hexa du maillage en 8 Hexa dans le maillage de ref
-///------------------------------------------------------------------------------------------------------------------------------------------------
+/// -----------------------------------------------------------------------------------------------------------------------------------------------
 template<class TE,class TM>
 void divide_element_Hexa(TE &e, const TM &m, TM &m_ref) {}
 
@@ -305,7 +305,7 @@ struct Divide_element_Hexa {
 };
 
 /// Construction du maillage de ref local : subdivision des elements du maillage contenus dans elem_list en 4 (resp. 8) pour Triangle et Quad (resp. Tetra et Hexa) dans le maillge de ref
-///---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class T>
 struct Divide_element_locally {
     Divide_element_locally( TM &m, const Vec<T> &elem_list ) : ptr_m( &m ), ptr_elem_list( &elem_list ) {}
@@ -598,7 +598,7 @@ void divide_element( TM &m, const Vec<T> &elem_list ) {
 }
 
 /// Construction du maillage de ref : subdivision des elements du maillage en 4 (resp. 8) pour Triangle et Quad (resp. Tetra et Hexa) dans le maillge de ref
-///---------------------------------------------------------------------------------------------------------------------------------------------------------
+/// --------------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM>
 struct Divide_element {
     Divide_element( TM &m ) : ptr_m( &m ) {}
@@ -874,7 +874,7 @@ void divide_element( TM &m ) {
 }
 
 /// Construction de la liste des elements elem_list_ref du maillage de reference contenus dans la liste des elements elem_list du maillage m
-///-----------------------------------------------------------------------------------------------------------------------------------------
+/// ----------------------------------------------------------------------------------------------------------------------------------------
 struct Construct_Elem_List_Ref {
     template<class TE, class TM> void operator()( const TE &elem, TM &m, const Vec<unsigned> &elem_list, Vec<unsigned> &elem_list_ref ) const {
         for (unsigned n=0;n<elem_list.size();++n) {
@@ -889,7 +889,7 @@ struct Construct_Elem_List_Ref {
 };
 
 /// Construction du noeud node_ref du maillage de reference correspondant au noeud node du maillage m
-///--------------------------------------------------------------------------------------------------
+/// -------------------------------------------------------------------------------------------------
 struct Construct_Node_Ref {
     template<class TN, class TM> void operator()( const TN &node, TM &m, const unsigned &node_number, unsigned &node_number_ref ) const {
         if ( node.pos == m.node_list[ node_number ].pos ) {
@@ -899,7 +899,7 @@ struct Construct_Node_Ref {
 };
 
 /// Construction de la correspondance entre la liste des elements du maillage extrait m_extracted et la liste des elements du maillage initial m
-///----------------------------------------------------------------------------------------------------------------------------------------------
+/// ---------------------------------------------------------------------------------------------------------------------------------------------
 struct Construct_Correspondance_Elem_Mesh_Extracted_To_Elem_Mesh {
     Vec<unsigned>* correspondance_elem_m_extracted_to_elem_m;
     template<class TE_extracted, class TE> void operator()( const TE_extracted &elem_extracted, unsigned i, const TE &elem, unsigned j ) const {
@@ -913,7 +913,7 @@ struct Construct_Correspondance_Elem_Mesh_Extracted_To_Elem_Mesh {
 };
 
 /// Construction de la liste des elements contenant le point pos
-///-------------------------------------------------------------
+/// ------------------------------------------------------------
 struct Construct_Elem_List_Pos {
     template<class TE, class Pvec> void operator()( const TE &elem, const Pvec &pos, Vec<unsigned> &elem_list ) const {
         Vec<Vec<typename TE::T,TE::dim>, TE::nb_nodes > pos_nodes;
@@ -926,7 +926,7 @@ struct Construct_Elem_List_Pos {
 };
 
 /// Criteres de raffinement du maillage adjoint
-///--------------------------------------------
+/// -------------------------------------------
 /*!
     Objectif :
         Ce foncteur est conçu pour la fonction \a refinement () . Il permet de raffiner localement un maillage.

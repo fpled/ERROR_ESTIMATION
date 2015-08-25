@@ -21,7 +21,7 @@ using namespace LMT;
 using namespace std;
 
 /// Construction d'un critere geometrique pour le choix des elements dont les densites d'effort doivent etre ameliorees
-///--------------------------------------------------------------------------------------------------------------------
+/// -------------------------------------------------------------------------------------------------------------------
 template<class TM, class T>
 void construct_geometric_criterium( TM &m, const string &geometric_criterium, Vec<T> &geometric_ratio, const bool debug_criterium_enhancement = false ) {
 
@@ -34,7 +34,7 @@ void construct_geometric_criterium( TM &m, const string &geometric_criterium, Ve
     /// Construction du vecteur de vecteurs circum_center et du vecteur circum_radius
     /// circum_center[ n ] : position du centre du cercle/sphere circonscrit a l'element n
     /// circum_radius[ n ] : rayon du cercle/sphere circonscrit a l'element n
-    ///-----------------------------------------------------------------------------------
+    /// ----------------------------------------------------------------------------------
 
 //     Vec< Vec<T> > circum_center;
 //     circum_center.resize( m.elem_list.size() );
@@ -68,7 +68,7 @@ void construct_geometric_criterium( TM &m, const string &geometric_criterium, Ve
     /// Construction du vecteur de vecteurs in_center et du vecteur in_radius
     /// in_center[ n ] : position du centre du cercle/sphere inscrit dans l'element n
     /// in_radius[ n ] : rayon du cercle/sphere inscrit dans l'element n
-    ///------------------------------------------------------------------------------
+    /// -----------------------------------------------------------------------------
 
 //     Vec< Vec<T> > in_center;
 //     in_center.resize( m.elem_list.size() );
@@ -101,7 +101,7 @@ void construct_geometric_criterium( TM &m, const string &geometric_criterium, Ve
 
     /// Construction du vecteur radius_ratio
     /// radius_ratio[ n ] : rapport du rayon du cercle/sphere circonscrit sur le rayon du cercle/sphere inscrit pour l'element n
-    ///-------------------------------------------------------------------------------------------------------------------------
+    /// ------------------------------------------------------------------------------------------------------------------------
 
 //     Vec<T> radius_ratio;
 //     radius_ratio.resize( m.elem_list.size() );
@@ -124,7 +124,7 @@ void construct_geometric_criterium( TM &m, const string &geometric_criterium, Ve
 
     /// Construction du vecteur edge_ratio
     /// edge_ratio[ n ] : rapport de la face la plus petite sur la face la plus grande pour l'element n
-    ///------------------------------------------------------------------------------------------------
+    /// -----------------------------------------------------------------------------------------------
 
 //     Vec<T> edge_ratio;
 //     edge_ratio.resize( m.elem_list.size() );
@@ -141,7 +141,7 @@ void construct_geometric_criterium( TM &m, const string &geometric_criterium, Ve
 
     /// Construction du vecteur geometric_ratio
     /// geometric_ratio[ n ] : radius_ratio[ n ] ou edge_ratio[ n ] selon geometric_criterium pour l'element n
-    ///-------------------------------------------------------------------------------------------------------
+    /// ------------------------------------------------------------------------------------------------------
 
     cout << "Construction du vecteur geometric_ratio" << endl << endl;
 
@@ -164,7 +164,7 @@ void construct_geometric_criterium( TM &m, const string &geometric_criterium, Ve
 }
 
 /// Construction d'un critere sur l'estimateur d'erreur theta pour le choix des elements dont les densites d'effort doivent etre ameliorees
-///----------------------------------------------------------------------------------------------------------------------------------------
+/// ---------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class T>
 void construct_estimator_criterium( TM &m, Vec<T> &estimator_ratio, const Vec<T> &theta_2_elem, const bool debug_criterium_enhancement = false ) {
 
@@ -173,7 +173,7 @@ void construct_estimator_criterium( TM &m, Vec<T> &estimator_ratio, const Vec<T>
     cout << "----------------------------------------------------------------" << endl << endl;
 
     /// Construction du vecteur estimator_ratio
-    ///----------------------------------------
+    /// ---------------------------------------
 
     cout << "Construction du vecteur estimator_ratio" << endl << endl;
 
@@ -196,7 +196,7 @@ void construct_estimator_criterium( TM &m, Vec<T> &estimator_ratio, const Vec<T>
 }
 
 /// Application du critere d'amelioration geometrique et/ou sur l'estimateur d'erreur theta
-///----------------------------------------------------------------------------------------
+/// ---------------------------------------------------------------------------------------
 template<class TM, class T>
 void apply_criterium_enhancement( TM &m, const string &method, const bool &enhancement_with_estimator_criterium, const bool &enhancement_with_geometric_criterium, const Vec<T> &estimator_ratio, const Vec<T> &geometric_ratio, const T &val_estimator_criterium, const T &val_geometric_criterium, Vec<bool> &elem_flag_enh, Vec<bool> &face_flag_enh, Vec<bool> &elem_flag_bal, Vec<unsigned> &elem_list_enh, Vec<unsigned> &face_list_enh, Vec<unsigned> &elem_list_bal, const bool debug_criterium_enhancement = false ) {
 	
@@ -214,7 +214,7 @@ void apply_criterium_enhancement( TM &m, const string &method, const bool &enhan
 	
     /// Construction des vecteurs elem_flag_enh, face_flag_enh, node_flag_enh
     /// Construction des vecteurs elem_list_enh, face_list_enh, node_list_enh
-    ///-------------------------------------------------------------------------
+    /// ------------------------------------------------------------------------
 
     cout << "Construction des vecteurs elem_flag_enh, face_flag_enh et node_flag_enh" << endl;
     cout << "Construction des vecteurs elem_list_enh, face_list_enh et node_list_enh" << endl << endl;
@@ -239,7 +239,7 @@ void apply_criterium_enhancement( TM &m, const string &method, const bool &enhan
 
     /// Construction du vecteur elem_flag_bal
     /// Construction du vecteur elem_list_bal
-    ///---------------------------------------
+    /// --------------------------------------
 
     cout << "Construction des vecteurs elem_flag_bal et elem_list_bal" << endl << endl;
 

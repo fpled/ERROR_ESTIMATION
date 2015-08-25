@@ -19,7 +19,7 @@ template<class TM, unsigned n, class T,class DM> void set_field_alternativeontyp
 
 /// Number<0> : champ global
 /// Number<1> : champ elementaire
-///------------------------------
+/// -----------------------------
 template<class TM, class T, class DM> void set_field_alternativeontype( TM &m, Number<0>, const T &val, const DM &dm ) {
     ExtractDM<DM> ed;
     ed( m ) = val;
@@ -33,7 +33,7 @@ template<class TM, class T, class DM> void set_field_alternativeontype( TM &m, N
 
 /// Number<0> : champ global
 /// Number<1> : champ elementaire
-///------------------------------
+/// -----------------------------
 template<class TM, class TF, unsigned n1, unsigned n2> void calc_material_coefficients_alternativeontype( TM &m, TF &f, const Number<n1> &, const Number<n2> & );
 
 template<class TM, class TF> void calc_material_coefficients_alternativeontype( TM &m, TF &f, Number<0>, Number<0> ) {
@@ -60,7 +60,7 @@ template<class TM, class TF> void calc_material_coefficients_alternativeontype( 
 }
 
 /// Creation des proprietes materiaux
-///----------------------------------
+/// ---------------------------------
 template<class TF, class TM>
 void set_material_properties( TF &f, TM &m, const string &structure ) {
 
@@ -71,21 +71,21 @@ void set_material_properties( TF &f, TM &m, const string &structure ) {
         T poisson = 0.3;
         T density = 1;
         /// Plaque fissuree 2D
-        ///-------------------
+        /// ------------------
         if ( structure == "plate_crack" ) {
             young = 2.1e11;
             poisson = 0.3;
             density = 7820;
         }
         /// SAP 3D
-        ///-------
+        /// ------
         else if ( structure == "SAP" ) {
             young = 2.1e11;
             poisson = 0.29;
             density = 7820;
         }
         /// Carre 2D
-        ///---------
+        /// --------
         else if ( structure.find("square") != string::npos ) {
             T mu = 0.9;
             poisson = 0.3;

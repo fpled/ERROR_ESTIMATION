@@ -18,10 +18,10 @@ face := SymbolicElement[ Bar, dim ]()
 # e_bar := SymbolicElement[ Bar ]()
 
 e_ref := new SymbolicElement[ Quad, dim ]( name_elem = "elem_ref", tex_symbol_pos = "P_{\\text{ref}}" )
-infon e_ref->assume_const_jac
+#infon e_ref->assume_const_jac
 
-toto := symbol( "toto", tex_name = "\\varphi_{\\text{local enrichment}}^{\\text{handbook} \\tilde{\\sigma}}")
-toto.display_tex("test")
+#toto := symbol( "toto", tex_name = "\\varphi_{\\text{local enrichment}}^{\\text{handbook} \\tilde{\\sigma}}")
+#toto.display_tex("test")
 
 # Test de l'ensemble des méthodes de SymbolicElement
 #---------------------------------------------------

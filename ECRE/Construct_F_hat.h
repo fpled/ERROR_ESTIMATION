@@ -19,7 +19,7 @@ using namespace LMT;
 using namespace std;
 
 /// Construction des vecteurs F_hat[ n ] pour chaque element n du maillage
-///-----------------------------------------------------------------------
+/// ----------------------------------------------------------------------
 template<class TM, class TF, class T>
 void construct_F_hat( TM &m, const TF &f, const string &pb, const bool &balancing, const Vec<bool> &elem_flag_bal, const Vec<bool> &elem_flag_enh, const Vec< Vec< Vec<T> > > &vec_force_fluxes, Vec< Vec<T> > &F_hat, const bool want_local_enrichment = false, const bool debug_method = false, const bool debug_geometry = false ) {
 

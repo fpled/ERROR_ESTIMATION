@@ -18,7 +18,7 @@ using namespace LMT;
 using namespace std;
 
 /// Verification de l'equilibre du pb direct/adjoint
-///-------------------------------------------------
+/// ------------------------------------------------
 template<class TF>
 void check_equilibrium( const TF &f, const string &pb ) {
     typedef typename TF::ScalarType T;
@@ -26,7 +26,7 @@ void check_equilibrium( const TF &f, const string &pb ) {
 }
 
 /// Construction du vecteur de vecteurs residual_force_fluxes
-///----------------------------------------------------------
+/// ---------------------------------------------------------
 template<class TE, class TM, class TF, class TVV, class TV, class TTVVV, class TTWW, class S, class B, class TTVV>
 void check_elem_eq_force_fluxes( const TE &elem, const TM &m, const TF &f, const TVV &node_list_face, const TV &elem_cpt_node, const TTVVV &vec_force_fluxes, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, TTVV &residual_force_fluxes ) {}
 
@@ -44,7 +44,7 @@ struct Check_Elem_Eq_Force_Fluxes {
 };
 
 /// Verification de l'equilibre des densites d'effort pour les methodes EESPT et EET
-///---------------------------------------------------------------------------------
+/// --------------------------------------------------------------------------------
 template<class TM, class TF, class T>
 void check_equilibrium_force_fluxes( TM &m, const TF &f, const string pb, const Vec< Vec< Vec<T> > > &vec_force_fluxes, const T tol_eq_force_fluxes = 1e-6, const bool want_local_enrichment = false, const bool debug_geometry = false ) {
 

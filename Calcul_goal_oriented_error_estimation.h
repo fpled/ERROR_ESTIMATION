@@ -22,7 +22,7 @@ using namespace LMT;
 using namespace std;
 
 /// Calcul standard des bornes d'erreur sur la quantite d'interet locale (avec ou sans introduction de sigma_hat_m)
-///----------------------------------------------------------------------------------------------------------------
+/// ---------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T>
 void calcul_standard_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, const TF &f_adjoint, const string &method, const T &theta, const T &theta_adjoint, const Vec<T> &theta_adjoint_elem, const Vec<unsigned> &correspondance_elem_m_adjoint_to_elem_m, const Vec< Vec<T> > &dep_hat, const T &I_h, const T &I_hh, const bool want_introduction_sigma_hat_m = true ) {
     if ( want_introduction_sigma_hat_m == 0 ) {
@@ -102,7 +102,7 @@ void calcul_standard_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
 }
 
 /// Calcul ameliore des bornes d'erreur sur la quantite d'interet locale (avec ou sans introduction de sigma_hat_m)
-///----------------------------------------------------------------------------------------------------------------
+/// ---------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T, class Pvec>
 void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, const TF &f_adjoint, TM &m_lambda_min, TM &m_lambda_max, TM &m_lambda_opt, TM &m_adjoint_lambda_min, TM &m_adjoint_lambda_opt, const unsigned &deg_p, const string &method, const string &method_adjoint, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const string &interest_quantity, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool &spread_cut, const T &theta, const T &theta_adjoint, const Vec< Vec<T> > &dep_hat, const Vec< Vec<T> > &dep_adjoint_hat, const T &I_h, const T &I_hh, const string &integration_k, const unsigned &integration_nb_points, const bool debug_method = false, const bool debug_method_enhancement = false, const bool debug_error_estimate = false, const bool want_introduction_sigma_hat_m = true, const bool want_solve_eig_local_improvement = false, const bool use_mask_eig_local_improvement = false ) {
     
@@ -127,13 +127,13 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
     
     
     /// Construction du centre et de la taille du domaine homothetique 
-    ///---------------------------------------------------------------
+    /// --------------------------------------------------------------
     Vec<T> domain_length;
     Pvec domain_center( 0. );
     construct_center_length_domain( m, deg_p, shape, interest_quantity, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Re, domain_center, domain_length );
 
     /// Calcul de la constante dans l'amelioration
-    ///-------------------------------------------
+    /// ------------------------------------------
     
     T h = 0.;
     if ( want_solve_eig_local_improvement == 0 ) {
@@ -471,7 +471,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
     }
     
     /// Maillages extraits du maillage direct autour de la quantite d'interet
-    ///----------------------------------------------------------------------
+    /// ---------------------------------------------------------------------
     if ( local_improvement == "steklov" ) {
         create_structure_cut( m, m_lambda_min, deg_p, shape, k_min, domain_length, domain_center, spread_cut );
         create_structure_cut( m, m_lambda_max, deg_p, shape, k_max, domain_length, domain_center, spread_cut );
@@ -480,14 +480,14 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
         create_structure_cut( m, m_lambda_opt, deg_p, shape, k_opt, domain_length, domain_center, spread_cut );
     
     /// Maillages extraits du maillage adjoint autour de la quantite d'interet
-    ///-----------------------------------------------------------------------
+    /// ----------------------------------------------------------------------
     if ( local_improvement == "steklov" )
         create_structure_cut( m_adjoint, m_adjoint_lambda_min, deg_p, shape, k_min, domain_length, domain_center, spread_cut );
     else if ( local_improvement == "rayleigh" )
         create_structure_cut( m_adjoint, m_adjoint_lambda_opt, deg_p, shape, k_opt, domain_length, domain_center, spread_cut );
 
     /// Formulation des pbs extraits associes aux pbs direct/adjoint
-    ///-------------------------------------------------------------
+    /// ------------------------------------------------------------
     TF f_lambda_min( m_lambda_min );
     TF f_lambda_max( m_lambda_max );
     TF f_adjoint_lambda_min( m_adjoint_lambda_min );
@@ -495,9 +495,9 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
     TF f_lambda_opt( m_lambda_opt );
     TF f_adjoint_lambda_opt( m_adjoint_lambda_opt );
     
-    ///---------------------------------------------------------------------------------------------------------------------------------------------------///
+    /// --------------------------------------------------------------------------------------------------------------------------------------------------///
     /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe aux maillages extraits des pbs direct/adjoint ///
-    ///---------------------------------------------------------------------------------------------------------------------------------------------------///
+    /// --------------------------------------------------------------------------------------------------------------------------------------------------///
     
     cout << "-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
         cout << "Construction d'un champ de contrainte admissible par element" << endl;

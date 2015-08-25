@@ -35,7 +35,7 @@ using namespace LMT;
 using namespace std;
 
 /// Creation de la structure
-///-------------------------
+/// ------------------------
 template<class TM>
 void create_structure( TM &m, TM &m_ref, const string &pb, const string &structure, const string &mesh_size, const string &loading, const unsigned &deg_p, const unsigned refinement_deg_ref = 2, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_ref = false ) {
 
@@ -44,11 +44,11 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
     typedef typename TM::TNode::T T;
 
     /// Dimension 2
-    ///------------
+    /// -----------
     if ( dim == 2 ) {
         /// Plaque rectangulaire 2D en traction
         /// Plaque rectangulaire 2D en flexion
-        ///------------------------------------
+        /// -----------------------------------
         if ( structure == "plate_traction" or structure == "plate_flexion" ) {
             switch ( deg_p ) {
             case 1 :
@@ -79,7 +79,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
         }
         /// Quart de plaque rectangulaire trouee 2D
-        ///----------------------------------------
+        /// ---------------------------------------
         else if ( structure == "plate_hole" ) {
             switch ( deg_p ) {
             case 1 :
@@ -146,7 +146,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
         }
         /// Plaque fissuree 2D
-        ///-------------------
+        /// ------------------
         else if ( structure == "plate_crack" ) {
             if ( mesh_size == "very_coarse" )
                 read_msh_2( m, "MESH_GMSH/PLATE_CRACK_2D/plate_crack_very_coarse_Triangle.msh" );
@@ -162,7 +162,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
                 read_msh_2( m_ref, "MESH_GMSH/PLATE_CRACK_2D/plate_crack_very_fine_Triangle.msh" );
         }
         /// Structure fissuree 2D
-        ///----------------------
+        /// ---------------------
         else if ( structure == "structure_crack" ) {
             switch ( deg_p ) {
             case 1 :
@@ -228,7 +228,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
         }
         /// Eprouvette 2D
-        ///--------------
+        /// -------------
         else if ( structure == "test_specimen" ) {
             switch ( deg_p ) {
             case 1 :
@@ -286,7 +286,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
         }
         /// Capteur d'effort 2D
-        ///--------------------
+        /// -------------------
         else if ( structure == "weight_sensor" ) {
             switch ( deg_p ) {
             case 1 :
@@ -339,7 +339,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
         }
         /// Cercle 2D
-        ///----------
+        /// ---------
         else if ( structure == "circle" ) {
             if ( mesh_size == "very_coarse" )
                 read_msh_2( m, "MESH_GMSH/CIRCLE_2D/circle_very_coarse_Triangle.msh" );
@@ -353,7 +353,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
                 cerr << "mesh_size " << mesh_size << " not implemented..." << endl << endl;
         }
         /// Inclusions circulaires 2D
-        ///--------------------------
+        /// -------------------------
         else if ( structure == "circular_inclusions" ) {
             switch ( refinement_deg_ref ) {
             case 1 :
@@ -380,7 +380,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
         }
         /// Trous circulaires 2D
-        ///---------------------
+        /// --------------------
         else if ( structure == "circular_holes" ) {
             switch ( refinement_deg_ref ) {
             case 1 :
@@ -407,7 +407,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
         }
         /// Carre 2D
-        ///---------
+        /// --------
         else if ( structure.find("square") != string::npos ) {
             size_t off = structure.rfind( "_" );
             string str = structure.substr( off+1 );
@@ -420,11 +420,11 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             cerr << "structure " << structure << " not implemented..." << endl << endl;
     }
     /// Dimension 3
-    ///------------
+    /// -----------
     else if ( dim == 3 ) {
         /// Barre rectangulaire 3D en traction
         /// Barre rectangulaire 3D en flexion
-        ///-----------------------------------
+        /// ----------------------------------
         if ( structure == "beam_traction" or structure == "beam_flexion" ) {
             switch ( deg_p ) {
             case 1 :
@@ -453,7 +453,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
         }
         /// Barre rectangulaire trouee 3D
-        ///------------------------------
+        /// -----------------------------
         else if ( structure == "beam_hole" ) {
             if ( mesh_size == "coarse" ) {
                 switch ( refinement_deg_ref ) {
@@ -508,7 +508,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
         }
         /// Quart de plaque rectangulaire trouee 3D
-        ///----------------------------------------
+        /// ---------------------------------------
         else if ( structure == "plate_hole" ) {
             if ( mesh_size == "coarse" ) {
                 switch ( refinement_deg_ref ) {
@@ -569,7 +569,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
         }
         /// Plaque rectangulaire trouee complete 3D
-        ///----------------------------------------
+        /// ---------------------------------------
         else if ( structure == "plate_hole_full" ) {
             switch ( refinement_deg_ref ) {
             case 1 :
@@ -596,7 +596,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
         }
         /// Moyeu-rotor 3D de l'helicoptere NH90B
-        ///--------------------------------------
+        /// -------------------------------------
         else if ( structure == "hub_rotor_helico" ) {
             switch ( refinement_deg_ref ) {
             case 1 :
@@ -623,7 +623,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
         }
         /// Quart de tete de reacteur nucleaire 3D
-        ///---------------------------------------
+        /// --------------------------------------
         else if ( structure == "reactor_head" ) {
             if ( mesh_size == "coarse" ) {
                 switch ( refinement_deg_ref ) {
@@ -678,7 +678,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
         }
         /// Joint de porte 3D de vehicule auto
-        ///-----------------------------------
+        /// ----------------------------------
         else if ( structure == "door_seal" ) {
             switch ( refinement_deg_ref ) {
             case 1 :
@@ -705,7 +705,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
         }
         /// Point de soudure 3D
-        ///--------------------
+        /// -------------------
         else if ( structure == "spot_weld" ) {
             if ( mesh_size == "coarse" ) {
                 if ( loading == "pull" or loading == "shear" ) {
@@ -834,7 +834,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
         }
         /// Ailette 3D
-        ///-----------
+        /// ----------
         else if ( structure == "blade" ) {
             switch ( refinement_deg_ref ) {
             case 1 :
@@ -866,7 +866,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
         }
         /// Quart de conduite 3D
-        ///---------------------
+        /// --------------------
         else if ( structure == "pipe" ) {
             switch ( refinement_deg_ref ) {
             case 1 :
@@ -898,7 +898,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
         }
         /// SAP 3D
-        ///-------
+        /// ------
         else if ( structure == "SAP" ) {
             if ( mesh_size == "coarse" ) {
                 switch ( refinement_deg_ref ) {
@@ -953,7 +953,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
         }
         /// Inclusions sphériques 3D
-        ///-------------------------
+        /// ------------------------
         else if ( structure == "spherical_inclusions" ) {
             switch ( refinement_deg_ref ) {
             case 1 :
@@ -980,7 +980,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
         }
         /// Trous sphériques 3D
-        ///--------------------
+        /// -------------------
         else if ( structure == "spherical_holes" ) {
             switch ( refinement_deg_ref ) {
             case 1 :
@@ -1007,7 +1007,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
         }
         /// Sphere 3D avec noeud au centre
-        ///-------------------------------
+        /// ------------------------------
         else if ( structure == "sphere_center" ) {
             if ( mesh_size == "very_coarse" )
                 read_msh_2( m, "MESH_GMSH/SPHERE_3D/sphere_center_very_coarse_Tetra.msh" );
@@ -1021,7 +1021,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
                 cerr << "mesh_size " << mesh_size << " not implemented..." << endl << endl;
         }
         /// Sphere 3D sans noeud au centre
-        ///-------------------------------
+        /// ------------------------------
         else if ( structure == "sphere" ) {
             if ( mesh_size == "very_coarse" )
                 read_msh_2( m, "MESH_GMSH/SPHERE_3D/sphere_very_coarse_Tetra.msh" );
@@ -1035,7 +1035,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
                 cerr << "mesh_size " << mesh_size << " not implemented..." << endl << endl;
         }
         /// Sphere 3D creuse avec noeud au centre
-        ///--------------------------------------
+        /// -------------------------------------
         else if ( structure == "sphere_hollow" )
             read_msh_2( m, "MESH_GMSH/SPHERE_3D/sphere_hollow_very_fine_Tetra.msh" );
         else
@@ -1059,7 +1059,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
 }
 
 /// Creation de la structure adjoint
-///---------------------------------
+/// --------------------------------
 template<class TM, class T, class Pvec>
 void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, const string &interest_quantity, const string &direction_extractor, const bool &want_local_refinement, const T &l_min, const T &k, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list, Vec<unsigned> &elem_list_adjoint, const unsigned &node, unsigned &node_adjoint, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool &spread_cut, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, Vec<unsigned> &elem_list_adjoint_enrichment_zone_1, Vec<unsigned> &elem_list_adjoint_enrichment_zone_2, Vec<unsigned> &face_list_adjoint_enrichment_zone_12, Vec<unsigned> &node_list_adjoint_enrichment, const bool &debug_geometry, const bool &debug_geometry_adjoint ) {
 
@@ -1081,7 +1081,7 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
     }
     
     /// Raffinement local du maillage adjoint
-    ///--------------------------------------
+    /// -------------------------------------
     if ( want_local_refinement ) {
         if (deg_p == 1) {
             if ( interest_quantity.find("mean") != string::npos ) {
@@ -1128,21 +1128,21 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
     }
     
     /// Zone d'interet du maillage adjoint
-    ///-----------------------------------
+    /// ----------------------------------
     if ( interest_quantity.find("mean") != string::npos )
         apply( m_adjoint.elem_list, Construct_Elem_List_Ref(), m, elem_list, elem_list_adjoint );
     else if ( interest_quantity.find("pointwise") != string::npos )
         apply( m_adjoint.node_list, Construct_Node_Ref(), m, node, node_adjoint );
     
     /// Enrichissement local du maillage adjoint : definition des zones d'enrichissement
-    ///---------------------------------------------------------------------------------
+    /// --------------------------------------------------------------------------------
     if ( want_local_enrichment ) {
         m.update_node_neighbours();
         m.update_node_parents();
         Vec<unsigned> node_list_enrichment;
         Vec<unsigned> elem_list_enrichment_zone_1;
         /// Definition de la zone d'enrichissement zone_1 du pb direct
-        ///-----------------------------------------------------------
+        /// ----------------------------------------------------------
         if ( interest_quantity.find("mean") != string::npos ) {
             for (unsigned n=0;n<elem_list.size();++n) {
                 unsigned node_layer_cpt_enrichment = 1;
@@ -1217,7 +1217,7 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
                 cerr << "pointwise quantity of interest " << interest_quantity << " defined by " << pointwise_interest_quantity << " not implemented..." << endl << endl;
         }
         /// Definition de la zone d'enrichissement zone_2 du pb direct
-        ///-----------------------------------------------------------
+        /// ----------------------------------------------------------
         Vec<unsigned> elem_list_enrichment_zone_2;
         for (unsigned i=0;i<node_list_enrichment.size();++i) {
             for (unsigned n=0;n<m.get_node_parents( node_list_enrichment[ i ] ).size();++n) {
@@ -1226,7 +1226,7 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
             }
         }
         /// Definition de la zone d'enrichissement zone_12 du pb direct
-        ///------------------------------------------------------------
+        /// -----------------------------------------------------------
         Vec<unsigned> child_cpt;
         Vec< Vec<unsigned> > child_list;
         construct_child( m, child_cpt, child_list, debug_geometry );
@@ -1245,7 +1245,7 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
             }
         }
         /// Definition des level set du pb direct
-        ///--------------------------------------
+        /// -------------------------------------
         for (unsigned i=0;i<node_list_enrichment.size();++i)
             m.node_list[ node_list_enrichment[ i ] ].phi_nodal_handbook = 1.;
         for (unsigned n=0;n<elem_list_enrichment_zone_1.size();++n)
@@ -1256,7 +1256,7 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
             m.sub_mesh(Number<1>()).elem_list[ face_list_enrichment_zone_12[ k ] ]->set_field( "phi_surf_handbook_zone_12", 1 );
         
         /// Definition de la zone d'enrichissement zone_1 du pb adjoint
-        ///------------------------------------------------------------
+        /// -----------------------------------------------------------
         apply( m_adjoint.elem_list, Construct_Elem_List_Ref(), m, elem_list_enrichment_zone_1, elem_list_adjoint_enrichment_zone_1 );
         for (unsigned n=0;n<elem_list_adjoint_enrichment_zone_1.size();++n) {
             for (unsigned i=0;i<(m_adjoint.elem_list[ elem_list_adjoint_enrichment_zone_1[ n ] ]->nb_nodes_virtual());++i) {
@@ -1265,7 +1265,7 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
             }
         }
         /// Definition de la zone d'enrichissement zone_2 du pb adjoint
-        ///------------------------------------------------------------
+        /// -----------------------------------------------------------
         m_adjoint.update_node_parents();
         for (unsigned i=0;i<node_list_adjoint_enrichment.size();++i) {
             for (unsigned n=0;n<m_adjoint.get_node_parents( node_list_adjoint_enrichment[ i ] ).size();++n) {
@@ -1274,7 +1274,7 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
             }
         }
         /// Definition de la zone d'enrichissement zone_12 du pb adjoint
-        ///-------------------------------------------------------------
+        /// ------------------------------------------------------------
         Vec<unsigned> child_cpt_adjoint;
         Vec< Vec<unsigned> > child_list_adjoint;
         construct_child( m_adjoint, child_cpt_adjoint, child_list_adjoint, debug_geometry_adjoint );
@@ -1292,7 +1292,7 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
             }
         }
         /// Definition des level sets du pb adjoint
-        ///----------------------------------------
+        /// ---------------------------------------
         if ( interest_quantity == "pointwise_dep" ) {
             switch ( dim ) {
             case 1 :
@@ -1427,7 +1427,7 @@ void create_structure_adjoint( TM &m, TM &m_adjoint, const unsigned &deg_p, cons
 }
 
 /// Creation de la structure couronne pour le calcul de la quantite d'interet SIF
-///------------------------------------------------------------------------------
+/// -----------------------------------------------------------------------------
 template<class TM, class T, class Pvec>
 void create_structure_crown( TM &m, TM &m_crown, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool spread_cut = false ) {
     
@@ -1441,7 +1441,7 @@ void create_structure_crown( TM &m, TM &m_crown, const Pvec &pos_crack_tip, cons
 }
 
 /// Creation de la structure de reference locale
-///---------------------------------------------
+/// --------------------------------------------
 template<class TM, class T, class Pvec>
 void create_structure_local_ref( TM &m, TM &m_ref, const unsigned &deg_p, const unsigned &refinement_deg_ref, const string &interest_quantity, const Vec<unsigned> &elem_list, Vec<unsigned> &elem_list_ref, const unsigned &node, unsigned &node_ref, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool spread_cut = false ) {
 
@@ -1497,7 +1497,7 @@ void create_structure_local_ref( TM &m, TM &m_ref, const unsigned &deg_p, const 
 }
 
 /// Decoupe de la structure autour de la quantite d'interet
-///--------------------------------------------------------
+/// -------------------------------------------------------
 template<class TM, class T, class Pvec>
 void create_structure_cut( TM &m, TM &m_lambda, const unsigned &deg_p, const string &shape, const T &k, const Vec<T> &domain_length, const Pvec &domain_center, const bool spread_cut = false ) {
     
@@ -1515,7 +1515,7 @@ void create_structure_cut( TM &m, TM &m_lambda, const unsigned &deg_p, const str
 }
 
 /// Creation de la structure parametrique
-///--------------------------------------
+/// -------------------------------------
 template<class TM_param, class T, class TT>
 void create_structure_param( TM_param &m_param, const T &min_param, const T &max_param, const TT &nb_points ) {
     typedef typename TM_param::Pvec Pvec_param;

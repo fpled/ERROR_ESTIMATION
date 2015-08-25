@@ -37,65 +37,55 @@ List_Machine_Names = pommard chablis
 Machine_Name = pommard
 Machine_Name_Results = pommard
 # Name of station
-Station_Name = stationmeca18
+Station_Name = stationmeca22
 # Name of problem
 Pb_Name = error_estimation
 Pb_Name_Space = space
 Pb_Name_Parameter = parameter
 
 # Default ---------------------------
-default:
-#	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation.met
-	cd LMT/include/codegen; scons -j 1
-	scons --sconstruct=$(scons_file) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
+default: compile
 	time ./main
-	$(MAKE) move_results
+	make move_results
 
 # PGD ---------------------------
-all_pgd:
-#	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation_space.met
-#	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation_parameter.met
-#	cd LMT/include/codegen; scons -j 1
-	scons --sconstruct=$(scons_file_pgd) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
+all_pgd: compile_pgd
 	time ./main_pgd
-	$(MAKE) move_results
+	make move_results
 
 # HOMOG ---------------------------
-all_homog:
-#	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation_homog.met
-	cd LMT/include/codegen; scons -j 1
-	scons --sconstruct=$(scons_file_homog) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
+all_homog: compile_homog
 	time ./main_homog
-	$(MAKE) move_results
+	make move_results
 
 # Codegen ---------------------------
 codegen:
 	cd LMT/include/codegen; scons -j 1
 
-# Codegen_Cluster ---------------------------
 codegen_cluster:
 	ssh $(Cluster_Name) "cd $(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/; make codegen"
 
 # Compile ---------------------------
-compile:
+compile: codegen
 #	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation.met
-	cd LMT/include/codegen; scons -j 1
 	scons --sconstruct=$(scons_file) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
 
-compile_pgd:
+compile_pgd: codegen
 #	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation_space.met
 #	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation_parameter.met
-	cd LMT/include/codegen; scons -j 1
 	scons --sconstruct=$(scons_file_pgd) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
 
-compile_homog:
+compile_homog: codegen
 #	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation_homog.met
-	cd LMT/include/codegen; scons -j 1
 	scons --sconstruct=$(scons_file_homog) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
 
 # Test ---------------------------
-test:
-	export METILPATH=../METIL/MET; ../METIL-install/bin/metil TESTS/Test_metil.met
+test_metil:
+	export METILPATH=../METIL/MET; ../METIL-install/bin/metil TESTS/test.met
+
+test_cpp: codegen
+	cd TESTS; scons --sconstruct=$(scons_file) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
+	cd TESTS; ./test
 
 # Move ---------------------------
 move_results:
@@ -104,6 +94,9 @@ move_results:
 	-find . -maxdepth 1 -name "*.log" -exec mv {} RESULTS \;
 	-find . -maxdepth 1 -name "*.out" -exec mv {} RESULTS \;
 	-find . -maxdepth 1 -name "*.eps" -exec mv {} RESULTS \;
+	-find . -maxdepth 1 -name "*.dvi" -exec mv {} RESULTS \;
+	-find . -maxdepth 1 -name "*.tex" -exec mv {} RESULTS \;
+	-find . -maxdepth 1 -name "*.aux" -exec mv {} RESULTS \;
 
 # Clean ---------------------------
 clean:
@@ -114,16 +107,18 @@ clean_codegen:
 	cd LMT/include/codegen; scons -c
 
 clean_results:
-	-rm -r RESULTS/*
+	-rm -fr RESULTS/*
 
-clean_all:
-	$(MAKE) clean
-	$(MAKE) clean_codegen
-	$(MAKE) clean_results
-	-rm  ./*.o
+clean_all: clean_codegen clean clean_results
+	-find . -maxdepth 1 -name "*.o" -exec rm -fr {} \;
 
-clean_generated:
-	-rm -r generated
+clean_metil:
+	-rm -fr ../METIL
+	-rm -fr ../METIL-build
+	-rm -fr ../METIL-install
+
+clean_lmtpp:
+	-rm -fr ../LMTpp
 
 # Clean Cluster---------------------------
 clean_cluster:
@@ -149,22 +144,19 @@ clean_all_gnode:
 debug_gdb:
 	gdb --args make
 
-# LMT ---------------------------
-clone_lmt:
+# Clone ---------------------------
+clone_lmtpp: clean_lmtpp
 	-git clone $(LMT_Dir) ../LMTpp
 
-# Metil ---------------------------
-clone_metil:
-	-rm -fr ../METIL
-	-rm -fr ../METIL-build
-	-rm -fr ../METIL-install
+clone_metil: clean_metil
 	-git clone $(METIL_Dir) ../METIL
 	mkdir ../METIL-build; cd ../METIL-build; cmake -i ../METIL
 
 install_metil:
 	cd ../METIL-build; make -j4 install
 
-# excludes for rsync
+# Excludes for rsync ---------------------------
+
 exclude = --exclude '*.o' --exclude 'core' --exclude '*.log' --exclude '*.eps' --exclude '*.dvi' --exclude '*.pdf' --exclude '*.tex' --exclude '*.aux' --exclude '*.patch' --exclude '*.kdevelop' --exclude '*.kdev4' --exclude '*.filelist' --exclude '*.pcs' --exclude '*.kdevses' --exclude '*.m' --exclude '*.pyc' --exclude '*.cc' --exclude '*.bz2' --exclude '*.cache' --exclude '*.dblite' --exclude '*.git' --exclude '.sconsign' --exclude 'LMT/.git' --exclude 'Doxyfile' --exclude 'build' --exclude 'TESTS' --exclude 'RESULTS' --exclude 'i686.tok'
 exclude_main_formulation = --exclude 'main.cpp' --exclude 'formulation.met'
 exclude_Makefile = --exclude 'Makefile'
@@ -172,42 +164,9 @@ exclude_LMT = --exclude '*.o' --exclude '*.patch' --exclude '*.git' --exclude 'i
 exclude_METIL = --exclude '*.patch' --exclude '*.git' --exclude 'i686.tok' --exclude '*.cache' --exclude '*.bz2'
 exclude_generated = --exclude 'i686.tok'
 
-# Station ---------------------------
-
-all_to_station:
-	rsync -auv ../LMTpp        $(Station_Name): $(exclude_LMT)
-	rsync -auv ../METIL      $(Station_Name): $(exclude_METIL)
-	rsync -auv ../ERROR_ESTIMATION     $(Station_Name): $(exclude)
-#	rsync -auv ../ERROR_ESTIMATION/main.cpp     $(Cluster_GNode):$(Node_Dir)/ERROR_ESTIMATION
-	ssh $(Station_Name) "cd ~/ERROR_ESTIMATION/; rm -fr LMT"
-	ssh $(Station_Name) "cd ~/ERROR_ESTIMATION/; ln -s ../LMTpp LMT"
-
-lmt_to_station:
-	rsync -auv ../LMTpp        $(Station_Name): $(exclude_LMT)
-
-metil_to_station:
-	rsync -auv ../METIL        $(Station_Name): $(exclude_METIL)
-
-error_estimation_to_station:
-	rsync -auv ../ERROR_ESTIMATION     $(Station_Name): $(exclude)
-	ssh $(Station_Name) "cd ~/ERROR_ESTIMATION/; rm -fr LMT"
-	ssh $(Station_Name) "cd ~/ERROR_ESTIMATION/; ln -s ../LMTpp LMT"
-
-generated_to_station:
-	rsync -auv ../ERROR_ESTIMATION/generated     $(Station_Name):~/ERROR_ESTIMATION $(exclude_generated)
-
-main_to_station:
-	rsync -auv ../ERROR_ESTIMATION/main.cpp     $(Station_Name):~/ERROR_ESTIMATION
-
-formulation_to_station:
-	rsync -auv ../ERROR_ESTIMATION/formulation.met     $(Station_Name):~/ERROR_ESTIMATION
-
-install_metil_on_station:
-	ssh $(Station_Name) "cd ~/METIL-build; make -j4 install"
-
 # Machine ---------------------------
 
-lmt_to_all_machines:
+lmtpp_to_all_machines:
 	$(foreach i, $(List_Machine_Names), \
 	rsync -auv /utmp/$(Machine_Name)/$(USER)/LMTpp        $(i):$(Node_Dir) $(exclude_LMT);)
 
@@ -229,7 +188,7 @@ formulation_to_all_machines:
 	$(foreach i, $(List_Machine_Names), \
 	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/formulation.met     $(i):$(Node_Dir)/ERROR_ESTIMATION;)
 
-install_metil_on_all_machines:
+install_metil_all_machines:
 	$(foreach i, $(List_Machine_Names), \
 	ssh $(i) "cd $(Node_Dir)/METIL-build/; make -j4 install";)
 
@@ -239,51 +198,8 @@ all_to_cluster:
 	rsync -auv /utmp/$(Machine_Name)/$(USER)/LMTpp        $(Cluster_Name):$(Cluster_Dir) $(exclude_LMT)
 	rsync -auv /utmp/$(Machine_Name)/$(USER)/METIL      $(Cluster_Name):$(Cluster_Dir) $(exclude_METIL)
 	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/*     $(Cluster_Name):$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation) $(exclude)
-#	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/main.cpp     $(Cluster_Name):$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation) $(exclude)
-#	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/$(Script_Name)     $(Cluster_Name):$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation) $(exclude)
 	ssh $(Cluster_Name) "cd $(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/; rm -fr LMT"
 	ssh $(Cluster_Name) "cd $(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/; ln -s $(Cluster_Dir)/LMTpp LMT"
-#	ssh $(Cluster_Name) "mv $(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/$(Script_Name) ./"
-
-all_cluster: all_to_cluster
-#	ssh $(Cluster_Name) 'rsh $(Cluster_Node) "hostname; cd $(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation); make"'
-	ssh $(Cluster_Name) "hostname; $(qsub_Dir)/qsub -k eo -l nodes=$(Cluster_Nb_Nodes):ppn=$(Cluster_ppn):$(Cluster_Reseau),walltime=$(Cluster_walltime),pvmem=$(Cluster_pvmem) -v REP='$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/' $(Script_Name)"
-#	ssh $(Cluster_Name) "hostname; $(qsub_Dir)/qsub -k eo -q bigmem -l walltime=$(Cluster_walltime),pvmem=$(Cluster_pvmem_bigmem) -v REP='$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/' $(Script_Name)"
-
-lmt_to_cluster:
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/LMTpp        $(Cluster_Name):$(Cluster_Dir) $(exclude_LMT)
-
-lmt_to_all_cluster:
-	$(foreach i, $(Cluster_List_Data), \
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/LMTpp        $(Cluster_Name):/data$(i)/$(USER) $(exclude_LMT);)
-
-metil_to_cluster:
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/METIL      $(Cluster_Name):$(Cluster_Dir) $(exclude_METIL)
-
-metil_to_all_cluster:
-	$(foreach i, $(Cluster_List_Data), \
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/METIL        $(Cluster_Name):/data$(i)/$(USER) $(exclude_METIL);)
-
-install_metil_on_cluster:
-	ssh $(Cluster_GNode) "cd $(Cluster_Dir)/METIL-build; make -j4 install"
-
-install_metil_on_all_cluster:
-	$(foreach i, $(Cluster_List_Data), \
-	ssh $(Cluster_GNode) "cd /data$(i)/$(USER)/METIL-build; make -j4 install";)
-
-error_estimation_to_cluster:
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/*     $(Cluster_Name):$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/ $(exclude)
-	ssh $(Cluster_Name) "cd $(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/; rm -fr LMT"
-	ssh $(Cluster_Name) "cd $(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/; ln -s $(Cluster_Dir)/LMTpp LMT"
-
-generated_to_cluster:
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/generated     $(Cluster_Name):$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation) $(exclude_generated)
-
-main_to_cluster:
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/main.cpp     $(Cluster_Name):$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)
-
-formulation_to_cluster:
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/formulation.met     $(Cluster_Name):$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)
 
 cluster:
 	ssh $(Cluster_Name) "hostname; $(qsub_Dir)/qsub -k eo -l nodes=$(Cluster_Nb_Nodes):ppn=$(Cluster_ppn):$(Cluster_Reseau),walltime=$(Cluster_walltime),pvmem=$(Cluster_pvmem) -v REP='$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/' $(Script_Name)"
@@ -293,6 +209,15 @@ cluster_node:
 
 cluster_bigmem:
 	ssh $(Cluster_Name) "hostname; $(qsub_Dir)/qsub -k eo -q bigmem -l walltime=$(Cluster_walltime),pvmem=$(Cluster_pvmem_bigmem) -v REP='$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/' $(Script_Name)"
+
+all_cluster: all_to_cluster cluster
+
+install_metil_cluster:
+	ssh $(Cluster_GNode) "cd $(Cluster_Dir)/METIL-build; make -j4 install"
+
+install_metil_all_cluster:
+	$(foreach i, $(Cluster_List_Data), \
+	ssh $(Cluster_GNode) "cd /data$(i)/$(USER)/METIL-build; make -j4 install";)
 
 results_from_cluster:
 	rsync -auv $(Cluster_Name):$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/*.vtu  /utmp/$(Machine_Name_Results)/$(USER)/RESULTS
@@ -304,88 +229,22 @@ all_to_gnode:
 	rsync -auv /utmp/$(Machine_Name)/$(USER)/LMTpp        $(Cluster_GNode):$(Node_Dir) $(exclude_LMT)
 	rsync -auv /utmp/$(Machine_Name)/$(USER)/METIL      $(Cluster_GNode):$(Node_Dir) $(exclude_METIL)
 	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION     $(Cluster_GNode):$(Node_Dir) $(exclude)
-#	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/main.cpp     $(Cluster_GNode):$(Node_Dir)/ERROR_ESTIMATION
 	ssh $(Cluster_GNode) "cd $(Node_Dir)/ERROR_ESTIMATION/; rm -fr LMT"
 	ssh $(Cluster_GNode) "cd $(Node_Dir)/ERROR_ESTIMATION/; ln -s $(Node_Dir)/LMTpp LMT"
-
-all_gnode: all_to_gnode
-	ssh $(Cluster_GNode) "hostname; cd $(Node_Dir)/ERROR_ESTIMATION; make"
-
-lmt_to_gnode:
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/LMTpp        $(Cluster_GNode):$(Node_Dir) $(exclude_LMT)
-
-lmt_to_all_gnodes:
-	$(foreach i, $(Cluster_List_Gnodes), \
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/LMTpp        gnode$(i):$(Node_Dir) $(exclude_LMT);)	
-
-metil_to_gnode:
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/METIL      $(Cluster_GNode):$(Node_Dir) $(exclude_METIL)
-
-metil_to_all_gnodes:
-	$(foreach i, $(Cluster_List_Gnodes), \
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/METIL      gnode$(i):$(Node_Dir) $(exclude_METIL);)
-
-install_metil_on_gnode:
-	ssh $(Cluster_GNode) "cd $(Node_Dir)/METIL-build; make -j4 install"
-
-install_metil_on_all_gnodes:
-	$(foreach i, $(Cluster_List_Gnodes), \
-	ssh gnode$(i) "cd $(Node_Dir)/METIL-build; make -j4 install";)
-
-error_estimation_to_gnode:
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION     $(Cluster_GNode):$(Node_Dir) $(exclude)
-	ssh $(Cluster_GNode) "cd $(Node_Dir)/ERROR_ESTIMATION/; rm -fr LMT"
-	ssh $(Cluster_GNode) "cd $(Node_Dir)/ERROR_ESTIMATION/; ln -s $(Node_Dir)/LMTpp LMT"
-
-error_estimation_to_all_gnodes:
-	$(foreach i, $(Cluster_List_Gnodes), \
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION     gnode$(i):$(Node_Dir) $(exclude); \
-	ssh gnode$(i) "cd $(Node_Dir)/ERROR_ESTIMATION/; rm -fr LMT"; \
-	ssh gnode$(i) "cd $(Node_Dir)/ERROR_ESTIMATION/; ln -s $(Node_Dir)/LMTpp LMT";)
-
-generated_to_gnode:
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/generated     $(Cluster_GNode):$(Node_Dir)/ERROR_ESTIMATION $(exclude_generated)
-
-generated_to_all_gnodes:
-	$(foreach i, $(Cluster_List_Gnodes), \
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/generated     gnode$(i):$(Node_Dir)/ERROR_ESTIMATION $(exclude_generated);)
-
-sconstruct_to_gnode:
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/SConstruct     $(Cluster_GNode):$(Node_Dir)/ERROR_ESTIMATION
-
-sconstruct_to_all_gnodes:
-	$(foreach i, $(Cluster_List_Gnodes), \
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/SConstruct     gnode$(i):$(Node_Dir)/ERROR_ESTIMATION;)
-
-main_to_gnode:
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/main.cpp     $(Cluster_GNode):$(Node_Dir)/ERROR_ESTIMATION
-
-main_to_all_gnodes:
-	$(foreach i, $(Cluster_List_Gnodes), \
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/main.cpp     gnode$(i):$(Node_Dir)/ERROR_ESTIMATION;)
-
-formulation_to_gnode:
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/formulation.met     $(Cluster_GNode):$(Node_Dir)/ERROR_ESTIMATION
-
-formulation_to_all_gnodes:
-	$(foreach i, $(Cluster_List_Gnodes), \
-	rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/formulation.met     gnode$(i):$(Node_Dir)/ERROR_ESTIMATION;)
 
 gnode:
 	ssh $(Cluster_GNode) "hostname; cd $(Node_Dir)/ERROR_ESTIMATION; make"
+
+all_gnode: all_to_gnode gnode
+
+install_metil_gnode:
+	ssh $(Cluster_GNode) "cd $(Node_Dir)/METIL-build; make -j4 install"
+
+install_metil_all_gnodes:
+	$(foreach i, $(Cluster_List_Gnodes), \
+	ssh gnode$(i) "cd $(Node_Dir)/METIL-build; make -j4 install";)
 
 results_from_gnode:
 	rsync -auv $(Cluster_GNode):$(Node_Dir)/ERROR_ESTIMATION/*.vtu  /utmp/$(Machine_Name_Results)/$(USER)/RESULTS/
 	rsync -auv $(Cluster_GNode):$(Node_Dir)/ERROR_ESTIMATION/*.pvd  /utmp/$(Machine_Name_Results)/$(USER)/RESULTS/
 	rsync -auv $(Cluster_GNode):$(Node_Dir)/ERROR_ESTIMATION/*.log  /utmp/$(Machine_Name_Results)/$(USER)/RESULTS/
-#	scp $(Cluster_GNode):$(Node_Dir)/ERROR_ESTIMATION/*.vtu  /utmp/$(Machine_Name_Results)/$(USER)/RESULTS/
-#	scp $(Cluster_GNode):$(Node_Dir)/ERROR_ESTIMATION/*.pvd  /utmp/$(Machine_Name_Results)/$(USER)/RESULTS/
-#	scp $(Cluster_GNode):$(Node_Dir)/ERROR_ESTIMATION/*.log  /utmp/$(Machine_Name_Results)/$(USER)/RESULTS/
-
-# Copy ---------------------------
-
-copy_to_gnode:
-    rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/main.cpp     $(Cluster_GNode):$(Node_Dir)/ERROR_ESTIMATION/ $(exclude)
-
-copy_to_cluster:
-    rsync -auv /utmp/$(Machine_Name)/$(USER)/ERROR_ESTIMATION/main.cpp     $(Cluster_Name):$(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/ $(exclude)

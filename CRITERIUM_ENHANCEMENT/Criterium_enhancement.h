@@ -27,7 +27,7 @@ using namespace LMT;
 using namespace std;
 
 /// Construction du vecteur de vecteurs circum_center et du vecteur circum_radius
-///------------------------------------------------------------------------------
+/// -----------------------------------------------------------------------------
 template<class TE, class TTVV, class TTV>
 void update_circum_center( const TE &e, TTVV &circum_center, TTV &circum_radius ) {}
 
@@ -48,7 +48,7 @@ struct Construct_Circum_Center_Radius_Elem_List {
 };
 
 /// Construction du vecteur de vecteurs in_center et du vecteur in_radius
-///----------------------------------------------------------------------
+/// ---------------------------------------------------------------------
 template<class TE, class TTVV, class TTV>
 void update_in_center( const TE &e, TTVV &in_center, TTV &in_radius ) {}
 
@@ -59,7 +59,7 @@ struct Calcul_In_Center_Radius {
 };
 
 /// Construction du vecteur radius_ratio
-///-------------------------------------
+/// ------------------------------------
 template<class TE, class TTV>
 void update_radius_ratio( const TE &e, TTV &radius_ratio ) {}
 
@@ -70,7 +70,7 @@ struct Calcul_Radius_Ratio {
 };
 
 /// Construction du vecteur edge_ratio
-///-----------------------------------
+/// ----------------------------------
 template<class TE, class TM, class TTV>
 void update_edge_ratio( const TE &e, TM &m, TTV &edge_ratio ) {}
 
@@ -81,7 +81,7 @@ struct Calcul_Edge_Ratio {
 };
 
 /// Construction du vecteur geometric_ratio
-///----------------------------------------
+/// ---------------------------------------
 struct Calcul_Geometric_Ratio {
     template<class TE, class TM, class T> void operator()( const TE &elem, const TM &m, const string &geometric_criterium, Vec<T> &geometric_ratio ) const {
         if ( geometric_criterium == "radius_ratio" and ( elem.name() == "Triangle" or elem.name() == "Triangle_6" or elem.name() == "Tetra" or elem.name() == "Tetra_10" ) ) {
@@ -97,7 +97,7 @@ struct Calcul_Geometric_Ratio {
 };
 
 /// Construction du vecteur estimator_ratio
-///----------------------------------------
+/// ---------------------------------------
 struct Calcul_Estimator_Ratio {
     template<class TE, class TM, class T> void operator()( const TE &elem, const TM &m, const Vec<T> &theta_2_elem, Vec<T> &estimator_ratio ) const {
 		T theta_2_elem_min, theta_2_elem_max;
@@ -108,7 +108,7 @@ struct Calcul_Estimator_Ratio {
 
 /// Construction des vecteurs elem_flag_enh, face_flag_enh, node_flag_enh
 /// Construction des vecteurs elem_list_enh, face_list_enh, node_list_enh
-///-------------------------------------------------------------------------
+/// ------------------------------------------------------------------------
 template<class TE, class TM, class S, class B, class TTV, class T, class BV, class TV>
 void apply_criterium_enhancement( TE &e, const TM &m, const S &method, const B &enhancement_with_estimator_criterium, const B &enhancement_with_geometric_criterium, const TTV &estimator_ratio, const TTV &geometric_ratio, const T &val_estimator_criterium, const T &val_geometric_criterium, BV &elem_flag_enh, BV &face_flag_enh, BV &node_flag_enh, TV &elem_list_enh, TV &face_list_enh, TV &node_list_enh ) {}
 
@@ -149,7 +149,7 @@ struct Apply_Criterium_Enhancement {
 
 /// Construction du vecteur elem_flag_bal
 /// Construction du vecteur elem_list_bal
-///---------------------------------------
+/// --------------------------------------
 struct Construct_Balancing {
     const Vec<bool>* face_flag_enh;
     template<class TE, class TM> void operator()( const TE &elem, const TM &m, Vec<bool> &elem_flag_bal, Vec<unsigned> &elem_list_bal ) const {

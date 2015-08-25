@@ -20,7 +20,7 @@ using namespace LMT;
 using namespace std;
 
 /// Construction amelioree des densites d'effort par les methodes EET et EESPT
-///---------------------------------------------------------------------------
+/// --------------------------------------------------------------------------
 template<class TM, class TF, class T>
 void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string &method, const Vec<bool> &elem_flag_enh, const Vec<bool> &face_flag_enh, const Vec<bool> &elem_flag_bal, const Vec<unsigned> &elem_list_enh, const Vec<unsigned> &face_list_enh, const Vec<unsigned> &elem_list_bal, Vec< Mat<T, Sym<> > > &K_hat, const Vec< Vec<T> > &dep_hat, Vec< Vec< Vec<T> > > &vec_force_fluxes, const string &solver, const string &solver_minimisation, const bool verif_solver_enhancement = false, const T tol_solver_enhancement = 1e-6, const bool verif_solver_minimisation_enhancement = false, const T tol_solver_minimisation_enhancement = 1e-6, const bool debug_force_fluxes_enhancement = false, const bool debug_method_enhancement = false, const bool debug_geometry = false ) {
 
@@ -59,7 +59,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     }
 
     /// Construction des vecteurs F_hat_enh[ n ] pour chaque element ameliore n du maillage
-    ///------------------------------------------------------------------------------------
+    /// -----------------------------------------------------------------------------------
 
     cout << "Calcul des vecteurs nb_unk_local_enh" << endl << endl;
 
@@ -89,7 +89,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     }
 
     /// Construction des vecteurs dep_hat_enh[ n ] pour chaque element ameliore n du maillage
-    ///--------------------------------------------------------------------------------------
+    /// -------------------------------------------------------------------------------------
 
     cout << "Construction des vecteurs dep_hat_enh" << endl << endl;
 
@@ -175,7 +175,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     F_hat_enh.free();
 
     /// Construction des matrices A_local_enh[ n ] pour chaque element ameliore n du maillage
-    ///--------------------------------------------------------------------------------------
+    /// -------------------------------------------------------------------------------------
 
     cout << "Construction des matrices A_local_enh" << endl << endl;
 
@@ -202,7 +202,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     }
 
     /// Construction des vecteurs d_local_enh[ n ] pour chaque element ameliore n du maillage
-    ///--------------------------------------------------------------------------------------
+    /// -------------------------------------------------------------------------------------
 
     cout << "Construction des vecteurs d_local_enh" << endl << endl;
 
@@ -233,7 +233,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     dep_hat_enh.free();
 
     /// Construction de la matrice C_enh
-    ///---------------------------------
+    /// --------------------------------
 
     cout << "Construction de la matrice C_enh" << endl << endl;
 
@@ -266,7 +266,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     }
 
     /// Construction du vecteur global q_enh
-    ///-------------------------------------
+    /// ------------------------------------
 
     cout << "Construction du vecteur q_enh" << endl << endl;
 
@@ -292,7 +292,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     face_type.free();
     
     /// Construction des matrices L_local_enh[ n ] pour chaque element ameliore n du maillage
-    ///--------------------------------------------------------------------------------------
+    /// -------------------------------------------------------------------------------------
 
     cout << "Calcul des vecteurs nb_eq_f_vol_local_enh" << endl << endl;
 
@@ -325,7 +325,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     }
 
     /// Construction des vecteurs b_local_enh[ n ] pour chaque element ameliore n du maillage
-    ///--------------------------------------------------------------------------------------
+    /// -------------------------------------------------------------------------------------
 
     cout << "Construction des vecteurs b_local_enh" << endl << endl;
 
@@ -352,7 +352,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     elem_cpt_node.free();
 
     /// Construction de la matrice globale A_enh
-    ///-----------------------------------------
+    /// ----------------------------------------
 
     cout << "Construction de la matrice A_enh" << endl << endl;
 
@@ -376,7 +376,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     A_local_enh.free();
 
     /// Construction du vecteur global d_enh
-    ///-------------------------------------
+    /// ------------------------------------
 
     cout << "Construction du vecteur d_enh" << endl << endl;
 
@@ -401,7 +401,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     d_local_enh.free();
 
     /// Construction de la matrice globale L_enh
-    ///-----------------------------------------
+    /// ----------------------------------------
 
     cout << "Construction de la matrice L_enh" << endl << endl;
 
@@ -433,7 +433,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     L_local_enh.free();
 
     /// Construction du vecteur global b_enh
-    ///-------------------------------------
+    /// ------------------------------------
 
     cout << "Construction du vecteur b_enh" << endl << endl;
 
@@ -458,7 +458,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     nb_eq_f_vol_local_enh.free();
 
     /// Construction de la matrice globale P_enh
-    ///-----------------------------------------
+    /// ----------------------------------------
 
     cout << "Construction de la matrice P_enh" << endl << endl;
 
@@ -494,7 +494,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     node_list_face.free();
 
     /// Construction de la matrice globale C_tot_enh et du vecteur global q_tot_enh
-    ///----------------------------------------------------------------------------
+    /// ---------------------------------------------------------------------------
 
     cout << "Construction de la matrice C_tot_enh et du vecteur q_tot_enh" << endl << endl;
 
@@ -540,7 +540,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     vec_eq_f_surf_plus_eq_proj_f_surf_to_eq_f_surf_plus_eq_proj_f_surf_plus_eq_f_vol.free();
 
     /// Construction de la matrice globale C_tot_tilde_enh et du vecteur global q_tot_tilde_enh
-    ///----------------------------------------------------------------------------------------
+    /// ---------------------------------------------------------------------------------------
 
     cout << "Suppression du noyau de la matrice C_tot_enh" << endl;
     cout << "Calcul du vecteur nb_eq_indep_enh" << endl << endl;
@@ -548,7 +548,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     Vec<unsigned> eq_indep_enh;
 
     /// Orthonormalisation de Schmidt
-    ///------------------------------
+    /// -----------------------------
     //     Mat<T> C_tot_orth_enh = C_tot_enh;
     //
     //     TicToc t_orth_schmidt;
@@ -562,7 +562,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     //     C_tot_orth_enh.clear();
 
     /// Factorisation LDL avec detection des pivots nuls
-    ///-------------------------------------------------
+    /// ------------------------------------------------
     eq_indep_enh = range( nb_eq_f_surf_enh + nb_eq_proj_f_surf_enh + nb_eq_f_vol_enh );
 
     TicToc t_detect_pivots;
@@ -627,7 +627,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     eq_indep_enh.free();
 
     /// Construction de la matrice globale K_enh et du vecteur global F_enh
-    ///--------------------------------------------------------------------
+    /// -------------------------------------------------------------------
 
     cout << "Construction de la matrice K_enh et du vecteur F_enh" << endl << endl;
 
@@ -676,7 +676,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
 
     /// Resolution du probleme global de minimsation K_enh * U_enh = F_enh
     /// Construction du vecteur U_enh
-    ///-------------------------------------------------------------------
+    /// ------------------------------------------------------------------
 
     cout << "Resolution du probleme global de minimsation K_enh * U_enh = F_enh a " << nb_unk_enh << " inconnues et " << nb_eq_indep_enh << " equations independantes imposees" << endl;
     cout << "Construction du vecteur U_enh" << endl << endl;
@@ -739,7 +739,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     F_enh.free();
 
     /// Construction du vecteur vec_force_fluxes_enhancement_global
-    ///------------------------------------------------------------
+    /// -----------------------------------------------------------
 
     cout << "Construction du vecteur vec_force_fluxes_enhancement_global" << endl << endl;
 
@@ -761,7 +761,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
 
     /// Construction des vecteurs vec_force_fluxes_enhancement[ k ][ d ] pour chaque face k du maillage et chaque direction d
     /// Construction des matrices mat_force_fluxes_enhancement[ k ] pour chaque face k du maillage
-    ///----------------------------------------------------------------------------------------------------------------------
+    /// ---------------------------------------------------------------------------------------------------------------------
 
     cout << "Construction des vecteurs vec_force_fluxes_enhancement et des matrices force_fluxes_enhancement" << endl << endl;
 
@@ -820,7 +820,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
 
     /// Construction des vecteurs vec_force_fluxes_enhancement[ k ][ d ] pour chaque face k du maillage et chaque direction d
     /// Construction des matrices mat_force_fluxes_enhancement[ k ] pour chaque face k du maillage
-    ///----------------------------------------------------------------------------------------------------------------------
+    /// ---------------------------------------------------------------------------------------------------------------------
 
     for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
         for (unsigned d=0;d<dim;++d) {

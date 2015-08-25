@@ -16,7 +16,7 @@ using namespace LMT;
 using namespace std;
 
 /// Display dimension, degree, structure and mesh parameters
-///---------------------------------------------------------
+/// --------------------------------------------------------
 template<class TM>
 void display_structure( TM &m, TM &m_ref, const string &pb, const string &structure, const unsigned &deg_p, const bool want_ref = false ) {
     
@@ -59,7 +59,7 @@ void display_structure( TM &m, TM &m_ref, const string &pb, const string &struct
 }
 
 /// Display quantity of interest and zone of interest
-///--------------------------------------------------
+/// -------------------------------------------------
 template<class T, class Pvec>
 void display_interest_quantity( const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list, const unsigned &node, const Pvec &pos, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re ) {
 
@@ -90,7 +90,7 @@ void display_interest_quantity( const string &interest_quantity, const string &d
 }
 
 /// Display adjoint mesh parameters
-///--------------------------------
+/// -------------------------------
 template<class T>
 void display_params_adjoint( const bool &want_local_refinement, const T &l_min, const T &k, const bool &spread_cut, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, const Vec<unsigned> &elem_list_adjoint_enrichment_zone_1, const Vec<unsigned> &elem_list_adjoint_enrichment_zone_2, const Vec<unsigned> &face_list_adjoint_enrichment_zone_12, const Vec<unsigned> &node_list_adjoint_enrichment, const bool &want_local_improvement, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt ) {
 
@@ -131,7 +131,7 @@ void display_params_adjoint( const bool &want_local_refinement, const T &l_min, 
 }
 
 /// Display method for constructing admissible fields (EET,SPET,EESPT) with/without enhancement, cost-function and solver
-///----------------------------------------------------------------------------------------------------------------------
+/// ---------------------------------------------------------------------------------------------------------------------
 void display_method( const string &pb, const string &method, const unsigned &cost_function, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const string &solver, const string &solver_minimisation ) {
     cout << "-----------------------------------------------------------------------------------------" << endl;
     cout << "Methode de construction de champs admissibles associee au pb " << pb << " : " << method;
@@ -155,7 +155,7 @@ void display_method( const string &pb, const string &method, const unsigned &cos
 }
 
 /// Display/Save vtu and pvd files
-///-------------------------------
+/// ------------------------------
 template<class TM>
 string define_prefix( TM &m, const string &pb, const string &structure, const string &loading, const string &mesh_size ) {
     string prefix = structure;

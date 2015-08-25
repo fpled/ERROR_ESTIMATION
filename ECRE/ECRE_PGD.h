@@ -17,7 +17,7 @@ using namespace LMT;
 using namespace std;
 
 /// Construction des matrices K_hat[ n ] pour chaque element n du maillage
-///-----------------------------------------------------------------------
+/// ----------------------------------------------------------------------
 template<class TE, class TM, class TF, class TTWW, class TTMV>
 void calc_elem_matrix_K_hat( TE &elem, const TM &m, const TF &f, const TTWW &vectors, const Vec<unsigned> &indices, TTMV &K_hat ) {}
 
@@ -29,7 +29,7 @@ struct Calcul_Elem_Matrix_K_hat {
 };
 
 /// Construction des vecteurs F_hat[ n ] pour chaque element n du maillage
-///-----------------------------------------------------------------------
+/// ----------------------------------------------------------------------
 template<class TE, class TM, class TF, class TVV, class TV, class B, class BV, class TTWW, class S, class TTVVV, class TTVV>
 void calc_elem_vector_F_hat( TE &elem, const TM &m, const TF &f, const TVV &node_list_face, const TV &elem_cpt_node, const B &balancing, const BV &elem_flag_bal, const BV &elem_flag_enh, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, const TTVVV &vec_force_fluxes, TTVV &F_hat ) {}
 
@@ -50,7 +50,7 @@ struct Calcul_Elem_Vector_F_hat {
 };
 
 /// Construction de la matrice sigma_hat et Calcul d'un estimateur d'erreur globale au carre theta
-///-----------------------------------------------------------------------------------------------
+/// ----------------------------------------------------------------------------------------------
 template<class TE, class TM, class TF, class TTWW, class TTVV, class S, class TTV, class TT>
 void calc_elem_error_estimate_EET_EESPT( TE &elem, const TM &m, const TF &f, const TTWW &vectors, const Vec<unsigned> &indices, const TTVV &dep_hat, const S &method, TTV &theta_elem, TT &theta ) {}
 

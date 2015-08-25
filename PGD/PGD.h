@@ -18,7 +18,7 @@ using namespace std;
 
 
 /// Creation des proprietes materiaux
-///----------------------------------
+/// ---------------------------------
 template<class TM>
 void partition_elem_list( TM &m, const string &structure, Vec< Vec<unsigned> > &elem_group ) {
 
@@ -26,10 +26,10 @@ void partition_elem_list( TM &m, const string &structure, Vec< Vec<unsigned> > &
 
     if ( m.node_list.size() ) {
         /// Dimension 2
-        ///------------
+        /// -----------
         if ( dim == 2 ) {
             /// Plaque rectangulaire 2D en flexion
-            ///-----------------------------------
+            /// ----------------------------------
             if ( structure == "plate_flexion" ) {
                 elem_group.resize(2);
                 for (unsigned n=0;n<m.elem_list.size();++n) {
@@ -40,7 +40,7 @@ void partition_elem_list( TM &m, const string &structure, Vec< Vec<unsigned> > &
                 }
             }
             /// Inclusions circulaires 2D
-            ///--------------------------
+            /// -------------------------
             else if (structure == "circular_inclusions") {
                 elem_group.resize(4);
                 for (unsigned n=0;n<m.elem_list.size();++n) {
@@ -56,10 +56,10 @@ void partition_elem_list( TM &m, const string &structure, Vec< Vec<unsigned> > &
             }
         }
         /// Dimension 3
-        ///------------
+        /// -----------
         else if ( dim == 3 ) {
             /// Inclusions spheriques 3D
-            ///-------------------------
+            /// ------------------------
             if (structure == "spherical_inclusions") {
                 elem_group.resize(4);
                 for (unsigned n=0;n<m.elem_list.size();++n) {
@@ -78,12 +78,12 @@ void partition_elem_list( TM &m, const string &structure, Vec< Vec<unsigned> > &
 }
 
 /// Construction et resolution du pb en espace
-///-------------------------------------------
+/// ------------------------------------------
 template<class TM, class TF, class T, class TV, class TVV, class TMATVV, class TVVVV, class TVVV>
-void solve_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_space, const TVV &F_param, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TVVVV &lambda, TVVV &psi, const bool want_iterative_solver = false, const T iterative_criterium = 1e-3 ) {
+void solve_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_space, const TVV &F_param, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TVVVV &lambda, TVVV &psi, const bool want_iterative_solver = false, const T iterative_criterium = 1e-3, const bool want_normalization = false ) {
 
     /// Construction du pb en espace
-    ///-----------------------------
+    /// ----------------------------
     f.sollicitation = F_space;
     for (unsigned p=0;p<elem_group.size()-1;++p)
         f.sollicitation *= dot( F_param[p], lambda[ p ][ n ][ k ] );
@@ -121,7 +121,7 @@ void solve_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const Vec<
     f.assemble( true, false );
     
     /// Resolution du pb en espace
-    ///---------------------------
+    /// --------------------------
     if ( want_iterative_solver == 0 )
         f.solve_system();
     else
@@ -130,20 +130,29 @@ void solve_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const Vec<
     f.call_after_solve();
     
     /// Fonction en espace
-    ///-------------------
+    /// ------------------
     psi[ n ][ k ] = f.vectors[0];
+
+    /// Normalisation
+    /// -------------
+    if ( want_normalization ) {
+        for (unsigned j=0;j<m.elem_list.size();++j)
+            m.elem_list[j]->set_field( "alpha", 1. );
+        f.assemble( true, false );
+        psi[ n ][ k ] /= sqrt( dot( psi[ n ][ k ], f.matrices(Number<0>()) * lambda[ p ][ n ][ k ] ) );
+    }
 }
 
 /// Construction et resolution du pb en parametre
-///----------------------------------------------
+/// ---------------------------------------------
 template<class TM_param, class TF_param, class TV, class TVV, class TMATV, class TMATVV, class TVVV, class TVVVV>
-void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_space, const TVV &F_param, const TMATV &K_space, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TVVV &psi, TVVVV &lambda ) {
+void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const unsigned &n, const unsigned &k, const Vec<unsigned> &nb_iterations, const TV &F_space, const TVV &F_param, const TMATV &K_space, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TVVV &psi, TVVVV &lambda, const bool want_normalization = false ) {
 
     typedef typename TM_param::TNode::T T;
     typedef Mat<T, Sym<>, SparseLine<> > TMAT;
     
     /// Construction du pb en parametre
-    ///--------------------------------
+    /// -------------------------------
     T gamma = dot( F_space, psi[ n ][ k ] );
     for (unsigned q=0;q<elem_group.size()-1;++q) {
         if ( q != p )
@@ -185,21 +194,22 @@ void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const
             K += alpha * K_param[p][0];
     }
     f_param.matrices(Number<0>()) = K;
+    m_param.phi = 1;
     
     /// Resolution du pb en parametre
-    ///------------------------------
+    /// -----------------------------
     f_param.solve_system();
     f_param.update_variables();
     f_param.call_after_solve();
     
     /// Fonction en parametre
-    ///----------------------
+    /// ---------------------
     lambda[ p ][ n ][ k ] = f_param.vectors[0];
 //    cout << "Fonction en parametre " << p << " =" << endl;
 //    cout << lambda[ p ][ n ][ k ] << endl << endl;
     
      /// Resolution explicite du pb en parametre
-     ///----------------------------------------
+     /// ---------------------------------------
 //     for (unsigned j=0;j<m_param.node_list.size();++j) {
 //         m_param.node_list[ j ].fun = 1 + m_param.node_list[ j ].pos[ 0 ];
 //         lambda[ p ][ n ][ k ][ j ] = gamma;
@@ -241,10 +251,13 @@ void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const
 
 //     cout << "Fonction en parametre " << p << " =" << endl;
 //     cout << lambda[ p ][ n ][ k ] << endl << endl;
+
+    if ( want_normalization )
+        lambda[ p ][ n ][ k ] /= sqrt( dot( lambda[ p ][ n ][ k ], K_param[p][1] * lambda[ p ][ n ][ k ] ) );
 }
 
 /// Calcul de l'indicateur de stagnation
-///-------------------------------------
+/// ------------------------------------
 template<class TM, class TF, class T, class TMATVV, class TVVVV, class TVVV>
 void calc_stagnation_indicator( TM &m, TF &f, const unsigned &n, const unsigned &k, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TVVVV &lambda, const TVVV &psi, T &stagnation_indicator ) {
     stagnation_indicator = 0.;
@@ -297,7 +310,7 @@ void calc_stagnation_indicator( TM &m, TF &f, const unsigned &n, const unsigned 
 }
 
 /// Calcul de l'indicateur d'erreur
-///--------------------------------
+/// -------------------------------
 template<class TM, class TF, class T, class TV, class TVV, class TMATVV, class TVVVV, class TVVV>
 void calc_error_indicator( TM &m, TF &f, const unsigned &n, const Vec<unsigned> &nb_iterations, const TV &F_space, const TVV &F_param, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TVVVV &lambda, const TVVV &psi, T &residual, T &error_indicator ) {
     residual = 0.;
@@ -330,7 +343,7 @@ void calc_error_indicator( TM &m, TF &f, const unsigned &n, const Vec<unsigned> 
 }
 
 /// Construction des coefficients alpha, gamma associes au pb spatial
-///------------------------------------------------------------------
+/// -----------------------------------------------------------------
 template<class TE_param, class TM_param, class T> 
 void construct_space_pb( const TE_param &elem_param, const TM_param &m_param, T &alpha_s, T &gamma_s ) {}
 

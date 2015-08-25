@@ -20,7 +20,7 @@ using namespace LMT;
 using namespace std;
 
 /// Definition de l'extracteur associe a une quantite d'interet = facteur d'intensite de contrainte (SIF)
-///------------------------------------------------------------------------------------------------------
+/// -----------------------------------------------------------------------------------------------------
 template<class TE, class TM, class TF, class S, class TTV, class TT>
 void def_extractor_SIF( TE &elem, const TM &m, const TF &f, const S &interest_quantity, const S &direction_extractor, const TTV &pos_crack_tip, const TT &angle_crack, const TT &radius_Ri, const TT &radius_Re ) {}
 
@@ -38,7 +38,7 @@ struct Define_Extractor_SIF {
 };
 
 /// Calcul des fonctions d'enrichissement (handbook)
-///-------------------------------------------------
+/// ------------------------------------------------
 template<class TE, class TM, class TF>
 void calc_dep_handbook_in_infinite_domain( TE &elem_adjoint, const TM &m_adjoint, const TF &f_adjoint ) {}
 
@@ -49,7 +49,7 @@ struct Calcul_Dep_Handbook_In_Infinite_Domain {
 };
 
 /// Construction du chargement du pb adjoint a partir de l'extracteur
-///------------------------------------------------------------------
+/// -----------------------------------------------------------------
 struct Construct_Extractor_Mean_Epsilon {
 template<class TE, class TM> void operator()( TE &elem_adjoint, const TM &m, const Vec<unsigned> &elem_list_interest_quantity ) const {
     typedef typename TE::T T;
@@ -119,7 +119,7 @@ struct Construct_Extractor_SIF {
 };
 
 /// Calcul d'une quantite d'interet = valeur moyenne d'une composante du champ de contrainte (mean_sigma) ou de deformation (mean_epsilon)
-///---------------------------------------------------------------------------------------------------------------------------------------
+/// --------------------------------------------------------------------------------------------------------------------------------------
 template<class TE, class TM, class TF, class TTWW, class TT>
 void calc_interest_quantity_mean_sigma_epsilon( const TE &elem, const TM &m, const TF &f, const TTWW &vectors, const Vec<unsigned> &indices, TT &I ) {}
 
@@ -134,7 +134,7 @@ struct Calcul_Interest_Quantity_Mean_Sigma_Epsilon {
 };
 
 /// Calcul d'une quantite d'interet = valeur ponctuelle d'une composante du champ de deplacement (pointwise_dep) definie a partir du numero d'un noeud du maillage
-///---------------------------------------------------------------------------------------------------------------------------------------------------------------
+/// --------------------------------------------------------------------------------------------------------------------------------------------------------------
 struct Calcul_Interest_Quantity_Pointwise_Dep_Node {
     const string* interest_quantity;
     template<class TN, class T> void operator()( TN &node, const string &direction_extractor, const unsigned &node_interest_quantity, T &I ) const {
@@ -174,7 +174,7 @@ struct Calcul_Interest_Quantity_Pointwise_Dep_Node {
 };
 
 /// Calcul d'une quantite d'interet = valeur ponctuelle d'une composante du champ de deplacement (pointwise_dep) ou de contrainte (pointwise_sigma) ou de deformation (pointwise_epsilon) definie a partir de la position d'un point
-///---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TE, class TM, class TF, class TTWW, class S, class Pvec, class TT>
 void calc_interest_quantity_pointwise_dep_sigma_epsilon( const TE &elem, const TM &m, const TF &f, const TTWW &vectors, const Vec<unsigned> &indices, const S &interest_quantity, const S &direction_extractor, const Pvec &pos, TT &I ) {}
 
@@ -195,7 +195,7 @@ struct Calcul_Interest_Quantity_Pointwise_Dep_Sigma_Epsilon {
 };
 
 /// Calcul d'une quantite d'interet = facteur d'intensite de contrainte (SIF)
-///--------------------------------------------------------------------------
+/// -------------------------------------------------------------------------
 template<class TE, class TM, class TF, class S, class TTV, class TT, class TTWW>
 void calc_interest_quantity_SIF( const TE &elem, const TM &m_crown, const TF &f_crown, const S &direction_extractor, const TTV &pos_crack_tip, const TT &angle_crack, const TT &radius_Ri, const TT &radius_Re, const TTWW &vectors, const Vec<unsigned> &indices, TT &I ) {}
 
@@ -213,7 +213,7 @@ struct Calcul_Interest_Quantity_SIF {
 };
 
 /// Calcul de la correction I_hh sur la quantite d'interet (sans introduction de sigma_hat_m)
-///------------------------------------------------------------------------------------------
+/// -----------------------------------------------------------------------------------------
 template<class TE, class TE_adjoint, class TM, class TF, class TTWW, class S, class B, class TTVV, class TT>
 void calc_elem_correction_interest_quantity_wo_sigma_hat_m( const TE &elem, const TE_adjoint &elem_adjoint, const TM &m, const TM &m_adjoint, const TF &f, const TF &f_adjoint, const TTWW &vectors, const TTWW &adjoint_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &adjoint_indices, const S &method, const B &want_local_enrichment, const TTVV &dep_hat, TT &I_hh  ) {}
 
@@ -264,7 +264,7 @@ struct Calcul_Correction_Interest_Quantity_wo_sigma_hat_m {
 };
 
 /// Calcul de la correction I_hh sur la quantite d'interet (avec introduction de sigma_hat_m)
-///------------------------------------------------------------------------------------------
+/// -----------------------------------------------------------------------------------------
 template<class TE, class TE_adjoint, class TM, class TF, class TTWW, class S, class B, class TTVV, class TT>
 void calc_elem_correction_interest_quantity_w_sigma_hat_m( const TE &elem, const TE_adjoint &elem_adjoint, const TM &m, const TM &m_adjoint, const TF &f, const TF &f_adjoint, const TTWW &vectors, const TTWW &adjoint_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &adjoint_indices, const S &method, const S &method_adjoint, const B &want_local_enrichment, const TTVV &dep_hat, const TTVV &dep_adjoint_hat, TT &I_hh ) {}
 
@@ -322,7 +322,7 @@ struct Calcul_Correction_Interest_Quantity_w_sigma_hat_m {
 };
 
 /// Construction du centre et de la taille du domaine Omega_lambda selon la forme et la quantite d'interet
-///-------------------------------------------------------------------------------------------------------
+/// ------------------------------------------------------------------------------------------------------
 template<class TM, class T, class Pvec>
 void construct_center_length_domain( TM &m, const unsigned &deg_p, const string &shape, const string &interest_quantity, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list, const unsigned &node, const Pvec &pos, const Pvec &pos_crack_tip, const T &radius_Re, Pvec &domain_center, Vec<T> &domain_length ) {
     
@@ -343,7 +343,7 @@ void construct_center_length_domain( TM &m, const unsigned &deg_p, const string 
             /// Construction du vecteur de vecteurs circum_center et du vecteur circum_radius
             /// circum_center[ n ] : position du centre du cercle/sphere circonscrit au n ieme element de la liste elem_list (elem_list[ n ])
             /// circum_radius[ n ] : rayon du cercle/sphere circonscrit au n ieme element de la liste elem_list (elem_list[ n ])
-            ///--------------------------------------------------------------------------------------------------------------------------------
+            /// -------------------------------------------------------------------------------------------------------------------------------
             Vec< Vec<T> > circum_center;
             circum_center.resize( elem_list.size() );
 
@@ -414,7 +414,7 @@ void construct_center_length_domain( TM &m, const unsigned &deg_p, const string 
 }
 
 /// Calcul des champs de contrainte sigma_lambda et sigma_hat_lambda, Transfert du champ de deplacement dep_hat a dep_hat_lambda, Calcul d'un estimateur d'erreur globale sur le domaine Omega_lambda
-///--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/// -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TE, class TE_lambda, class TM, class TF, class TTWW, class TTVV, class S, class TTV, class TT>
 void calc_elem_error_estimate_lambda( const TE &elem, TE_lambda &elem_lambda, const TM &m, const TM &m_lambda, const TF &f, const TF &f_lambda, const TTWW &vectors, const TTWW &lambda_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &lambda_indices, const TTVV &dep_hat, const TTVV &dep_hat_lambda, const S &method, TTV &theta_elem, TT &theta ) {}
 
@@ -467,7 +467,7 @@ struct Calcul_Error_Estimate_Lambda {
 };
 
 /// Calcul d'un estimateur pondere d'erreur globale sur le domaine Omega_lambda
-///----------------------------------------------------------------------------
+/// ---------------------------------------------------------------------------
 template<class TE, class TE_lambda, class TM, class TF, class TTWW, class TTVV, class S, class Pvec, class TTV, class TT>
 void calc_elem_weighted_error_estimate_lambda( const TE &elem, const TE_lambda &elem_lambda, const TM &m, const TM &m_lambda, const TF &f, const TF &f_lambda, const TTWW &vectors, const TTWW &lambda_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &lambda_indices, const TTVV &dep_hat, S &method, const TT &h, const Pvec &domain_center, const TTV &domain_length, const TT &k_min, TT &weighted_theta ) {}
 
@@ -526,7 +526,7 @@ struct Calcul_Weighted_Error_Estimate_Lambda {
 };
 
 /// Calcul d'un estimateur d'erreur globale sur le bord du domaine Omega_lambda
-///----------------------------------------------------------------------------
+/// ---------------------------------------------------------------------------
 template<class TE, class TE_lambda, class TM, class TF, class TTWW, class TTVV, class S, class Pvec, class TTV, class TT>
 void calc_skin_elem_error_estimate_lambda_boundary( const TE &elem, const TE_lambda &elem_lambda, const TM &m, const TM &m_lambda, const TF &f, const TF &f_lambda, const TTWW &vectors, const TTWW &lambda_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &lambda_indices, const TTVV &dep_hat, S &method, const Pvec &domain_center, TTV &theta_boundary_face, TT &theta_boundary ) {}
 
@@ -579,7 +579,7 @@ struct Calcul_Error_Estimate_Lambda_Boundary {
 };
 
 /// Calcul de la correction I_hhh sur la quantite d'interet locale I
-///-----------------------------------------------------------------
+/// ----------------------------------------------------------------
 template<class TE, class TE_adjoint, class TM, class TF, class TTWW, class S, class TTVV, class TT>
 void calc_elem_correction_interest_quantity_lambda( const TE &elem, const TE_adjoint &elem_adjoint, const TM &m, const TM &m_adjoint, const TF &f, const TF &f_adjoint, const TTWW &vectors, const TTWW &adjoint_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &adjoint_indices, const S &method, const S &method_adjoint, const TTVV &dep_hat, const TTVV &dep_adjoint_hat, TT &I_hhh ) {}
 
@@ -603,7 +603,7 @@ struct Calcul_Correction_Interest_Quantity_Lambda {
 };
 
 /// Calcul de la projection sur les elements du maillage adjoint de la contribution elementaire a l'estimateur d'erreur globale du maillage direct
-///-----------------------------------------------------------------------------------------------------------------------------------------------
+/// ----------------------------------------------------------------------------------------------------------------------------------------------
 template<class TE, class TE_adjoint, class TM, class TF, class TTWW, class TTVV, class S, class TTV>
 void calc_elem_error_estimate_proj_on_adjoint( const TE &elem, const TE_adjoint &elem_adjoint, const TM &m, const TM &m_adjoint, const TF &f, const TF &f_adjoint, const TTWW &vectors, const TTWW &adjoint_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &adjoint_indices, const S &method, const TTVV &dep_hat, TTV &theta_elem_proj_on_adjoint ) {}
 

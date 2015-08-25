@@ -18,7 +18,7 @@ using namespace LMT;
 using namespace std;
 /*
 /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale pour les methodes basees sur la condition de prolongement (EET,EESPT)
-///------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/// -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T>
 void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const string &pb, const string &method, T &theta, Vec<T> &theta_elem, const Vec< Vec<T> > &dep_hat, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool debug_error_estimate = false, const bool debug_local_effectivity_index = false, const bool debug_method = false, const bool debug_method_enhancement = false ) {
     
@@ -26,9 +26,9 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
 	
 	m, f, pb, "EET", theta, theta_elem, dep_part_hat, dep_psi_hat, debug_method, debug_method_enhancement, debug_ecre_theta, debug_local_effectivity_index, want_global_discretization_error, want_local_discretization_error
 
-    ///---------------------------------------------------------------------------------------------------------///
+    /// ------------------------------------------------------------------------------------------------------- ///
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale ///
-    ///---------------------------------------------------------------------------------------------------------///
+    /// ------------------------------------------------------------------------------------------------------- ///
     
     cout << "------------------------------------------------------------" << endl;
     cout << "Construction d'un champ de contrainte admissible par element" << endl;

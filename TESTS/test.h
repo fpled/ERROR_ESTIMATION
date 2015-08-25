@@ -134,7 +134,7 @@ struct Eta {
 
 
 /// Construction de la liste des noeuds soumis a des contraintes cinematiques sur chaque patch : constrained_nodes_patch[ j ] pour chaque noeud sommet j du maillage
-///-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+/// ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 //struct Construct_Constrained_Nodes_Patch {
 //    Vec<unsigned>* correspondance_node_to_vertex_node;
 //    Vec<unsigned>* connect_node_to_vertex_node;

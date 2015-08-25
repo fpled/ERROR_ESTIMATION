@@ -23,7 +23,7 @@ using namespace std;
 ///                                                            nb_unk_face[ n ] pour chaque face k du maillage 
 ///                                                            patch_elem[ j ][ n ][ i ] pour chaque noeud i de chaque element n du patch j
 ///                                                            patch_face[ j ][ n ][ i ] pour chaque noeud i de chaque face k du patch j
-///----------------------------------------------------------------------------------------------------------------------------------------
+/// ---------------------------------------------------------------------------------------------------------------------------------------
 template<class TM>
 void construct_connectivity_patch( const TM &m, const unsigned &nb_vertex_nodes, Vec< Vec<unsigned> > &face_list_patch, const Vec<unsigned> &child_cpt, const Vec< Vec<unsigned> > &child_list, const Vec<unsigned> &elem_cpt_vertex_node, const Vec< Vec<unsigned> > &elem_list_vertex_node, Vec<unsigned> &nb_points_face, Vec<unsigned> &nb_points_elem, Vec<unsigned> &nb_points_patch, Vec< Vec< Vec<unsigned> > > &patch_face, Vec< Vec< Vec<unsigned> > > &patch_elem, const bool debug_method = false ) {
     

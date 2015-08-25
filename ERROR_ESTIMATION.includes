@@ -21,7 +21,6 @@ LMT/include/LDL
 LMT/include/mesh
 LMT/include/meshless
 LMT/include/sst
-LMT/include/std_formulations
 LMT/include/tvrc
 LMT/include/util
 LMT/tests/include/containers

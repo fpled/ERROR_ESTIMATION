@@ -17,7 +17,7 @@ using namespace std;
 
 /// Number<0> : champ global
 /// Number<1> : champ elementaire
-///------------------------------
+/// -----------------------------
 template<class TM, class TF, unsigned n1, unsigned n2> void calc_material_coefficients_init_alternativeontype( TM &m, TF &f, const Number<n1> &, const Number<n2> & );
 
 template<class TM, class TF> void calc_material_coefficients_init_alternativeontype( TM &m, TF &f, Number<0>, Number<0> ) {
@@ -44,7 +44,7 @@ template<class TM, class TF> void calc_material_coefficients_init_alternativeont
 }
 
 /// Creation des proprietes materiaux initiales
-///--------------------------------------------
+/// -------------------------------------------
 template<class TF, class TM>
 void set_material_properties_init( TF &f, TM &m, const string &structure ) {
 
@@ -52,7 +52,7 @@ void set_material_properties_init( TF &f, TM &m, const string &structure ) {
 
     if ( m.node_list.size() ) {
         /// Carre 2D
-        ///---------
+        /// --------
         if ( structure.find("square") != string::npos ) {
             T mu, poisson;
             for (unsigned n=0;n<m.elem_list.size();++n) {
