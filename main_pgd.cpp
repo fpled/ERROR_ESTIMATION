@@ -21,6 +21,7 @@
 #include "Calcul_global_error_estimation.h"
 #include "Calcul_goal_oriented_error_estimation.h"
 #include "PGD/PGD.h"
+#include "LMT/include/containers/gnuplot.h"
 
 using namespace LMT;
 using namespace std;
@@ -38,7 +39,7 @@ int main( int argc, char **argv ) {
     typedef Formulation<TM_param,FormulationParam,DefaultBehavior,double,wont_add_nz> TF_param;
     typedef TM_param::Pvec Pvec_param;
     typedef TM::TElemListPtr TElemListPtr;
-    static const string structure = "plate_flexion"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circle, circular_inclusions, circular_holes
+    static const string structure = "circular_inclusions"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circle, circular_inclusions, circular_holes
                                                      // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes
     static const string mesh_size = "fine"; // mesh_size pour les structures plate_hole (2D ou 3D), plate_crack, structure_crack, test_specimen, weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
     static const string loading = "pull"; // chargement pour la structure spot_weld (3D) : pull, shear, peeling et pour la structure plate_crack (2D) : pull, shear
@@ -139,12 +140,12 @@ int main( int argc, char **argv ) {
     static const bool want_PGD = 1; // methode de reduction de modele PGD
     static const bool want_normalization = 1; // normalisation
     static const unsigned max_mode = 5; // nb de modes max dans la decomposition
-    static const unsigned max_iter = 5; // nb d'iterations max de l'algorithme de type point fixe
+    static const unsigned max_iter = 10; // nb d'iterations max de l'algorithme de type point fixe
     static const T tol_convergence_criterium_mode = 1e-4; // precision pour critere d'arret global (boucle sur les modes)
     static const T tol_convergence_criterium_iter = 1e-8; // precision pour critere d'arret local (processus iteratif)
     static const T min_param = 0.; // valeur min sur l'intervalle des parametres
     static const T max_param = 9.; // valeur max sur l'intervalle des parametres
-    static const unsigned nb_points_param = 100; // nb de points du maillage parametrique
+    static const unsigned nb_points_param = 1000; // nb de points du maillage parametrique
     static const bool want_verif_PGD = 1; // verification de la decomposition PGD
     static const unsigned nb_vals_verif = 3; // nb de valeurs des parametres pris aleatoirement pour la verification de la decomposition PGD
     
@@ -224,7 +225,7 @@ int main( int argc, char **argv ) {
     static const bool save_pvd_PGD_space_verif = 1;
     static const bool display_pvd_PGD_space = 0;
     static const bool display_pvd_PGD_param = 0;
-    static const bool display_pvd_PGD_space_verif = 1;
+    static const bool display_pvd_PGD_space_verif = 0;
     
     /// ------------------------------------------ ///
     /// Construction de la solution elements finis ///
@@ -386,15 +387,6 @@ int main( int argc, char **argv ) {
                 /// ------------------------------------------
                 solve_space( m, f, n, k, nb_iterations, F_space, F_param, K_param, elem_group, lambda, psi, want_iterative_solver, iterative_criterium );
                 
-                /// Normalisation de la fonction psi en espace
-                /// ------------------------------------------
-//                if ( want_normalization ) {
-//                    psi[ n ][ k ] /= sqrt( dot( psi[ n ][ k ], K_s * psi[ n ][ k ] ) );
-//                    f.vectors[ 0 ] = psi[ n ][ k ];
-//                    f.update_variables();
-//                    f.call_after_solve();
-//                }
-                
 //                cout << "Fonction en espace =" << endl;
 //                cout << psi[ n ][ k ] << endl << endl;
 //                for (unsigned p=0;p<elem_group.size()-1;++p) {
@@ -407,24 +399,6 @@ int main( int argc, char **argv ) {
                 if ( save_pvd_PGD_param or display_pvd_PGD_param ) {
                     for (unsigned p=0;p<elem_group.size()-1;++p)
                         dp_param[ p ][ n ].add_mesh_iter( m_param[p], prefix + "_param_" + to_string( p ) + "_mode_" + to_string( n ) + "_iter", lp_param, k );
-                }
-                
-                if ( save_plot_PGD_param ) {
-                    for (unsigned p=0;p<elem_group.size()-1;++p) {
-                        static GnuPlot gp;
-                        gp.set_terminal( "postscript eps enhanced color" );
-                        stringstream graph_name;
-                        graph_name << "'" << prefix + "_param_" + to_string( p ) + "_mode_" + to_string( n ) + "_iter_" + to_string( k ) << ".eps'";
-                        gp.set_output(graph_name.str().c_str());
-                        gp.set("key left bottom");
-                        gp.set("format '%g'");
-                        gp.set("font \"Times-Roman\"");
-                        gp.set_xlabel("'{/Symbol q}'");
-                        gp.set_ylabel("'{/Symbol l}'");
-                        gp.hold_on();
-                        gp.plot( vals_param[p], lambda[ p ][ n ][ k ], "title '{/Symbol l}({/Symbol q})' axes x1y1 w l lt 1 lw 1" );
-                        gp.hold_off();
-                    }
                 }
                 
                 /// Stationnarite du produit fonction psi en espace * fonction lambda en parametre dans le processus iteratif associe au mode n
@@ -443,13 +417,31 @@ int main( int argc, char **argv ) {
                 dp_space[ n ].exec( prefix + "_space_mode_" + to_string( n ) );
             else if ( save_pvd_PGD_space )
                 dp_space[ n ].make_pvd_file( prefix + "_space_mode_" + to_string( n ) );
-            if ( display_pvd_PGD_param ) {
-                for (unsigned p=0;p<elem_group.size()-1;++p)
+            for (unsigned p=0;p<elem_group.size()-1;++p) {
+                if ( display_pvd_PGD_param )
                     dp_param[ p ][ n ].exec( prefix + "_param_" + to_string( p )+ "_mode_" + to_string( n ) );
-            }
-            else if ( save_pvd_PGD_param ) {
-                for (unsigned p=0;p<elem_group.size()-1;++p)
+                else if ( save_pvd_PGD_param )
                     dp_param[ p ][ n ].make_pvd_file( prefix + "_param_" + to_string( p ) + "_mode_" + to_string( n ) );
+                if ( save_plot_PGD_param ) {
+                    static GnuPlot gp;
+                    //gp.set_terminal( "postscript eps enhanced color" );
+                    //string graph_name = "'" + prefix + "_param_" + to_string( p ) + "_mode_" + to_string( n ) + ".eps'";
+                    gp.set_terminal_epslatex( "color colortext" );
+                    string graph_name = "'" + prefix + "_param_" + to_string( p ) + "_mode_" + to_string( n ) + ".tex'";
+                    gp.set_output(graph_name.c_str());
+                    //gp.set("format '%g'");
+                    //string xlabel = "'p_" + to_string(p+1) + "'";
+                    //string ylabel = "'{/Symbol g}_" + to_string(p+1) + "'";
+                    string xlabel = "'$p_" + to_string(p+1) + "$'";
+                    string ylabel = "'$\\gamma_" + to_string(p+1) + "$'";
+                    gp.set_xlabel(xlabel.c_str());
+                    gp.set_ylabel(ylabel.c_str());
+                    //string param = "title '{/Symbol g}_"  + to_string(p+1) + "(p_"  + to_string(p+1) + ")' axes x1y1 w l lt 1 lw 1";
+                    string param = "title '$\\gamma_"  + to_string(p+1) + "(p_"  + to_string(p+1) + ")$' axes x1y1 w l lt 1 lw 1 lc rgb 'blue'";
+                    gp.hold_on();
+                    gp.plot( vals_param[p], lambda[ p ][ n ][ nb_iterations[n] ], param.c_str() );
+                    gp.hold_off();
+                }
             }
             
             /// Residu au sens faible associe a la solution au mode n
@@ -468,10 +460,12 @@ int main( int argc, char **argv ) {
         }
 
         dep_space.resize( nb_modes );
-        dep_param.resize( nb_modes );
-        for (unsigned n=0;n<nb_modes;++n) {
+        for (unsigned n=0;n<nb_modes;++n)
             dep_space[ n ] = psi[ n ][ nb_iterations[n] ];
-            for (unsigned p=0;p<elem_group.size()-1;++p)
+        dep_param.resize( elem_group.size()-1 );
+        for (unsigned p=0;p<elem_group.size()-1;++p) {
+            dep_param[ p ].resize( nb_modes );
+            for (unsigned n=0;n<nb_modes;++n)
                 dep_param[ p ][ n ] = lambda[ p ][ n ][ nb_iterations[n] ];
         }
         
@@ -481,19 +475,14 @@ int main( int argc, char **argv ) {
             for (unsigned i=0;i<nb_vals_verif;++i) {
                 Vec<unsigned> ind;
                 ind.resize( elem_group.size()-1 );
-                for (unsigned p=0;p<elem_group.size()-1;++p) {
+                for (unsigned p=0;p<elem_group.size()-1;++p)
                     ind[p] = rand() % m_param[p].node_list.size();
-                    cout << ind[p] << endl;
-                }
                 for (unsigned p=0;p<elem_group.size()-1;++p) {
                     for (unsigned j=0;j<elem_group[p].size();++j)
                         m.elem_list[elem_group[p][j]]->set_field( "alpha", 1. + vals_param[p][ ind[p] ] );
                 }
-                cout << elem_group.end() << endl;
-                cout << elem_group.end()->size() << endl;
-//                cout << elem_group.end()->val[0] << endl;
-//                for (unsigned j=0;j<elem_group.end()->size();++j)
-//                    m.elem_list[elem_group.end()->val[j]]->set_field( "alpha", 1. );
+                for (unsigned j=0;j<elem_group.back().size();++j)
+                    m.elem_list[elem_group.back()[j]]->set_field( "alpha", 1. );
                 if ( want_iterative_solver == 0 )
                     f.solve();
                 else

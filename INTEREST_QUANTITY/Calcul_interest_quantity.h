@@ -14,7 +14,6 @@
 
 #include "Interest_quantity.h"
 #include "../LMT/include/containers/apply_ij.h"
-#include "../LMT/include/containers/gnuplot.h"
 #include "../Structure.h"
 #include "../GEOMETRY/Calcul_geometry.h"
 #include "../Display.h"
