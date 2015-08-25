@@ -139,7 +139,7 @@ void solve_space( TM &m, TF &f, const unsigned &n, const unsigned &k, const Vec<
         for (unsigned j=0;j<m.elem_list.size();++j)
             m.elem_list[j]->set_field( "alpha", 1. );
         f.assemble( true, false );
-        psi[ n ][ k ] /= sqrt( dot( psi[ n ][ k ], f.matrices(Number<0>()) * lambda[ p ][ n ][ k ] ) );
+        psi[ n ][ k ] /= sqrt( dot( psi[ n ][ k ], f.matrices(Number<0>()) * psi[ n ][ k ] ) );
     }
 }
 

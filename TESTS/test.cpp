@@ -1,4 +1,5 @@
 #include "../LMT/include/mesh/meshcaracstd.h"
+
 using namespace std;
 using namespace LMT;
 
@@ -10,7 +11,3 @@ int main() {
     PRINT( generate( m.node_list, ExtractDMi<pos_DM>( 0 ) ) );
     PRINT( generate( m.node_list, ExtractDMi<pos_DM>( 1 ) ) );
 }
-
-
-
-

@@ -474,8 +474,6 @@ int main( int argc, char **argv ) {
             for (unsigned p=0;p<elem_group.size()-1;++p)
                 dep_param[ p ][ n ] = lambda[ p ][ n ][ nb_iterations[n] ];
         }
-        psi.free();
-        lambda.free();
         
         if ( want_verif_PGD ) {
             /// Verification pour un jeu connu de parametres

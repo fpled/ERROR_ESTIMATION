@@ -79,12 +79,14 @@ compile_homog: codegen
 #	export METILPATH=../METIL/MET; ../METIL-install/bin/metil formulation_homog.met
 	scons --sconstruct=$(scons_file_homog) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
 
+compile_test: codegen
+	cd TESTS; scons --sconstruct=$(scons_file) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
+
 # Test ---------------------------
 test_metil:
 	export METILPATH=../METIL/MET; ../METIL-install/bin/metil TESTS/test.met
 
-test_cpp: codegen
-	cd TESTS; scons --sconstruct=$(scons_file) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
+test: compile_test
 	cd TESTS; ./test
 
 # Move ---------------------------
