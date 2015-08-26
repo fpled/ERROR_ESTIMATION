@@ -145,7 +145,7 @@ int main( int argc, char **argv ) {
     static const T tol_convergence_criterium_iter = 1e-8; // precision pour critere d'arret local (processus iteratif)
     static const T min_param = 0.; // valeur min sur l'intervalle des parametres
     static const T max_param = 9.; // valeur max sur l'intervalle des parametres
-    static const unsigned nb_points_param = 1000; // nb de points du maillage parametrique
+    static const unsigned nb_points_param = 100; // nb de points du maillage parametrique
     static const bool want_verif_PGD = 1; // verification de la decomposition PGD
     static const unsigned nb_vals_verif = 3; // nb de valeurs des parametres pris aleatoirement pour la verification de la decomposition PGD
     
@@ -271,15 +271,9 @@ int main( int argc, char **argv ) {
     /// Defintion des fonctions a variables separees
     /// --------------------------------------------
     unsigned nb_modes; // nb de modes dans la decomposition
-    Vec< Vec<T> > dep_space;
-    Vec< Vec< Vec<T> > > dep_param;
+    Vec< Vec<T>, max_mode > dep_space;
+    Vec< Vec< Vec<T>, max_mode > > dep_param;
     dep_param.resize( elem_group.size()-1 );
-    Vec< Vec< Vec<T>, max_iter+1 >, max_mode > psi;
-    Vec< Vec< Vec< Vec<T>, max_iter+1 >, max_mode > > lambda;
-    lambda.resize( elem_group.size()-1 );
-    Vec<unsigned> nb_iterations; // nb d'iterations de l'algorithme de type point fixe pour chaque mode
-    nb_iterations.resize( max_mode );
-    nb_iterations.set( 1 );
     Vec< Vec<T> > vals_param;
     vals_param.resize( elem_group.size()-1 );
     for (unsigned p=0;p<elem_group.size()-1;++p)
@@ -355,91 +349,84 @@ int main( int argc, char **argv ) {
             unsigned k = 0;
 
             for (unsigned p=0;p<elem_group.size()-1;++p) {
-                lambda[ p ][ n ][ k ].resize( f_param[p].vectors[0].size() );
-                lambda[ p ][ n ][ k ].set( 1. );
+                dep_param[ p ][ n ].resize( f_param[p].vectors[0].size() );
+                dep_param[ p ][ n ].set( 1. );
             }
-            psi[ n ][ k ].resize( f.vectors[0].size() );
+            dep_space[ n ].resize( f.vectors[0].size() );
 
-            solve_space( m, f, n, k, nb_iterations, F_space, F_param, K_param, elem_group, lambda, psi, want_iterative_solver, iterative_criterium );
+            solve_space( m, f, n, F_space, F_param, K_param, elem_group, dep_param, dep_space, want_iterative_solver, iterative_criterium );
 
             if ( save_pvd_PGD_space or display_pvd_PGD_space )
-                dp_space[ n ].add_mesh_iter( m, prefix + "_space_mode_" + to_string( n ) + "_iter", lp_space, k );
+                dp_space[ n ].add_mesh_iter( m, prefix + "_space_mode_" + to_string(n+1) + "_iter", lp_space, k );
             if ( save_pvd_PGD_param or display_pvd_PGD_param ) {
                 for (unsigned p=0;p<elem_group.size()-1;++p)
-                    dp_param[ p ][ n ].add_mesh_iter( m_param[p], prefix + "_param_" + to_string( p ) + "_mode_" + to_string( n ) + "_iter", lp_param, k );
+                    dp_param[ p ][ n ].add_mesh_iter( m_param[p], prefix + "_param_" + to_string(p+1) + "_mode_" + to_string(n+1) + "_iter", lp_param, k );
             }
 
             while ( true ) {
                 k++;
-                for (unsigned p=0;p<elem_group.size()-1;++p) {
-                    lambda[ p ][ n ][ k ].resize( f_param[p].vectors[0].size() );
-                    lambda[ p ][ n ][ k ] = lambda[ p ][ n ][ k-1 ];
-                }
-                psi[ n ][ k ].resize( f.vectors[0].size() );
-                psi[ n ][ k ] = psi[ n ][ k-1 ];
                 
                 /// Construction et resolution des pbs en parametre
                 /// -----------------------------------------------
-                for (unsigned p=0;p<elem_group.size()-1;++p)
-                    solve_param( m_param[p], f_param[p], p, n, k, nb_iterations, F_space, F_param, K_space, K_param, elem_group, psi, lambda, want_normalization );
+                Vec< Vec<T> > dep_param_old;
+                dep_param_old.resize( elem_group.size()-1 );
+                for (unsigned p=0;p<elem_group.size()-1;++p) {
+                    dep_param_old[ p ] = dep_param[ p ][ n ];
+                    solve_param( m_param[p], f_param[p], p, n, F_space, F_param, K_space, K_param, elem_group, dep_space, dep_param, want_normalization );
+                }
                 
                 /// Construction et resolution du pb en espace
                 /// ------------------------------------------
-                solve_space( m, f, n, k, nb_iterations, F_space, F_param, K_param, elem_group, lambda, psi, want_iterative_solver, iterative_criterium );
+                Vec<T> dep_space_old = dep_space[ n ];
+                solve_space( m, f, n, F_space, F_param, K_param, elem_group, dep_param, dep_space, want_iterative_solver, iterative_criterium );
                 
 //                cout << "Fonction en espace =" << endl;
-//                cout << psi[ n ][ k ] << endl << endl;
+//                cout << dep_space[ n ] << endl << endl;
 //                for (unsigned p=0;p<elem_group.size()-1;++p) {
 //                    cout << "Fonction en parametre " << p << " =" << endl;
-//                    cout << lambda[ p ][ n ][ k ] << endl << endl;
+//                    cout << dep_param[ p ][ n ] << endl << endl;
 //                }
                 
                 if ( save_pvd_PGD_space or display_pvd_PGD_space )
-                    dp_space[ n ].add_mesh_iter( m, prefix + "_space_mode_" + to_string( n ) + "_iter", lp_space, k );
+                    dp_space[ n ].add_mesh_iter( m, prefix + "_space_mode_" + to_string(n+1) + "_iter", lp_space, k );
                 if ( save_pvd_PGD_param or display_pvd_PGD_param ) {
                     for (unsigned p=0;p<elem_group.size()-1;++p)
-                        dp_param[ p ][ n ].add_mesh_iter( m_param[p], prefix + "_param_" + to_string( p ) + "_mode_" + to_string( n ) + "_iter", lp_param, k );
+                        dp_param[ p ][ n ].add_mesh_iter( m_param[p], prefix + "_param_" + to_string(p+1) + "_mode_" + to_string(n+1) + "_iter", lp_param, k );
                 }
                 
                 /// Stationnarite du produit fonction psi en espace * fonction lambda en parametre dans le processus iteratif associe au mode n
                 /// ---------------------------------------------------------------------------------------------------------------------------
                 T stagnation_indicator = 0.;
-                calc_stagnation_indicator( m, f, n, k, K_param, elem_group, lambda, psi, stagnation_indicator );
+                calc_stagnation_indicator( m, f, n, K_param, elem_group, dep_param, dep_param_old, dep_space, dep_space_old, stagnation_indicator );
 
                 cout << "Iteration " << k << " : stagnation = " << stagnation_indicator << endl << endl;
-                if ( k >= max_iter ) { //if ( stagnation_indicator < tol_convergence_criterium_iter or k >= max_iter ) {
-                    nb_iterations[n] = k;
+                if ( k >= max_iter ) //if ( stagnation_indicator < tol_convergence_criterium_iter or k >= max_iter )
                     break;
-                }
             }
             
             if ( display_pvd_PGD_space )
-                dp_space[ n ].exec( prefix + "_space_mode_" + to_string( n ) );
+                dp_space[ n ].exec( prefix + "_space_mode_" + to_string(n+1) );
             else if ( save_pvd_PGD_space )
-                dp_space[ n ].make_pvd_file( prefix + "_space_mode_" + to_string( n ) );
+                dp_space[ n ].make_pvd_file( prefix + "_space_mode_" + to_string(n+1) );
             for (unsigned p=0;p<elem_group.size()-1;++p) {
                 if ( display_pvd_PGD_param )
-                    dp_param[ p ][ n ].exec( prefix + "_param_" + to_string( p )+ "_mode_" + to_string( n ) );
+                    dp_param[ p ][ n ].exec( prefix + "_param_" + to_string(p+1)+ "_mode_" + to_string(n+1) );
                 else if ( save_pvd_PGD_param )
-                    dp_param[ p ][ n ].make_pvd_file( prefix + "_param_" + to_string( p ) + "_mode_" + to_string( n ) );
+                    dp_param[ p ][ n ].make_pvd_file( prefix + "_param_" + to_string(p+1) + "_mode_" + to_string(n+1) );
                 if ( save_plot_PGD_param ) {
                     static GnuPlot gp;
-                    //gp.set_terminal( "postscript eps enhanced color" );
-                    //string graph_name = "'" + prefix + "_param_" + to_string( p ) + "_mode_" + to_string( n ) + ".eps'";
                     gp.set_terminal_epslatex( "color colortext" );
-                    string graph_name = "'" + prefix + "_param_" + to_string( p ) + "_mode_" + to_string( n ) + ".tex'";
+                    string graph_name = "'" + prefix + "_param_" + to_string(p+1) + "_mode_" + to_string(n+1) + ".tex'";
                     gp.set_output(graph_name.c_str());
-                    //gp.set("format '%g'");
-                    //string xlabel = "'p_" + to_string(p+1) + "'";
-                    //string ylabel = "'{/Symbol g}_" + to_string(p+1) + "'";
+                    gp.set("format '$%g$'");
+                    gp.set("colorsequence classic");
                     string xlabel = "'$p_" + to_string(p+1) + "$'";
                     string ylabel = "'$\\gamma_" + to_string(p+1) + "$'";
                     gp.set_xlabel(xlabel.c_str());
                     gp.set_ylabel(ylabel.c_str());
-                    //string param = "title '{/Symbol g}_"  + to_string(p+1) + "(p_"  + to_string(p+1) + ")' axes x1y1 w l lt 1 lw 1";
-                    string param = "title '$\\gamma_"  + to_string(p+1) + "(p_"  + to_string(p+1) + ")$' axes x1y1 w l lt 1 lw 1 lc rgb 'blue'";
+                    string param = "notitle w l lt " + to_string(p+1) + " lw 1";
                     gp.hold_on();
-                    gp.plot( vals_param[p], lambda[ p ][ n ][ nb_iterations[n] ], param.c_str() );
+                    gp.plot( vals_param[p], dep_param[ p ][ n ], param.c_str() );
                     gp.hold_off();
                 }
             }
@@ -448,25 +435,15 @@ int main( int argc, char **argv ) {
             /// -----------------------------------------------------
             T residual = 0.;
             T error_indicator = 0.;
-            calc_error_indicator( m, f, n, nb_iterations, F_space, F_param, K_param, elem_group, lambda, psi, residual, error_indicator );
+            calc_error_indicator( m, f, n, F_space, F_param, K_param, elem_group, dep_param, dep_space, residual, error_indicator );
 
-            cout << "Mode " << n << " : nb d'iterations = " << nb_iterations[n] << ", residu = " << residual << ", erreur = " << error_indicator << endl << endl;
+            cout << "Mode " << n+1 << " : nb d'iterations = " << k << ", residu = " << residual << ", erreur = " << error_indicator << endl << endl;
             if ( n >= max_mode-1 ) { //if ( error_indicator < tol_convergence_criterium_mode or n >= max_mode-1 ) {
                 nb_modes = n+1;
                 cout << "Convergence de l'algorithme : nb de modes = " << nb_modes << ", residu = " << residual << ", erreur = " << error_indicator << endl << endl;
                 break;
             }
             n++;
-        }
-
-        dep_space.resize( nb_modes );
-        for (unsigned n=0;n<nb_modes;++n)
-            dep_space[ n ] = psi[ n ][ nb_iterations[n] ];
-        dep_param.resize( elem_group.size()-1 );
-        for (unsigned p=0;p<elem_group.size()-1;++p) {
-            dep_param[ p ].resize( nb_modes );
-            for (unsigned n=0;n<nb_modes;++n)
-                dep_param[ p ][ n ] = lambda[ p ][ n ][ nb_iterations[n] ];
         }
         
         if ( want_verif_PGD ) {
@@ -479,10 +456,10 @@ int main( int argc, char **argv ) {
                     ind[p] = rand() % m_param[p].node_list.size();
                 for (unsigned p=0;p<elem_group.size()-1;++p) {
                     for (unsigned j=0;j<elem_group[p].size();++j)
-                        m.elem_list[elem_group[p][j]]->set_field( "alpha", 1. + vals_param[p][ ind[p] ] );
+                        m.elem_list[ elem_group[p][j] ]->set_field( "alpha", 1. + vals_param[p][ ind[p] ] );
                 }
                 for (unsigned j=0;j<elem_group.back().size();++j)
-                    m.elem_list[elem_group.back()[j]]->set_field( "alpha", 1. );
+                    m.elem_list[ elem_group.back()[j] ]->set_field( "alpha", 1. );
                 if ( want_iterative_solver == 0 )
                     f.solve();
                 else
