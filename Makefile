@@ -95,7 +95,11 @@ move_results:
 	-find . -maxdepth 1 -name "*.pvd" -exec mv {} RESULTS \;
 	-find . -maxdepth 1 -name "*.log" -exec mv {} RESULTS \;
 	-find . -maxdepth 1 -name "*.out" -exec mv {} RESULTS \;
+	-find . -maxdepth 1 -name "*.fig" -exec mv {} RESULTS \;
 	-find . -maxdepth 1 -name "*.eps" -exec mv {} RESULTS \;
+	-find . -maxdepth 1 -name "*.pdf" -exec mv {} RESULTS \;
+	-find . -maxdepth 1 -name "*.png" -exec mv {} RESULTS \;
+	-find . -maxdepth 1 -name "*.svg" -exec mv {} RESULTS \;
 	-find . -maxdepth 1 -name "*.dvi" -exec mv {} RESULTS \;
 	-find . -maxdepth 1 -name "*.tex" -exec mv {} RESULTS \;
 	-find . -maxdepth 1 -name "*.aux" -exec mv {} RESULTS \;

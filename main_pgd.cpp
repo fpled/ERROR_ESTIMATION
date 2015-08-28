@@ -22,6 +22,7 @@
 #include "Calcul_goal_oriented_error_estimation.h"
 #include "PGD/PGD.h"
 #include "LMT/include/containers/gnuplot.h"
+#include "LMT/include/containers/matlabplot.h"
 
 using namespace LMT;
 using namespace std;
@@ -414,20 +415,13 @@ int main( int argc, char **argv ) {
                 else if ( save_pvd_PGD_param )
                     dp_param[ p ][ n ].make_pvd_file( prefix + "_param_" + to_string(p+1) + "_mode_" + to_string(n+1) );
                 if ( save_plot_PGD_param ) {
-                    static GnuPlot gp;
-                    gp.set_terminal_epslatex( "color colortext" );
-                    string graph_name = "'" + prefix + "_param_" + to_string(p+1) + "_mode_" + to_string(n+1) + ".tex'";
-                    gp.set_output(graph_name.c_str());
-                    gp.set("format '$%g$'");
-                    gp.set("colorsequence classic");
+                    string output = "'" + prefix + "_param_" + to_string(p+1) + "_mode_" + to_string(n+1) + ".tex'";
                     string xlabel = "'$p_" + to_string(p+1) + "$'";
                     string ylabel = "'$\\gamma_" + to_string(p+1) + "$'";
-                    gp.set_xlabel(xlabel.c_str());
-                    gp.set_ylabel(ylabel.c_str());
-                    string param = "notitle w l lt " + to_string(p+1) + " lw 1";
-                    gp.hold_on();
-                    gp.plot( vals_param[p], dep_param[ p ][ n ], param.c_str() );
-                    gp.hold_off();
+//                    string param = "notitle w l lt " + to_string(p+1) + " lw 1";
+//                    save_plot( vals_param[p], dep_param[ p ][ n ], output.c_str(), xlabel.c_str(), ylabel.c_str(), param.c_str() );
+                    string param = ",'LineStyle','-','Color',getfacecolor(" + to_string(p+2) + "),'LineWidth',1";
+                    save_ml_plot( vals_param[p], dep_param[ p ][ n ], output.c_str(), xlabel.c_str(), ylabel.c_str(), param.c_str() );
                 }
             }
             
