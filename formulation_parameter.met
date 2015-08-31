@@ -14,7 +14,7 @@ class FormulationParam[ dim ] inherits LmtppFormulation[ dim ]
 
         pos := e.pos
 
-        residual := ( 1 + param_function( pos ) * phi.expr ) * dot( dep.expr, dep.test ) * dV - dep.test[0] * dV
+        residual := ( 1 + ( pos[0] - 1 ) * phi.expr ) * dot( dep.expr, dep.test ) * dV - dep.test[0] * dV
 
         return residual
 

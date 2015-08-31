@@ -929,7 +929,7 @@ struct Construct_Elem_List_Pos {
 /// -------------------------------------------
 /*!
     Objectif :
-        Ce foncteur est conçu pour la fonction \a refinement () . Il permet de raffiner localement un maillage.
+        Ce foncteur est conçu pour la fonction \a refinement(). Il permet de raffiner localement un maillage.
         
     Attributs :
         * <strong> c </strong> le centre de la zone que l'on veut raffiner. c n'est pas forcément un point dans le maillage.
@@ -938,7 +938,7 @@ struct Construct_Elem_List_Pos {
         * <strong> id </strong> le nom de l'attribut nodal qui compte le nombre de découpe. Remarque : il faut que le MeshCarac du maillage contienne une classe tag_refinement_DM.
         
     Description :
-        on décide de couper le côté d'un élément ( i.e. une \a Bar ) si sa longueur est supérieure à d * k + l_min où d est la distance entre le milieu du côté et le centre c.
+        On décide de couper le côté d'un élément ( i.e. une \a Bar ) si sa longueur est supérieure à d * k + l_min où d est la distance entre le milieu du côté et le centre c.
 */
 template<class T, class Pvec>
 struct Local_refinement_point_id {
@@ -963,7 +963,7 @@ struct Local_refinement_point_id {
 
 /*!
     Objectif :
-        Ce foncteur est conçu pour la fonction \a refinement () . Il permet de raffiner localement un maillage.
+        Ce foncteur est conçu pour la fonction \a refinement(). Il permet de raffiner localement un maillage.
         
     Attributs :
         * <strong> c </strong> le centre de la zone (cercle) autour duquel on veut raffiner. c n'est pas forcément un point dans le maillage.
@@ -973,7 +973,7 @@ struct Local_refinement_point_id {
         * <strong> id </strong> le nom de l'attribut nodal qui compte le nombre de découpe. Remarque : il faut que le MeshCarac du maillage contienne une classe tag_refinement_DM.
         
     Description :
-        on décide de couper le côté d'un élément ( i.e. une \a Bar ) si sa longueur est supérieure à d * k + l_min où d est la distance entre le milieu du côté et le cercle de centre c et de rayon R.
+        On décide de couper le côté d'un élément ( i.e. une \a Bar ) si sa longueur est supérieure à d * k + l_min où d est la distance entre le milieu du côté et le cercle de centre c et de rayon R.
 */
 template<class T, class Pvec>
 struct Local_refinement_circle_id {

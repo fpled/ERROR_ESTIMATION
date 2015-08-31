@@ -144,8 +144,8 @@ int main( int argc, char **argv ) {
     static const unsigned max_iter = 10; // nb d'iterations max de l'algorithme de type point fixe
     static const T tol_convergence_criterium_mode = 1e-4; // precision pour critere d'arret global (boucle sur les modes)
     static const T tol_convergence_criterium_iter = 1e-8; // precision pour critere d'arret local (processus iteratif)
-    static const T min_param = 0.; // valeur min sur l'intervalle des parametres
-    static const T max_param = 9.; // valeur max sur l'intervalle des parametres
+    static const T min_param = 1.; // valeur min sur l'intervalle des parametres
+    static const T max_param = 10.; // valeur max sur l'intervalle des parametres
     static const unsigned nb_points_param = 100; // nb de points du maillage parametrique
     static const bool want_verif_PGD = 1; // verification de la decomposition PGD
     static const unsigned nb_vals_verif = 3; // nb de valeurs des parametres pris aleatoirement pour la verification de la decomposition PGD
@@ -417,10 +417,10 @@ int main( int argc, char **argv ) {
                 if ( save_plot_PGD_param ) {
                     string output = "'" + prefix + "_param_" + to_string(p+1) + "_mode_" + to_string(n+1) + ".tex'";
                     string xlabel = "'$p_" + to_string(p+1) + "$'";
-                    string ylabel = "'$\\gamma_" + to_string(p+1) + "$'";
+                    string ylabel = "'$\\gamma_{" + to_string(p+1) + "," + to_string(n+1) + "}$'";
 //                    string param = "notitle w l lt " + to_string(p+1) + " lw 1";
 //                    save_plot( vals_param[p], dep_param[ p ][ n ], output.c_str(), xlabel.c_str(), ylabel.c_str(), param.c_str() );
-                    string param = ",'LineStyle','-','Color',getfacecolor(" + to_string(p+2) + "),'LineWidth',1";
+                    string param = ",'LineStyle','-','Color',getfacecolor(" + to_string(p+4) + "),'LineWidth',1";
                     save_ml_plot( vals_param[p], dep_param[ p ][ n ], output.c_str(), xlabel.c_str(), ylabel.c_str(), param.c_str() );
                 }
             }
@@ -450,7 +450,7 @@ int main( int argc, char **argv ) {
                     ind[p] = rand() % m_param[p].node_list.size();
                 for (unsigned p=0;p<elem_group.size()-1;++p) {
                     for (unsigned j=0;j<elem_group[p].size();++j)
-                        m.elem_list[ elem_group[p][j] ]->set_field( "alpha", 1. + vals_param[p][ ind[p] ] );
+                        m.elem_list[ elem_group[p][j] ]->set_field( "alpha", vals_param[p][ ind[p] ] );
                 }
                 for (unsigned j=0;j<elem_group.back().size();++j)
                     m.elem_list[ elem_group.back()[j] ]->set_field( "alpha", 1. );

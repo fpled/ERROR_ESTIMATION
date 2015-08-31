@@ -200,7 +200,7 @@ void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const
     /// Resolution explicite du pb en parametre
     /// ---------------------------------------
 //    for (unsigned j=0;j<m_param.node_list.size();++j) {
-//        m_param.node_list[ j ].fun = 1 + m_param.node_list[ j ].pos[ 0 ];
+//        m_param.node_list[ j ].fun = m_param.node_list[ j ].pos[ 0 ];
 //        dep_param[ p ][ n ][ j ] = gamma;
 //        for (unsigned i=0;i<n;++i) {
 //            for (unsigned g=0;g<elem_group.size();++g) {
