@@ -1,3 +1,4 @@
+
 //
 // C++ Interface: Construct_standard_force_fluxes_EET_PGD
 //
@@ -22,7 +23,7 @@ using namespace std;
 /// Construction standard des densites d'effort par la methode EET
 /// --------------------------------------------------------------
 template<class TM, class TF, class T, class TMAT>
-void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, const unsigned &cost_function, const bool enhancement = false, const Vec<bool> &flag_face_enh, const string &solver_minimisation, Vec< Vec< Vec<T> > > &vec_force_fluxes, const Vec< Vec<T> > &dep_psi, const Vec< Vec<T> > &dep_lambda, const Vec<T> &dep_part, const Vec<T> &kappa, const TMAT &K_k_p, const TMAT &K_unk_p, const Vec<unsigned> &elem_list_PGD_unknown_param, const unsigned &mode, const bool want_local_enrichment = false, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool debug_geometry = false, const bool debug_force_fluxes = false, const bool debug_method = false ) {
+void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, const unsigned &cost_function, const bool enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, Vec< Vec< Vec<T> > > &vec_force_fluxes, const Vec< Vec<T> > &dep_space, const Vec< Vec< Vec<T> > > &dep_param, const Vec<T> &dep_part, const Vec<T> &kappa, const Vec< Vec<TMAT> > &K_param, const Vec< Vec<unsigned> > &elem_group, const unsigned &mode, const bool want_local_enrichment = false, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool debug_geometry = false, const bool debug_force_fluxes = false, const bool debug_method = false ) {
     
     static const unsigned dim = TM::dim;
     
@@ -191,22 +192,21 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
         }
     }
 
-    Calcul_Nodal_Vector_r_PGD<T, TMAT> calcul_nodal_vector_r_PGD;
+    Calcul_Nodal_Vector_r_PGD<T, TVV, TTVV, TTVVV, TMATVV> calcul_nodal_vector_r_PGD;
     calcul_nodal_vector_r_PGD.elem_ind = &elem_ind;
     calcul_nodal_vector_r_PGD.node_list_face = &node_list_face;
     calcul_nodal_vector_r_PGD.elem_cpt_node = &elem_cpt_node;
     calcul_nodal_vector_r_PGD.pb = &pb;
     calcul_nodal_vector_r_PGD.want_local_enrichment = &want_local_enrichment;
-    calcul_nodal_vector_r_PGD.dep_psi = &dep_psi;
-    calcul_nodal_vector_r_PGD.dep_lambda = &dep_lambda;
+    calcul_nodal_vector_r_PGD.dep_space = &dep_space;
+    calcul_nodal_vector_r_PGD.dep_param = &dep_param;
     calcul_nodal_vector_r_PGD.dep_part = &dep_part;
     calcul_nodal_vector_r_PGD.kappa = &kappa;
-    calcul_nodal_vector_r_PGD.K_k_p = &K_k_p;
-    calcul_nodal_vector_r_PGD.K_unk_p = &K_unk_p;
-    calcul_nodal_vector_r_PGD.elem_list_PGD_unknown_param = &elem_list_PGD_unknown_param;
+    calcul_nodal_vector_r_PGD.K_param = &K_param;
+    calcul_nodal_vector_r_PGD.elem_group = &elem_group;
     calcul_nodal_vector_r_PGD.mode = &mode;
 
-    apply( m.elem_list, calcul_nodal_vector_r, m, f, r );
+    apply( m.elem_list, calcul_nodal_vector_r_PGD, m, f, r );
 
     if ( debug_method ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
@@ -358,18 +358,17 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
         }
     }
 
-    Calcul_Nodal_Vector_q_PGD<T, TMAT> calcul_nodal_vector_q_PGD;
+    Calcul_Nodal_Vector_q_PGD<T, TVV, TTVV, TTVVV, TMATVV> calcul_nodal_vector_q_PGD;
     calcul_nodal_vector_q_PGD.face_type = &face_type;
     calcul_nodal_vector_q_PGD.nodal_ind = &nodal_ind;
     calcul_nodal_vector_q_PGD.node_list_face = &node_list_face;
     calcul_nodal_vector_q_PGD.face_list_node = &face_list_node;
-    calcul_nodal_vector_q_PGD.dep_psi = &dep_psi;
-    calcul_nodal_vector_q_PGD.dep_lambda = &dep_lambda;
+    calcul_nodal_vector_q_PGD.dep_space = &dep_space;
+    calcul_nodal_vector_q_PGD.dep_param = &dep_param;
     calcul_nodal_vector_q_PGD.dep_part = &dep_part;
     calcul_nodal_vector_q_PGD.kappa = &kappa;
-    calcul_nodal_vector_q_PGD.K_k_p = &K_k_p;
-    calcul_nodal_vector_q_PGD.K_unk_p = &K_unk_p;
-    calcul_nodal_vector_q_PGD.elem_list_PGD_unknown_param = &elem_list_PGD_unknown_param;
+    calcul_nodal_vector_q_PGD.K_param = &K_param;
+    calcul_nodal_vector_q_PGD.elem_group = &elem_group;
     calcul_nodal_vector_q_PGD.mode = &mode;
 
     apply( m.elem_list, calcul_nodal_vector_q_PGD, m, f, q );
@@ -584,20 +583,19 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
         }
     }
 
-    Calcul_Nodal_Vector_b_PGD<T, TMAT> calcul_nodal_vector_b_PGD;
+    Calcul_Nodal_Vector_b_PGD<T, TVV, TTVV, TTVVV, TMATVV> calcul_nodal_vector_b_PGD;
     calcul_nodal_vector_b_PGD.minimisation = &minimisation;
     calcul_nodal_vector_b_PGD.face_type = &face_type;
     calcul_nodal_vector_b_PGD.face_ind = &face_ind;
     calcul_nodal_vector_b_PGD.node_list_face = &node_list_face;
     calcul_nodal_vector_b_PGD.pb = &pb;
     calcul_nodal_vector_b_PGD.want_local_enrichment = &want_local_enrichment;
-    calcul_nodal_vector_b_PGD.dep_psi = &dep_psi;
-    calcul_nodal_vector_b_PGD.dep_lambda = &dep_lambda;
+    calcul_nodal_vector_b_PGD.dep_space = &dep_space;
+    calcul_nodal_vector_b_PGD.dep_param = &dep_param;
     calcul_nodal_vector_b_PGD.dep_part = &dep_part;
     calcul_nodal_vector_b_PGD.kappa = &kappa;
-    calcul_nodal_vector_b_PGD.K_k_p = &K_k_p;
-    calcul_nodal_vector_b_PGD.K_unk_p = &K_unk_p;
-    calcul_nodal_vector_b_PGD.elem_list_PGD_unknown_param = &elem_list_PGD_unknown_param;
+    calcul_nodal_vector_b_PGD.K_param = &K_param;
+    calcul_nodal_vector_b_PGD.elem_group = &elem_group;
     calcul_nodal_vector_b_PGD.mode = &mode;
 
     apply( m.elem_list, calcul_nodal_vector_b_PGD, m, f, b );

@@ -282,7 +282,6 @@ int main( int argc, char **argv ) {
     Vec< DisplayParaview, max_mode > dp_space;
     Vec< Vec< DisplayParaview, max_mode > > dp_param;
     dp_param.resize( elem_group.size()-1 );
-    Vec< DisplayParaview, nb_vals_verif > dp_space_verif;
     Vec<string> lp_space, lp_param;
     lp_space.push_back( "dep" );
     lp_space.push_back( "young_eff" );
@@ -357,9 +356,9 @@ int main( int argc, char **argv ) {
 
             solve_space( m, f, n, F_space, F_param, K_param, elem_group, dep_param, dep_space, want_iterative_solver, iterative_criterium );
 
-            if ( save_pvd_PGD_space or display_pvd_PGD_space )
+            if ( display_pvd_PGD_space or save_pvd_PGD_space )
                 dp_space[ n ].add_mesh_iter( m, prefix + "_space_mode_" + to_string(n+1) + "_iter", lp_space, k );
-            if ( save_pvd_PGD_param or display_pvd_PGD_param ) {
+            if ( display_pvd_PGD_param or save_pvd_PGD_param ) {
                 for (unsigned p=0;p<elem_group.size()-1;++p)
                     dp_param[ p ][ n ].add_mesh_iter( m_param[p], prefix + "_param_" + to_string(p+1) + "_mode_" + to_string(n+1) + "_iter", lp_param, k );
             }
@@ -388,9 +387,9 @@ int main( int argc, char **argv ) {
 //                    cout << dep_param[ p ][ n ] << endl << endl;
 //                }
                 
-                if ( save_pvd_PGD_space or display_pvd_PGD_space )
+                if ( display_pvd_PGD_space or save_pvd_PGD_space )
                     dp_space[ n ].add_mesh_iter( m, prefix + "_space_mode_" + to_string(n+1) + "_iter", lp_space, k );
-                if ( save_pvd_PGD_param or display_pvd_PGD_param ) {
+                if ( display_pvd_PGD_param or save_pvd_PGD_param ) {
                     for (unsigned p=0;p<elem_group.size()-1;++p)
                         dp_param[ p ][ n ].add_mesh_iter( m_param[p], prefix + "_param_" + to_string(p+1) + "_mode_" + to_string(n+1) + "_iter", lp_param, k );
                 }
@@ -398,7 +397,7 @@ int main( int argc, char **argv ) {
                 /// Stationnarite du produit fonction psi en espace * fonction lambda en parametre dans le processus iteratif associe au mode n
                 /// ---------------------------------------------------------------------------------------------------------------------------
                 T stagnation_indicator = 0.;
-                calc_stagnation_indicator( m, f, n, K_param, elem_group, dep_param, dep_param_old, dep_space, dep_space_old, stagnation_indicator );
+                calc_stagnation_indicator( m, f, n, K_param, elem_group, dep_space, dep_param, dep_space_old, dep_param_old, stagnation_indicator );
 
                 cout << "Iteration " << k << " : stagnation = " << stagnation_indicator << endl << endl;
                 if ( k >= max_iter ) //if ( stagnation_indicator < tol_convergence_criterium_iter or k >= max_iter )
@@ -429,7 +428,7 @@ int main( int argc, char **argv ) {
             /// -----------------------------------------------------
             T residual = 0.;
             T error_indicator = 0.;
-            calc_error_indicator( m, f, n, F_space, F_param, K_param, elem_group, dep_param, dep_space, residual, error_indicator );
+            calc_error_indicator( m, f, n, F_space, F_param, K_param, elem_group, dep_space, dep_param, residual, error_indicator );
 
             cout << "Mode " << n+1 << " : nb d'iterations = " << k << ", residu = " << residual << ", erreur = " << error_indicator << endl << endl;
             if ( n >= max_mode-1 ) { //if ( error_indicator < tol_convergence_criterium_mode or n >= max_mode-1 ) {
@@ -440,57 +439,8 @@ int main( int argc, char **argv ) {
             n++;
         }
         
-        if ( want_verif_PGD ) {
-            /// Verification pour un jeu connu de parametres
-            /// --------------------------------------------
-            for (unsigned i=0;i<nb_vals_verif;++i) {
-                Vec<unsigned> ind;
-                ind.resize( elem_group.size()-1 );
-                for (unsigned p=0;p<elem_group.size()-1;++p)
-                    ind[p] = rand() % m_param[p].node_list.size();
-                for (unsigned p=0;p<elem_group.size()-1;++p) {
-                    for (unsigned j=0;j<elem_group[p].size();++j)
-                        m.elem_list[ elem_group[p][j] ]->set_field( "alpha", vals_param[p][ ind[p] ] );
-                }
-                for (unsigned j=0;j<elem_group.back().size();++j)
-                    m.elem_list[ elem_group.back()[j] ]->set_field( "alpha", 1. );
-                if ( want_iterative_solver == 0 )
-                    f.solve();
-                else
-                    f.solve( iterative_criterium );
-                if ( save_pvd_PGD_space_verif or display_pvd_PGD_space_verif ) {
-                    string prefix_ = prefix + "_space_verif_REF";
-                    for (unsigned p=0;p<elem_group.size()-1;++p)
-                        prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
-                    dp_space_verif[ i ].add_mesh_iter( m, prefix_, lp_space, 0 );
-                }
-                f.vectors[0].set( 0. );
-                for (unsigned n=0;n<nb_modes;++n) {
-                    Vec<T> dep_mode = dep_space[ n ];
-                    for (unsigned p=0;p<elem_group.size()-1;++p)
-                        dep_mode *= dep_param[ p ][ n ][ ind[p] ];
-                    f.vectors[0] +=  dep_mode;
-                }
-                f.update_variables();
-                f.call_after_solve();
-                if ( save_pvd_PGD_space_verif or display_pvd_PGD_space_verif ) {
-                    string prefix_ = prefix + "_space_verif_PGD";
-                    for (unsigned p=0;p<elem_group.size()-1;++p)
-                        prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
-                    dp_space_verif[ i ].add_mesh_iter( m, prefix_, lp_space, 1 );
-                }
-                
-                if ( display_pvd_PGD_space_verif or save_pvd_PGD_space_verif ) {
-                    string prefix_ = prefix + "_space_verif";
-                    for (unsigned p=0;p<elem_group.size()-1;++p)
-                        prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
-                    if ( display_pvd_PGD_space_verif )
-                        dp_space_verif[ i ].exec( prefix_ );
-                    else if ( save_pvd_PGD_space_verif )
-                        dp_space_verif[ i ].make_pvd_file( prefix_ );
-                }
-            }
-        }
+        if ( want_verif_PGD )
+            check_PGD( m_param, m, f, "direct", structure, loading, mesh_size, elem_group, nb_vals_verif, vals_param, nb_modes, dep_space, dep_param, want_iterative_solver, iterative_criterium, display_pvd_PGD_space_verif, save_pvd_PGD_space_verif );
 
     }
     t.stop();
@@ -559,8 +509,7 @@ int main( int argc, char **argv ) {
     T theta = 0.;
     Vec<T> theta_elem;
     Vec< Vec<T> > dep_part_hat;
-    Vec< Vec< Vec<T> > > dep_space_hat;
-    dep_space_hat.resize( nb_modes );
+    Vec< Vec<T>, max_mode > dep_space_hat;
 
 //    if ( want_global_estimation or ( want_local_estimation and want_handbook_only == 0 and want_interest_quantity_only == 0 ) ) {
         

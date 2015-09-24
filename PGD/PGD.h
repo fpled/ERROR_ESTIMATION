@@ -251,7 +251,7 @@ void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const
 /// Calcul de l'indicateur de stagnation
 /// ------------------------------------
 template<class TM, class TF, class T, class TV, class TVV, class TMATVV, class TTVV, class TTVVV>
-void calc_stagnation_indicator( TM &m, TF &f, const unsigned &n, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVVV &dep_param, const TVV &dep_param_old, const TTVV &dep_space, const TV &dep_space_old, T &stagnation_indicator ) {
+void calc_stagnation_indicator( TM &m, TF &f, const unsigned &n, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVV &dep_space, const TTVVV &dep_param, const TV &dep_space_old, const TVV &dep_param_old, T &stagnation_indicator ) {
     stagnation_indicator = 0.;
     for (unsigned g=0;g<elem_group.size();++g) {
         T alpha = 1.;
@@ -298,7 +298,7 @@ void calc_stagnation_indicator( TM &m, TF &f, const unsigned &n, const TMATVV &K
 /// Calcul de l'indicateur d'erreur
 /// -------------------------------
 template<class TM, class TF, class T, class TV, class TVV, class TMATVV, class TTVV, class TTVVV>
-void calc_error_indicator( TM &m, TF &f, const unsigned &n, const TV &F_space, const TVV &F_param, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVVV &dep_param, const TTVV &dep_space, T &residual, T &error_indicator ) {
+void calc_error_indicator( TM &m, TF &f, const unsigned &n, const TV &F_space, const TVV &F_param, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVV &dep_space, const TTVVV &dep_param, T &residual, T &error_indicator ) {
     residual = 0.;
     T sollicitation = 0.;
     for (unsigned i=0;i<n+1;++i) {
@@ -336,5 +336,69 @@ struct Construct_Space_Pb {
         construct_space_pb( elem_param, m_param, alpha_s, gamma_s );
     }
 };
+
+
+/// Verification de la solution PGD pour un jeu connu de parametres
+/// ---------------------------------------------------------------
+template<class TM_param, class TM, class TF, class T, class TVV, class TTVVV, class TTVV>
+void check_PGD( TM_param &m_param, TM &m, TF &f,  const string &pb, const string &structure, const string &loading, const string &mesh_size, const Vec< Vec<unsigned> > &elem_group, const unsigned &nb_vals, const TVV &vals_param, const unsigned &nb_modes, const TTVV &dep_space, const TTVVV &dep_param, const bool want_iterative_solver = false, const T iterative_criterium = 1e-3, const bool display_pvd = false, const bool save_pvd = false ) {
+
+    string prefix = define_prefix( m, pb, structure, loading, mesh_size );
+
+    Vec< DisplayParaview > dp_space;
+    dp_space.resize( nb_vals );
+    Vec<string> lp_space;
+    lp_space.push_back( "dep" );
+    lp_space.push_back( "young_eff" );
+
+    for (unsigned i=0;i<nb_vals;++i) {
+        Vec<unsigned> ind;
+        ind.resize( elem_group.size()-1 );
+        for (unsigned p=0;p<elem_group.size()-1;++p)
+            ind[p] = rand() % m_param[p].node_list.size();
+        for (unsigned p=0;p<elem_group.size()-1;++p) {
+            for (unsigned j=0;j<elem_group[p].size();++j)
+                m.elem_list[ elem_group[p][j] ]->set_field( "alpha", vals_param[p][ ind[p] ] );
+        }
+        for (unsigned j=0;j<elem_group.back().size();++j)
+            m.elem_list[ elem_group.back()[j] ]->set_field( "alpha", 1. );
+        if ( want_iterative_solver == 0 )
+            f.solve();
+        else
+            f.solve( iterative_criterium );
+        if ( display_pvd or save_pvd ) {
+            string prefix_ = prefix + "_space_verif_REF";
+            for (unsigned p=0;p<elem_group.size()-1;++p)
+                prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
+            dp_space[ i ].add_mesh_iter( m, prefix_, lp_space, 0 );
+        }
+        f.vectors[0].set( 0. );
+        for (unsigned n=0;n<nb_modes;++n) {
+            Vec<T> dep_mode = dep_space[ n ];
+            for (unsigned p=0;p<elem_group.size()-1;++p)
+                dep_mode *= dep_param[ p ][ n ][ ind[p] ];
+            f.vectors[0] +=  dep_mode;
+        }
+        f.update_variables();
+        f.call_after_solve();
+        if ( display_pvd or save_pvd ) {
+            string prefix_ = prefix + "_space_verif_PGD";
+            for (unsigned p=0;p<elem_group.size()-1;++p)
+                prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
+            dp_space[ i ].add_mesh_iter( m, prefix_, lp_space, 1 );
+        }
+
+        if ( display_pvd or save_pvd ) {
+            string prefix_ = prefix + "_space_verif";
+            for (unsigned p=0;p<elem_group.size()-1;++p)
+                prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
+            if ( display_pvd )
+                dp_space[ i ].exec( prefix_ );
+            else if ( save_pvd )
+                dp_space[ i ].make_pvd_file( prefix_ );
+        }
+    }
+
+}
 
 #endif // PGD_h

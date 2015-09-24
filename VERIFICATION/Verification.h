@@ -43,7 +43,7 @@ struct Check_Elem_Eq_Force_Fluxes {
     }
 };
 
-/// Verification de l'equilibre des densites d'effort pour les methodes EESPT et EET
+/// Verification de l'equilibre des densites d'effort pour les methodes EET et EESPT
 /// --------------------------------------------------------------------------------
 template<class TM, class TF, class T>
 void check_equilibrium_force_fluxes( TM &m, const TF &f, const string pb, const Vec< Vec< Vec<T> > > &vec_force_fluxes, const T tol_eq_force_fluxes = 1e-6, const bool want_local_enrichment = false, const bool debug_geometry = false ) {
