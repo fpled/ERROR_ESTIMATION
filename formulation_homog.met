@@ -175,6 +175,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     sigma_hat_tot_EESPT := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{tot}}^{\\text{EESPT}}" )
 
     sigma_init := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma_{\\text{init}}" )
+    sigma_init_corr := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma_{\\text{init}}^{\\text{corr}}" )
     sigma_hat_init_EET := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{init}}^{\\text{EET}}" )
     sigma_hat_init_SPET := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{init}}^{\\text{SPET}}" )
     sigma_hat_init_EESPT := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{init}}^{\\text{EESPT}}" )
@@ -241,7 +242,9 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
         epsilon_tot = epsilon.expr + epsilon_handbook_PUM.expr
         sigma_tot = sigma.expr + sigma_handbook_PUM.expr
 
-        sigma_init = sigma.expr - pre_sigma.expr - sigma_hooke_iso( pre_epsilon.expr, young.expr, poisson.expr, type_stress_2D ) + sigma_hooke_iso( pre_epsilon.expr, young_init.expr, poisson_init.expr, type_stress_2D )
+        sigma_init = sigma_hooke_iso( epsilon.expr, young_init.expr, poisson_init.expr, type_stress_2D )
+        sigma_init_corr = sigma.expr - pre_sigma.expr - sigma_hooke_iso( pre_epsilon.expr, young.expr, poisson.expr, type_stress_2D ) + sigma_hooke_iso( pre_epsilon.expr, young_init.expr, poisson_init.expr, type_stress_2D )
+
 
         residual := sigma.expr : epsilon.test * dV - dot( f_vol.expr, dep.test ) * dV - dot( f_surf.expr, dep.test ) * dS - dot( f_nodal.expr, dep.test ) * dN
 
