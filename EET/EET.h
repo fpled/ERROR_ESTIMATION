@@ -72,15 +72,15 @@ struct Calcul_Nodal_Vector_r_PGD {
     const Vec< Vec<unsigned> >* elem_group;
     const unsigned* mode;
     template<class TE, class TM, class TF> void operator()( const TE &elem, const TM &m, TF &f, Vec< Vec< Vec<T> > > &r ) const {
-        Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
-        f.vectors[0] = - dot( (*dep_param)[ *mode ], (*K_k_p) * (*kappa) ) * (*dep_part);
-        for (unsigned i=0;i<(*mode)+1;++i) {
-            if ( find( *elem_group, _1 == elem.number ) )
-                f.vectors[0] += dot( (*dep_param)[ *mode ], (*K_unk_p) * (*dep_param)[ i ] ) * (*dep_space)[ i ];
-            else
-                f.vectors[0] += dot( (*dep_param)[ *mode ], (*K_k_p) * (*dep_param)[ i ] ) * (*dep_space)[ i ];
-        }
-        calc_nodal_vector_r( elem, m, f, *elem_ind, *node_list_face, *elem_cpt_node, f.vectors, ind, *pb, *want_local_enrichment, r );
+//        Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
+//        f.vectors[0] = - dot( (*dep_param)[ *mode ], (*K_k_p) * (*kappa) ) * (*dep_part);
+//        for (unsigned i=0;i<(*mode)+1;++i) {
+//            if ( find( *elem_group, _1 == elem.number ) )
+//                f.vectors[0] += dot( (*dep_param)[ *mode ], (*K_unk_p) * (*dep_param)[ i ] ) * (*dep_space)[ i ];
+//            else
+//                f.vectors[0] += dot( (*dep_param)[ *mode ], (*K_k_p) * (*dep_param)[ i ] ) * (*dep_space)[ i ];
+//        }
+//        calc_nodal_vector_r( elem, m, f, *elem_ind, *node_list_face, *elem_cpt_node, f.vectors, ind, *pb, *want_local_enrichment, r );
     }
 };
 
@@ -165,15 +165,15 @@ struct Calcul_Nodal_Vector_q_PGD {
     const Vec< Vec<unsigned> >* elem_group;
     const unsigned* mode;
     template<class TE, class TM, class TF> void operator()( const TE &elem, const TM &m, TF &f, Vec< Vec< Vec<T> > > &q ) const {
-        Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
-        f.vectors[0] = - dot( (*dep_param)[ *mode ], (*K_k_p) * (*kappa) ) * (*dep_part);
-        for (unsigned i=0;i<(*mode)+1;++i) {
-            if ( find( *elem_group, _1 == elem.number ) )
-                f.vectors[0] += dot( (*dep_param)[ *mode ], (*K_unk_p) * (*dep_param)[ i ] ) * (*dep_space)[ i ];
-            else
-                f.vectors[0] += dot( (*dep_param)[ *mode ], (*K_k_p) * (*dep_param)[ i ] ) * (*dep_space)[ i ];
-        }
-        calc_nodal_vector_q( elem, m, f, *face_type, *nodal_ind, *node_list_face, *face_list_node, f.vectors, ind, q );
+//        Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
+//        f.vectors[0] = - dot( (*dep_param)[ *mode ], (*K_k_p) * (*kappa) ) * (*dep_part);
+//        for (unsigned i=0;i<(*mode)+1;++i) {
+//            if ( find( *elem_group, _1 == elem.number ) )
+//                f.vectors[0] += dot( (*dep_param)[ *mode ], (*K_unk_p) * (*dep_param)[ i ] ) * (*dep_space)[ i ];
+//            else
+//                f.vectors[0] += dot( (*dep_param)[ *mode ], (*K_k_p) * (*dep_param)[ i ] ) * (*dep_space)[ i ];
+//        }
+//        calc_nodal_vector_q( elem, m, f, *face_type, *nodal_ind, *node_list_face, *face_list_node, f.vectors, ind, q );
     }
 };
 
@@ -225,15 +225,15 @@ struct Calcul_Nodal_Vector_b_PGD {
     const Vec< Vec<unsigned> >* elem_group;
     const unsigned* mode;
     template<class TE, class TM, class TF> void operator()( const TE &elem, const TM &m, TF &f, Vec< Vec< Vec<T> > > &b ) const {
-        Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
-        f.vectors[0] = - dot( (*dep_param)[ *mode ], (*K_k_p) * (*kappa) ) * (*dep_part);
-        for (unsigned i=0;i<(*mode)+1;++i) {
-            if ( find( *elem_group, _1 == elem.number ) )
-                f.vectors[0] += dot( (*dep_param)[ *mode ], (*K_unk_p) * (*dep_param)[ i ] ) * (*dep_space)[ i ];
-            else
-                f.vectors[0] += dot( (*dep_param)[ *mode ], (*K_k_p) * (*dep_param)[ i ] ) * (*dep_space)[ i ];
-        }
-        calc_nodal_vector_b( elem, m, f, *minimisation, *face_type, *face_ind, *node_list_face, f.vectors, ind, *pb, *want_local_enrichment, b );
+//        Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
+//        f.vectors[0] = - dot( (*dep_param)[ *mode ], (*K_k_p) * (*kappa) ) * (*dep_part);
+//        for (unsigned i=0;i<(*mode)+1;++i) {
+//            if ( find( *elem_group, _1 == elem.number ) )
+//                f.vectors[0] += dot( (*dep_param)[ *mode ], (*K_unk_p) * (*dep_param)[ i ] ) * (*dep_space)[ i ];
+//            else
+//                f.vectors[0] += dot( (*dep_param)[ *mode ], (*K_k_p) * (*dep_param)[ i ] ) * (*dep_space)[ i ];
+//        }
+//        calc_nodal_vector_b( elem, m, f, *minimisation, *face_type, *face_ind, *node_list_face, f.vectors, ind, *pb, *want_local_enrichment, b );
     }
 };
 
