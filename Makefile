@@ -115,7 +115,7 @@ clean_codegen:
 clean_results:
 	-rm -fr RESULTS/*
 
-clean_all: clean_codegen clean clean_results
+clean_all: clean clean_codegen clean_results
 	-find . -maxdepth 1 -name "*.o" -exec rm -fr {} \;
 
 clean_metil:
