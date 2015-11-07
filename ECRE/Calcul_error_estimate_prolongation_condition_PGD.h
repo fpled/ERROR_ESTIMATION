@@ -59,7 +59,7 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
             T ecre_elem = theta_elem[ n ] / 2;
             cout << "contribution a la mesure globale de l'erreur en relation de comportement au carre de l'element " << n << " :" << endl;
             cout << "ecre_elem^2 = " << ecre_elem << endl;
-            cout << "contribution a l'estimateur d'erreur globale au carre de l'element : " << n << " :" << endl;
+            cout << "contribution a l'estimateur d'erreur globale au carre de l'element " << n << " :" << endl;
             cout << "theta_elem^2 = " << theta_elem[ n ] << endl;
         }
     }
