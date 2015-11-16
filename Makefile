@@ -58,6 +58,13 @@ all_homog: compile_homog
 	time ./main_homog
 	make move_results
 
+# TESTS ---------------------------
+test_metil:
+	export METILPATH=../METIL/MET; ../METIL-install/bin/metil TESTS/test.met
+
+test: compile_test
+	time ./TESTS/test
+
 # Codegen ---------------------------
 codegen:
 	cd LMT/include/codegen; scons -j 1
@@ -80,14 +87,7 @@ compile_homog: codegen
 	scons --sconstruct=$(scons_file_homog) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
 
 compile_test: codegen
-	cd TESTS; scons --sconstruct=$(scons_file) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
-
-# Test ---------------------------
-test_metil:
-	export METILPATH=../METIL/MET; ../METIL-install/bin/metil TESTS/test.met
-
-test: compile_test
-	cd TESTS; ./test
+	scons --sconstruct=TESTS/$(scons_file) -j $(nb_pro) arch=$(machine_arch) debug=$(debug) opt=$(opt) timdavis=$(timdavis)
 
 # Move ---------------------------
 move_results:

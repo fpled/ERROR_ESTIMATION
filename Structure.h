@@ -37,7 +37,7 @@ using namespace std;
 /// Creation de la structure
 /// ------------------------
 template<class TM>
-void create_structure( TM &m, TM &m_ref, const string &pb, const string &structure, const string &mesh_size, const string &loading, const unsigned &deg_p, const unsigned refinement_deg_ref = 2, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_ref = false ) {
+void create_structure( TM &m, TM &m_ref, const string &pb, const string &structure, const string &mesh_size, const string &loading, const unsigned &deg_p = 1, const unsigned refinement_deg_ref = 2, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_ref = false ) {
 
     static const unsigned dim = TM::dim;
     typedef typename TM::Pvec Pvec;
