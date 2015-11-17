@@ -66,7 +66,7 @@ admissible_field_base := "lagrange"
 
 # Enrichissement du degre de l'analyse elements finis p -> p+k pour la resolution des problemes locaux elementaires/par patch
 #----------------------------------------------------------------------------------------------------------------------------
-deg_k := 3
+deg_k := 1
 
 # Choix de la technique d'integration : formal, gauss_num
 #--------------------------------------------------------

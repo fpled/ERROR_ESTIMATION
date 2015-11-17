@@ -113,6 +113,7 @@ def calc_elem_error_estimate_init_EET_EESPT( list_f, rep )
             file_ <<<<
                     {
                 $(cw.to_string( 4 ))
+                    cout << "elem " << elem.number << " : " << theta_elem[ elem.number ] << endl;
                     theta += theta_elem[ elem.number ];
                     }
         file_ <<<<
