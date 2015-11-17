@@ -116,7 +116,7 @@ def calc_elem_error_estimate_init_EET_EESPT( list_f, rep )
                     theta += theta_elem[ elem.number ];
                     }
         file_ <<<<
-                cout << "elem " << elem.number << " : " << theta_elem[ elem.number ] << endl;
+                std::cout << "elem " << elem.number << " : " << theta_elem[ elem.number ] << std::endl;
                 if ( method == "EET" ) {
                     elem.ecre_elem_EET = theta_elem[ elem.number ] / 2;
                     elem.theta_elem_EET = theta_elem[ elem.number ];
