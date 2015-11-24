@@ -66,7 +66,7 @@ admissible_field_base := "lagrange"
 
 # Enrichissement du degre de l'analyse elements finis p -> p+k pour la resolution des problemes locaux elementaires/par patch
 #----------------------------------------------------------------------------------------------------------------------------
-deg_k := 3
+deg_k := 1
 
 # Choix de la technique d'integration : formal, gauss_num
 #--------------------------------------------------------
@@ -243,7 +243,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
         sigma_tot = sigma.expr + sigma_handbook_PUM.expr
 
         sigma_init = hooke_iso( young_init.expr, poisson_init.expr, dim, type_stress_2D ) : epsilon.expr
-        sigma_init_corr = sigma.expr - pre_sigma.expr - hooke_iso( young.expr, poisson.expr, dim, type_stress_2D ) : pre_epsilon.expr + hooke_iso( young_init.expr, poisson_init.expr, dim, type_stress_2D ) : pre_epsilon.expr
+        sigma_init_corr = sigma.expr - pre_sigma.expr - sigma_hooke_iso( pre_epsilon.expr, young.expr, poisson.expr, type_stress_2D ) + sigma_hooke_iso( pre_epsilon.expr, young_init.expr, poisson_init.expr, type_stress_2D )
 
 
         residual := sigma.expr : epsilon.test * dV - dot( f_vol.expr, dep.test ) * dV - dot( f_surf.expr, dep.test ) * dS - dot( f_nodal.expr, dep.test ) * dN
