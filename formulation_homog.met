@@ -23,8 +23,8 @@ import "HOMOG/SPET.met"
 #------------------------------------------------------------------------------------------------------------------------------------------------------------
 want_discretization_error := false
 want_method_EET := true
-want_method_SPET := false
-want_method_EESPT := false
+want_method_SPET := true
+want_method_EESPT := true
 want_enhancement := false
 want_local_estimation := false
 want_local_improvement_steklov := false
@@ -244,7 +244,6 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
 
         sigma_init = hooke_iso( young_init.expr, poisson_init.expr, dim, type_stress_2D ) : epsilon.expr
         sigma_init_corr = sigma.expr - pre_sigma.expr - sigma_hooke_iso( pre_epsilon.expr, young.expr, poisson.expr, type_stress_2D ) + sigma_hooke_iso( pre_epsilon.expr, young_init.expr, poisson_init.expr, type_stress_2D )
-
 
         residual := sigma.expr : epsilon.test * dV - dot( f_vol.expr, dep.test ) * dV - dot( f_surf.expr, dep.test ) * dS - dot( f_nodal.expr, dep.test ) * dN
 
