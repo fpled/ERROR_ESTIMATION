@@ -435,7 +435,9 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                     hdf.read_data( "/tau", tau.ptr(), s, s );
 
                     Vec<T,unsigned(dim*(dim+1)/2) > pre_sig, pre_eps;
+                    pre_eps.set( 0, 0. );
                     pre_eps.set( 1, -1./2 );
+                    pre_eps.set( 2, 0. );
                     for (unsigned n=0;n<m.elem_list.size();++n) {
                         int i = int(center( *m.elem_list[n] )[0]*N-1./2);
                         int j = int(center( *m.elem_list[n] )[1]*N-1./2);
