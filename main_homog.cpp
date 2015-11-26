@@ -157,7 +157,7 @@ int main( int argc, char **argv ) {
     
     /// Debug
     /// -----
-    static const bool debug_method = 1; // debug des methodes EET, SPET, EESPT (pb direct)
+    static const bool debug_method = 0; // debug des methodes EET, SPET, EESPT (pb direct)
     static const bool debug_method_adjoint = 0; // debug des methodes EET, SPET, EESPT (pb adjoint)
     static const bool debug_method_enhancement = 0; // debug de l'amelioration des methodes EET, EESPT (pb direct)
     static const bool debug_method_enhancement_adjoint = 0; // debug de l'amelioration des methodes EET, EESPT (pb adjoint)

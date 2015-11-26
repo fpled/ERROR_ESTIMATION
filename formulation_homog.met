@@ -66,7 +66,7 @@ admissible_field_base := "lagrange"
 
 # Enrichissement du degre de l'analyse elements finis p -> p+k pour la resolution des problemes locaux elementaires/par patch
 #----------------------------------------------------------------------------------------------------------------------------
-deg_k := 1
+deg_k := 3
 
 # Choix de la technique d'integration : formal, gauss_num
 #--------------------------------------------------------
@@ -326,4 +326,3 @@ for func_name in funcList
         funcList_all_in_one.push_back( func_name )
 
 write_legacy_lmtpp_code( pb_name, formList, elemList, assume_const_jac_in_elems = hyp_const_jac, funcList = funcList_all_in_one, want_eig = want_compute_eig, integration_type = integration_type, degre_poly_handbook = degre_poly_handbook )
-#write_legacy_lmtpp_code( pb_name, formList, elemList, assume_const_jac_in_elems = hyp_const_jac, funcList = [calc_elem_error_estimate_init_EET_EESPT], want_eig = want_compute_eig, integration_type = integration_type, degre_poly_handbook = degre_poly_handbook )
