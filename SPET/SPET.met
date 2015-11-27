@@ -508,7 +508,7 @@ def calc_elem_error_estimate_SPET( list_f, rep )
             if integration_lang == "metil"
                 theta = e->gauss_num_integration( e->grad_sym( e_e ) : sigma_hooke_iso( e->grad_sym( e_e ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly )
             else if integration_lang == "cpp"
-                theta = e->grad_sym( e_e ) : sigma_hooke_iso( e->grad_sym( e_e ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) * e->jac
+                theta = ( e->grad_sym( e_e ) : sigma_hooke_iso( e->grad_sym( e_e ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) * e->jac
         else if integration_type == "formal"
             theta = e->integration( e->grad_sym( e_e ) : sigma_hooke_iso( e->grad_sym( e_e ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly )
         if integration_type == "gauss_num" and integration_lang == "cpp"

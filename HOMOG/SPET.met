@@ -68,17 +68,17 @@ def calc_elem_error_estimate_init_SPET( list_f, rep )
             file_ <<< "    gauss_points( $(e->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
         if integration_type == "gauss_num"
             if integration_lang == "metil"
-                theta = e->gauss_num_integration( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
+                #theta = e->gauss_num_integration( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
                 #theta = e->gauss_num_integration( ( sigma_hat_init - child_cast(f)->sigma_init.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
-                #theta = e->gauss_num_integration( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
+                theta = e->gauss_num_integration( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
             else if integration_lang == "cpp"
-                theta = ( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ) ) * e->jac
+                #theta = ( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ) ) * e->jac
                 #theta = ( ( sigma_hat_init - child_cast(f)->sigma_init.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ) ) * e->jac
-                #theta = ( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ) ) * e->jac
+                theta = ( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ) ) * e->jac
         else if integration_type == "formal"
-            theta = e->integration( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
+            #theta = e->integration( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
             #theta = e->integration( ( sigma_hat_init - child_cast(f)->sigma_init.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
-            #theta = e->integration( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
+            theta = e->integration( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
         if integration_type == "gauss_num" and integration_lang == "cpp"
             file_ <<< "    for (unsigned n=0; n<poids.size(); ++n) {"
             file_ <<< "        Vec<double> var_inter( valeurs[ n ] );"
