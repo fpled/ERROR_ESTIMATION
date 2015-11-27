@@ -60,7 +60,7 @@ int main( int argc, char **argv ) {
     /// Global error estimation method
     /// ------------------------------
     static const bool want_global_estimation = 1; // calcul d'un estimateur d'erreur globale (au sens de la norme energetique)
-    static const string method = "EET"; //methode de construction de champs admissibles pour le pb direct : EET, SPET, EESPT
+    static const string method = "EET_SPET_EESPT"; //methode de construction de champs admissibles pour le pb direct : EET, SPET, EESPT
     static const string method_adjoint = "EET"; // methode de construction de champs admissibles pour le pb adjoint : EET, SPET, EESPT
 
     static const unsigned cost_function = 0; // fonction-cout pour les methodes EET, EESPT :
