@@ -22,8 +22,8 @@ import "HOMOG/SPET.met"
 # Calcul avec fonctions d'enrichissement (handbook) d'un estimateur de l'erreur locale sur une quantite d'interet : want_local_enrichment := true
 #------------------------------------------------------------------------------------------------------------------------------------------------------------
 want_discretization_error := false
-want_method_EET := true
-want_method_SPET := true
+want_method_EET := false
+want_method_SPET := false
 want_method_EESPT := true
 want_enhancement := false
 want_local_estimation := false
