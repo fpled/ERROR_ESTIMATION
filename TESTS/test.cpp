@@ -79,3 +79,10 @@ int main( int argc, char **argv ) {
 //    cout << random_max << endl;
 //    cout << random/random_max << endl;
 //}
+
+//int main( int argc, char **argv, char** env ) {
+//    /// Print all environment variables
+//    while (*env)
+//        printf("%s\n", *env++);
+//    return 0;
+//}
