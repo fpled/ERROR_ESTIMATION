@@ -22,8 +22,8 @@ using namespace std;
 
 /// Construction standard des densites d'effort par la methode EET
 /// --------------------------------------------------------------
-template<class TM, class TF, class T, class TMAT>
-void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, const unsigned &cost_function, const bool enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, Vec< Vec< Vec<T> > > &vec_force_fluxes, const Vec< Vec<T> > &dep_space, const Vec< Vec< Vec<T> > > &dep_param, const Vec<T> &dep_part, const Vec<T> &kappa, const Vec< Vec<TMAT> > &K_param, const Vec< Vec<unsigned> > &elem_group, const unsigned &mode, const bool want_local_enrichment = false, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool debug_geometry = false, const bool debug_force_fluxes = false, const bool debug_method = false ) {
+template<class TM, class TF, class T, class TVV, class TTVV, class TTVVV, class TMATVV>
+void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, const unsigned &cost_function, const bool enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, Vec< Vec< Vec<T> > > &vec_force_fluxes, const TTVV &dep_space, const TTVVV &dep_param, const TVV &dep_part, const TTVV &kappa, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const unsigned &mode, const bool want_local_enrichment = false, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool debug_geometry = false, const bool debug_force_fluxes = false, const bool debug_method = false ) {
     
     static const unsigned dim = TM::dim;
     
