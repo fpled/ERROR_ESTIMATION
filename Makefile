@@ -45,17 +45,14 @@ Pb_Name_Parameter = parameter
 
 # Default ---------------------------
 default: compile
-	. /opt/intel/bin/compilervars.sh intel64;  \
 	time ./main
 
 # PGD ---------------------------
 pgd: compile_pgd
-	. /opt/intel/bin/compilervars.sh intel64;  \
 	time ./main_pgd
 
 # HOMOG ---------------------------
 homog: compile_homog
-	. /opt/intel/bin/compilervars.sh intel64;  \
 	time ./main_homog
 
 # TESTS ---------------------------
@@ -63,7 +60,6 @@ test_metil:
 	export METILPATH=../METIL/MET; ../METIL-install/bin/metil TESTS/test.met
 
 test: compile_test
-	. /opt/intel/bin/compilervars.sh intel64;  \
 	time ./TESTS/test
 
 # Codegen ---------------------------
