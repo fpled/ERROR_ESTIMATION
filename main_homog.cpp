@@ -12,13 +12,13 @@
 #include "build/problem_error_estimation/all_in_one.h" // sert a forcer le logiciel scons a generer le repertoire build et ses codes sources .h et .cpp correspondant a la formulation
 #include "Structure.h"
 #include "Material_properties.h"
-#include "HOMOG/Material_properties.h"
+#include "Material_properties_homog.h"
 #include "Boundary_conditions.h"
 #include "GEOMETRY/Calcul_geometry.h"
 #include "GEOMETRY/Geometry.h"
 #include "DISCRETIZATION_ERROR/Calcul_discretization_error.h"
 #include "Display.h"
-#include "Calcul_global_error_estimation.h"
+#include "Calcul_global_error_estimation_homog.h"
 #include "Calcul_goal_oriented_error_estimation.h"
 
 using namespace LMT;
@@ -60,7 +60,7 @@ int main( int argc, char **argv ) {
     /// Global error estimation method
     /// ------------------------------
     static const bool want_global_estimation = 1; // calcul d'un estimateur d'erreur globale (au sens de la norme energetique)
-    static const string method = "EET"; //methode de construction de champs admissibles pour le pb direct : EET, SPET, EESPT
+    static const string method = "EET_SPET_EESPT"; //methode de construction de champs admissibles pour le pb direct : EET, SPET, EESPT
     static const string method_adjoint = "EET"; // methode de construction de champs admissibles pour le pb adjoint : EET, SPET, EESPT
 
     static const unsigned cost_function = 0; // fonction-cout pour les methodes EET, EESPT :
@@ -180,7 +180,7 @@ int main( int argc, char **argv ) {
     static const bool save_vtu = 1;
     static const bool save_pvd = 0;
     static const bool save_vtu_ref = 0;
-    static const bool display_vtu = 0;
+    static const bool display_vtu = 1;
     static const bool display_pvd = 0;
     static const bool display_vtu_ref = 0;
     
@@ -292,7 +292,11 @@ int main( int argc, char **argv ) {
     calcul_discretization_error( m, m_ref, f, f_ref, want_global_discretization_error, want_local_discretization_error, want_solve_ref, debug_discretization_error );
     
     T theta = 0.;
+    T theta_init = 0.;
+    T theta_init_corr = 0.;
     Vec<T> theta_elem;
+    Vec<T> theta_elem_init;
+    Vec<T> theta_elem_init_corr;
     Vec< Vec<T> > dep_hat;
     
     if ( want_global_estimation or ( want_local_estimation and want_handbook_only == 0 and want_interest_quantity_only == 0 ) ) {
@@ -301,7 +305,7 @@ int main( int argc, char **argv ) {
         /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe pb direct ///
         /// ------------------------------------------------------------------------------------------------------------- ///
         
-        calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment, debug_geometry, debug_force_fluxes, debug_force_fluxes_enhancement, debug_criterium_enhancement, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
+        calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_init, theta_init_corr, theta_elem, theta_elem_init, theta_elem_init_corr, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment, debug_geometry, debug_force_fluxes, debug_force_fluxes_enhancement, debug_criterium_enhancement, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
         
     }
     
@@ -447,9 +451,13 @@ int main( int argc, char **argv ) {
                 /// ----------------------------------------------------------------------------------------------------------------- ///
                 
                 T theta_adjoint = 0.;
+                T theta_adjoint_init = 0.;
+                T theta_adjoint_init_corr = 0.;
                 Vec<T> theta_adjoint_elem;
+                Vec<T> theta_adjoint_elem_init;
+                Vec<T> theta_adjoint_elem_init_corr;
                 Vec< Vec<T> > dep_adjoint_hat;
-                calcul_global_error_estimation( f_adjoint, m_adjoint, "adjoint", method_adjoint, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta_adjoint, theta_adjoint_elem, dep_adjoint_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, false, false, want_local_enrichment, debug_geometry_adjoint, debug_force_fluxes_adjoint, debug_force_fluxes_enhancement_adjoint, debug_criterium_enhancement_adjoint, debug_error_estimate_adjoint, debug_local_effectivity_index_adjoint, debug_method_adjoint, debug_method_enhancement_adjoint );
+                calcul_global_error_estimation( f_adjoint, m_adjoint, "adjoint", method_adjoint, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta_adjoint, theta_adjoint_init, theta_adjoint_init_corr, theta_adjoint_elem, theta_adjoint_elem_init, theta_adjoint_elem_init_corr, dep_adjoint_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, false, false, want_local_enrichment, debug_geometry_adjoint, debug_force_fluxes_adjoint, debug_force_fluxes_enhancement_adjoint, debug_criterium_enhancement_adjoint, debug_error_estimate_adjoint, debug_local_effectivity_index_adjoint, debug_method_adjoint, debug_method_enhancement_adjoint );
                 
                 /// Construction de la correspondance entre maillages extraits et maillages initiaux direct/adjoint
                 /// -----------------------------------------------------------------------------------------------

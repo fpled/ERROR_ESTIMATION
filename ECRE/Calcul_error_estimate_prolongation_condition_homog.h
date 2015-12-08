@@ -1,5 +1,5 @@
 //
-// C++ Interface: Calcul_error_estimate_prolongation_condition_HOMOG
+// C++ Interface: Calcul_error_estimate_prolongation_condition_homog
 //
 // Description: calcul d'un champ de contrainte admissible et d'un estimateur theta de l'erreur globale pour les methodes basees sur la condition de prolongement (EET,EESPT)
 //
@@ -9,11 +9,10 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#ifndef Calcul_error_estimate_prolongation_condition_HOMOG_h
-#define Calcul_error_estimate_prolongation_condition_HOMOG_h
+#ifndef Calcul_error_estimate_prolongation_condition_homog_h
+#define Calcul_error_estimate_prolongation_condition_homog_h
 
 #include "ECRE.h"
-#include "ECRE_HOMOG.h"
 
 using namespace LMT;
 using namespace std;
@@ -48,12 +47,16 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
     calc_elem_error_estimate_init_EET_EESPT.theta_elem = &theta_elem;
     calc_elem_error_estimate_init_EET_EESPT.theta_elem_init = &theta_elem_init;
     calc_elem_error_estimate_init_EET_EESPT.theta_elem_init_corr = &theta_elem_init_corr;
+    calc_elem_error_estimate_init_EET_EESPT.theta_init = &theta_init;
+    calc_elem_error_estimate_init_EET_EESPT.theta_init_corr = &theta_init_corr;
 
-    apply( m.elem_list, calc_elem_error_estimate_init_EET_EESPT, m, f, theta, theta_init, theta_init_corr );
+    apply( m.elem_list, calc_elem_error_estimate_init_EET_EESPT, m, f, theta );
 
     if ( debug_error_estimate or debug_method or debug_method_enhancement ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
             T ecre_elem = theta_elem[ n ] / 2;
+            T ecre_elem_init = theta_elem_init[ n ] / 2;
+            T ecre_elem_init_corr = theta_elem_init_corr[ n ] / 2;
             cout << "contribution a la mesure globale de l'erreur en relation de comportement au carre de l'element " << n << " :" << endl;
             cout << "ecre_elem^2 = " << ecre_elem << endl;
             cout << "ecre_elem_init^2 = " << ecre_elem_init << endl;
@@ -109,8 +112,8 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
     cout << "ecre_init_corr = " << ecre_init_corr << endl << endl;
 
     cout << "estimateur d'erreur globale :" << endl;
-    cout << "theta = " << theta << endl << endl;
-    cout << "theta_init = " << theta_init << endl << endl;
+    cout << "theta = " << theta << endl;
+    cout << "theta_init = " << theta_init << endl;
     cout << "theta_init_corr = " << theta_init_corr << endl << endl;
 
     if ( pb == "direct" and want_global_discretization_error ) {
@@ -141,4 +144,4 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
     }
 }
 
-#endif // Calcul_error_estimate_prolongation_condition_HOMOG_h
+#endif // Calcul_error_estimate_prolongation_condition_homog_h

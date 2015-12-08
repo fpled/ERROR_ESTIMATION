@@ -12,6 +12,7 @@ DISCRETIZATION_ERROR/Calcul_discretization_error.h
 DISCRETIZATION_ERROR/Discretization_error.h
 DISCRETIZATION_ERROR/Discretization_error.met
 ECRE/Calcul_error_estimate_prolongation_condition.h
+ECRE/Calcul_error_estimate_prolongation_condition_homog.h
 ECRE/Calcul_error_estimate_prolongation_condition_PGD.h
 ECRE/Construct_dep_hat.h
 ECRE/Construct_F_hat.h
@@ -35,10 +36,17 @@ generated/Bar.3.met
 generated/Bar_3.1.met
 generated/Bar_3.2.met
 generated/Bar_3.3.met
+generated/Bar_4.1.met
 generated/Bar_4.2.met
+generated/Bar_5.1.met
 generated/Bar_5.2.met
+generated/Bar_6.1.met
 generated/Bar_6.2.met
+generated/Bar_7.1.met
+generated/Bar_8.1.met
 generated/Hexa.3.met
+generated/Hexa_20.3.met
+generated/Hexa_27.3.met
 generated/NodalElement.1.met
 generated/NodalElement.2.met
 generated/NodalElement.3.met
@@ -48,6 +56,7 @@ generated/Quad_8.2.met
 generated/Quad_8.3.met
 generated/Quad_9.2.met
 generated/Tetra.3.met
+generated/Tetra_10.3.met
 generated/Triangle.2.met
 generated/Triangle.3.met
 generated/Triangle_10.2.met
@@ -58,9 +67,6 @@ generated/Triangle_6.3.met
 GEOMETRY/Calcul_geometry.h
 GEOMETRY/Geometry.h
 GEOMETRY/Geometry.met
-HOMOG/ECRE.met
-HOMOG/Material_properties.h
-HOMOG/SPET.met
 INTEREST_QUANTITY/Calcul_interest_quantity.h
 INTEREST_QUANTITY/Interest_quantity.h
 INTEREST_QUANTITY/Interest_quantity.met
@@ -1038,6 +1044,7 @@ MESH_MASK/rectangle.png
 PGD/PGD.h
 PGD/PGD.met
 SPET/Calcul_error_estimate_partition_unity.h
+SPET/Calcul_error_estimate_partition_unity_homog.h
 SPET/Construct_connectivity_patch.h
 SPET/SPET.h
 SPET/SPET.met
@@ -1824,6 +1831,7 @@ VERIFICATION/Verification.h
 VERIFICATION/Verification.met
 Boundary_conditions.h
 Calcul_global_error_estimation.h
+Calcul_global_error_estimation_homog.h
 Calcul_global_error_estimation_PGD.h
 Calcul_goal_oriented_error_estimation.h
 Display.h
@@ -1838,6 +1846,7 @@ main_pgd.cpp
 Makefile
 Material_properties.h
 Material_properties.met
+Material_properties_homog.h
 SConstruct
 SConstruct_homog
 SConstruct_pgd

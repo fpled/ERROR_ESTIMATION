@@ -21,8 +21,8 @@ import "INTEREST_QUANTITY/Interest_quantity.met"
 #------------------------------------------------------------------------------------------------------------------------------------------------------------
 want_discretization_error := false
 want_method_EET := true
-want_method_SPET := false
-want_method_EESPT := false
+want_method_SPET := true
+want_method_EESPT := true
 want_enhancement := false
 want_local_estimation := false
 want_local_improvement_steklov := false
@@ -190,6 +190,9 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     theta_elem_init_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}_{\text{init}}}^2" )
     theta_elem_init_SPET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}_{\text{init}}}^2" )
     theta_elem_init_EESPT := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}_{\text{init}}}^2" )
+    theta_elem_init_corr_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}_{\text{init}}}^2" )
+    theta_elem_init_corr_SPET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}_{\text{init}}}^2" )
+    theta_elem_init_corr_EESPT := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}_{\text{init}}}^2" )
 
     is_on_skin := Variable( interpolation="nodal", interpolation_base=base, default_value=0, unit="", tex_name = "is on skin" )
     normal := Variable[[dim]]( interpolation="nodal", interpolation_base=base, default_value=0, unit="1", tex_name = "normal" )

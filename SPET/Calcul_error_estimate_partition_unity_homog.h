@@ -1,5 +1,5 @@
 //
-// C++ Interface: Calcul_error_estimate_partition_unity_HOMOG
+// C++ Interface: Calcul_error_estimate_partition_unity_homog
 //
 // Description: calcul d'un champ admissible, calcul d'un estimateur theta de l'erreur globale pour la methode basee sur la partition de l'unite (SPET)
 //
@@ -9,8 +9,8 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#ifndef Calcul_error_estimate_partition_unity_HOMOG_h
-#define Calcul_error_estimate_partition_unity_HOMOG_h
+#ifndef Calcul_error_estimate_partition_unity_homog_h
+#define Calcul_error_estimate_partition_unity_homog_h
 
 #include "SPET.h"
 #include "Construct_connectivity_patch.h"
@@ -22,7 +22,7 @@ using namespace std;
 /// Calcul d'un champ de contrainte admissible, calcul d'un estimateur theta de l'erreur globale pour la methode basee sur la partition de l'unite (SPET)
 /// -----------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T>
-void calcul_error_estimate_partition_unity_init( TM &m, const TF &f, const string &pb, const string &solver, const string &method, T &theta, T &theta_init, T &theta_init_corr, Vec<T> &theta_elem, Vec<T> &theta_elem_init, Vec<T> &theta_elem_init_corr, Vec< Vec<T> > &E, const bool verif_solver = false, const T tol_solver = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const bool debug_geometry = false, const bool debug_error_estimate = false, const bool debug_local_effectivity_index = false, const bool debug_method = false ) {
+void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb, const string &solver, const string &method, T &theta, T &theta_init, T &theta_init_corr, Vec<T> &theta_elem, Vec<T> &theta_elem_init, Vec<T> &theta_elem_init_corr, Vec< Vec<T> > &E, const bool verif_solver = false, const T tol_solver = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const bool debug_geometry = false, const bool debug_error_estimate = false, const bool debug_local_effectivity_index = false, const bool debug_method = false ) {
     
     static const unsigned dim = TM::dim;
     
@@ -360,8 +360,10 @@ void calcul_error_estimate_partition_unity_init( TM &m, const TF &f, const strin
     calcul_elem_error_estimate_init_SPET.theta_elem = &theta_elem;
     calcul_elem_error_estimate_init_SPET.theta_elem_init = &theta_elem_init;
     calcul_elem_error_estimate_init_SPET.theta_elem_init_corr = &theta_elem_init_corr;
+    calcul_elem_error_estimate_init_SPET.theta_init = &theta_init;
+    calcul_elem_error_estimate_init_SPET.theta_init_corr = &theta_init_corr;
     
-    apply( m.elem_list, calcul_elem_error_estimate_init_SPET, m, f, theta, theta_init, theta_init_corr );
+    apply( m.elem_list, calcul_elem_error_estimate_init_SPET, m, f, theta );
     
     if ( debug_error_estimate or debug_method ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
@@ -404,4 +406,4 @@ void calcul_error_estimate_partition_unity_init( TM &m, const TF &f, const strin
     }
 }
 
-#endif // Calcul_error_estimate_partition_unity_h
+#endif // Calcul_error_estimate_partition_unity_homog_h
