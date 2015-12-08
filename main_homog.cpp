@@ -180,7 +180,7 @@ int main( int argc, char **argv ) {
     static const bool save_vtu = 1;
     static const bool save_pvd = 0;
     static const bool save_vtu_ref = 0;
-    static const bool display_vtu = 1;
+    static const bool display_vtu = 0;
     static const bool display_pvd = 0;
     static const bool display_vtu_ref = 0;
     
