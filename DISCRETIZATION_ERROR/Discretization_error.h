@@ -50,7 +50,6 @@ struct Calcul_Elem_Discretization_Error {
 struct Set_Elem_Discretization_Error {
     template<class TE, class T> void operator()( TE &elem, const Vec<T> &discretization_error_elem ) const {
         elem.discretization_error_elem = discretization_error_elem[ elem.number ];
-        elem.discretization_error_elem_rel = discretization_error_elem[ elem.number ] * pow( elem.measure_virtual(), -1 );
     }
 };
 

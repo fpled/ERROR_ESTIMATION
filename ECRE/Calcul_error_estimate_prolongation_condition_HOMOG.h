@@ -1,18 +1,19 @@
 //
-// C++ Interface: Calcul_error_estimate_prolongation_condition
+// C++ Interface: Calcul_error_estimate_prolongation_condition_HOMOG
 //
 // Description: calcul d'un champ de contrainte admissible et d'un estimateur theta de l'erreur globale pour les methodes basees sur la condition de prolongement (EET,EESPT)
 //
 //
-// Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2010
+// Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2015
 //
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#ifndef Calcul_error_estimate_prolongation_condition_h
-#define Calcul_error_estimate_prolongation_condition_h
+#ifndef Calcul_error_estimate_prolongation_condition_HOMOG_h
+#define Calcul_error_estimate_prolongation_condition_HOMOG_h
 
 #include "ECRE.h"
+#include "ECRE_HOMOG.h"
 
 using namespace LMT;
 using namespace std;
@@ -20,7 +21,7 @@ using namespace std;
 /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale pour les methodes basees sur la condition de prolongement (EET,EESPT)
 /// -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T>
-void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const string &pb, const string &method, T &theta, Vec<T> &theta_elem, const Vec< Vec<T> > &dep_hat, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool debug_error_estimate = false, const bool debug_local_effectivity_index = false, const bool debug_method = false, const bool debug_method_enhancement = false ) {
+void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const string &pb, const string &method, T &theta, T &theta_init, T &theta_init_corr, Vec<T> &theta_elem, Vec<T> &theta_elem_init, Vec<T> &theta_elem_init_corr, const Vec< Vec<T> > &dep_hat, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool debug_error_estimate = false, const bool debug_local_effectivity_index = false, const bool debug_method = false, const bool debug_method_enhancement = false ) {
     
     /// ------------------------------------------------------------------------------------------------------- ///
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale ///
@@ -32,47 +33,85 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
     cout << "------------------------------------------------------------" << endl << endl;
 
     theta = 0.;
+    theta_init = 0.;
+    theta_init_corr = 0.;
     theta_elem.resize( m.elem_list.size() );
     theta_elem.set( 0. );
+    theta_elem_init.resize( m.elem_list.size() );
+    theta_elem_init.set( 0. );
+    theta_elem_init_corr.resize( m.elem_list.size() );
+    theta_elem_init_corr.set( 0. );
 
-    Calc_Elem_Error_Estimate_EET_EESPT<T> calc_elem_error_estimate_EET_EESPT;
-    calc_elem_error_estimate_EET_EESPT.dep_hat = &dep_hat;
-    calc_elem_error_estimate_EET_EESPT.method = &method;
-    calc_elem_error_estimate_EET_EESPT.theta_elem = &theta_elem;
+    Calc_Elem_Error_Estimate_Init_EET_EESPT<T> calc_elem_error_estimate_init_EET_EESPT;
+    calc_elem_error_estimate_init_EET_EESPT.dep_hat = &dep_hat;
+    calc_elem_error_estimate_init_EET_EESPT.method = &method;
+    calc_elem_error_estimate_init_EET_EESPT.theta_elem = &theta_elem;
+    calc_elem_error_estimate_init_EET_EESPT.theta_elem_init = &theta_elem_init;
+    calc_elem_error_estimate_init_EET_EESPT.theta_elem_init_corr = &theta_elem_init_corr;
 
-    apply( m.elem_list, calc_elem_error_estimate_EET_EESPT, m, f, theta );
+    apply( m.elem_list, calc_elem_error_estimate_init_EET_EESPT, m, f, theta, theta_init, theta_init_corr );
 
     if ( debug_error_estimate or debug_method or debug_method_enhancement ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
             T ecre_elem = theta_elem[ n ] / 2;
             cout << "contribution a la mesure globale de l'erreur en relation de comportement au carre de l'element " << n << " :" << endl;
             cout << "ecre_elem^2 = " << ecre_elem << endl;
+            cout << "ecre_elem_init^2 = " << ecre_elem_init << endl;
+            cout << "ecre_elem_init_corr^2 = " << ecre_elem_init_corr << endl;
 
             cout << "contribution a l'estimateur d'erreur globale au carre de l'element " << n << " :" << endl;
             cout << "theta_elem^2 = " << theta_elem[ n ] << endl;
+            cout << "theta_elem_init^2 = " << theta_elem_init[ n ] << endl;
+            cout << "theta_elem_init_corr^2 = " << theta_elem_init_corr[ n ] << endl;
         }
         cout << endl;
     }
 
     T ecre = theta / 2.;
+    T ecre_init = theta_init / 2.;
+    T ecre_init_corr = theta_init_corr / 2.;
     cout << "mesure globale de l'erreur en relation de comportement au carre :" << endl;
-    cout << "ecre^2 = " << ecre << endl << endl;
+    cout << "ecre^2 = " << ecre << endl;
+    cout << "ecre_init^2 = " << ecre_init << endl;
+    cout << "ecre_init_corr^2 = " << ecre_init_corr << endl << endl;
 
-    theta = sqrt( theta );
     ecre = sqrt( ecre );
+    theta = sqrt( theta );
+
+    ecre_init = sqrt( ecre_init );
+    theta_init = sqrt( theta_init );
+
+    ecre_init_corr = sqrt( ecre_init_corr );
+    theta_init_corr = sqrt( theta_init_corr );
     if ( method == "EET" ) {
         m.ecre_EET = ecre;
         m.theta_EET = theta;
+
+        m.ecre_init_EET = ecre_init;
+        m.theta_init_EET = theta_init;
+
+        m.ecre_init_corr_EET = ecre_init_corr;
+        m.theta_init_corr_EET = theta_init_corr;
     }
     if ( method == "EESPT" ) {
         m.ecre_EESPT = ecre;
         m.theta_EESPT = theta;
+
+        m.ecre_init_EESPT = ecre_init;
+        m.theta_init_EESPT = theta_init;
+
+        m.ecre_init_corr_EESPT = ecre_init_corr;
+        m.theta_init_corr_EESPT = theta_init_corr;
     }
     cout << "mesure globale de l'erreur en relation de comportement :" << endl;
-    cout << "ecre = " << ecre << endl << endl;
+    cout << "ecre = " << ecre << endl;
+    cout << "ecre_init = " << ecre_init << endl;
+    cout << "ecre_init_corr = " << ecre_init_corr << endl << endl;
 
     cout << "estimateur d'erreur globale :" << endl;
     cout << "theta = " << theta << endl << endl;
+    cout << "theta_init = " << theta_init << endl << endl;
+    cout << "theta_init_corr = " << theta_init_corr << endl << endl;
 
     if ( pb == "direct" and want_global_discretization_error ) {
         T eff_index = theta / m.discretization_error;
@@ -102,4 +141,4 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
     }
 }
 
-#endif // Calcul_error_estimate_prolongation_condition_h
+#endif // Calcul_error_estimate_prolongation_condition_HOMOG_h

@@ -778,7 +778,6 @@ def calc_elem_error_estimate_lambda( list_f, rep )
             cw.add( "theta_tmp", theta, reassign )
             file_ <<<<
                 $(cw.to_string( 12 ))
-                            theta += poids[ n ] * theta_tmp;
                             theta_elem[ elem_lambda.number ] += poids[ n ] * theta_tmp;
             file_ <<< "        }"
         else
@@ -787,8 +786,8 @@ def calc_elem_error_estimate_lambda( list_f, rep )
             file_ <<<<
                         {
                 $(cw.to_string( 8 ))
-                        theta += theta_elem[ elem_lambda.number ];
                         }
+        file_ <<< "    theta += theta_elem[ elem_lambda.number ];"
         file_ <<< "    }"
         file_ <<<<
                 if ( method == "EET" ) {
@@ -798,7 +797,6 @@ def calc_elem_error_estimate_lambda( list_f, rep )
                     }
                     elem_lambda.ecre_elem_EET = theta_elem[ elem_lambda.number ] / 2;
                     elem_lambda.theta_elem_EET = theta_elem[ elem_lambda.number ];
-                    elem_lambda.theta_elem_rel_EET = theta_elem[ elem_lambda.number ] * pow( elem_lambda.measure_virtual(), -1 );
                 }
                 if ( method == "SPET" ) {
                     if ( same_element ) {
@@ -806,7 +804,6 @@ def calc_elem_error_estimate_lambda( list_f, rep )
                         theta += theta_elem[ elem_lambda.number ];
                     }
                     elem_lambda.theta_elem_SPET = theta_elem[ elem_lambda.number ];
-                    elem_lambda.theta_elem_rel_SPET = theta_elem[ elem_lambda.number ] * pow( elem_lambda.measure_virtual(), -1 );
                 }
                 if ( method == "EESPT" ) {
                     if ( same_element ) {
@@ -815,7 +812,6 @@ def calc_elem_error_estimate_lambda( list_f, rep )
                     }
                     elem_lambda.ecre_elem_EESPT = theta_elem[ elem_lambda.number ] / 2;
                     elem_lambda.theta_elem_EESPT = theta_elem[ elem_lambda.number ];
-                    elem_lambda.theta_elem_rel_EESPT = theta_elem[ elem_lambda.number ] * pow( elem_lambda.measure_virtual(), -1 );
                 }
         file_ <<< "    #undef PNODE"
         file_ <<< "}"

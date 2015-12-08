@@ -1,5 +1,5 @@
 //
-// C++ Interface: Material_properties
+// C++ Interface: Material_properties_init
 //
 // Description: creation des proprietes materiaux
 //

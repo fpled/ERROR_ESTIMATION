@@ -95,11 +95,11 @@ struct Remove_Kernel {
 /// Calcul du degre p de l'analyse elements finis
 /// ---------------------------------------------
 template<class TE, class TV> 
-void calc_degre_p( const TE &elem , TV &degre_p ) {}
+void get_degre_p( const TE &elem , TV &degre_p ) {}
 
-struct Calcul_Degre_p {
+struct Get_Degre_p {
     template<class TE> void operator()( const TE &elem, Vec<unsigned> &degre_p ) const {
-        calc_degre_p( elem, degre_p );
+        get_degre_p( elem, degre_p );
     }
 };
 

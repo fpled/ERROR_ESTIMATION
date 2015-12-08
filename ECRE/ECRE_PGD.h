@@ -79,15 +79,13 @@ struct Calc_Elem_Error_Estimate_EET_EESPT {
                     f.vectors[0] += dot( (*dep_lambda)[ n ], (*K_k_p) * (*dep_lambda)[ i ] ) * (*dep_psi)[ i ];
             }
         }
-        if ( *method == "EESPT" ) {
-            elem.ecre_elem_EESPT = 0.0;
-            elem.theta_elem_EESPT = 0.0;
-            elem.theta_elem_rel_EESPT = 0.0;
-        }
         if ( *method == "EET" ) {
             elem.ecre_elem_EET = 0.0;
             elem.theta_elem_EET = 0.0;
-            elem.theta_elem_rel_EET = 0.0;
+        }
+        if ( *method == "EESPT" ) {
+            elem.ecre_elem_EESPT = 0.0;
+            elem.theta_elem_EESPT = 0.0;
         }
         calc_elem_error_estimate_EET_EESPT( elem, m, f, f.vectors, ind, *dep_hat, *method, *theta_elem, theta );
     }

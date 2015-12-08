@@ -68,39 +68,57 @@ def calc_elem_error_estimate_init_SPET( list_f, rep )
             file_ <<< "    gauss_points( $(e->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
         if integration_type == "gauss_num"
             if integration_lang == "metil"
-                #theta = e->gauss_num_integration( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
-                #theta = e->gauss_num_integration( ( sigma_hat_init - child_cast(f)->sigma_init.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
-                theta = e->gauss_num_integration( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
+                theta = e->gauss_num_integration( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly )
+                theta_init := e->gauss_num_integration( ( sigma_hat_init - child_cast(f)->sigma_init.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
+                theta_init_corr := e->gauss_num_integration( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
             else if integration_lang == "cpp"
-                #theta = ( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ) ) * e->jac
-                #theta = ( ( sigma_hat_init - child_cast(f)->sigma_init.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ) ) * e->jac
-                theta = ( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ) ) * e->jac
+                theta = ( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) * e->jac
+                theta_init = ( ( sigma_hat_init - child_cast(f)->sigma_init.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ) ) * e->jac
+                theta_init_corr = ( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ) ) * e->jac
         else if integration_type == "formal"
-            #theta = e->integration( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
-            #theta = e->integration( ( sigma_hat_init - child_cast(f)->sigma_init.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
-            theta = e->integration( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
+            theta = e->integration( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly )
+            theta_init := e->integration( ( sigma_hat_init - child_cast(f)->sigma_init.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
+            theta_init_corr := e->integration( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init_corr.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
         if integration_type == "gauss_num" and integration_lang == "cpp"
             file_ <<< "    for (unsigned n=0; n<poids.size(); ++n) {"
             file_ <<< "        Vec<double> var_inter( valeurs[ n ] );"
             file_ <<< "        T theta_tmp = 0.0;"
+            file_ <<< "        T theta_init_tmp = 0.0;"
+            file_ <<< "        T theta_init_corr_tmp = 0.0;"
             cw := CodeWriterAlt( "T" )
             cw.add( "theta_tmp", theta, reassign )
+            cw.add( "theta_init_tmp", theta_init, reassign )
+            cw.add( "theta_init_corr_tmp", theta_init_corr, reassign )
             file_ <<<<
                 $(cw.to_string( 8 ))
                         theta += poids[ n ] * theta_tmp;
                         theta_elem[ elem.number ] += poids[ n ] * theta_tmp;
+                        theta_init += poids[ n ] * theta_init_tmp;
+                        theta_init_elem[ elem.number ] += poids[ n ] * theta_init_tmp;
+                        theta_init_corr += poids[ n ] * theta_init_corr_tmp;
+                        theta_init_corr_elem[ elem.number ] += poids[ n ] * theta_init_corr_tmp;
             file_ <<< "    }"
         else
             cw := CodeWriterAlt( "T" )
             cw.add( "theta_elem[ elem.number ]", theta, reassign )
+            cw.add( "theta_init_elem[ elem.number ]", theta_init, reassign )
+            cw.add( "theta_init_corr_elem[ elem.number ]", theta_init_corr, reassign )
             file_ <<<<
                     {
                 $(cw.to_string( 4 ))
                     theta += theta_elem[ elem.number ];
+                    theta_init += theta_init_elem[ elem.number ];
+                    theta_init_corr += theta_init_corr_elem[ elem.number ];
                     }
         file_ <<<<
                 elem.theta_elem_SPET = theta_elem[ elem.number ];
                 elem.theta_elem_rel_SPET = theta_elem[ elem.number ] * pow( elem.measure_virtual(), -1 );
+                elem.ecre_init_elem_SPET = theta_init_elem[ elem.number ] / 2;
+                elem.theta_init_elem_SPET = theta_init_elem[ elem.number ];
+                elem.theta_init_elem_rel_SPET = theta_init_elem[ elem.number ] * pow( elem.measure_virtual(), -1 );
+                elem.ecre_init_corr_elem_SPET = theta_init_corr_elem[ elem.number ] / 2;
+                elem.theta_init_corr_elem_SPET = theta_init_corr_elem[ elem.number ];
+                elem.theta_init_corr_elem_rel_SPET = theta_init_corr_elem[ elem.number ] * pow( elem.measure_virtual(), -1 );
         file_ <<< "    #undef PNODE"
         file_ <<< "}"
         file_ <<< "}"

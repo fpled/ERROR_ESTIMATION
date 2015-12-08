@@ -10,8 +10,6 @@ import "ENHANCEMENT/Enhancement_EET_EESPT.met"
 import "VERIFICATION/Verification.met"
 import "Handbook_functions.met"
 import "INTEREST_QUANTITY/Interest_quantity.met"
-import "HOMOG/ECRE.met"
-import "HOMOG/SPET.met"
 
 # Choix de la methode de construction de champs admissibles pour le calcul d'un estimateur de l'erreur globale : want_EET, want_SPET, want_EESPT := true
 # Calcul de l'erreur de discretisation : want_discretization_error := true
@@ -103,39 +101,31 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     poisson := Variable( interpolation="global", default_value=0.3, unit="1", tex_name = "\\nu" )
     la := Variable( interpolation="global", default_value=lame_coeff_lambda( young.default_value, poisson.default_value, dim, type_stress_2D ), unit="N/m^2", tex_name = "\\lambda" )
     mu := Variable( interpolation="global", default_value=lame_coeff_mu( young.default_value, poisson.default_value ), unit="N/m^2", tex_name = "\\mu" )
-    young_init := Variable( interpolation="elementary", default_value=1, unit="N/m^2", tex_name = "E_{\\text{init}}" )
-    poisson_init := Variable( interpolation="elementary", default_value=0.3, unit="1", tex_name = "\\nu_{\\text{init}}" )
-    la_init := Variable( interpolation="elementary", default_value=lame_coeff_lambda( young_init.default_value, poisson_init.default_value, dim, type_stress_2D ), unit="N/m^2", tex_name = "\\lambda_{\\text{init}}" )
-    mu_init := Variable( interpolation="elementary", default_value=lame_coeff_mu( young_init.default_value, poisson_init.default_value ), unit="N/m^2", tex_name = "\\mu_{\\text{init}}" )
 
-    sigma_hat_EET := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{EET}}" )
-    sigma_hat_SPET := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{SPET}}" )
-    sigma_hat_EESPT := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{EESPT}}" )
-    ecre_EET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "{e_{\\text{cre}}}_{\\text{EET}}" )
-    ecre_EESPT := Variable( interpolation="global", default_value=0, unit="1", tex_name = "{e_{\\text{cre}}}_{\\text{EESPT}}" )
-    ecre_elem_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{{e_{\\text{cre}}}^{\\text{elem}}_{\\text{EET}}}^2" )
-    ecre_elem_EESPT := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{{e_{\\text{cre}}}^{\\text{elem}}_{\\text{EESPT}}}^2" )
-    theta_EET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\theta_{\\text{EET}}" )
-    theta_SPET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\theta_{\\text{SPET}}" )
-    theta_EESPT := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\theta_{\\text{EESPT}}" )
-    theta_elem_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}_{\\text{EET}}}^2" )
-    theta_elem_SPET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}_{\\text{SPET}}}^2" )
-    theta_elem_EESPT := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}_{EESPT}}^2" )
-    theta_elem_rel_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\tilde{\\theta}^{\\text{elem}_{\\text{EET}}}^2" )
-    theta_elem_rel_SPET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\tilde{\\theta}^{\\text{elem}}_{\\text{SPET}}}^2" )
-    theta_elem_rel_EESPT := Variable( interpolation="elementary", default_value=0,unit="1", tex_name = "{\\tilde{\\theta}^{\\text{elem}}_{\\text{EESPT}}}^2" )
+    sigma_hat_EET := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}" )
+    sigma_hat_SPET := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}" )
+    sigma_hat_EESPT := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}" )
+    ecre_EET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "e_{\\text{cre}}" )
+    ecre_EESPT := Variable( interpolation="global", default_value=0, unit="1", tex_name = "e_{\\text{cre}}" )
+    ecre_elem_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{e_{\\text{cre}}^{\\text{elem}}}^2" )
+    ecre_elem_EESPT := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{e_{\\text{cre}}^{\\text{elem}}}^2" )
+    theta_EET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\theta" )
+    theta_SPET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\theta" )
+    theta_EESPT := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\theta" )
+    theta_elem_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}}^2" )
+    theta_elem_SPET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}}^2" )
+    theta_elem_EESPT := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}}^2" )
     discretization_error := Variable( interpolation="global", default_value=0, unit="1", tex_name = "e_{\\text{dis}}" )
-    discretization_error_elem := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{e^{\\text{elem}}_{\\text{dis}}}^2" )
-    discretization_error_elem_rel := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\tilde{e}^{\\text{elem}}_{\\text{dis}}}^2" )
-    eff_index_EET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\eta_{\\text{EET}}" )
-    eff_index_SPET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\eta_{\\text{SPET}}" )
-    eff_index_EESPT := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\eta_{\\text{EESPT}}" )
-    eff_index_elem_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "\\eta^{\\text{elem}}_{\\text{EET}}" )
-    eff_index_elem_SPET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "\\eta^{\\text{elem}}_{\\text{SPET}}" )
-    eff_index_elem_EESPT := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "\\eta^{\\text{elem}}_{\\text{EESPT}}" )
+    discretization_error_elem := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{e_{\\text{dis}}^{\\text{elem}}}^2" )
+    eff_index_EET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\eta" )
+    eff_index_SPET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\eta" )
+    eff_index_EESPT := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\eta}" )
+    eff_index_elem_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "\\eta^{\\text{elem}}" )
+    eff_index_elem_SPET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "\\eta^{\\text{elem}}" )
+    eff_index_elem_EESPT := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "\\eta^{\\text{elem}}" )
 
-    enhancement_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "enhancement_{\\text{EET}}" )
-    enhancement_EESPT := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "enhancement_{\\text{EESPT}}" )
+    enhancement_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "enhancement" )
+    enhancement_EESPT := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "enhancement" )
 
     pre_f_nodal := Variable[[dim]]( interpolation="nodal", interpolation_base=base, default_value=0, unit="N/m", tex_name = "\\tilde{F}_n" )
     pre_f_surf := Variable[[dim]]( interpolation="skin_elementary", default_value=0, unit="N/m^2", tex_name = "\\tilde{F}_s" )
@@ -170,15 +160,36 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     dep_tot := Variable[[dim]]( interpolation="nodal", interpolation_base=base, default_value=0, unit="m", tex_name = "U_{\\text{tot}}" )
     epsilon_tot := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="1", tex_name = "\\epsilon_{\\text{tot}}" )
     sigma_tot := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma_{\\text{tot}}" )
-    sigma_hat_tot_EET := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{tot}}^{\\text{EET}}" )
-    sigma_hat_tot_SPET := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{tot}}^{\\text{SPET}}" )
-    sigma_hat_tot_EESPT := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{tot}}^{\\text{EESPT}}" )
+    sigma_hat_tot_EET := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{tot}}" )
+    sigma_hat_tot_SPET := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{tot}}" )
+    sigma_hat_tot_EESPT := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{tot}}" )
 
+    young_init := Variable( interpolation="elementary", default_value=1, unit="N/m^2", tex_name = "E_{\\text{init}}" )
+    poisson_init := Variable( interpolation="elementary", default_value=0.3, unit="1", tex_name = "\\nu_{\\text{init}}" )
+    la_init := Variable( interpolation="elementary", default_value=lame_coeff_lambda( young_init.default_value, poisson_init.default_value, dim, type_stress_2D ), unit="N/m^2", tex_name = "\\lambda_{\\text{init}}" )
+    mu_init := Variable( interpolation="elementary", default_value=lame_coeff_mu( young_init.default_value, poisson_init.default_value ), unit="N/m^2", tex_name = "\\mu_{\\text{init}}" )
     sigma_init := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma_{\\text{init}}" )
-    sigma_init_corr := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma_{\\text{init}}^{\\text{corr}}" )
-    sigma_hat_init_EET := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{init}}^{\\text{EET}}" )
-    sigma_hat_init_SPET := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{init}}^{\\text{SPET}}" )
-    sigma_hat_init_EESPT := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{init}}^{\\text{EESPT}}" )
+    sigma_init_corr := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma_{\\text{init}}" )
+    sigma_hat_init_EET := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{init}}" )
+    sigma_hat_init_SPET := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{init}}" )
+    sigma_hat_init_EESPT := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{init}}" )
+    ecre_init_EET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "{e_{\\text{cre}}}_{\\text{init}}" )
+    ecre_init_EESPT := Variable( interpolation="global", default_value=0, unit="1", tex_name = "{e_{\\text{cre}}}_{\\text{init}}" )
+    ecre_init_corr_EET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "{e_{\\text{cre}}}_{\\text{init}}" )
+    ecre_init_corr_EESPT := Variable( interpolation="global", default_value=0, unit="1", tex_name = "{e_{\\text{cre}}}_{\\text{init}}" )
+    ecre_elem_init_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{e_{\\text{cre}}^{\\text{elem}}}_{\\text{init}}^2" )
+    ecre_elem_init_EESPT := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{e_{\\text{cre}}^{\\text{elem}}}_{\\text{init}}^2" )
+    ecre_elem_init_corr_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{e_{\\text{cre}}^{\\text{elem}}}_{\\text{init}}^2" )
+    ecre_elem_init_corr_EESPT := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{e_{\\text{cre}}^{\\text{elem}}}_{\\text{init}}^2" )
+    theta_init_EET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\theta_{\\text{init}}" )
+    theta_init_SPET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\theta_{\\text{init}}" )
+    theta_init_EESPT := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\theta_{\\text{init}}" )
+    theta_init_corr_EET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\theta_{\\text{init}}" )
+    theta_init_corr_SPET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\theta_{\\text{init}}" )
+    theta_init_corr_EESPT := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\theta_{\\text{init}}" )
+    theta_elem_init_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}_{\text{init}}}^2" )
+    theta_elem_init_SPET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}_{\text{init}}}^2" )
+    theta_elem_init_EESPT := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}_{\text{init}}}^2" )
 
     is_on_skin := Variable( interpolation="nodal", interpolation_base=base, default_value=0, unit="", tex_name = "is on skin" )
     normal := Variable[[dim]]( interpolation="nodal", interpolation_base=base, default_value=0, unit="1", tex_name = "normal" )
@@ -281,7 +292,7 @@ funcList_force_fluxes_enhancement_EET := [ reset_nodal_vector_b_hat, calc_elem_v
 
 funcList_SPET := [ construct_correspondance_node_to_vertex_node, calc_nb_points_elem, calc_nb_points_face, calc_pos_elem, calc_pos_face, calc_vertex_nodal_matrix_K, calc_vertex_nodal_vector_F, calc_elem_vector_E, calc_elem_error_estimate_init_SPET ]
 
-funcList_force_fluxes_standard_EESPT := [ construct_correspondance_node_to_vertex_node, calc_face_ind_EESPT, calc_vertex_nodal_ind_EESPT, calc_vertex_nodal_matrix_A, calc_vertex_nodal_vector_R, remove_kernel, calc_degre_p, calc_skin_elem_matrix_B_p_1, calc_skin_elem_vector_Q_p_1, calc_vertex_nodal_vector_lambda_F_p_1, calc_vertex_nodal_vector_lambda_F_p_2, calc_vertex_nodal_matrix_M, calc_skin_elem_force_fluxes, check_elem_eq_force_fluxes ]
+funcList_force_fluxes_standard_EESPT := [ construct_correspondance_node_to_vertex_node, calc_face_ind_EESPT, calc_vertex_nodal_ind_EESPT, calc_vertex_nodal_matrix_A, calc_vertex_nodal_vector_R, remove_kernel, get_degre_p, calc_skin_elem_matrix_B_p_1, calc_skin_elem_vector_Q_p_1, calc_vertex_nodal_vector_lambda_F_p_1, calc_vertex_nodal_vector_lambda_F_p_2, calc_vertex_nodal_matrix_M, calc_skin_elem_force_fluxes, check_elem_eq_force_fluxes ]
 
 funcList_force_fluxes_enhancement_EESPT := [ reset_vertex_nodal_vector_lambda_F_hat, calc_elem_vector_F_hat_enh, calc_elem_matrix_A_enh, calc_elem_vector_d_enh, calc_elem_matrix_L_enh, calc_elem_vector_b_enh, calc_glob_matrix_A_enh, calc_glob_vector_d_enh, calc_glob_matrix_L_enh, calc_glob_vector_b_enh, calc_glob_matrix_C_enh, calc_glob_vector_q_enh, calc_glob_matrix_P_enh ]
 
