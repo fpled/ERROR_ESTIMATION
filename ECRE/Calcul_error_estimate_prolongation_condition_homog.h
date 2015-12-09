@@ -126,17 +126,17 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
     apply( m.elem_list, add_elem_norm_dep_init, m, f, norm_dep );
 
     cout << "norme du champ de deplacement approche au carre :" << endl;
-    cout << "||u_h||^2 = " << norm_dep << endl << endl;
+    cout << "||u_h||^2 = " << norm_dep << endl;
     cout << "||u_h_init||^2 = " << norm_dep_init << endl << endl;
 
     norm_dep = sqrt( norm_dep );
     norm_dep_init = sqrt( norm_dep_init );
     cout << "norme du champ de deplacement approche :" << endl;
-    cout << "||u_h|| = " << norm_dep << endl << endl;
+    cout << "||u_h|| = " << norm_dep << endl;
     cout << "||u_h_init|| = " << norm_dep_init << endl << endl;
 
     cout << "estimateur d'erreur globale relative :" << endl;
-    cout << "theta / ||u_h|| = " << theta / norm_dep * 100. << " %" << endl << endl;
+    cout << "theta / ||u_h|| = " << theta / norm_dep * 100. << " %" << endl;
     cout << "theta_init / ||u_h_init|| = " << theta_init / norm_dep_init * 100. << " %" << endl;
     cout << "theta_init_corr / ||u_h_init|| = " << theta_init_corr / norm_dep_init * 100. << " %" << endl << endl;
 
