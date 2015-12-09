@@ -387,7 +387,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     T norm_dep_init = 0.;
     apply( m.elem_list, Add_Elem_Norm_Dep_Init(), m, f, norm_dep, norm_dep_init );
 
-    cout << "norme au carre du champ de deplacement approche :" << endl;
+    cout << "norme du champ de deplacement approche au carre :" << endl;
     cout << "||u_h||^2 = " << norm_dep << endl << endl;
     cout << "||u_h_init||^2 = " << norm_dep_init << endl << endl;
 
@@ -397,7 +397,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     cout << "||u_h|| = " << norm_dep << endl << endl;
     cout << "||u_h_init|| = " << norm_dep_init << endl << endl;
 
-    cout << "estimateur d'erreur globale relatif :" << endl;
+    cout << "estimateur d'erreur globale relative :" << endl;
     cout << "theta / ||u_h|| = " << theta / norm_dep * 100. << " %" << endl << endl;
     cout << "theta_init / ||u_h_init|| = " << theta_init / norm_dep_init * 100. << " %" << endl;
     cout << "theta_init_corr / ||u_h_init|| = " << theta_init_corr / norm_dep_init * 100. << " %" << endl << endl;

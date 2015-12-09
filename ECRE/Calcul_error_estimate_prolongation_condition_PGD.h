@@ -90,14 +90,14 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
     T norm_dep = 0.;
     apply( m.elem_list, Add_Elem_Norm_Dep(), m, f, norm_dep );
 
-    cout << "norme au carre du champ de deplacement approche :" << endl;
+    cout << "norme du champ de deplacement approche au carre :" << endl;
     cout << "||u_h||^2 = " << norm_dep << endl << endl;
 
     norm_dep = sqrt( norm_dep );
     cout << "norme du champ de deplacement approche :" << endl;
     cout << "||u_h|| = " << norm_dep << endl << endl;
 
-    cout << "estimateur d'erreur globale relatif :" << endl;
+    cout << "estimateur d'erreur globale relative :" << endl;
     cout << "theta / ||u_h|| = " << theta / norm_dep * 100. << " %" << endl << endl;
 
     if ( pb == "direct" and want_global_discretization_error ) {

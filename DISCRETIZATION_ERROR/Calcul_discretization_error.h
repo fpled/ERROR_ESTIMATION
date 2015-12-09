@@ -65,7 +65,7 @@ void calcul_discretization_error( TM &m, const TM &m_ref, const TF &f, const TF 
 
                 apply( m.elem_list, Add_Elem_Norm_Dep(), m, f, norm_dep );
 
-                cout << "norme au carre du champ de deplacement approche :" << endl;
+                cout << "norme du champ de deplacement approche au carre :" << endl;
                 cout << "||u_h||^2 = " << norm_dep << endl << endl;
 
                 /// Calcul de la norme du champ de deplacement de reference
@@ -77,7 +77,7 @@ void calcul_discretization_error( TM &m, const TM &m_ref, const TF &f, const TF 
 
                 apply( m_ref.elem_list, Add_Elem_Norm_Dep(), m_ref, f_ref, norm_dep_ref );
 
-                cout << "norme au carre du champ de deplacement de reference :" << endl;
+                cout << "norme du champ de deplacement de reference au carre :" << endl;
                 cout << "||u_ex||^2 = " << norm_dep_ref << endl << endl;
 
                 /// Calcul exact de la mesure de l'erreur de discretisation globale
