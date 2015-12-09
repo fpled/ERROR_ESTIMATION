@@ -629,7 +629,7 @@ def calc_elem_error_estimate_init_SPET( list_f, rep )
                         theta_elem[ elem.number ] += poids[ n ] * theta_tmp;
                         theta_elem_init[ elem.number ] += poids[ n ] * theta_init_tmp;
                         theta_elem_init_corr[ elem.number ] += poids[ n ] * theta_init_corr_tmp;
-                        norm_sigma_hat_init[ elem.number ] += poids[ n ] * norm_sigma_hat_init_tmp;
+                        norm_sigma_hat_init += poids[ n ] * norm_sigma_hat_init_tmp;
             file_ <<< "    }"
         else
             cw := CodeWriterAlt( "T" )
