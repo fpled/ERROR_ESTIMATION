@@ -15,6 +15,7 @@
 #include "SPET.h"
 #include "Construct_connectivity_patch.h"
 #include "../GEOMETRY/Calcul_geometry.h"
+#include "../DISCRETIZATION_ERROR/Discretization_error.h"
 
 using namespace LMT;
 using namespace std;
@@ -382,6 +383,25 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     cout << "theta_init = " << theta_init << endl;
     cout << "theta_init_corr = " << theta_init_corr << endl << endl;
     
+    T norm_dep = 0.;
+    T norm_dep_init = 0.;
+    apply( m.elem_list, Add_Elem_Norm_Dep_Init(), m, f, norm_dep, norm_dep_init );
+
+    cout << "norme au carre du champ de deplacement approche :" << endl;
+    cout << "||u_h||^2 = " << norm_dep << endl << endl;
+    cout << "||u_h_init||^2 = " << norm_dep_init << endl << endl;
+
+    norm_dep = sqrt( norm_dep );
+    norm_dep_init = sqrt( norm_dep_init );
+    cout << "norme du champ de deplacement approche :" << endl;
+    cout << "||u_h|| = " << norm_dep << endl << endl;
+    cout << "||u_h_init|| = " << norm_dep_init << endl << endl;
+
+    cout << "estimateur d'erreur globale relatif :" << endl;
+    cout << "theta / ||u_h|| = " << theta / norm_dep * 100. << " %" << endl << endl;
+    cout << "theta_init / ||u_h_init|| = " << theta_init / norm_dep_init * 100. << " %" << endl;
+    cout << "theta_init_corr / ||u_h_init|| = " << theta_init_corr / norm_dep_init * 100. << " %" << endl << endl;
+
     if ( want_global_discretization_error ) {
         m.eff_index_SPET = theta / m.discretization_error;
         cout << "indice d'efficacite global :" << endl;

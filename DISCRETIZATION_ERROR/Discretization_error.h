@@ -28,6 +28,16 @@ struct Add_Elem_Norm_Dep {
     }
 };
 
+template<class TE, class TM, class TF, class TTWW, class TT>
+void add_elem_norm_dep_init( const TE &elem, const TM &m, const TF &f, const TTWW &vectors, const Vec<unsigned> &indices, TT &norm_dep, TT &norm_dep_init ) {}
+
+struct Add_Elem_Norm_Dep_Init {
+    template<class TE, class TM, class TF, class T> void operator()( const TE &elem, const TM &m, const TF &f, T &norm_dep, T &norm_dep_init ) const {
+        Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
+        add_elem_norm_dep_init( elem, m, f, f.vectors, ind, norm_dep, norm_dep_init );
+    }
+};
+
 /// Calcul de l'erreur de discretisation au carre
 /// ---------------------------------------------
 template<class TE, class TE_REF, class TM, class TF, class TTVV, class TTV>

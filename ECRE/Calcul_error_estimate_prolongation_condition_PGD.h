@@ -13,6 +13,7 @@
 #define Calcul_error_estimate_prolongation_condition_h
 
 #include "ECRE.h"
+#include "../DISCRETIZATION_ERROR/Discretization_error.h"
 
 using namespace LMT;
 using namespace std;
@@ -56,17 +57,19 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
 
     if ( debug_error_estimate or debug_method or debug_method_enhancement ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
-            T ecre_elem = theta_elem[ n ] / 2;
+            T ecre_elem = theta_elem[ n ] / 2.;
             cout << "contribution a la mesure globale de l'erreur en relation de comportement au carre de l'element " << n << " :" << endl;
             cout << "ecre_elem^2 = " << ecre_elem << endl;
+
             cout << "contribution a l'estimateur d'erreur globale au carre de l'element " << n << " :" << endl;
             cout << "theta_elem^2 = " << theta_elem[ n ] << endl;
         }
+        cout << endl;
     }
 
     T ecre = theta / 2.;
     cout << "mesure globale de l'erreur en relation de comportement au carre :" << endl;
-    cout << "ecre^2 = " << ecre << endl;
+    cout << "ecre^2 = " << ecre << endl << endl;
 
     theta = sqrt( theta );
     ecre = sqrt( ecre );
@@ -79,9 +82,23 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
         m.theta_EESPT = theta;
     }
     cout << "mesure globale de l'erreur en relation de comportement :" << endl;
-    cout << "ecre = " << ecre << endl;
+    cout << "ecre = " << ecre << endl << endl;
+
     cout << "estimateur d'erreur globale :" << endl;
     cout << "theta = " << theta << endl << endl;
+
+    T norm_dep = 0.;
+    apply( m.elem_list, Add_Elem_Norm_Dep(), m, f, norm_dep );
+
+    cout << "norme au carre du champ de deplacement approche :" << endl;
+    cout << "||u_h||^2 = " << norm_dep << endl << endl;
+
+    norm_dep = sqrt( norm_dep );
+    cout << "norme du champ de deplacement approche :" << endl;
+    cout << "||u_h|| = " << norm_dep << endl << endl;
+
+    cout << "estimateur d'erreur globale relatif :" << endl;
+    cout << "theta / ||u_h|| = " << theta / norm_dep * 100. << " %" << endl << endl;
 
     if ( pb == "direct" and want_global_discretization_error ) {
         T eff_index = theta / m.discretization_error;
@@ -106,6 +123,7 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
                 cout << "eta_elem = theta_elem / e_elem" << endl;
                 cout << "         = " << eff_index_elem[ n ] << endl;
             }
+            cout << endl;
         }
     }
 }

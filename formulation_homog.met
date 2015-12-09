@@ -293,13 +293,13 @@ funcList_force_fluxes_standard_EET := [ construct_correspondance_node_to_vertex_
 
 funcList_force_fluxes_enhancement_EET := [ reset_nodal_vector_b_hat, calc_elem_vector_F_hat_enh, calc_elem_matrix_A_enh, calc_elem_vector_d_enh, calc_elem_matrix_L_enh, calc_elem_vector_b_enh, calc_glob_matrix_A_enh, calc_glob_vector_d_enh, calc_glob_matrix_L_enh, calc_glob_vector_b_enh, calc_glob_matrix_C_enh, calc_glob_vector_q_enh, calc_glob_matrix_P_enh ]
 
-funcList_SPET := [ construct_correspondance_node_to_vertex_node, calc_nb_points_elem, calc_nb_points_face, calc_pos_elem, calc_pos_face, calc_vertex_nodal_matrix_K, calc_vertex_nodal_vector_F, calc_elem_vector_E, calc_elem_error_estimate_init_SPET ]
+funcList_SPET := [ construct_correspondance_node_to_vertex_node, calc_nb_points_elem, calc_nb_points_face, calc_pos_elem, calc_pos_face, calc_vertex_nodal_matrix_K, calc_vertex_nodal_vector_F, calc_elem_vector_E, calc_elem_error_estimate_init_SPET, add_elem_norm_dep_init ]
 
 funcList_force_fluxes_standard_EESPT := [ construct_correspondance_node_to_vertex_node, calc_face_ind_EESPT, calc_vertex_nodal_ind_EESPT, calc_vertex_nodal_matrix_A, calc_vertex_nodal_vector_R, remove_kernel, get_degre_p, calc_skin_elem_matrix_B_p_1, calc_skin_elem_vector_Q_p_1, calc_vertex_nodal_vector_lambda_F_p_1, calc_vertex_nodal_vector_lambda_F_p_2, calc_vertex_nodal_matrix_M, calc_skin_elem_force_fluxes, check_elem_eq_force_fluxes ]
 
 funcList_force_fluxes_enhancement_EESPT := [ reset_vertex_nodal_vector_lambda_F_hat, calc_elem_vector_F_hat_enh, calc_elem_matrix_A_enh, calc_elem_vector_d_enh, calc_elem_matrix_L_enh, calc_elem_vector_b_enh, calc_glob_matrix_A_enh, calc_glob_vector_d_enh, calc_glob_matrix_L_enh, calc_glob_vector_b_enh, calc_glob_matrix_C_enh, calc_glob_vector_q_enh, calc_glob_matrix_P_enh ]
 
-funcList_ECRE := [ calc_elem_matrix_K_hat, calc_elem_vector_F_hat, calc_elem_error_estimate_init_EET_EESPT ]
+funcList_ECRE := [ calc_elem_matrix_K_hat, calc_elem_vector_F_hat, calc_elem_error_estimate_init_EET_EESPT, add_elem_norm_dep_init ]
 
 funcList_interest_quantity := [ calc_interest_quantity_mean_sigma_epsilon, calc_interest_quantity_pointwise_dep_sigma_epsilon, calc_interest_quantity_SIF, calc_elem_correction_interest_quantity_wo_sigma_hat_m, calc_elem_correction_interest_quantity_w_sigma_hat_m, calc_elem_error_estimate_proj_on_adjoint ]
 

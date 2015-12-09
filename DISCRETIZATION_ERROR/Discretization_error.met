@@ -48,6 +48,48 @@ def add_elem_norm_dep( list_f, rep )
         file_ <<< "#endif"
     return file_names
 
+# Methode qui genere un fichier add_elem_norm_dep_init_$(f->name).$(e->dim).$(e->name).h pour ajouter la contribution d'un element au carre de la norme du champ de deplacement
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def add_elem_norm_dep_init( list_f, rep )
+    file_names := Vec[String]()
+    for f in list_f
+        e := child_cast( f->pe )
+        file_name := "add_elem_norm_dep_init_$(f->name).$(e->dim).$(e->name).h"
+        file_names.push_back( file_name )
+        file_ := File( rep + "/add_elem_norm_dep_init_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef add_elem_norm_dep_init_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define add_elem_norm_dep_init_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "namespace LMT {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class T>"
+        file_ <<< "void add_elem_norm_dep_init( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const TTVV &vectors, const Vec<unsigned> &indices, T &norm_dep, T &norm_dep_init ) {"
+        file_ <<< "    #define PNODE(N) elem.node(N)"
+        deg_p := max( e->order_interpolation )
+        norm_dep := Op( 0 )
+        norm_dep_init := Op( 0 )
+
+        e->assume_const_jac = true
+        epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
+        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        norm_dep_const_jac := epsilon_const_jac : sigma_const_jac
+        e->assume_const_jac = hyp_const_jac
+        degre_poly := norm_dep_const_jac.poly_deg( e->var_inter )
+
+        if integration_type == "gauss_num"
+            norm_dep = e->gauss_num_integration( child_cast(f)->epsilon.expr : child_cast(f)->sigma.expr, order_diff = degre_poly  )
+            norm_dep_init = e->gauss_num_integration( child_cast(f)->epsilon.expr : child_cast(f)->sigma_init.expr, order_diff = degre_poly  )
+        else if integration_type == "formal"
+            norm_dep = e->integration( child_cast(f)->epsilon.expr : child_cast(f)->sigma.expr, order_diff = degre_poly  )
+            norm_dep_init = e->integration( child_cast(f)->epsilon.expr : child_cast(f)->sigma_init.expr, order_diff = degre_poly  )
+        cw := CodeWriterAlt( "T" )
+        cw.add( "norm_dep", norm_dep, add )
+        cw.add( "norm_dep_init", norm_dep_init, add )
+        file_ <<< "$(cw.to_string( 4 ))"
+        file_ <<< "    #undef PNODE"
+        file_ <<< "}"
+        file_ <<< "}"
+        file_ <<< "#endif"
+    return file_names
+
 # Methode qui genere un fichier calc_elem_discretization_error_$(f->name).$(e->dim).$(e->name).h pour caluler la contribution d'un element au carre de l'erreur de discretisation
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 def calc_elem_discretization_error( list_f, rep )
