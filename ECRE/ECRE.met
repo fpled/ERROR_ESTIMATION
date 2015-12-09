@@ -548,14 +548,14 @@ def calc_elem_error_estimate_init_EET_EESPT( list_f, rep )
                         theta_elem[ elem.number ] += poids[ n ] * theta_tmp;
                         theta_elem_init[ elem.number ] += poids[ n ] * theta_init_tmp;
                         theta_elem_init_corr[ elem.number ] += poids[ n ] * theta_init_corr_tmp;
-                        norm_sigma_hat_init[ elem.number ] += poids[ n ] * norm_sigma_hat_init_tmp;
+                        norm_sigma_hat_init += poids[ n ] * norm_sigma_hat_init_tmp;
             file_ <<< "    }"
         else
             cw := CodeWriterAlt( "T" )
             cw.add( "theta_elem[ elem.number ]", theta, reassign )
             cw.add( "theta_elem_init[ elem.number ]", theta_init, reassign )
             cw.add( "theta_elem_init_corr[ elem.number ]", theta_init_corr, reassign )
-            cw.add( "norm_sigma_hat_init[ elem.number ]", norm_sigma_hat_init, reassign )
+            cw.add( "norm_sigma_hat_init", norm_sigma_hat_init, add )
             file_ <<<<
                     {
                 $(cw.to_string( 4 ))
@@ -564,7 +564,6 @@ def calc_elem_error_estimate_init_EET_EESPT( list_f, rep )
                 theta += theta_elem[ elem.number ];
                 theta_init += theta_elem_init[ elem.number ];
                 theta_init_corr += theta_elem_init_corr[ elem.number ];
-                norm_sigma_hat_init += norm_elem_sigma_hat_init[ elem.number ];
                 if ( method == "EET" ) {
                     elem.ecre_elem_EET = theta_elem[ elem.number ] / 2;
                     elem.ecre_elem_init_EET = theta_elem_init[ elem.number ] / 2;
