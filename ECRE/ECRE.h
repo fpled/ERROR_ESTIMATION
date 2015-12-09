@@ -74,7 +74,7 @@ struct Calc_Elem_Error_Estimate_EET_EESPT {
 };
 
 template<class TE, class TM, class TF, class TTWW, class TTVV, class S, class TTV, class TT>
-void calc_elem_error_estimate_init_EET_EESPT( TE &elem, const TM &m, const TF &f, const TTWW &vectors, const Vec<unsigned> &indices, const TTVV &dep_hat, const S &method, TTV &theta_elem, TTV &theta_elem_init, TTV &theta_elem_init_corr, TT &theta, TT &theta_init, TT &theta_init_corr ) {}
+void calc_elem_error_estimate_init_EET_EESPT( TE &elem, const TM &m, const TF &f, const TTWW &vectors, const Vec<unsigned> &indices, const TTVV &dep_hat, const S &method, TTV &theta_elem, TTV &theta_elem_init, TTV &theta_elem_init_corr, TT &theta, TT &theta_init, TT &theta_init_corr, TT &norm_sigma_hat_init ) {}
 
 template<class T>
 struct Calc_Elem_Error_Estimate_Init_EET_EESPT {
@@ -85,6 +85,7 @@ struct Calc_Elem_Error_Estimate_Init_EET_EESPT {
     Vec<T>* theta_elem_init_corr;
     T* theta_init;
     T* theta_init_corr;
+    T* norm_sigma_hat_init;
     template<class TE, class TM, class TF> void operator()( TE &elem, const TM &m, const TF &f, T &theta ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
         if ( *method == "EET" ) {
@@ -105,7 +106,7 @@ struct Calc_Elem_Error_Estimate_Init_EET_EESPT {
             elem.theta_elem_init_EESPT = 0.0;
             elem.theta_elem_init_corr_EESPT = 0.0;
         }
-        calc_elem_error_estimate_init_EET_EESPT( elem, m, f, f.vectors, ind, *dep_hat, *method, *theta_elem, *theta_elem_init, *theta_elem_init_corr, theta, *theta_init, *theta_init_corr );
+        calc_elem_error_estimate_init_EET_EESPT( elem, m, f, f.vectors, ind, *dep_hat, *method, *theta_elem, *theta_elem_init, *theta_elem_init_corr, theta, *theta_init, *theta_init_corr, *norm_sigma_hat_init );
     }
 };
 

@@ -356,6 +356,8 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     theta_elem.resize( m.elem_list.size() );
     theta_elem.set( 0. );
     
+    T norm_sigma_hat_init = 0.;
+
     Calcul_Elem_Error_Estimate_Init_SPET<T> calcul_elem_error_estimate_init_SPET;
     calcul_elem_error_estimate_init_SPET.E = &E;
     calcul_elem_error_estimate_init_SPET.theta_elem = &theta_elem;
@@ -363,9 +365,17 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     calcul_elem_error_estimate_init_SPET.theta_elem_init_corr = &theta_elem_init_corr;
     calcul_elem_error_estimate_init_SPET.theta_init = &theta_init;
     calcul_elem_error_estimate_init_SPET.theta_init_corr = &theta_init_corr;
+    calcul_elem_error_estimate_init_SPET.norm_sigma_hat_init = &norm_sigma_hat_init;
     
     apply( m.elem_list, calcul_elem_error_estimate_init_SPET, m, f, theta );
     
+    cout << "norme du champ de contrainte admissible a zero (auto-equilibre) au carre :" << endl;
+    cout << "||sig_hat_0_init||^2 = " << norm_sigma_hat_init << endl << endl;
+
+    norm_sigma_hat_init = sqrt( norm_sigma_hat_init );
+    cout << "norme du champ de contrainte admissible a zero (auto-equilibre) :" << endl;
+    cout << "||sig_hat_0_init|| = " << norm_sigma_hat_init << endl << endl;
+
     if ( debug_error_estimate or debug_method ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
             cout << "contribution a l'estimateur d'erreur globale au carre de l'element " << n << " :" << endl;

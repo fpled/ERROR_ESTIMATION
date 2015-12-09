@@ -42,6 +42,8 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
     theta_elem_init_corr.resize( m.elem_list.size() );
     theta_elem_init_corr.set( 0. );
 
+    T norm_sigma_hat_init = 0.;
+
     Calc_Elem_Error_Estimate_Init_EET_EESPT<T> calc_elem_error_estimate_init_EET_EESPT;
     calc_elem_error_estimate_init_EET_EESPT.dep_hat = &dep_hat;
     calc_elem_error_estimate_init_EET_EESPT.method = &method;
@@ -50,8 +52,16 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
     calc_elem_error_estimate_init_EET_EESPT.theta_elem_init_corr = &theta_elem_init_corr;
     calc_elem_error_estimate_init_EET_EESPT.theta_init = &theta_init;
     calc_elem_error_estimate_init_EET_EESPT.theta_init_corr = &theta_init_corr;
+    calc_elem_error_estimate_init_EET_EESPT.norm_sigma_hat_init = &norm_sigma_hat_init;
 
     apply( m.elem_list, calc_elem_error_estimate_init_EET_EESPT, m, f, theta );
+
+    cout << "norme du champ de contrainte admissible a zero (auto-equilibre) au carre :" << endl;
+    cout << "||sig_hat_0_init||^2 = " << norm_sigma_hat_init << endl << endl;
+
+    norm_sigma_hat_init = sqrt( norm_sigma_hat_init );
+    cout << "norme du champ de contrainte admissible a zero (auto-equilibre) :" << endl;
+    cout << "||sig_hat_0_init|| = " << norm_sigma_hat_init << endl << endl;
 
     if ( debug_error_estimate or debug_method or debug_method_enhancement ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
