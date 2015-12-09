@@ -385,7 +385,11 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     
     T norm_dep = 0.;
     T norm_dep_init = 0.;
-    apply( m.elem_list, Add_Elem_Norm_Dep_Init(), m, f, norm_dep, norm_dep_init );
+
+    Add_Elem_Norm_Dep_Init<T> add_elem_norm_dep_init;
+    add_elem_norm_dep_init.norm_dep_init = &norm_dep_init;
+
+    apply( m.elem_list, add_elem_norm_dep_init, m, f, norm_dep );
 
     cout << "norme du champ de deplacement approche au carre :" << endl;
     cout << "||u_h||^2 = " << norm_dep << endl << endl;
