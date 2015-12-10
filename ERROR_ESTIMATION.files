@@ -718,13 +718,12 @@ LMT/include/mesh/penta.h
 LMT/include/mesh/pentaprism.h
 LMT/include/mesh/problem.h
 LMT/include/mesh/pyramid.h
-LMT/include/mesh/Pyramide.h
 LMT/include/mesh/quad.h
 LMT/include/mesh/quad_16.h
 LMT/include/mesh/quad_25.h
 LMT/include/mesh/quad_36.h
-LMT/include/mesh/Quad_42.h
-LMT/include/mesh/Quad_6.h
+LMT/include/mesh/quad_42.h
+LMT/include/mesh/quad_6.h
 LMT/include/mesh/quad_8.h
 LMT/include/mesh/quad_9.h
 LMT/include/mesh/read_avs.h
@@ -1038,7 +1037,6 @@ MESH_GMSH/WEIGHT_SENSOR_2D/weight_sensor_very_fine_Triangle.msh
 MESH_GMSH/WEIGHT_SENSOR_2D/weight_sensor_very_fine_Triangle_6.msh
 MESH_MASK/circle.png
 MESH_MASK/circle_crack.png
-MESH_MASK/circle_crack.svg
 MESH_MASK/half_circle.png
 MESH_MASK/rectangle.png
 PGD/PGD.h

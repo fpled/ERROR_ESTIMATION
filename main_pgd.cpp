@@ -18,7 +18,7 @@
 #include "GEOMETRY/Geometry.h"
 #include "DISCRETIZATION_ERROR/Calcul_discretization_error.h"
 #include "Display.h"
-#include "Calcul_global_error_estimation.h"
+#include "Calcul_global_error_estimation_PGD.h"
 #include "Calcul_goal_oriented_error_estimation.h"
 #include "PGD/PGD.h"
 #include "LMT/include/containers/gnuplot.h"
@@ -222,8 +222,8 @@ int main( int argc, char **argv ) {
     
     static const bool save_pvd_PGD_space = 1;
     static const bool save_pvd_PGD_param = 1;
-    static const bool save_plot_PGD_param = 1;
-    static const bool save_pvd_PGD_space_verif = 1;
+    static const bool save_plot_PGD_param = 0;
+    static const bool save_pvd_PGD_space_verif = 0;
     static const bool display_pvd_PGD_space = 0;
     static const bool display_pvd_PGD_param = 0;
     static const bool display_pvd_PGD_space_verif = 0;
@@ -511,15 +511,16 @@ int main( int argc, char **argv ) {
     Vec< Vec<T> > dep_part_hat;
     Vec< Vec<T>, max_mode > dep_space_hat;
 
-//    if ( want_global_estimation or ( want_local_estimation and want_handbook_only == 0 and want_interest_quantity_only == 0 ) ) {
+    if ( want_global_estimation or ( want_local_estimation and want_handbook_only == 0 and want_interest_quantity_only == 0 ) ) {
         
-//        /// ------------------------------------------------------------------------------------------------------------- ///
-//        /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe pb direct ///
-//        /// ------------------------------------------------------------------------------------------------------------- ///
+        /// ------------------------------------------------------------------------------------------------------------- ///
+        /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe pb direct ///
+        /// ------------------------------------------------------------------------------------------------------------- ///
         
 //        calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment, debug_geometry, debug_force_fluxes, debug_force_fluxes_enhancement, debug_criterium_enhancement, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
+        calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_part_hat, dep_part, kappa, dep_space_hat, dep_space, dep_param, nb_modes, K_space, K_param, F_space, F_param, elem_group, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment, debug_geometry, debug_force_fluxes, debug_force_fluxes_enhancement,debug_criterium_enhancement, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
         
-//    }
+    }
     
 //    TM m_adjoint, m_local_ref, m_lambda_min, m_lambda_max, m_lambda_opt, m_adjoint_lambda_min, m_adjoint_lambda_max, m_adjoint_lambda_opt, m_crown;
     
