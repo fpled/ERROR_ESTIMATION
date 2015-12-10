@@ -1,4 +1,5 @@
 .
+build/problem_error_estimation
 CRITERIUM_ENHANCEMENT
 DISCRETIZATION_ERROR
 ECRE
