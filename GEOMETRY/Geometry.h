@@ -13,11 +13,11 @@
 #ifndef Geometry_h
 #define Geometry_h
 
-#include "../LMT/include/mesh/triangle.h"
-#include "../LMT/include/mesh/triangle_6.h"
-#include "../LMT/include/mesh/quad.h"
-#include "../LMT/include/mesh/tetra.h"
-#include "../LMT/include/mesh/tetra_10.h"
+#include "../LMT/include/mesh/Triangle.h"
+#include "../LMT/include/mesh/Triangle_6.h"
+#include "../LMT/include/mesh/Quad.h"
+#include "../LMT/include/mesh/Tetra.h"
+#include "../LMT/include/mesh/Tetra_10.h"
 
 using namespace LMT;
 using namespace std;

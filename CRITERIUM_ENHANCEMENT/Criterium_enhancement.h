@@ -13,15 +13,15 @@
 #ifndef Criterium_enhancement_h
 #define Criterium_enhancement_h
 
-#include "../LMT/include/mesh/triangle.h"
-#include "../LMT/include/mesh/triangle_6.h"
-#include "../LMT/include/mesh/quad.h"
-#include "../LMT/include/mesh/quad_8.h"
-#include "../LMT/include/mesh/quad_9.h"
-#include "../LMT/include/mesh/tetra.h"
-#include "../LMT/include/mesh/tetra_10.h"
-#include "../LMT/include/mesh/hexa.h"
-#include "../LMT/include/mesh/hexa_20.h"
+#include "../LMT/include/mesh/Triangle.h"
+#include "../LMT/include/mesh/Triangle_6.h"
+#include "../LMT/include/mesh/Quad.h"
+#include "../LMT/include/mesh/Quad_8.h"
+#include "../LMT/include/mesh/Quad_9.h"
+#include "../LMT/include/mesh/Tetra.h"
+#include "../LMT/include/mesh/Tetra_10.h"
+#include "../LMT/include/mesh/Hexa.h"
+#include "../LMT/include/mesh/Hexa_20.h"
 
 using namespace LMT;
 using namespace std;
