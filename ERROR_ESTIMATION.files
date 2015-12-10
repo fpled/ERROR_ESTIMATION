@@ -46,7 +46,6 @@ generated/Bar_7.1.met
 generated/Bar_8.1.met
 generated/Hexa.3.met
 generated/Hexa_20.3.met
-generated/Hexa_27.3.met
 generated/NodalElement.1.met
 generated/NodalElement.2.met
 generated/NodalElement.3.met
@@ -760,7 +759,7 @@ LMT/include/mesh/triangle_6.h
 LMT/include/mesh/Triangle_software.h
 LMT/include/mesh/vecgenhelp.py
 LMT/include/mesh/wedge.h
-LMT/include/mesh/Wedge_15.h
+LMT/include/mesh/wedge_15.h
 LMT/include/mesh/write_avs.h
 LMT/include/mesh/write_mesh_vtk.h
 LMT/include/mesh/write_ply.h
@@ -1694,13 +1693,12 @@ TESTS/LMT/include/mesh/penta.h
 TESTS/LMT/include/mesh/pentaprism.h
 TESTS/LMT/include/mesh/problem.h
 TESTS/LMT/include/mesh/pyramid.h
-TESTS/LMT/include/mesh/Pyramide.h
 TESTS/LMT/include/mesh/quad.h
 TESTS/LMT/include/mesh/quad_16.h
 TESTS/LMT/include/mesh/quad_25.h
 TESTS/LMT/include/mesh/quad_36.h
-TESTS/LMT/include/mesh/Quad_42.h
-TESTS/LMT/include/mesh/Quad_6.h
+TESTS/LMT/include/mesh/quad_42.h
+TESTS/LMT/include/mesh/quad_6.h
 TESTS/LMT/include/mesh/quad_8.h
 TESTS/LMT/include/mesh/quad_9.h
 TESTS/LMT/include/mesh/read_avs.h
@@ -1737,7 +1735,7 @@ TESTS/LMT/include/mesh/triangle_6.h
 TESTS/LMT/include/mesh/Triangle_software.h
 TESTS/LMT/include/mesh/vecgenhelp.py
 TESTS/LMT/include/mesh/wedge.h
-TESTS/LMT/include/mesh/Wedge_15.h
+TESTS/LMT/include/mesh/wedge_15.h
 TESTS/LMT/include/mesh/write_avs.h
 TESTS/LMT/include/mesh/write_mesh_vtk.h
 TESTS/LMT/include/mesh/write_ply.h
