@@ -241,6 +241,9 @@ int main( int argc, char **argv ) {
 //    t.stop();
 //    cout << "Temps de calcul du pb direct : " << t.res << endl << endl;
 
+    f.allocate_matrices();
+    f.shift();
+    f.assemble();
     f.get_initial_conditions();
     f.update_variables();
     f.call_after_solve();
