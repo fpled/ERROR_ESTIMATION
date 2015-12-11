@@ -368,9 +368,9 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     calcul_elem_error_estimate_init_SPET.norm_sigma_hat_init = &norm_sigma_hat_init;
     
     apply( m.elem_list, calcul_elem_error_estimate_init_SPET, m, f, theta );
-    
-    cout << "norme du champ de contrainte admissible a zero (auto-equilibre) au carre :" << endl;
-    cout << "||sig_hat_0_init||^2 = " << norm_sigma_hat_init << endl << endl;
+
+//    cout << "norme du champ de contrainte admissible a zero (auto-equilibre) au carre :" << endl;
+//    cout << "||sig_hat_0_init||^2 = " << norm_sigma_hat_init << endl << endl;
 
     norm_sigma_hat_init = sqrt( norm_sigma_hat_init );
     cout << "norme du champ de contrainte admissible a zero (auto-equilibre) :" << endl;
@@ -401,9 +401,9 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
 
     apply( m.elem_list, add_elem_norm_dep_init, m, f, norm_dep );
 
-    cout << "norme du champ de deplacement approche au carre :" << endl;
-    cout << "||u_h||^2 = " << norm_dep << endl;
-    cout << "||u_h_init||^2 = " << norm_dep_init << endl << endl;
+//    cout << "norme du champ de deplacement approche au carre :" << endl;
+//    cout << "||u_h||^2 = " << norm_dep << endl;
+//    cout << "||u_h_init||^2 = " << norm_dep_init << endl << endl;
 
     norm_dep = sqrt( norm_dep );
     norm_dep_init = sqrt( norm_dep_init );

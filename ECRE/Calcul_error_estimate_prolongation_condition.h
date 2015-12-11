@@ -56,8 +56,8 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
     }
 
     T ecre = theta / 2.;
-    cout << "mesure globale de l'erreur en relation de comportement au carre :" << endl;
-    cout << "ecre^2 = " << ecre << endl << endl;
+//    cout << "mesure globale de l'erreur en relation de comportement au carre :" << endl;
+//    cout << "ecre^2 = " << ecre << endl << endl;
 
     theta = sqrt( theta );
     ecre = sqrt( ecre );
@@ -78,8 +78,8 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
     T norm_dep = 0.;
     apply( m.elem_list, Add_Elem_Norm_Dep(), m, f, norm_dep );
 
-    cout << "norme du champ de deplacement approche au carre :" << endl;
-    cout << "||u_h||^2 = " << norm_dep << endl << endl;
+//    cout << "norme du champ de deplacement approche au carre :" << endl;
+//    cout << "||u_h||^2 = " << norm_dep << endl << endl;
 
     norm_dep = sqrt( norm_dep );
     cout << "norme du champ de deplacement approche :" << endl;

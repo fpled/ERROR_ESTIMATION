@@ -56,8 +56,8 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
 
     apply( m.elem_list, calc_elem_error_estimate_init_EET_EESPT, m, f, theta );
 
-    cout << "norme du champ de contrainte admissible a zero (auto-equilibre) au carre :" << endl;
-    cout << "||sig_hat_0_init||^2 = " << norm_sigma_hat_init << endl << endl;
+//    cout << "norme du champ de contrainte admissible a zero (auto-equilibre) au carre :" << endl;
+//    cout << "||sig_hat_0_init||^2 = " << norm_sigma_hat_init << endl << endl;
 
     norm_sigma_hat_init = sqrt( norm_sigma_hat_init );
     cout << "norme du champ de contrainte admissible a zero (auto-equilibre) :" << endl;
@@ -84,10 +84,10 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
     T ecre = theta / 2.;
     T ecre_init = theta_init / 2.;
     T ecre_init_corr = theta_init_corr / 2.;
-    cout << "mesure globale de l'erreur en relation de comportement au carre :" << endl;
-    cout << "ecre^2 = " << ecre << endl;
-    cout << "ecre_init^2 = " << ecre_init << endl;
-    cout << "ecre_init_corr^2 = " << ecre_init_corr << endl << endl;
+//    cout << "mesure globale de l'erreur en relation de comportement au carre :" << endl;
+//    cout << "ecre^2 = " << ecre << endl;
+//    cout << "ecre_init^2 = " << ecre_init << endl;
+//    cout << "ecre_init_corr^2 = " << ecre_init_corr << endl << endl;
 
     ecre = sqrt( ecre );
     theta = sqrt( theta );
@@ -135,9 +135,9 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
 
     apply( m.elem_list, add_elem_norm_dep_init, m, f, norm_dep );
 
-    cout << "norme du champ de deplacement approche au carre :" << endl;
-    cout << "||u_h||^2 = " << norm_dep << endl;
-    cout << "||u_h_init||^2 = " << norm_dep_init << endl << endl;
+//    cout << "norme du champ de deplacement approche au carre :" << endl;
+//    cout << "||u_h||^2 = " << norm_dep << endl;
+//    cout << "||u_h_init||^2 = " << norm_dep_init << endl << endl;
 
     norm_dep = sqrt( norm_dep );
     norm_dep_init = sqrt( norm_dep_init );
