@@ -87,18 +87,40 @@ void set_material_properties( TF &f, TM &m, const string &structure ) {
         /// Carre 2D
         /// --------
         else if ( structure.find("square") != string::npos ) {
-            T mu = 0.9;
-            poisson = 0.3;
-            young = 2*(1+poisson)*mu;
+            if ( structure.find("init") == string::npos ) {
+                T mu = 0.9;
+                poisson = 0.3;
+                young = 2*(1+poisson)*mu;
+            }
+            else {
+                for (unsigned n=0;n<m.elem_list.size();++n) {
+                    if ( center( *m.elem_list[n] )[0] < 0.5 and center( *m.elem_list[n] )[1] < 0.5 ) { // x < 0.5 and y < 0.5
+                        T mu = 100.;
+                        poisson = 0.2;
+                        young = 2*(1+poisson)*mu;
+                        m.elem_list[n]->set_field( "young", young );
+                        m.elem_list[n]->set_field( "poisson", poisson );
+                    }
+                    else {
+                        T mu = 1.;
+                        poisson = 0.3;
+                        young = 2*(1+poisson)*mu;
+                        m.elem_list[n]->set_field( "young", young );
+                        m.elem_list[n]->set_field( "poisson", poisson );
+                    }
+                }
+            }
         }
 
-        set_field_alternativeontype( m, Number< AreSameType< typename ExtractDM<young_DM>::ReturnType<TM>::T, void >::res >(), young, young_DM() );
+        if ( structure.find("square") == string::npos or ( structure.find("square") != string::npos and structure.find("init") == string::npos ) ) {
+            set_field_alternativeontype( m, Number< AreSameType< typename ExtractDM<young_DM>::ReturnType<TM>::T, void >::res >(), young, young_DM() );
 
-        set_field_alternativeontype( m, Number< AreSameType< typename ExtractDM<poisson_DM>::ReturnType<TM>::T, void >::res >(), poisson, poisson_DM() );
-
-        set_field_alternativeontype( m, Number< AreSameType< typename ExtractDM<density_DM>::ReturnType<TM>::T, void >::res >(), density, density_DM() );
+            set_field_alternativeontype( m, Number< AreSameType< typename ExtractDM<poisson_DM>::ReturnType<TM>::T, void >::res >(), poisson, poisson_DM() );
+        }
 
         calc_material_coefficients_alternativeontype( m, f, Number< AreSameType< typename ExtractDM<young_DM>::ReturnType<TM>::T, void >::res >(), Number< AreSameType< typename ExtractDM<poisson_DM>::ReturnType<TM>::T, void >::res >() );
+
+        set_field_alternativeontype( m, Number< AreSameType< typename ExtractDM<density_DM>::ReturnType<TM>::T, void >::res >(), density, density_DM() );
     }
 }
 

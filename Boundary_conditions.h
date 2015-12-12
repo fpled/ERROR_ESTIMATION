@@ -256,11 +256,6 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                             }
                         }
                     }
-//                    else if ( 0.25 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.25 + 1e-6 and 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) {
-//                        for (unsigned d=0;d<dim;++d) {
-//                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
-//                        }
-//                    }
                     else if ( ( 0.25 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.25 + 1e-6 and ( ( 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) or ( 0.75 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.75 + 1e-6 ) ) ) or ( 0.75 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.75 + 1e-6 and ( ( 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) or ( 0.75 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.75 + 1e-6 ) ) ) ) {
                         for (unsigned d=0;d<dim;++d) {
                             f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
@@ -420,32 +415,49 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                 /// pre-deformation et pre-contrainte appliquees sur tous les elements
                 /// -----------------------------------------------------------------
                 else if ( structure.find("square") != string::npos ) {
-                    size_t offset = structure.rfind( "_" )+1;
-                    const string str = structure.substr( offset );
-                    istringstream buffer(str);
-                    int N;
-                    buffer >> N;
-                    Hdf hdf("DATA_HDF5/square-" + str + "x" + str + ".hdf5");
-
-                    Vec<int> s;
-                    hdf.read_size( "/tau", s );
-
-                    Tens3<T> tau;
-                    tau.resize( s );
-                    hdf.read_data( "/tau", tau.ptr(), s, s );
-
-                    Vec<T,unsigned(dim*(dim+1)/2) > pre_sig, pre_eps;
+                    Vec<T,unsigned(dim*(dim+1)/2) >  pre_eps;
                     pre_eps.set( 0, 0. );
-                    pre_eps.set( 1, -1./2 );
+                    if ( structure.find("init") == string::npos )
+                        pre_eps.set( 1, -1./2 );
+                    else
+                        pre_eps.set( 1, -1./sqrt( 2. ) );
                     pre_eps.set( 2, 0. );
-                    for (unsigned n=0;n<m.elem_list.size();++n) {
-                        int i = int(center( *m.elem_list[n] )[0]*N-1./2);
-                        int j = int(center( *m.elem_list[n] )[1]*N-1./2);
-                        pre_sig[ 0 ] = -tau( 0, j, i );
-                        pre_sig[ 1 ] = -tau( 2, j, i )/sqrt(2.);
-                        pre_sig[ 2 ] = -tau( 1, j, i );
-                        m.elem_list[n]->set_field( "pre_sigma", pre_sig );
+                    for (unsigned n=0;n<m.elem_list.size();++n)
                         m.elem_list[n]->set_field( "pre_epsilon", pre_eps );
+
+                    if ( structure.find("homog") != string::npos ) {
+                        Vec<T,unsigned(dim*(dim+1)/2) >  pre_eps_init;
+                        pre_eps_init.set( 0, 0. );
+                        pre_eps_init.set( 1, -1./sqrt( 2. ) );
+                        pre_eps_init.set( 2, 0. );
+                        for (unsigned n=0;n<m.elem_list.size();++n)
+                            m.elem_list[n]->set_field( "pre_epsilon_init", pre_eps_init );
+                    }
+
+                    if ( structure.find("init") == string::npos ) {
+                        size_t offset = structure.rfind( "_" )+1;
+                        const string str = structure.substr( offset );
+                        istringstream buffer(str);
+                        int N;
+                        buffer >> N;
+                        Hdf hdf("DATA_HDF5/square-" + str + "x" + str + ".hdf5");
+
+                        Vec<int> s;
+                        hdf.read_size( "/tau", s );
+
+                        Tens3<T> tau;
+                        tau.resize( s );
+                        hdf.read_data( "/tau", tau.ptr(), s, s );
+
+                        Vec<T,unsigned(dim*(dim+1)/2) > pre_sig;
+                        for (unsigned n=0;n<m.elem_list.size();++n) {
+                            int i = int(center( *m.elem_list[n] )[0]*N-1./2);
+                            int j = int(center( *m.elem_list[n] )[1]*N-1./2);
+                            pre_sig[ 0 ] = -tau( 0, j, i );
+                            pre_sig[ 1 ] = -tau( 2, j, i )/sqrt(2.);
+                            pre_sig[ 2 ] = -tau( 1, j, i );
+                            m.elem_list[n]->set_field( "pre_sigma", pre_sig );
+                        }
                     }
 
 //                    for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {

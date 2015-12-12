@@ -9,7 +9,7 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#include "build/problem_error_estimation/all_in_one.h" // sert a forcer le logiciel scons a generer le repertoire build et ses codes sources .h et .cpp correspondant a la formulation
+#include "build/problem_error_estimation_homog/all_in_one.h" // sert a forcer le logiciel scons a generer le repertoire build et ses codes sources .h et .cpp correspondant a la formulation
 #include "Structure.h"
 #include "Material_properties.h"
 #include "Material_properties_homog.h"
@@ -29,11 +29,11 @@ int main( int argc, char **argv ) {
     t_total.start();
     static const unsigned dim = 2;
     static const bool wont_add_nz = true;
-    typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
+    typedef Mesh<Mesh_carac_error_estimation_homog<double,dim> > TM;
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "square_32"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circular_inclusions, circular_holes
+    static const string structure = "square_homog_128"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circular_inclusions, circular_holes
                                                      // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes
     static const string mesh_size = "fine"; // maillage pour les structures plate_hole (2D ou 3D), plate_crack, structure_crack, test_specimen, weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
     static const string loading = "pull"; // chargement pour la structure spot_weld (3D) : pull, shear, peeling et pour la structure plate_crack (2D) : pull, shear
@@ -244,6 +244,7 @@ int main( int argc, char **argv ) {
     f.allocate_matrices();
     f.shift();
     f.assemble();
+//    f.solve_system();
     f.get_initial_conditions();
     f.update_variables();
     f.call_after_solve();

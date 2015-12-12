@@ -168,6 +168,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     poisson_init := Variable( interpolation="elementary", default_value=0.3, unit="1", tex_name = "\\nu_{\\text{init}}" )
     la_init := Variable( interpolation="elementary", default_value=lame_coeff_lambda( young_init.default_value, poisson_init.default_value, dim, type_stress_2D ), unit="N/m^2", tex_name = "\\lambda_{\\text{init}}" )
     mu_init := Variable( interpolation="elementary", default_value=lame_coeff_mu( young_init.default_value, poisson_init.default_value ), unit="N/m^2", tex_name = "\\mu_{\\text{init}}" )
+    pre_epsilon_init := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\tilde{\\epsilon}_{\\text{init}}" )
     sigma_init := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma_{\\text{init}}" )
     sigma_init_corr := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma_{\\text{init}}" )
     sigma_hat_init_EET := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{init}}" )
@@ -257,7 +258,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
         sigma_tot = sigma.expr + sigma_handbook_PUM.expr
 
         sigma_init = hooke_iso( young_init.expr, poisson_init.expr, dim, type_stress_2D ) : epsilon.expr
-        sigma_init_corr = sigma.expr - pre_sigma.expr - sigma_hooke_iso( pre_epsilon.expr, young.expr, poisson.expr, type_stress_2D ) + sigma_hooke_iso( pre_epsilon.expr, young_init.expr, poisson_init.expr, type_stress_2D )
+        sigma_init_corr = sigma.expr - pre_sigma.expr - sigma_hooke_iso( pre_epsilon.expr, young.expr, poisson.expr, type_stress_2D ) + sigma_hooke_iso( pre_epsilon_init.expr, young_init.expr, poisson_init.expr, type_stress_2D )
 
         residual := sigma.expr : epsilon.test * dV - dot( f_vol.expr, dep.test ) * dV - dot( f_surf.expr, dep.test ) * dS - dot( f_nodal.expr, dep.test ) * dN
 
@@ -273,7 +274,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
 
 # Nom du probleme
 #----------------
-pb_name := "error_estimation"
+pb_name := "error_estimation_homog"
 
 # Liste de formulations
 #----------------------
