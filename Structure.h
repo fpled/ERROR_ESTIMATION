@@ -14,7 +14,7 @@
 
 #include "LMT/include/mesh/make_rect.h" // sert a definir la fonction make_rect() pour fabriquer un maillage rectangulaire/hypercubique
 #include "LMT/include/mesh/read_msh_2.h" // sert a definir la fonction read_msh_2() pour charger un maillage a partir d'un fichier .msh
-#include "LMT/include/mesh/read_avs.h" // sert a definir la fonction read_avs() pour charger un maillage a partir d'un fichier .avs ou .inp
+#include "LMT/include/mesh/read_avs.h" // sert a definir la fonction read_avs() pour charger un maillage a partir d'un fichier .avs
 #include "LMT/include/mesh/read_inp.h" // sert a definir la fonction read_inp() pour charger un maillage a partir d'un fichier .inp
 #include "LMT/include/mesh/ReaderINP.h" // sert a definir la fonction read_inp() pour charger un maillage a partir d'un fichier .inp
 #include "LMT/include/mesh/read_vtu.h" // sert a definir la fonction read_vtu() pour charger un maillage a partir d'un fichier .vtu
@@ -96,7 +96,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
                 else if ( mesh_size == "fine" ) {
                     if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_ref and ( want_global_discretization_error or want_local_discretization_error ) ) ) {
                         read_msh_2( m, "MESH_GMSH/PLATE_HOLE_2D/plate_hole_fine_Triangle.msh" );
-//                        read_avs( m, "MESH_AVS/PLATE_HOLE_2D/plate_hole_fine_Triangle_Quad.inp" );
+//                        read_avs( m, "MESH_AVS/PLATE_HOLE_2D/plate_hole_fine_Triangle_Quad.avs" );
                     }
                     else {
                         read_vtu( m, "MESH_GMSH/PLATE_HOLE_2D/plate_hole_fine_Triangle_direct_global_local_discretization_error.vtu" );
@@ -107,7 +107,7 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
                     cerr << "mesh_size " << mesh_size << " not implemented..." << endl << endl;
                 if ( want_ref ) {
                     read_msh_2( m_ref, "MESH_GMSH/PLATE_HOLE_2D/plate_hole_very_fine_Triangle.msh" );
-//                    read_avs( m_ref, "MESH_AVS/PLATE_HOLE_2D/plate_hole_very_fine_Triangle_Quad.inp" );
+//                    read_avs( m_ref, "MESH_AVS/PLATE_HOLE_2D/plate_hole_very_fine_Triangle_Quad.avs" );
 //                    if ( mesh_size == "coarse" )
 //                        read_avs( m_ref, "MESH_AVS/PLATE_HOLE_2D/plate_hole_coarse_Quad.avs" );
 //                    else if ( mesh_size == "fine" )
@@ -574,22 +574,22 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             switch ( refinement_deg_ref ) {
             case 1 :
                 if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_ref and ( want_global_discretization_error or want_local_discretization_error ) ) )
-                    read_avs( m, "MESH_AVS/PLATE_HOLE_3D/plate_hole_full_Hexa.inp" );
+                    read_avs( m, "MESH_AVS/PLATE_HOLE_3D/plate_hole_full_Hexa.avs" );
                 else
                     read_vtu( m, "MESH_AVS/PLATE_HOLE_3D/plate_hole_full_Hexa_direct_global_local_discretization_error_ref_1.vtu" );
                 break;
             case 2 :
                 if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_ref and ( want_global_discretization_error or want_local_discretization_error ) ) )
-                    read_avs( m, "MESH_AVS/PLATE_HOLE_3D/plate_hole_full_Hexa.inp" );
+                    read_avs( m, "MESH_AVS/PLATE_HOLE_3D/plate_hole_full_Hexa.avs" );
                 else
                     read_vtu( m, "MESH_AVS/PLATE_HOLE_3D/plate_hole_full_Hexa_direct_global_local_discretization_error_ref_2.vtu" );
                 break;
             default :
-                read_avs( m, "MESH_AVS/PLATE_HOLE_3D/plate_hole_full_Hexa.inp" );
+                read_avs( m, "MESH_AVS/PLATE_HOLE_3D/plate_hole_full_Hexa.avs" );
                 break;
             }
             if ( want_ref ) {
-                read_avs( m_ref, "MESH_AVS/PLATE_HOLE_3D/plate_hole_full_Hexa.inp" );
+                read_avs( m_ref, "MESH_AVS/PLATE_HOLE_3D/plate_hole_full_Hexa.avs" );
                 for (unsigned n=0;n<refinement_deg_ref;++n) {
                     divide_element( m_ref );
                 }
@@ -974,6 +974,33 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
             if ( want_ref ) {
                 read_msh_2( m_ref, "MESH_GMSH/SPHERICAL_INCLUSIONS_3D/spherical_inclusions_Tetra.msh" );
+                for (unsigned n=0;n<refinement_deg_ref;++n) {
+                    divide_element( m_ref );
+                }
+            }
+        }
+        /// Eprouvette 3D
+        /// -------------------
+        else if ( structure == "test_specimen" ) {
+            switch ( refinement_deg_ref ) {
+            case 1 :
+                if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_ref and ( want_global_discretization_error or want_local_discretization_error ) ) )
+                    ReaderINP<TM> RI( m , "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+                else
+                    ReaderINP<TM> RI( m , "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+                break;
+            case 2 :
+                if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_ref and ( want_global_discretization_error or want_local_discretization_error ) ) )
+                    ReaderINP<TM> RI( m , "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+                else
+                    ReaderINP<TM> RI( m , "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+                break;
+            default :
+                ReaderINP<TM> RI( m , "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+                break;
+            }
+            if ( want_ref ) {
+                read_avs( m_ref, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
                 for (unsigned n=0;n<refinement_deg_ref;++n) {
                     divide_element( m_ref );
                 }

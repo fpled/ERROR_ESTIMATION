@@ -18,7 +18,7 @@ int main( int argc, char **argv ) {
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "structure_crack"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circular_inclusions, circular_holes
+    static const string structure = "structure_crack"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes
                                                      // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes
     static const string mesh_size = "fine"; // maillage pour les structures plate_hole (2D ou 3D), plate_crack, structure_crack, test_specimen, weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
     static const string loading = "pull"; // chargement pour la structure spot_weld (3D) : pull, shear, peeling et pour la structure plate_crack (2D) : pull, shear

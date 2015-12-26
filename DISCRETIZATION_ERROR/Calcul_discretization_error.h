@@ -18,14 +18,102 @@
 using namespace LMT;
 using namespace std;
 
+/// Calcul de la norme du champ de deplacement
+/// ------------------------------------------
+template<class TM, class TF>
+void calcul_norm_dep( TM &m, const TF &f, const string &pb, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_global_estimation = false, const bool want_local_estimation = false ) {
+
+    typedef typename TM::Pvec Pvec;
+    typedef typename TM::TNode::T T;
+
+    if ( want_global_discretization_error or want_local_discretization_error or want_global_estimation or want_local_estimation ) {
+
+        if ( pb == "direct" )
+            cout << "Calcul de la norme du champ de deplacement approche" << endl << endl;
+        else if ( pb == "reference" )
+            cout << "Calcul de la norme du champ de deplacement de reference" << endl << endl;
+
+        T norm_dep = 0.;
+        Vec<T> norm_dep_elem;
+        norm_dep_elem.resize( m.elem_list.size() );
+        norm_dep_elem.set( 0. );
+
+        Add_Elem_Norm_Dep<T> add_elem_norm_dep;
+        add_elem_norm_dep.norm_dep_elem = &norm_dep_elem;
+
+        apply( m.elem_list, add_elem_norm_dep, m, f, norm_dep );
+
+        m.norm_dep = sqrt( norm_dep );
+
+        if ( pb == "direct" ) {
+//            cout << "norme du champ de deplacement approche au carre :" << endl;
+//            cout << "||u_h||^2 = " << norm_dep << endl << endl;
+
+            cout << "norme du champ de deplacement approche :" << endl;
+            cout << "||u_h|| = " << m.norm_dep << endl << endl;
+        }
+        else if ( pb == "reference" ) {
+//            cout << "norme du champ de deplacement de reference au carre :" << endl;
+//            cout << "||u_ex||^2 = " << norm_dep << endl << endl;
+
+            cout << "norme du champ de deplacement de reference :" << endl;
+            cout << "||u_ex|| = " << m.norm_dep << endl << endl;
+        }
+    }
+}
+
+/// Calcul de la norme du champ de deplacement initial
+/// --------------------------------------------------
+template<class TM, class TF>
+void calcul_norm_dep_init( TM &m, const TF &f, const string &pb, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_global_estimation = false, const bool want_local_estimation = false ) {
+
+    typedef typename TM::Pvec Pvec;
+    typedef typename TM::TNode::T T;
+
+    if ( want_global_discretization_error or want_local_discretization_error or want_global_estimation or want_local_estimation ) {
+
+        if ( pb == "direct" )
+            cout << "Calcul de la norme du champ de deplacement initial approche" << endl << endl;
+        else if ( pb == "reference" )
+            cout << "Calcul de la norme du champ de deplacement initial de reference" << endl << endl;
+
+        T norm_dep_init = 0.;
+        Vec<T> norm_dep_elem_init;
+        norm_dep_elem_init.resize( m.elem_list.size() );
+        norm_dep_elem_init.set( 0. );
+
+        Add_Elem_Norm_Dep_Init<T> add_elem_norm_dep_init;
+        add_elem_norm_dep_init.norm_dep_elem_init = &norm_dep_elem_init;
+
+        apply( m.elem_list, add_elem_norm_dep_init, m, f, norm_dep_init );
+
+        m.norm_dep_init = sqrt( norm_dep_init );
+
+        if ( pb == "direct" ) {
+//            cout << "norme du champ de deplacement approche initial au carre :" << endl;
+//            cout << "||u_h_init||^2 = " << norm_dep_init << endl << endl;
+
+            cout << "norme du champ de deplacement initial approche :" << endl;
+            cout << "||u_h_init|| = " << m.norm_dep_init << endl << endl;
+        }
+        else if ( pb == "reference" ) {
+//            cout << "norme du champ de deplacement de reference initial au carre :" << endl;
+//            cout << "||u_ex_init||^2 = " << norm_dep_init << endl << endl;
+
+            cout << "norme du champ de deplacement de reference initial :" << endl;
+            cout << "||u_ex_init|| = " << m.norm_dep_init << endl << endl;
+        }
+    }
+}
+
 /// Calcul de la mesure de l'erreur de discretisation globale et locale
 /// -------------------------------------------------------------------
 template<class TM, class TF>
-void calcul_discretization_error( TM &m, const TM &m_ref, const TF &f, const TF &f_ref, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_solve_ref = false, const bool debug_discretization_error = false ) {
+void calcul_discretization_error( TM &m, TM &m_ref, const TF &f, const TF &f_ref, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_solve_ref = false, const bool debug_discretization_error = false ) {
     
     typedef typename TM::Pvec Pvec;
     typedef typename TM::TNode::T T;
-    
+
     T discretization_error = 0.;
     Vec<T> discretization_error_elem;
     discretization_error_elem.resize( m.elem_list.size() );
@@ -56,43 +144,25 @@ void calcul_discretization_error( TM &m, const TM &m_ref, const TF &f, const TF 
                 TicToc t_global_discretization_error;
                 t_global_discretization_error.start();
 
-                /// Calcul de la norme du champ de deplacement approche
-                /// ---------------------------------------------------
-
-                cout << "Calcul de la norme du champ de deplacement approche" << endl << endl;
-
-                T norm_dep = 0.;
-
-                apply( m.elem_list, Add_Elem_Norm_Dep(), m, f, norm_dep );
-
-                cout << "norme du champ de deplacement approche au carre :" << endl;
-                cout << "||u_h||^2 = " << norm_dep << endl << endl;
-
                 /// Calcul de la norme du champ de deplacement de reference
                 /// -------------------------------------------------------
 
-                cout << "Calcul de la norme du champ de deplacement de reference" << endl << endl;
-
-                T norm_dep_ref = 0.;
-
-                apply( m_ref.elem_list, Add_Elem_Norm_Dep(), m_ref, f_ref, norm_dep_ref );
-
-                cout << "norme du champ de deplacement de reference au carre :" << endl;
-                cout << "||u_ex||^2 = " << norm_dep_ref << endl << endl;
+                calcul_norm_dep( m_ref, f_ref, "reference", want_global_discretization_error, want_local_discretization_error );
 
                 /// Calcul exact de la mesure de l'erreur de discretisation globale
                 /// ---------------------------------------------------------------
 
                 cout << "Calcul exact de la mesure de l'erreur de discretisation globale" << endl << endl;
 
-                T discretization_error = norm_dep_ref - norm_dep;
-                m.discretization_error = sqrt(discretization_error);
+                T discretization_error = pow( m_ref.norm_dep, 2 ) - pow( m.norm_dep, 2 );
+//                cout << "mesure de l'erreur de discretisation globale au carre :" << endl;
+//                cout << "e^2 = " << discretization_error << endl << endl;
 
-                cout << "mesure de l'erreur de discretisation globale au carre :" << endl;
-                cout << "e^2 = " << discretization_error << endl << endl;
-
+                discretization_error = sqrt( discretization_error );
+                m.discretization_error = discretization_error;
                 cout << "mesure de l'erreur de discretisation globale :" << endl;
-                cout << "e = " << m.discretization_error << endl << endl;
+                cout << "e = " << m.discretization_error << endl;
+                cout << "e / ||u_h|| = " << m.discretization_error / m.norm_dep * 100. << " %" << endl << endl;
 
                 t_global_discretization_error.stop();
                 cout << "Temps de calcul de la mesure de l'erreur de discretisation globale : " << t_global_discretization_error.res << endl << endl;
@@ -130,8 +200,12 @@ void calcul_discretization_error( TM &m, const TM &m_ref, const TF &f, const TF 
                 for (unsigned n=0;n<m.elem_list.size();++n) {
                     sum_discretization_error_elem += discretization_error_elem[ n ];
                 }
-                cout << "somme des mesures (elementaires) de l'erreur de discretisation locale au carre :" << endl;
-                cout << "sum( e_elem^2 ) = " << sum_discretization_error_elem << endl << endl;
+//                cout << "indicateur d'erreur globale au carre :" << endl;
+//                cout << "e^2 = " << sum_discretization_error_elem << endl << endl;
+
+                cout << "indicateur d'erreur globale :" << endl;
+                cout << "e = " << sqrt( sum_discretization_error_elem ) << endl;
+                cout << "e / ||u_h|| = " << sqrt( sum_discretization_error_elem ) / m.norm_dep * 100. << " %" << endl << endl;
 
                 t_local_discretization_error.stop();
                 cout << "Temps de calcul des mesures (elementaires) de l'erreur de discretisation locale : " << t_local_discretization_error.res << endl << endl;
@@ -139,36 +213,31 @@ void calcul_discretization_error( TM &m, const TM &m_ref, const TF &f, const TF 
                 /// Calcul approche de la mesure de l'erreur de discretisation globale comme somme de contributions locales
                 /// -------------------------------------------------------------------------------------------------------
 
-                if ( want_global_discretization_error and all_Dirichlet_boundary_conditions_equal_to_zero == 0 ) {
-
-                    cout << "Calcul approche de la mesure de l'erreur de discretisation globale" << endl << endl;
-
-                    cout << "mesure de l'erreur de discretisation globale au carre :" << endl;
-                    cout << "e^2 = " << sum_discretization_error_elem << endl << endl;
-
+                if ( want_global_discretization_error and all_Dirichlet_boundary_conditions_equal_to_zero == 0 )
                     m.discretization_error = sqrt( sum_discretization_error_elem );
-
-                    cout << "mesure de l'erreur de discretisation globale :" << endl;
-                    cout << "e = " << discretization_error << endl << endl;
-                }
             }
         }
         else {
             discretization_error = m.discretization_error;
 
-            cout << "mesure de l'erreur de discretisation globale au carre :" << endl;
-            cout << "e^2 = " << pow( discretization_error, 2 ) << endl << endl;
+//            cout << "mesure de l'erreur de discretisation globale au carre :" << endl;
+//            cout << "e^2 = " << pow( m.discretization_error, 2 ) << endl << endl;
 
             cout << "mesure de l'erreur de discretisation globale :" << endl;
-            cout << "e = " << discretization_error << endl << endl;
+            cout << "e = " << m.discretization_error << endl;
+            cout << "e / ||u_h|| = " << m.discretization_error / m.norm_dep * 100. << " %" << endl << endl;
             
             T sum_discretization_error_elem = 0.;
             for (unsigned n=0;n<m.elem_list.size();++n) {
                 discretization_error_elem[ n ] = m.elem_list[ n ]->get_field( "discretization_error_elem", StructForType<T>() );
                 sum_discretization_error_elem += discretization_error_elem[ n ];
             }
-            cout << "somme des mesures (elementaires) de l'erreur de discretisation locale au carre :" << endl;
-            cout << "sum( e_elem^2 ) = " << sum_discretization_error_elem << endl << endl;
+//            cout << "indicateur d'erreur globale au carre :" << endl;
+//            cout << "e^2 = " << sum_discretization_error_elem << endl << endl;
+
+            cout << "indicateur d'erreur globale :" << endl;
+            cout << "e = " << sqrt( sum_discretization_error_elem ) << endl;
+            cout << "e / ||u_h|| = " << sqrt( sum_discretization_error_elem ) / m.norm_dep * 100. << " %" << endl << endl;
         }
     }
 }

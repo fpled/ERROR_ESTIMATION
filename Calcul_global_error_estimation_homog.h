@@ -32,7 +32,7 @@ using namespace std;
 /// Calcul d'un estimateur d'erreur globale
 /// ---------------------------------------
 template<class TF, class TM, class T>
-void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const string &method, const unsigned &cost_function, const T &penalty_val_N, const string &solver, const string &solver_minimisation, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const string &geometric_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, T &theta, T &theta_init, T &theta_init_corr, Vec<T> &theta_elem, Vec<T> &theta_elem_init, Vec<T> &theta_elem_init_corr, Vec< Vec<T> > &dep_hat, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool verif_eq_force_fluxes = false, const T tol_eq_force_fluxes = 1e-6, const bool verif_solver = false, const T tol_solver = 1e-6, const bool verif_solver_enhancement = false, const T tol_solver_enhancement = 1e-6, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_solver_minimisation_enhancement = false, const T tol_solver_minimisation_enhancement = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const bool debug_geometry = false, const bool debug_force_fluxes = false, const bool debug_force_fluxes_enhancement = false, const bool debug_criterium_enhancement = false, const bool debug_error_estimate = false, const bool debug_local_effectivity_index = false, const bool debug_method = false, const bool debug_method_enhancement = false ) {
+void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const string &method, const unsigned &cost_function, const T &penalty_val_N, const string &solver, const string &solver_minimisation, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const string &geometric_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, T &theta, T &theta_init, Vec<T> &theta_elem, Vec<T> &theta_elem_init, Vec< Vec<T> > &dep_hat, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool verif_eq_force_fluxes = false, const T tol_eq_force_fluxes = 1e-6, const bool verif_solver = false, const T tol_solver = 1e-6, const bool verif_solver_enhancement = false, const T tol_solver_enhancement = 1e-6, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_solver_minimisation_enhancement = false, const T tol_solver_minimisation_enhancement = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const bool debug_geometry = false, const bool debug_force_fluxes = false, const bool debug_force_fluxes_enhancement = false, const bool debug_criterium_enhancement = false, const bool debug_error_estimate = false, const bool debug_local_effectivity_index = false, const bool debug_method = false, const bool debug_method_enhancement = false ) {
     
     /// ----------- ///
     /// Methode EET ///
@@ -51,7 +51,6 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
         
         theta = 0.;
         theta_init = 0.;
-        theta_init_corr = 0.;
         
         Vec<bool> elem_flag_enh;
         Vec<bool> face_flag_enh;
@@ -109,7 +108,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// Construction d'un champ de contrainte admissible par element, Calcul d'un estimateur d'erreur globale
             /// -----------------------------------------------------------------------------------------------------
             
-            calcul_error_estimate_prolongation_condition( m, f, pb, "EET", theta, theta_init, theta_init_corr, theta_elem, theta_elem_init, theta_elem_init_corr, dep_hat, want_global_discretization_error, want_local_discretization_error, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
+            calcul_error_estimate_prolongation_condition( m, f, pb, "EET", theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
             
             if ( enhancement_with_estimator_criterium ) {
            
@@ -171,7 +170,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// Construction d'un champ de contrainte admissible par element, Calcul d'un estimateur d'erreur globale
             /// -----------------------------------------------------------------------------------------------------
             
-            calcul_error_estimate_prolongation_condition( m, f, pb, "EET", theta, theta_init, theta_init_corr, theta_elem, theta_elem_init, theta_elem_init_corr, dep_hat, want_global_discretization_error, want_local_discretization_error, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
+            calcul_error_estimate_prolongation_condition( m, f, pb, "EET", theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
             
         }
         
@@ -195,7 +194,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
         /// ---------------------------------------
         
         theta = 0.;
-        calcul_error_estimate_partition_unity( m, f, pb, solver, "SPET", theta, theta_init, theta_init_corr, theta_elem, theta_elem_init, theta_elem_init_corr, dep_hat, verif_solver, tol_solver, want_global_discretization_error, want_local_discretization_error, want_local_enrichment, debug_geometry, debug_error_estimate, debug_local_effectivity_index, debug_method );
+        calcul_error_estimate_partition_unity( m, f, pb, solver, "SPET", theta, theta_init, theta_elem, theta_elem_init, dep_hat, verif_solver, tol_solver, want_global_discretization_error, want_local_discretization_error, want_local_enrichment, debug_geometry, debug_error_estimate, debug_local_effectivity_index, debug_method );
         
         t_SPET.stop();
         cout << "Temps de calcul total pour la technique SPET : " << t_SPET.res << endl << endl;
@@ -274,7 +273,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// Construction d'un champ de contrainte admissible par element, Calcul d'un estimateur d'erreur globale
             /// -----------------------------------------------------------------------------------------------------
             
-            calcul_error_estimate_prolongation_condition( m, f, pb, "EESPT", theta, theta_init, theta_init_corr, theta_elem, theta_elem_init, theta_elem_init_corr, dep_hat, want_global_discretization_error, want_local_discretization_error, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
+            calcul_error_estimate_prolongation_condition( m, f, pb, "EESPT", theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
             
             if ( enhancement_with_estimator_criterium ) {
                 
@@ -336,7 +335,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// Construction d'un champ de contrainte admissible par element, Calcul d'un estimateur d'erreur globale
             /// -----------------------------------------------------------------------------------------------------
             
-            calcul_error_estimate_prolongation_condition( m, f, pb, "EESPT", theta, theta_init, theta_init_corr, theta_elem, theta_elem_init, theta_elem_init_corr, dep_hat, want_global_discretization_error, want_local_discretization_error, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
+            calcul_error_estimate_prolongation_condition( m, f, pb, "EESPT", theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
             
         }
         

@@ -70,23 +70,11 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
         m.theta_EESPT = theta;
     }
     cout << "mesure globale de l'erreur en relation de comportement :" << endl;
-    cout << "ecre = " << ecre << endl << endl;
+    cout << "ecre = " << ecre << endl;
 
     cout << "estimateur d'erreur globale :" << endl;
-    cout << "theta = " << theta << endl << endl;
-
-    T norm_dep = 0.;
-    apply( m.elem_list, Add_Elem_Norm_Dep(), m, f, norm_dep );
-
-//    cout << "norme du champ de deplacement approche au carre :" << endl;
-//    cout << "||u_h||^2 = " << norm_dep << endl << endl;
-
-    norm_dep = sqrt( norm_dep );
-    cout << "norme du champ de deplacement approche :" << endl;
-    cout << "||u_h|| = " << norm_dep << endl << endl;
-
-    cout << "estimateur d'erreur globale relative :" << endl;
-    cout << "theta / ||u_h|| = " << theta / norm_dep * 100. << " %" << endl << endl;
+    cout << "theta = " << theta << endl;
+    cout << "theta / ||u_h|| = " << theta / m.norm_dep * 100. << " %" << endl << endl;
 
     if ( pb == "direct" and want_global_discretization_error ) {
         T eff_index = theta / m.discretization_error;
@@ -95,7 +83,8 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
         if ( method == "EESPT" )
             m.eff_index_EESPT = eff_index;
         cout << "indice d'efficacite global :" << endl;
-        cout << "eta = " << eff_index << endl << endl;
+        cout << "eta = theta / e" << endl;
+        cout << "    = " << eff_index << endl << endl;
     }
 
     if ( pb == "direct" and want_local_discretization_error ) {

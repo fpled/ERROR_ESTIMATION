@@ -66,9 +66,10 @@ def construct_space_pb( list_f, rep )
     for f in list_f
         e_param := new SymbolicElement[ Bar, 1 ]( name_elem = "elem_param", tex_symbol_pos = "P_{\\text{param}}" )
         e_param->assume_const_jac = false
+        Tf_param := f->name
         f_param := new FormulationElasticity[ e_param->dim ]( @e_param, "param_" )
-        f_param->name = f->name
-        f_param->make_matrices( @e_param, integ_type )
+        f_param->name = Tf_param
+        f_param->make_matrices( @e_param, integration_type, e_param->assume_const_jac, degre_poly_handbook )
         file_name := "construct_space_pb_$(f_param->name).$(e_param->dim).$(e_param->name).h"
         file_names.push_back( file_name )
         file_ := File( rep + "/construct_space_pb_$(f_param->name).$(e_param->dim).$(e_param->name).h", "w" )
@@ -84,10 +85,10 @@ def construct_space_pb( list_f, rep )
         function_param := 1 + pos[0]
         degre_poly_alpha := ( dot( f_param->dep_param.expr, f_param->dep_param.expr ) * function_param ).poly_deg( e_param->var_inter )
         degre_poly_gamma := ( f_param->dep_param.expr[0] ).poly_deg( e_param->var_inter )
-        if integ_type == "gauss_num"
+        if integration_type == "gauss_num"
             alpha = e_param->gauss_num_integration( dot( f_param->dep_param.expr, f_param->dep_param.expr ) * function_param, order_diff = degre_poly_alpha )
             gamma = e_param->gauss_num_integration( f_param->dep_param.expr[0], order_diff = degre_poly_gamma )
-        else if integ_type == "formal"
+        else if integration_type == "formal"
             alpha = e_param->integration( dot( f_param->dep_param.expr, f_param->dep_param.expr ) * function_param, order_diff = degre_poly_alpha )
             gamma = e_param->integration( f_param->dep_param.expr[0], order_diff = degre_poly_gamma )
         cw := CodeWriterAlt( "T" )

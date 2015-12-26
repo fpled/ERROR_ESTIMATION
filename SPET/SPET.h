@@ -137,20 +137,17 @@ struct Calcul_Elem_Error_Estimate_SPET {
 };
 
 template<class TE, class TM, class TF, class TTVV, class TTWW, class TTV, class TT>
-void calc_elem_error_estimate_init_SPET( TE &elem, const TM &m, const TF &f, const TTVV &E, const TTWW &vectors, const Vec<unsigned> &indices, TTV &theta_elem, TTV &theta_elem_init, TTV &theta_elem_init_corr, TT &theta, TT &theta_init, TT &theta_init_corr, TT &norm_sigma_hat_init ) {}
+void calc_elem_error_estimate_init_SPET( TE &elem, const TM &m, const TF &f, const TTVV &E, const TTWW &vectors, const Vec<unsigned> &indices, TTV &theta_elem, TTV &theta_elem_init, TT &theta, TT &theta_init ) {}
 
 template<class T>
 struct Calcul_Elem_Error_Estimate_Init_SPET {
     const Vec< Vec<T> >* E;
     Vec<T>* theta_elem;
     Vec<T>* theta_elem_init;
-    Vec<T>* theta_elem_init_corr;
     T* theta_init;
-    T* theta_init_corr;
-    T* norm_sigma_hat_init;
     template<class TE, class TM, class TF> void operator()( TE &elem, const TM &m, const TF &f, T &theta ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
-        calc_elem_error_estimate_init_SPET( elem, m, f, *E, f.vectors, ind, *theta_elem, *theta_elem_init, *theta_elem_init_corr, theta, *theta_init, *theta_init_corr, *norm_sigma_hat_init );
+        calc_elem_error_estimate_init_SPET( elem, m, f, *E, f.vectors, ind, *theta_elem, *theta_elem_init, theta, *theta_init );
     }
 };
 

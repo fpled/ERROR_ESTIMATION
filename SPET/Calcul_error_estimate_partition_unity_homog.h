@@ -23,7 +23,7 @@ using namespace std;
 /// Calcul d'un champ de contrainte admissible, calcul d'un estimateur theta de l'erreur globale pour la methode basee sur la partition de l'unite (SPET)
 /// -----------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T>
-void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb, const string &solver, const string &method, T &theta, T &theta_init, T &theta_init_corr, Vec<T> &theta_elem, Vec<T> &theta_elem_init, Vec<T> &theta_elem_init_corr, Vec< Vec<T> > &E, const bool verif_solver = false, const T tol_solver = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const bool debug_geometry = false, const bool debug_error_estimate = false, const bool debug_local_effectivity_index = false, const bool debug_method = false ) {
+void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb, const string &solver, const string &method, T &theta, T &theta_init, Vec<T> &theta_elem, Vec<T> &theta_elem_init, Vec< Vec<T> > &E, const bool verif_solver = false, const T tol_solver = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const bool debug_geometry = false, const bool debug_error_estimate = false, const bool debug_local_effectivity_index = false, const bool debug_method = false ) {
     
     static const unsigned dim = TM::dim;
     
@@ -355,33 +355,20 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     
     theta_elem.resize( m.elem_list.size() );
     theta_elem.set( 0. );
-    
-    T norm_sigma_hat_init = 0.;
 
     Calcul_Elem_Error_Estimate_Init_SPET<T> calcul_elem_error_estimate_init_SPET;
     calcul_elem_error_estimate_init_SPET.E = &E;
     calcul_elem_error_estimate_init_SPET.theta_elem = &theta_elem;
     calcul_elem_error_estimate_init_SPET.theta_elem_init = &theta_elem_init;
-    calcul_elem_error_estimate_init_SPET.theta_elem_init_corr = &theta_elem_init_corr;
     calcul_elem_error_estimate_init_SPET.theta_init = &theta_init;
-    calcul_elem_error_estimate_init_SPET.theta_init_corr = &theta_init_corr;
-    calcul_elem_error_estimate_init_SPET.norm_sigma_hat_init = &norm_sigma_hat_init;
     
     apply( m.elem_list, calcul_elem_error_estimate_init_SPET, m, f, theta );
-
-//    cout << "norme du champ de contrainte admissible a zero (auto-equilibre) au carre :" << endl;
-//    cout << "||sig_hat_0_init||^2 = " << norm_sigma_hat_init << endl << endl;
-
-    norm_sigma_hat_init = sqrt( norm_sigma_hat_init );
-    cout << "norme du champ de contrainte admissible a zero (auto-equilibre) :" << endl;
-    cout << "||sig_hat_0_init|| = " << norm_sigma_hat_init << endl << endl;
 
     if ( debug_error_estimate or debug_method ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
             cout << "contribution a l'estimateur d'erreur globale au carre de l'element " << n << " :" << endl;
             cout << "theta_elem^2 = " << theta_elem[ n ] << endl;
             cout << "theta_elem_init^2 = " << theta_elem_init[ n ] << endl;
-            cout << "theta_elem_init_corr^2 = " << theta_elem_init_corr[ n ] << endl;
         }
         cout << endl;
     }
@@ -391,35 +378,14 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     cout << "estimateur d'erreur globale :" << endl;
     cout << "theta = " << theta << endl;
     cout << "theta_init = " << theta_init << endl;
-    cout << "theta_init_corr = " << theta_init_corr << endl << endl;
-    
-    T norm_dep = 0.;
-    T norm_dep_init = 0.;
-
-    Add_Elem_Norm_Dep_Init<T> add_elem_norm_dep_init;
-    add_elem_norm_dep_init.norm_dep_init = &norm_dep_init;
-
-    apply( m.elem_list, add_elem_norm_dep_init, m, f, norm_dep );
-
-//    cout << "norme du champ de deplacement approche au carre :" << endl;
-//    cout << "||u_h||^2 = " << norm_dep << endl;
-//    cout << "||u_h_init||^2 = " << norm_dep_init << endl << endl;
-
-    norm_dep = sqrt( norm_dep );
-    norm_dep_init = sqrt( norm_dep_init );
-    cout << "norme du champ de deplacement approche :" << endl;
-    cout << "||u_h|| = " << norm_dep << endl;
-    cout << "||u_h_init|| = " << norm_dep_init << endl << endl;
-
-    cout << "estimateur d'erreur globale relative :" << endl;
-    cout << "theta / ||u_h|| = " << theta / norm_dep * 100. << " %" << endl;
-    cout << "theta_init / ||u_h_init|| = " << theta_init / norm_dep_init * 100. << " %" << endl;
-    cout << "theta_init_corr / ||u_h_init|| = " << theta_init_corr / norm_dep_init * 100. << " %" << endl << endl;
+    cout << "theta / ||u_h|| = " << theta / m.norm_dep * 100. << " %" << endl;
+    cout << "theta_init / ||u_h_init|| = " << theta_init / m.norm_dep_init * 100. << " %" << endl << endl;
 
     if ( want_global_discretization_error ) {
         m.eff_index_SPET = theta / m.discretization_error;
         cout << "indice d'efficacite global :" << endl;
-        cout << "eta = " << m.eff_index_SPET << endl << endl;
+        cout << "eta = theta / e" << endl;
+        cout << "    = " << m.eff_index_SPET << endl << endl;
     }
     
     if ( want_local_discretization_error ) {

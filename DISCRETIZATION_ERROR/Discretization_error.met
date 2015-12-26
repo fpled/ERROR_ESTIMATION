@@ -23,7 +23,7 @@ def add_elem_norm_dep( list_f, rep )
         file_ <<< "#define add_elem_norm_dep_$(f->name)_$(e->dim)_$(e->name)_h"
         file_ <<< "namespace LMT {"
         file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class T>"
-        file_ <<< "void add_elem_norm_dep( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const TTVV &vectors, const Vec<unsigned> &indices, T &norm_dep ) {"
+        file_ <<< "void add_elem_norm_dep( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const TTVV &vectors, const Vec<unsigned> &indices, Vec<T> &norm_dep_elem, T &norm_dep ) {"
         file_ <<< "    #define PNODE(N) elem.node(N)"
         deg_p := max( e->order_interpolation )
         norm_dep := Op( 0 )
@@ -42,6 +42,9 @@ def add_elem_norm_dep( list_f, rep )
         cw := CodeWriterAlt( "T" )
         cw.add( "norm_dep", norm_dep, add )
         file_ <<< "$(cw.to_string( 4 ))"
+        file_ <<<<
+                norm_dep += norm_dep_elem[ elem.number ];
+                elem.norm_dep_elem = norm_dep_elem[ elem.number ];
         file_ <<< "    #undef PNODE"
         file_ <<< "}"
         file_ <<< "}"
@@ -61,29 +64,28 @@ def add_elem_norm_dep_init( list_f, rep )
         file_ <<< "#define add_elem_norm_dep_init_$(f->name)_$(e->dim)_$(e->name)_h"
         file_ <<< "namespace LMT {"
         file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class T>"
-        file_ <<< "void add_elem_norm_dep_init( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const TTVV &vectors, const Vec<unsigned> &indices, T &norm_dep, T &norm_dep_init ) {"
+        file_ <<< "void add_elem_norm_dep_init( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const TTVV &vectors, const Vec<unsigned> &indices, Vec<T> &norm_dep_elem_init, T &norm_dep_init ) {"
         file_ <<< "    #define PNODE(N) elem.node(N)"
         deg_p := max( e->order_interpolation )
-        norm_dep := Op( 0 )
         norm_dep_init := Op( 0 )
 
         e->assume_const_jac = true
         epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
-        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D )
         norm_dep_const_jac := epsilon_const_jac : sigma_const_jac
         e->assume_const_jac = hyp_const_jac
         degre_poly := norm_dep_const_jac.poly_deg( e->var_inter )
 
         if integration_type == "gauss_num"
-            norm_dep = e->gauss_num_integration( child_cast(f)->epsilon.expr : child_cast(f)->sigma.expr, order_diff = degre_poly  )
             norm_dep_init = e->gauss_num_integration( child_cast(f)->epsilon.expr : child_cast(f)->sigma_init.expr, order_diff = degre_poly  )
         else if integration_type == "formal"
-            norm_dep = e->integration( child_cast(f)->epsilon.expr : child_cast(f)->sigma.expr, order_diff = degre_poly  )
             norm_dep_init = e->integration( child_cast(f)->epsilon.expr : child_cast(f)->sigma_init.expr, order_diff = degre_poly  )
         cw := CodeWriterAlt( "T" )
-        cw.add( "norm_dep", norm_dep, add )
-        cw.add( "norm_dep_init", norm_dep_init, add )
+        cw.add( "norm_dep_elem_init[ elem.number ]", norm_dep_init, reassign )
         file_ <<< "$(cw.to_string( 4 ))"
+        file_ <<<<
+                norm_dep_init += norm_dep_elem_init[ elem.number ];
+                elem.norm_dep_elem_init = norm_dep_elem_init[ elem.number ];
         file_ <<< "    #undef PNODE"
         file_ <<< "}"
         file_ <<< "}"
@@ -109,88 +111,90 @@ def calc_elem_discretization_error( list_f, rep )
         e->assume_const_jac = hyp_const_jac
 
         for _f_ref in list_f
-            _e_ref := child_cast( _f_ref->pe )
-            e_ref := new SymbolicElement[ _e_ref->name, _e_ref->dim ]( name_elem = "elem_ref", tex_symbol_pos = "P_{\\text{ref}}", node_numbers_to_node_numbers_in_parent_cpp = range(_e_ref->nb_nodes).map( _e_ref->corr_cpp ) )
-            e_ref->assume_const_jac = e->assume_const_jac
-            f_ref := new FormulationElasticity[ _e_ref->dim ]( @e_ref, "ref_" )
-            f_ref->name = _f_ref->name
-            f_ref->make_matrices( @e_ref, integration_type )
-            file_ <<< "template<class TN, class TN_REF, class TNG, class TNG_REF, class TD, class TD_REF, unsigned NET, unsigned NET_REF, class TM, class TF, class TTVV, class T>"
-            file_ <<< "void calc_elem_discretization_error( const Element<$(e->name),TN,TNG,TD,NET> &elem, const Element<$(e_ref->name),TN_REF,TNG_REF,TD_REF,NET_REF> &elem_ref, const TM &m, const TM &m_ref, const TF &f, const TF &f_ref, const TTVV &vectors, const TTVV &ref_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &ref_indices, Vec<T> &discretization_error_elem ) {"
-            file_ <<< "    #define PNODE(N) elem.node(N)"
-            # Calcul approche de l'erreur de discretisation locale sur chaque element : on repere si le centre (ou un noeud) de l'element e_ref est inclus dans l'element e
-            #--------------------------------------------------------------------------------------------------------------------------------------------------------------
-            file_ <<< "    bool recovery_test_elem = 0;"
-            file_ <<< "    bool recovery_test_center = 0;"
-            # file_ <<< "    Vec<bool> recovery_test_nodes;"
-            # file_ <<< "    recovery_test_nodes.resize( elem.nb_nodes, 0 );"
-            center_e_ref := Vec[ Op, e_ref->dim ]()
-            for d in 0 .. e_ref->dim
-                center_e_ref[ d ] = symbol( "center( elem_ref )[ $d ]", tex_name = "C_{$d}" )
-            recovery_test_center := e->point_is_inside( center_e_ref, 1 )
-            cw_0 := CodeWriterAlt( "T" )
-            cw_0.add( "recovery_test_center", recovery_test_center, reassign )
-            file_ <<< "    {"
-            file_ <<< "$(cw_0.to_string( 8 ));"
-            file_ <<< "    }"
-            # cw_1 := CodeWriterAlt( "T" )
-            # nodes_e_ref := Vec[ Vec[ Op, e_ref->dim ], e_ref->nb_nodes ]()
-            # for n in 0 .. e_ref->nb_nodes
-                # for d in 0 .. e_ref->dim
-                    # nodes_e_ref[ n ][ d ] = symbol( "elem_ref.node( $n )->pos[ $d ]", tex_name = "P_{$d}" )
-                # recovery_test_nodes := e->point_is_inside( nodes_e_ref[ n ] )
-                # cw_1.add( "recovery_test_nodes[ $n ]", recovery_test_nodes, reassign )
-            # file_ <<< "    {"
-            # file_ <<< "$(cw_1.to_string( 8 ));"
-            # file_ <<< "    }"
-            file_ <<< "    if ( recovery_test_center ) {"
-            file_ <<< "        recovery_test_elem = 1 ;"
-            file_ <<< "    }"
-            # file_ <<< "    for (unsigned n=0;n<elem.nb_nodes;++n) {"
-            # file_ <<< "        if ( recovery_test_nodes[ n ] ) {"
-            # file_ <<< "            recovery_test_elem = 1 ;"
-            # file_ <<< "        }"
-            # file_ <<< "    }"
-            e_var_inter := e->var_inter_for_pos( e_ref->pos, 1 )
-            epsilon_proj := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
-            sigma_proj := ( child_cast(f)->sigma.expr ).subs( e->var_inter, e_var_inter )
-            deg_p_ref := max( e_ref->order_interpolation )
-            discretization_error_ref := Op( 0 )
+            if _f_ref->nb_dim == f->nb_dim
+                _e_ref := child_cast( _f_ref->pe )
+                e_ref := new SymbolicElement[ _e_ref->name, _e_ref->dim ]( name_elem = "elem_ref", tex_symbol_pos = "P_{\\text{ref}}", node_numbers_to_node_numbers_in_parent_cpp = range(_e_ref->nb_nodes).map( _e_ref->corr_cpp ) )
+                e_ref->assume_const_jac = e->assume_const_jac
+                Tf_ref := _f_ref->name
+                f_ref := new FormulationElasticity[ _e_ref->dim ]( @e_ref, "ref_" )
+                f_ref->name = Tf_ref
+                f_ref->make_matrices( @e_ref, integration_type, e_ref->assume_const_jac, degre_poly_handbook )
+                file_ <<< "template<class TN, class TN_REF, class TNG, class TNG_REF, class TD, class TD_REF, unsigned NET, unsigned NET_REF, class TM, class TF, class TTVV, class T>"
+                file_ <<< "void calc_elem_discretization_error( const Element<$(e->name),TN,TNG,TD,NET> &elem, const Element<$(e_ref->name),TN_REF,TNG_REF,TD_REF,NET_REF> &elem_ref, const TM &m, const TM &m_ref, const TF &f, const TF &f_ref, const TTVV &vectors, const TTVV &ref_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &ref_indices, Vec<T> &discretization_error_elem ) {"
+                file_ <<< "    #define PNODE(N) elem.node(N)"
+                # Calcul approche de l'erreur de discretisation locale sur chaque element : on repere si le centre (ou un noeud) de l'element e_ref est inclus dans l'element e
+                #--------------------------------------------------------------------------------------------------------------------------------------------------------------
+                file_ <<< "    bool recovery_test_elem = 0;"
+                file_ <<< "    bool recovery_test_center = 0;"
+                # file_ <<< "    Vec<bool> recovery_test_nodes;"
+                # file_ <<< "    recovery_test_nodes.resize( elem.nb_nodes, 0 );"
+                center_e_ref := Vec[ Op, e_ref->dim ]()
+                for d in 0 .. e_ref->dim
+                    center_e_ref[ d ] = symbol( "center( elem_ref )[ $d ]", tex_name = "C_{$d}" )
+                recovery_test_center := e->point_is_inside( center_e_ref, 1 )
+                cw_0 := CodeWriterAlt( "T" )
+                cw_0.add( "recovery_test_center", recovery_test_center, reassign )
+                file_ <<< "    {"
+                file_ <<< "$(cw_0.to_string( 8 ));"
+                file_ <<< "    }"
+                # cw_1 := CodeWriterAlt( "T" )
+                # nodes_e_ref := Vec[ Vec[ Op, e_ref->dim ], e_ref->nb_nodes ]()
+                # for n in 0 .. e_ref->nb_nodes
+                    # for d in 0 .. e_ref->dim
+                        # nodes_e_ref[ n ][ d ] = symbol( "elem_ref.node( $n )->pos[ $d ]", tex_name = "P_{$d}" )
+                    # recovery_test_nodes := e->point_is_inside( nodes_e_ref[ n ] )
+                    # cw_1.add( "recovery_test_nodes[ $n ]", recovery_test_nodes, reassign )
+                # file_ <<< "    {"
+                # file_ <<< "$(cw_1.to_string( 8 ));"
+                # file_ <<< "    }"
+                file_ <<< "    if ( recovery_test_center ) {"
+                file_ <<< "        recovery_test_elem = 1 ;"
+                file_ <<< "    }"
+                # file_ <<< "    for (unsigned n=0;n<elem.nb_nodes;++n) {"
+                # file_ <<< "        if ( recovery_test_nodes[ n ] ) {"
+                # file_ <<< "            recovery_test_elem = 1 ;"
+                # file_ <<< "        }"
+                # file_ <<< "    }"
+                e_var_inter := e->var_inter_for_pos( e_ref->pos, 1 )
+                epsilon_proj := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
+                sigma_proj := ( child_cast(f)->sigma.expr ).subs( e->var_inter, e_var_inter )
+                deg_p_ref := max( e_ref->order_interpolation )
+                discretization_error_ref := Op( 0 )
 
-            e_ref->assume_const_jac = true
-            epsilon_proj_const_jac := ( epsilon_const_jac ).subs( e->var_inter, e_var_inter )
-            sigma_proj_const_jac := ( sigma_const_jac ).subs( e->var_inter, e_var_inter )
-            epsilon_ref_const_jac := e_ref->grad_sym( f_ref->dep.expr )
-            sigma_ref_const_jac := sigma_hooke_iso( epsilon_ref_const_jac, f_ref->young.expr, f_ref->poisson.expr, type_stress_2D )
-            discretization_error_ref_const_jac := ( epsilon_ref_const_jac - epsilon_proj_const_jac ) : ( sigma_ref_const_jac - sigma_proj_const_jac )
-            e_ref->assume_const_jac = hyp_const_jac
-            degre_poly := discretization_error_ref_const_jac.poly_deg( e_ref->var_inter )
+                e_ref->assume_const_jac = true
+                epsilon_proj_const_jac := ( epsilon_const_jac ).subs( e->var_inter, e_var_inter )
+                sigma_proj_const_jac := ( sigma_const_jac ).subs( e->var_inter, e_var_inter )
+                epsilon_ref_const_jac := e_ref->grad_sym( f_ref->dep.expr )
+                sigma_ref_const_jac := sigma_hooke_iso( epsilon_ref_const_jac, f_ref->young.expr, f_ref->poisson.expr, type_stress_2D )
+                discretization_error_ref_const_jac := ( epsilon_ref_const_jac - epsilon_proj_const_jac ) : ( sigma_ref_const_jac - sigma_proj_const_jac )
+                e_ref->assume_const_jac = hyp_const_jac
+                degre_poly := discretization_error_ref_const_jac.poly_deg( e_ref->var_inter )
 
-            if integration_type == "gauss_num"
-                discretization_error_ref = e_ref->gauss_num_integration( ( f_ref->epsilon.expr - epsilon_proj ) : ( f_ref->sigma.expr - sigma_proj ), order_diff = degre_poly )
-            else if integration_type == "formal"
-                discretization_error_ref = e_ref->integration( ( f_ref->epsilon.expr - epsilon_proj ) : ( f_ref->sigma.expr - sigma_proj ), order_diff = degre_poly )
-            file_ <<< "    if ( recovery_test_elem != 0 ) {"
-            cw := CodeWriterAlt( "T" )
-            cw.add( "discretization_error_elem[ elem.number ]", discretization_error_ref, add )
-            file_ <<< "$(cw.to_string( 8 ))"
-            file_ <<< "    }"
-            # Calcul exact de l'erreur de discretisation locale sur chaque element
-            #---------------------------------------------------------------------
-            # e_var_inter := e->var_inter_for_pos( e_ref->pos, 1 )
-            # epsilon_proj := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
-            # sigma_proj := ( child_cast(f)->sigma.expr ).subs( e->var_inter, e_var_inter )
-            # deg_p_ref := max( e_ref->order_interpolation )
-            # discretization_error_ref := Op( 0 )
-            # if integration_type == "gauss_num"
-                # discretization_error_ref = e_ref->gauss_num_integration( ( f_ref->epsilon.expr - epsilon_proj ) : ( f_ref->sigma.expr - sigma_proj ) * e->point_is_inside( e_ref->pos, 1 ), order_diff = degre_poly )
-            # else if integration_type == "formal"
-                # discretization_error_ref = e_ref->integration( ( f_ref->epsilon.expr - epsilon_proj ) : ( f_ref->sigma.expr - sigma_proj ) * e->point_is_inside( e_ref->pos, 1 ), order_diff = degre_poly )
-            # cw := CodeWriterAlt( "T" )
-            # cw.add( "discretization_error_elem[ elem.number ]", discretization_error_ref, add )
-            # file_ <<< "$(cw.to_string( 4 ))"
-            file_ <<< "    #undef PNODE"
-            file_ <<< "}"
+                if integration_type == "gauss_num"
+                    discretization_error_ref = e_ref->gauss_num_integration( ( f_ref->epsilon.expr - epsilon_proj ) : ( f_ref->sigma.expr - sigma_proj ), order_diff = degre_poly )
+                else if integration_type == "formal"
+                    discretization_error_ref = e_ref->integration( ( f_ref->epsilon.expr - epsilon_proj ) : ( f_ref->sigma.expr - sigma_proj ), order_diff = degre_poly )
+                file_ <<< "    if ( recovery_test_elem != 0 ) {"
+                cw := CodeWriterAlt( "T" )
+                cw.add( "discretization_error_elem[ elem.number ]", discretization_error_ref, add )
+                file_ <<< "$(cw.to_string( 8 ))"
+                file_ <<< "    }"
+                # Calcul exact de l'erreur de discretisation locale sur chaque element
+                #---------------------------------------------------------------------
+                # e_var_inter := e->var_inter_for_pos( e_ref->pos, 1 )
+                # epsilon_proj := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
+                # sigma_proj := ( child_cast(f)->sigma.expr ).subs( e->var_inter, e_var_inter )
+                # deg_p_ref := max( e_ref->order_interpolation )
+                # discretization_error_ref := Op( 0 )
+                # if integration_type == "gauss_num"
+                    # discretization_error_ref = e_ref->gauss_num_integration( ( f_ref->epsilon.expr - epsilon_proj ) : ( f_ref->sigma.expr - sigma_proj ) * e->point_is_inside( e_ref->pos, 1 ), order_diff = degre_poly )
+                # else if integration_type == "formal"
+                    # discretization_error_ref = e_ref->integration( ( f_ref->epsilon.expr - epsilon_proj ) : ( f_ref->sigma.expr - sigma_proj ) * e->point_is_inside( e_ref->pos, 1 ), order_diff = degre_poly )
+                # cw := CodeWriterAlt( "T" )
+                # cw.add( "discretization_error_elem[ elem.number ]", discretization_error_ref, add )
+                # file_ <<< "$(cw.to_string( 4 ))"
+                file_ <<< "    #undef PNODE"
+                file_ <<< "}"
         file_ <<< "}"
         file_ <<< "#endif"
     return file_names

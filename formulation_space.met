@@ -96,9 +96,6 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     f_surf := Variable[[dim]]( interpolation="skin_elementary", default_value=0, unit="N/m^2", tex_name = "F_s" )
     f_vol := Variable[[dim]]( interpolation="global", default_value=0, unit="N/m^3", tex_name = "F_v" )
     density := Variable( interpolation="global", default_value=1, unit="kg/m^3", tex_name = "\\rho" )
-    epsilon := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="1", tex_name = "\\epsilon" )
-    sigma := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma" )
-    sigma_von_mises := Variable( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma_{\\text{Von Mises}}" )
     #young := Variable( interpolation="global", default_value=1, unit="N/m^2", tex_name = "E" )
     #poisson := Variable( interpolation="global", default_value=0.3, unit="1", tex_name = "\\nu" )
     #la := Variable( interpolation="global", default_value=lame_coeff_lambda( young.default_value, poisson.default_value, dim, type_stress_2D ), unit="N/m^2", tex_name = "\\lambda" )
@@ -108,6 +105,11 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     poisson := Variable( interpolation="elementary", default_value=0.3, unit="1", tex_name = "\\nu" )
     la := Variable( interpolation="elementary", default_value=lame_coeff_lambda( young.default_value, poisson.default_value, dim, type_stress_2D ), unit="N/m^2", tex_name = "\\lambda" )
     mu := Variable( interpolation="elementary", default_value=lame_coeff_mu( young.default_value, poisson.default_value ), unit="N/m^2", tex_name = "\\mu" )
+    epsilon := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="1", tex_name = "\\epsilon" )
+    sigma := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma" )
+    sigma_von_mises := Variable( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma_{\\text{Von Mises}}" )
+    norm_dep := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\lVert U \rVert" )
+    norm_dep_elem := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "\lVert U^{\\text{elem}} \rVert^2" )
 
     sigma_hat_EET := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}" )
     sigma_hat_SPET := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}" )
@@ -137,7 +139,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     pre_f_nodal := Variable[[dim]]( interpolation="nodal", interpolation_base=base, default_value=0, unit="N/m", tex_name = "\\tilde{F}_n" )
     pre_f_surf := Variable[[dim]]( interpolation="skin_elementary", default_value=0, unit="N/m^2", tex_name = "\\tilde{F}_s" )
     pre_f_vol := Variable[[dim]]( interpolation="elementary", default_value=0, unit="N/m^3", tex_name = "\\tilde{F}_v" )
-    pre_epsilon := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\tilde{\\epsilon}" )
+    pre_epsilon := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="1", tex_name = "\\tilde{\\epsilon}" )
     pre_sigma := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\tilde{\\sigma}" )
 
     tag_refinement := Variable[[dim]]( interpolation="nodal", interpolation_base=base, default_value=0, unit="", tex_name = "tag refinement" )
@@ -260,6 +262,9 @@ formList := [ FormulationElasticity ]
 # Liste d'elements
 #-----------------
 elemList := [ Triangle ]
+#elemList := [ Quad, Triangle ]
+#elemList := [ Tetra ]
+#elemList := [ Hexa ]
 
 # Liste de fonctions
 #-------------------

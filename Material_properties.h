@@ -64,51 +64,86 @@ template<class TM, class TF> void calc_material_coefficients_alternativeontype( 
 template<class TF, class TM>
 void set_material_properties( TF &f, TM &m, const string &structure ) {
 
+    static const unsigned dim = TM::dim;
     typedef typename TM::TNode::T T;
 
     if ( m.node_list.size() ) {
         T young = 1;
         T poisson = 0.3;
         T density = 1;
-        /// Plaque fissuree 2D
-        /// ------------------
-        if ( structure == "plate_crack" ) {
-            young = 2.1e11;
-            poisson = 0.3;
-            density = 7820;
-        }
-        /// SAP 3D
-        /// ------
-        else if ( structure == "SAP" ) {
-            young = 2.1e11;
-            poisson = 0.29;
-            density = 7820;
-        }
-        /// Carre 2D
-        /// --------
-        else if ( structure.find("square") != string::npos ) {
-            if ( structure.find("init") == string::npos ) {
-                T mu = 0.9;
+        /// Dimension 2
+        /// -----------
+        if ( dim == 2 ) {
+            /// Plaque fissuree 2D
+            /// ------------------
+            if ( structure == "plate_crack" ) {
+                young = 2.1e11;
                 poisson = 0.3;
-                young = 2*(1+poisson)*mu;
+                density = 7820;
             }
-            else {
-                for (unsigned n=0;n<m.elem_list.size();++n) {
-                    if ( center( *m.elem_list[n] )[0] < 0.5 and center( *m.elem_list[n] )[1] < 0.5 ) { // x < 0.5 and y < 0.5
-                        T mu = 100.;
-                        poisson = 0.2;
-                        young = 2*(1+poisson)*mu;
-                        m.elem_list[n]->set_field( "young", young );
-                        m.elem_list[n]->set_field( "poisson", poisson );
-                    }
-                    else {
-                        T mu = 1.;
-                        poisson = 0.3;
-                        young = 2*(1+poisson)*mu;
-                        m.elem_list[n]->set_field( "young", young );
-                        m.elem_list[n]->set_field( "poisson", poisson );
+            /// Carre 2D
+            /// --------
+            else if ( structure.find("square") != string::npos ) {
+                if ( structure.find("init") == string::npos ) {
+                    T mu = 0.9;
+                    poisson = 0.3;
+                    young = 2*(1+poisson)*mu;
+                }
+                else {
+                    for (unsigned n=0;n<m.elem_list.size();++n) {
+                        if ( center( *m.elem_list[n] )[0] < 0.5 and center( *m.elem_list[n] )[1] < 0.5 ) { // x < 0.5 and y < 0.5
+                            T mu = 100.;
+                            poisson = 0.2;
+                            young = 2*(1+poisson)*mu;
+                            m.elem_list[n]->set_field( "young", young );
+                            m.elem_list[n]->set_field( "poisson", poisson );
+                        }
+                        else {
+                            T mu = 1.;
+                            poisson = 0.3;
+                            young = 2*(1+poisson)*mu;
+                            m.elem_list[n]->set_field( "young", young );
+                            m.elem_list[n]->set_field( "poisson", poisson );
+                        }
                     }
                 }
+            }
+        }
+        /// Dimension 3
+        /// -----------
+        else if ( dim == 3 ) {
+            /// Barre rectangulaire trouee 3D
+            /// -----------------------------
+            if ( structure == "beam_hole" ) {
+                young = 100;
+                poisson = 0.3;
+                density = 80;
+            }
+            /// Quart de conduite 3D
+            /// blocage des noeuds situes en x = 0 dans la direction x
+            /// blocage des noeuds situes en y = 0.528 dans la direction y
+            /// blocage des noeuds situes en z = 0.229 dans la direction z
+            ///-----------------------------------------------------------
+            else if ( structure == "pipe" ) {
+                young = 209e3;
+                poisson = 0.3;
+                density = 80;
+            }
+            /// SAP 3D
+            /// ------
+            else if ( structure == "SAP" ) {
+                young = 2.1e11;
+                poisson = 0.29;
+                density = 7820;
+            }
+            /// Eprouvette 3D
+            /// -------------
+            else if ( structure == "test_specimen" ) {
+                young = 158e9;
+                poisson = 0.28;
+                T sigma_y = 289e6;
+                T K = 1300e6;
+                T n = 0.44;
             }
         }
 

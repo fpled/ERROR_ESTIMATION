@@ -40,12 +40,12 @@ int main( int argc, char **argv ) {
     typedef Formulation<TM_param,FormulationParam,DefaultBehavior,double,wont_add_nz> TF_param;
     typedef TM_param::Pvec Pvec_param;
     typedef TM::TElemListPtr TElemListPtr;
-    static const string structure = "circular_inclusions"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circle, circular_inclusions, circular_holes
+    static const string structure = "circular_inclusions"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circle, circular_inclusions, circular_holes
                                                      // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes
     static const string mesh_size = "fine"; // mesh_size pour les structures plate_hole (2D ou 3D), plate_crack, structure_crack, test_specimen, weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
     static const string loading = "pull"; // chargement pour la structure spot_weld (3D) : pull, shear, peeling et pour la structure plate_crack (2D) : pull, shear
     static const unsigned deg_p = 1; // degre de l'analyse elements finis : 1, 2, ...
-    static const unsigned deg_k = 3; // degre supplementaire : 1, 2 , 3, ...
+    static const unsigned deg_k = 3; // degre supplementaire : 1, 2, 3, ...
     static const string boundary_condition_D = "penalty"; // methode de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalty
     static const bool display_constraints = 0; // affichage des contraintes cinematiques
     
@@ -228,9 +228,9 @@ int main( int argc, char **argv ) {
     static const bool display_pvd_PGD_param = 0;
     static const bool display_pvd_PGD_space_verif = 0;
     
-    /// ------------------------------------------ ///
-    /// Construction de la solution elements finis ///
-    /// ------------------------------------------ ///
+    /// ------------------------------------------------------- ///
+    /// Construction de la solution elements finis du pb direct ///
+    /// ------------------------------------------------------- ///
     
     /// Maillage en espace du pb direct
     /// -------------------------------
@@ -492,6 +492,11 @@ int main( int argc, char **argv ) {
         if ( verif_eq )
             check_equilibrium( f_ref, "de reference associe au pb direct" );
     }
+
+    /// Calcul de la norme du champ de deplacement approche du pb direct
+    /// ----------------------------------------------------------------
+    if ( want_PGD == 0 )
+        calcul_norm_dep( m, f, "direct", want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation );
     
     /// ------------------------------------------------------------- ///
     /// Calcul et Affichage des informations relatives a la geometrie ///
@@ -598,9 +603,9 @@ int main( int argc, char **argv ) {
         
 //        if ( want_interest_quantity_only == 0 ) {
             
-//            /// ----------------------------------- ///
-//            /// Construction de la solution adjoint ///
-//            /// ----------------------------------- ///
+//            /// ------------------------------------------------------- ///
+//            /// Construction de la solution element finis du pb adjoint ///
+//            /// ------------------------------------------------------- ///
             
 //            Vec<unsigned> elem_list_adjoint_interest_quantity;
 //            Vec<unsigned> elem_list_adjoint_enrichment_zone_1;
@@ -650,6 +655,10 @@ int main( int argc, char **argv ) {
 //            /// -----------------------------------------
 //              if ( verif_eq )
 //                  check_equilibrium( f_adjoint, "adjoint", verif_eq );
+
+//            /// Calcul de la norme du champ de deplacement approche du pb adjoint
+//            /// -----------------------------------------------------------------
+//            calcul_norm_dep( m_adjoint, f_adjoint, "adjoint", want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation );
             
 //            /// --------------------------------------------------------------------------------- ///
 //            /// Calcul et Affichage des informations relatives a la geometrie du maillage adjoint ///

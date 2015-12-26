@@ -20,6 +20,7 @@ LMT/include/LDL
 LMT/include/mesh
 LMT/include/meshless
 LMT/include/sst
+LMT/include/std_formulations
 LMT/include/tvrc
 LMT/include/util
 LMT/tests/include/containers
@@ -39,6 +40,7 @@ TESTS/LMT/include/LDL
 TESTS/LMT/include/mesh
 TESTS/LMT/include/meshless
 TESTS/LMT/include/sst
+TESTS/LMT/include/std_formulations
 TESTS/LMT/include/tvrc
 TESTS/LMT/include/util
 TESTS/LMT/tests/include/containers

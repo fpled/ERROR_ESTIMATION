@@ -4,7 +4,7 @@
 // Description: creation des proprietes materiaux
 //
 //
-// Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2011
+// Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2015
 //
 // Copyright: See COPYING file that comes with this distribution
 //

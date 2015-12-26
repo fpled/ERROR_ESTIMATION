@@ -66,12 +66,13 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
 //            for (unsigned i=0;i<m.node_list.size();++i) {
 //                if ( m.node_list[i].pos[1] < 1e-6 ) {
 //                    for (unsigned d=0;d<dim;++d) {
-//                        f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val ); // la fonction add_constraint() sert a fixer une contrainte a un noeud
+//                        f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
 //                    }
 //                }
 //            }
-            /// blocage du noeud (0.5, 0.5) dans toutes les directions (x et y) , blocage du noeud (0.5, 1) dans la direction y
-            /// ---------------------------------------------------------------------------------------------------------------
+            /// blocage du noeud (0.5, 0.5) dans toutes les directions
+            /// blocage du noeud (0.5, 1) dans la direction y
+            /// ------------------------------------------------------
 //            for (unsigned i=0;i<m.node_list.size();++i) {
 //                if ( 0.5 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.5 + 1e-6 and 0.5 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.5 + 1e-6 ) {
 //                    for (unsigned d=0;d<dim;++d) {
@@ -84,8 +85,9 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
 //                    f.add_constraint( "node["+to_string(i)+"].dep[0]", penalty_val );
 //                }
 //            }
-            /// blocage du noeud (0.5, 0) dans toutes les directions (x et y) , blocage du noeud (0.5, 1) dans la direction y
-            /// -------------------------------------------------------------------------------------------------------------
+            /// blocage du noeud (0.5, 0) dans toutes les directions
+            /// blocage du noeud (0.5, 1) dans la direction y
+            /// ----------------------------------------------------
 //            for (unsigned i=0;i<m.node_list.size();++i) {
 //                if ( 0.5 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.5 + 1e-6 and m.node_list[i].pos[1] < 1e-6 ) {
 //                    for (unsigned d=0;d<dim;++d) {
@@ -106,14 +108,15 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 1e-6 ) {
                         for (unsigned d=0;d<dim;++d) {
-                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val ); // la fonction add_constraint() sert a fixer une contrainte a un noeud
+                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
                         }
                     }
                 }
             }
             /// Quart de plaque rectangulaire trouee 2D
-            /// blocage des noeuds situes en x = 0 dans la direction x, blocage des noeuds situes en y = 0 dans la direction y
-            /// --------------------------------------------------------------------------------------------------------------
+            /// blocage des noeuds situes en x = 0 dans la direction x
+            /// blocage des noeuds situes en y = 0 dans la direction y
+            /// ------------------------------------------------------
             else if ( structure == "plate_hole" ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 1e-6 ) {
@@ -168,8 +171,8 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                 }
             }
             /// Eprouvette 2D
-            /// deplacement impose des noeuds situes en x = 0 dans la direction y : u_d = -y
-            /// deplacement impose des noeuds situes en x = 3 dans la direction y : u_d = +y
+            /// deplacement impose aux noeuds situes en x = 0 dans la direction y : u_d = -y
+            /// deplacement impose aux noeuds situes en x = 3 dans la direction y : u_d = +y
             // blocage des noeuds situes sur les deux arcs de cercle
             /// blocage du noeud (1.5, 0.25) dans la direction x
             /// ----------------------------------------------------------------------------
@@ -231,11 +234,12 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                 }
             }
             /// Carre 2D
-            /// condition de periodicite aux noeuds situés en x = 0 et x = 1
-            /// condition de periodicite aux noeuds situés en y = 0 et y = 1
-            /// blocage des noeuds (0.25, 0.25), (0.25, 0.75), (0.75, 0.25) et (0.75, 0.75) dans toutes les directions
+            /// condition de periodicite aux noeuds situes en x = 0 et x = 1
+            /// condition de periodicite aux noeuds situes en y = 0 et y = 1
+            /// blocage du noeud (0.25, 0.25) dans toutes les directions
+            // blocage de la moyenne du deplacement dans toutes les directions
             /// application du champ de deplacement u a tous les noeuds
-            /// ------------------------------------------------------------------------------------------------------
+            /// ---------------------------------------------------------------
             else if ( structure.find("square") != string::npos ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 1e-6 ) {
@@ -256,12 +260,27 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                             }
                         }
                     }
-                    else if ( ( 0.25 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.25 + 1e-6 and ( ( 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) or ( 0.75 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.75 + 1e-6 ) ) ) or ( 0.75 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.75 + 1e-6 and ( ( 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) or ( 0.75 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.75 + 1e-6 ) ) ) ) {
+//                    else if ( ( 0.25 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.25 + 1e-6 and ( ( 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) or ( 0.75 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.75 + 1e-6 ) ) ) or ( 0.75 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.75 + 1e-6 and ( ( 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) or ( 0.75 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.75 + 1e-6 ) ) ) ) {
+                    else if ( 0.25 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.25 + 1e-6 and 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) {
                         for (unsigned d=0;d<dim;++d) {
                             f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
                         }
                     }
                 }
+
+//                for (unsigned d=0;d<dim;++d) {
+//                    string txt_mean_constraint = "";
+//                    for (unsigned i=0;i<m.node_list.size();++i) {
+//                        if ( ( m.node_list[i].pos[0] < 1e-6 and m.node_list[i].pos[1] < 1e-6 ) or ( m.node_list[i].pos[0] > 1 - 1e-6 and m.node_list[i].pos[1] < 1e-6 ) or ( m.node_list[i].pos[0] < 1e-6 and m.node_list[i].pos[1] > 1 - 1e-6 ) or ( m.node_list[i].pos[0] > 1 - 1e-6 and m.node_list[i].pos[1] > 1 - 1e-6 ) )
+//                            txt_mean_constraint += "node["+to_string(i)+"].dep["+to_string(d)+"] * 1/4 + ";
+//                        else if ( m.node_list[i].pos[0] < 1e-6 or m.node_list[i].pos[0] > 1 - 1e-6 or m.node_list[i].pos[1] < 1e-6 or m.node_list[i].pos[1] > 1 - 1e-6 )
+//                            txt_mean_constraint += "node["+to_string(i)+"].dep["+to_string(d)+"] * 1/2 + ";
+//                        else
+//                            txt_mean_constraint += "node["+to_string(i)+"].dep["+to_string(d)+"] + ";
+//                    }
+//                    txt_mean_constraint.resize( txt_mean_constraint.size()-3 );
+//                    f.add_constraint( txt_mean_constraint, penalty_val );
+//                }
 
                 size_t offset = structure.rfind( "_" )+1;
                 string str = structure.substr( offset );
@@ -299,7 +318,7 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
 
             m.update_skin();
             if ( pb == "direct" ) {
-                /// effort surfacique applique sur les bords des elements situes en x = 0 (F_d = -x)
+                /// effort surfacique applique sur les bords des elements situes en x = 0 : F_d = -x
                 /// --------------------------------------------------------------------------------
 //                for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
 //                    if ( center( *m.sub_mesh(Number<1>()).elem_list[i] )[0] < 1e-6 ) {
@@ -307,7 +326,7 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
 //                    }
 //                }
                 /// Plaque rectangulaire 2D en traction
-                /// effort surfacique applique sur les bords des elements situes en x = 2 (F_d = +x)
+                /// effort surfacique applique sur les bords des elements situes en x = 2 : F_d = +x
                 /// --------------------------------------------------------------------------------
                 if ( structure == "plate_traction" ) {
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
@@ -317,7 +336,7 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                     }
                 }
                 /// Plaque rectangulaire 2D en flexion
-                /// effort surfacique applique sur les bords des elements situes en y = 1 (F_d = -y)
+                /// effort surfacique applique sur les bords des elements situes en y = 1 : F_d = -y
                 /// --------------------------------------------------------------------------------
                 else if ( structure == "plate_flexion" ) {
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
@@ -327,7 +346,7 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                     }
                 }
                 /// Quart de plaque rectangulaire trouee 2D
-                /// effort surfacique applique sur les bords des elements situes en x = 1 (F_d = +x)
+                /// effort surfacique applique sur les bords des elements situes en x = 1 : F_d = +x
                 /// --------------------------------------------------------------------------------
                 else if ( structure == "plate_hole" ) {
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
@@ -337,9 +356,10 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                     }
                 }
                 /// Plaque fissuree 2D
-                /// loading pull : effort surfacique applique sur les bords des elements situes en y = -8 (F_d = -y) et en y = 8 (F_d = +y)
-                /// loading shear : effort surfacique applique sur les bords des elements situes en y = 8 (F_d = +x)
-                /// -----------------------------------------------------------------------------------------------------------------------
+                /// loading pull : effort surfacique applique sur les bords des elements situes en y = -8 : F_d = -y
+                ///                effort surfacique applique sur les bords des elements situes en y = 8 : F_d = +y
+                /// loading shear : effort surfacique applique sur les bords des elements situes en y = 8 : F_d = +x
+                /// ------------------------------------------------------------------------------------------------
                 else if ( structure == "plate_crack" ) {
                     if ( loading == "pull" ) {
                         for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
@@ -360,8 +380,9 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                     }
                 }
                 /// Structure fissuree 2D
-                /// effort surfacique applique sur les bords du trou haut ( pour maillage grossier : faces 125, 127, 129, 242, 240, 238, 244, 247 ) (F_d = -n) et de la surface haute ( pour maillage grossier : faces 284, 281, 277 ) (F_d = +n)
-                /// -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                /// effort surfacique applique sur les bords du trou haut ( pour maillage grossier : faces 125, 127, 129, 242, 240, 238, 244, 247 ) : F_d = -n
+                /// effort surfacique applique sur les bords de la surface haute ( pour maillage grossier : faces 284, 281, 277 ) : F_d = +n
+                /// ------------------------------------------------------------------------------------------------------------------------------------------
                 else if ( structure == "structure_crack" ) {
 //                    Vec<unsigned> faces_trou_haut( 125, 127, 129, 242, 240, 238, 244, 247 );
 //                    Vec<unsigned> faces_surface_haute( 284, 281, 277 );
@@ -379,8 +400,9 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                     }
                 }
                 /// Eprouvette 2D
-                /// effort surfacique applique sur les bords des elements situes en x = 0 (F_d = -x) et en x = 3 (F_d = +x)
-                /// -------------------------------------------------------------------------------------------------------
+                /// effort surfacique applique sur les bords des elements situes en x = 0 : F_d = -x
+                /// effort surfacique applique sur les bords des elements situes en x = 3 : F_d = +x
+                /// --------------------------------------------------------------------------------
                 else if ( structure == "test_specimen" ) {
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
                         if ( center( *m.sub_mesh(Number<1>()).elem_list[i] )[0] < 1e-6 ) {
@@ -392,7 +414,7 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                     }
                 }
                 /// Capteur d'effort 2D
-                /// effort surfacique applique sur les bords des elements situes en y = 15 (F_d = -y)
+                /// effort surfacique applique sur les bords des elements situes en y = 15 : F_d = -y
                 /// ---------------------------------------------------------------------------------
                 else if ( structure == "weight_sensor" ) {
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
@@ -402,7 +424,7 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                     }
                 }
                 /// Inclusions/Trous circulaires 2D
-                /// effort surfacique applique sur les bords des elements situes en x = 1 (F_d = +x)
+                /// effort surfacique applique sur les bords des elements situes en x = 1 : F_d = +x
                 /// --------------------------------------------------------------------------------
                 else if ( structure == "circular_inclusions" or structure == "circular_holes" ) {
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
@@ -413,28 +435,17 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                 }
                 /// Carre 2D
                 /// pre-deformation et pre-contrainte appliquees sur tous les elements
-                /// -----------------------------------------------------------------
+                /// ------------------------------------------------------------------
                 else if ( structure.find("square") != string::npos ) {
-                    Vec<T,unsigned(dim*(dim+1)/2) >  pre_eps;
-                    pre_eps.set( 0, 0. );
-                    if ( structure.find("init") == string::npos )
+                    if ( structure.find("init") != string::npos ) {
+                        Vec<T,unsigned(dim*(dim+1)/2) >  pre_eps;
+                        pre_eps.set( 0, 0. );
                         pre_eps.set( 1, -1./2 );
-                    else
-                        pre_eps.set( 1, -1./sqrt( 2. ) );
-                    pre_eps.set( 2, 0. );
-                    for (unsigned n=0;n<m.elem_list.size();++n)
-                        m.elem_list[n]->set_field( "pre_epsilon", pre_eps );
-
-                    if ( structure.find("homog") != string::npos ) {
-                        Vec<T,unsigned(dim*(dim+1)/2) >  pre_eps_init;
-                        pre_eps_init.set( 0, 0. );
-                        pre_eps_init.set( 1, -1./sqrt( 2. ) );
-                        pre_eps_init.set( 2, 0. );
+                        pre_eps.set( 2, 0. );
                         for (unsigned n=0;n<m.elem_list.size();++n)
-                            m.elem_list[n]->set_field( "pre_epsilon_init", pre_eps_init );
+                            m.elem_list[n]->set_field( "pre_epsilon", pre_eps );
                     }
-
-                    if ( structure.find("init") == string::npos ) {
+                    else {
                         size_t offset = structure.rfind( "_" )+1;
                         const string str = structure.substr( offset );
                         istringstream buffer(str);
@@ -458,17 +469,17 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                             pre_sig[ 2 ] = -tau( 1, j, i );
                             m.elem_list[n]->set_field( "pre_sigma", pre_sig );
                         }
-                    }
 
-//                    for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
-//                        if ( m.sub_mesh(Number<1>()).get_parents_of_EA( m.sub_mesh(Number<1>()).elem_list[i] ).size() == 1 ) {
-//                            unsigned n = m.sub_mesh(Number<1>()).get_parents_of_EA( m.sub_mesh(Number<1>()).elem_list[i] )[0]->number;
-//                            Mat<T,Sym<dim> > pre_sig = m.elem_list[n]->get_field( "pre_sigma", StructForType<Mat<T,Sym<dim> > >() );
-//                            Vec<T,dim> force_surf = pre_sig * m.sub_mesh(Number<1>()).elem_list[i]->sample_normal_virtual() * -1.;
-//                            m.sub_mesh(Number<1>()).elem_list[i]->set_field( "f_surf", force_surf );
+//                        for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
+//                            if ( m.sub_mesh(Number<1>()).get_parents_of_EA( m.sub_mesh(Number<1>()).elem_list[i] ).size() == 1 ) {
+//                                unsigned n = m.sub_mesh(Number<1>()).get_parents_of_EA( m.sub_mesh(Number<1>()).elem_list[i] )[0]->number;
+//                                Mat<T,Sym<dim> > pre_sig = m.elem_list[n]->get_field( "pre_sigma", StructForType<Mat<T,Sym<dim> > >() );
+//                                Vec<T,dim> force_surf = pre_sig * m.sub_mesh(Number<1>()).elem_list[i]->sample_normal_virtual() * -1.;
+//                                m.sub_mesh(Number<1>()).elem_list[i]->set_field( "f_surf", force_surf );
+//                            }
 //                        }
-//                    }
-//                    apply( m.elem_list, Set_Field_f_surf(), m );
+//                        apply( m.elem_list, Set_Field_f_surf(), m );
+                    }
                 }
             }
         }
@@ -484,8 +495,10 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
 //                    }
 //                }
 //            }
-            /// blocage des noeuds situes en x = 0 dans la direction x, blocage du noeud (0, 0, 0) dans les directions y et z, blocage du noeud (0, 0, 1) dans la direction y
-            /// -------------------------------------------------------------------------------------------------------------------------------------------------------------
+            /// blocage des noeuds situes en x = 0 dans la direction x
+            /// blocage du noeud (0, 0, 0) dans les directions y et z
+            /// blocage du noeud (0, 0, 1) dans la direction y
+            ///-------------------------------------------------------
 //            for (unsigned i=0;i<m.node_list.size();++i) {
 //                if ( m.node_list[i].pos[0] < 1e-6 ) {
 //                    f.add_constraint( "node["+to_string(i)+"].dep[0]", penalty_val );
@@ -498,13 +511,15 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
 //                }
 //            }
 //            for (unsigned i=0;i<m.node_list.size();++i) {
-//                if ( m.node_list[i].pos[0] < 1e-6 and m.node_list[i].pos[1] < 1e-6 and m.node_list[i].pos[2] > 1-1e-6 ) {
+//                if ( m.node_list[i].pos[0] < 1e-6 and m.node_list[i].pos[1] < 1e-6 and m.node_list[i].pos[2] > 1. - 1e-6 ) {
 //                    f.add_constraint( "node["+to_string(i)+"].dep[1]", penalty_val );
 //                }
 //            }
             /// Barre rectangulaire en traction 3D
-            /// blocage des noeuds situes en z = 0 dans la direction z, blocage du noeud (0, 0, 0) dans les directions y et z, blocage des noeuds situes dans le plan (y=0, z=0) dans la direction y
-            /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            /// blocage des noeuds situes en z = 0 dans la direction z
+            /// blocage des noeuds situes en z = 0 et y = 0 dans la direction y
+            /// blocage du noeud (0, 0, 0) dans la direction x
+            ///----------------------------------------------------------------
             if ( structure == "beam_traction" ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[2] < 1e-6 ) {
@@ -532,24 +547,30 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                 }
             }
             /// Barre rectangulaire trouee 3D
-            /// blocage des noeuds situes en x = 0 dans la direction x, blocage des noeuds en y = 0 dans la direction y, blocage des noeuds situes en z = 0 dans la direction z
-            /// ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+            /// blocage des noeuds situes en y = 0 dans la direction y
+            /// blocage du noeud (0.4, 0, 0) dans toutes les directions
+            /// blocage du noeud (0, 0, 0) dans la direction z
+            ///-----------------------------------------------------------
             else if ( structure == "beam_hole" ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
-                    if ( m.node_list[i].pos[0] < 1e-6 ) {
-                        f.add_constraint( "node["+to_string(i)+"].dep[0]", penalty_val );
-                    }
                     if ( m.node_list[i].pos[1] < 1e-6 ) {
                         f.add_constraint( "node["+to_string(i)+"].dep[1]", penalty_val );
-                    }
-                    if ( m.node_list[i].pos[2] < 1e-6 ) {
-                        f.add_constraint( "node["+to_string(i)+"].dep[2]", penalty_val );
+                        if ( m.node_list[i].pos[2] < 1e-6 ) {
+                            if ( 0.4 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.4 + 1e-6 ) {
+                                f.add_constraint( "node["+to_string(i)+"].dep[0]", penalty_val );
+                                f.add_constraint( "node["+to_string(i)+"].dep[2]", penalty_val );
+                            }
+                            else if ( m.node_list[i].pos[0] < 1e-6 )
+                                f.add_constraint( "node["+to_string(i)+"].dep[2]", penalty_val );
+                        }
                     }
                 }
             }
             /// Quart de plaque rectangulaire trouee 3D
-            /// blocage des noeuds situes en x = 0 dans la direction x, blocage des noeuds situes en y = 0 dans la direction y, blocage des noeuds situes en z = 0 dans la direction z
-            /// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            /// blocage des noeuds situes en x = 0 dans la direction x
+            /// blocage des noeuds situes en y = 0 dans la direction y
+            /// blocage des noeuds situes en z = 0 dans la direction z
+            ///-------------------------------------------------------
             else if ( structure == "plate_hole" ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 1e-6 ) {
@@ -622,8 +643,10 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                 }
             }
             /// Quart de tete de reacteur nucleaire 3D
-            /// blocage des noeuds situes en x = 0 dans la direction x, blocage des noeuds situes en z = 0 dans la direction z et blocage des noeuds situes en y = 301 dans la direction y
-            /// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            /// blocage des noeuds situes en x = 0 dans la direction x
+            /// blocage des noeuds situes en z = 0 dans la direction z
+            /// blocage des noeuds situes en y = 301 dans la direction y
+            ///---------------------------------------------------------
             else if ( structure == "reactor_head" ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 1e-6 ) {
@@ -640,7 +663,7 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
             /// Ailette 3D
             /// blocage des noeuds situes en ( z = 0 ou z = 50 ) et non ( x > 16 et y < 16 ) dans toutes les directions
             /// blocage des noeuds situes en ( z = 0 ou z = 50 ) et ( x > 16 et y < 16 ) dans les directions x et y
-            /// deplacement impose des noeuds situes en ( z = 0 ou z = 50 ) et ( x > 16 et y < 16 ) dans la direction z : u_d = 0.2 z
+            /// deplacement impose aux noeuds situes en ( z = 0 ou z = 50 ) et ( x > 16 et y < 16 ) dans la direction z : u_d = 0.2 z
             /// ---------------------------------------------------------------------------------------------------------------------
             else if ( structure == "blade" ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
@@ -658,8 +681,10 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                 }
             }
             /// Quart de conduite 3D
-            /// blocage des noeuds situes en x = 0 dans la direction x, blocage des noeuds situes en y = 0.528 dans la direction y, blocage des noeuds situes en z = 0229 dans la direction z
-            /// -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            /// blocage des noeuds situes en x = 0 dans la direction x
+            /// blocage des noeuds situes en y = 0.528 dans la direction y
+            /// blocage des noeuds situes en z = 0.229 dans la direction z
+            ///-----------------------------------------------------------
             else if ( structure == "pipe" ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] > -1e-6 ) {
@@ -674,8 +699,8 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                 }
             }
             /// SAP 3D
-            /// blocage des noeuds situes a l'exterieur du cylindre C_1 d'axe (Ox) et de rayon 0.04675 : C_1(x,z) = y^2 + z^2 - 0.04674^2 et au-dessus dun plan P_1 : x = 0.0675
-            /// ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+            /// blocage des noeuds situes a l'exterieur du cylindre C_1 d'axe (Ox) et de rayon 0.04675 : y^2 + z^2 = 0.04674^2 et au-dessus dun plan P_1 : x = 0.0675
+            ///------------------------------------------------------------------------------------------------------------------------------------------------------
             else if ( structure == "SAP" ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( pow( m.node_list[i].pos[1], 2 ) + pow( m.node_list[i].pos[2], 2 ) > pow( 0.04675, 2 ) - 1e-6 and m.node_list[i].pos[0] > 0.0675 - 1e-6 ) {
@@ -699,21 +724,21 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
             }
             m.update_skin();
             if ( pb == "direct" ) {
-                /// effort surfacique applique sur les bords des elements situes en x = 0 (F_d = -x)
+                /// effort surfacique applique sur les bords des elements situes en x = 0 : F_d = -x
                 /// --------------------------------------------------------------------------------
 //                for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
 //                    if ( center( *m.sub_mesh(Number<1>()).elem_list[i] )[0] < 1e-6 ) {
 //                        m.sub_mesh(Number<1>()).elem_list[i]->set_field( "f_surf", Vec<T,dim>( -1., 0., 0. ) );
 //                    }
 //                }
-                /// effort surfacique applique sur les bords des elements situes en x = 1 (F_d = +x)
+                /// effort surfacique applique sur les bords des elements situes en x = 1 : F_d = +x
                 /// --------------------------------------------------------------------------------
 //                for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
 //                    if ( center( *m.sub_mesh(Number<1>()).elem_list[i] )[0] > 1. - 1e-6 ) {
 //                        m.sub_mesh(Number<1>()).elem_list[i]->set_field( "f_surf", Vec<T,dim>( 1., 0., 0. ) );
 //                    }
 //                }
-                /// effort surfacique applique sur les bords des elements situes en z = 0 (F_d = +z)
+                /// effort surfacique applique sur les bords des elements situes en z = 0 : F_d = +z
                 /// --------------------------------------------------------------------------------
 //                for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
 //                    if ( center( *m.sub_mesh(Number<1>()).elem_list[i] )[2] < 1e-6 ) {
@@ -721,7 +746,7 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
 //                    }
 //                }
                 /// Barre rectangulaire 3D en traction
-                /// effort surfacique applique sur les bords des elements situes en z = 1 (F_d = -z)
+                /// effort surfacique applique sur les bords des elements situes en z = 1 : F_d = -z
                 /// --------------------------------------------------------------------------------
                 if ( structure == "beam_traction" ) {
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
@@ -731,7 +756,7 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                     }
                 }
                 /// Barre rectangulaire 3D en flexion
-                /// effort surfacique applique sur les bords des elements situes en z = 1 (F_d = -z)
+                /// effort surfacique applique sur les bords des elements situes en z = 1 : F_d = -z
                 /// --------------------------------------------------------------------------------
                 else if ( structure == "beam_flexion" ) {
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
@@ -741,7 +766,7 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                     }
                 }
                 /// Barre rectangulaire trouee 3D
-                /// effort surfacique applique sur les bords des elements situes en y = 0.7 (F_d = +y)
+                /// effort surfacique applique sur les bords des elements situes en y = 0.7 : F_d = +y
                 /// ----------------------------------------------------------------------------------
                 else if ( structure == "beam_hole" ) {
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
@@ -751,7 +776,7 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                     }
                 }
                 /// Quart de plaque rectangulaire trouee 3D
-                /// effort surfacique applique sur les bords des elements situes en x = 10 (F_d = +x)
+                /// effort surfacique applique sur les bords des elements situes en x = 10 : F_d = +x
                 /// ---------------------------------------------------------------------------------
                 else if ( structure == "plate_hole" ) {
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
@@ -761,7 +786,7 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                     }
                 }
                 /// Plaque rectangulaire trouee complete 3D
-                /// effort surfacique applique sur les bords des elements situes en x = 20 (F_d = +x)
+                /// effort surfacique applique sur les bords des elements situes en x = 20 : F_d = +x
                 /// ---------------------------------------------------------------------------------
                 else if ( structure == "plate_hole_full" ) {
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
@@ -771,8 +796,8 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                     }
                 }
                 /// Moyeu-rotor 3D de l'helicoptere NH90
-                /// effort surfacique applique sur les bords des elements situes a l'exterieur du plan P : P(x,y,z) = 0.993771220888593 * (x - 505.668689385943) - 0.00145804725003041 * (y + 1.04229616690589) + 0.111429953925374 * (z + 6.713826134760) (F_d = +n)
-                /// -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                /// effort surfacique applique sur les bords des elements situes a l'exterieur du plan P : 0.993771220888593 * (x - 505.668689385943) - 0.00145804725003041 * (y + 1.04229616690589) + 0.111429953925374 * (z + 6.713826134760) = 0 : F_d = +n
+                /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
                 else if ( structure == "hub_rotor_helico" ) {
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
                         if ( 0.993771220888593 * (center( *m.sub_mesh(Number<1>()).elem_list[i] )[0] - 505.668689385943) - 0.00145804725003041 * (center( *m.sub_mesh(Number<1>()).elem_list[i] )[1] + 1.04229616690589) + 0.111429953925374 * (center( *m.sub_mesh(Number<1>()).elem_list[i] )[2] + 6.713826134760)  > 0. ) {
@@ -783,15 +808,15 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                     }
                 }
                 /// Quart de tete de reacteur nucleaire 3D
-                /// effort surfacique applique sur toute la surface interne : bords des elements situes sur la sphere de centre (0, 332.75061, 0) et de rayon 51.5 : (F_d = -n)
-                ///                                                           bords des elements situes sous le plan P_1 : y = 332.75061 et sur le cylindre C_1 d'axe (Oy) et de rayon 51.5 : C_1(x,z) = x^2 + z^2 - 51.5^2 (F_d = -n)
-                ///                                                           bords des elements situes sous le plan P_2 : y = 310.75 et sur le cylindre C_2 d'axe (Oy) et de rayon 54.5 : C_2(x,z) = x^2 + z^2 - 54.5^2 (F_d = -n)
-                ///                                                           bords des elements situes sur le plan P_2 : y = 310.75 et compris entre les cylindres C_1 et C_2 (F_d = -n)
-                ///                                                           bords des elements situes sur le cylindre C_3 d'axe (Ay) et de rayon 5.125 : C_3(x,z) = (x - 12)^2 + (z - 36)^2 - 5.125^2 (F_d = -n)
-                ///                                                           bords des elements situes sur le cylindre C_4 d'axe (By) et de rayon 5.125 : C_4(x,z) = (x - 36)^2 + (z - 12)^2 - 5.125^2 (F_d = -n)
-                /// effort surfacique applique sur bords des elements situes en y = 306.75 et a l'exterieur du cylindre C_5 d'axe (Oy) et de rayon 68 : C_5(x,z) = x^2 + z^2 - 68^2 (F_d = +y = -n)
-                /// effort surfacique applique sur bords des elements situes en y = 329.75 et a l'exterieur du cylindre C_5 (F_d = -y = -n)
-                /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                /// effort surfacique applique sur toute la surface interne : bords des elements situes sur la sphere de centre (0, 332.75061, 0) et de rayon 51.5 : x^2 + (y - 332.75061)^2 + z^2 = 51.5^2 : F_d = -n
+                ///                                                           bords des elements situes sous le plan P_1 : y = 332.75061 et sur le cylindre C_1 d'axe (Oy) et de rayon 51.5 : x^2 + z^2 = 51.5^2 : F_d = -n
+                ///                                                           bords des elements situes sous le plan P_2 : y = 310.75 et sur le cylindre C_2 d'axe (Oy) et de rayon 54.5 : x^2 + z^2 = 54.5^2 : F_d = -n
+                ///                                                           bords des elements situes sur le plan P_2 : y = 310.75 et compris entre les cylindres C_1 et C_2 : F_d = -n
+                ///                                                           bords des elements situes sur le cylindre C_3 d'axe (Ay) et de rayon 5.125 : (x - 12)^2 + (z - 36)^2 = 5.125^2 : F_d = -n
+                ///                                                           bords des elements situes sur le cylindre C_4 d'axe (By) et de rayon 5.125 : (x - 36)^2 + (z - 12)^2 = 5.125^2 : F_d = -n
+                /// effort surfacique applique sur les bords des elements situes en y = 306.75 et a l'exterieur du cylindre C_5 d'axe (Oy) et de rayon 68 : x^2 + z^2 = 68^2 : F_d = +y = -n
+                /// effort surfacique applique sur les bords des elements situes en y = 329.75 et a l'exterieur du cylindre C_5 : F_d = -y = -n
+                /// -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
                 else if ( structure == "reactor_head" ) {
                     if ( mesh_size == "coarse" ) {
                         for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
@@ -843,8 +868,8 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                     }
                 }
                 /// Joint de porte 3D de vehicule auto
-                /// effort surfacique applique sur les bords des elements situes a l'exterieur du plan P : P(x,y,z) = 0.999275522826568 * x + 0.038058238000309 * y - 0.469486267231102 (F_d = -x)
-                /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                /// effort surfacique applique sur les bords des elements situes a l'exterieur du plan P : 0.999275522826568 * x + 0.038058238000309 * y - 0.469486267231102 = 0 : F_d = -x
+                /// -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
                 else if ( structure == "door_seal" ) {
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
                         if ( 0.999275522826568 * center( *m.sub_mesh(Number<1>()).elem_list[i] )[0] + 0.038058238000309 * center( *m.sub_mesh(Number<1>()).elem_list[i] )[1] - 0.469486267231102 > 0. ) {
@@ -853,10 +878,11 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                     }
                 }
                 /// Point de soudure 3D
-                /// loading pull : effort surfacique applique sur les bords des elements situes en y = 3.5 (F_d = +y)
-                /// loading peeling : effort surfacique applique sur les bords des elements situes en y = 3.5 (F_d = +y) et en y = -6.3 (F_d = -y)
-                /// loading shear : effort surfacique applique sur les bords des elements situes en y = 3.5 (F_d = +z)
-                /// -------------------------------------------------------------------------------------------------------------------------------
+                /// loading pull : effort surfacique applique sur les bords des elements situes en y = 3.5 : F_d = +y
+                /// loading peeling : effort surfacique applique sur les bords des elements situes en y = 3.5 : F_d = +y
+                ///                   effort surfacique applique sur les bords des elements situes en y = -6.3 : F_d = -y
+                /// loading shear : effort surfacique applique sur les bords des elements situes en y = 3.5 F_d = +z
+                /// -----------------------------------------------------------------------------------------------------
                 else if ( structure == "spot_weld" ) {
                     if ( loading == "pull" ) {
                         for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
@@ -884,27 +910,27 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                     }
                 }
                 /// Quart de conduite 3D
-                /// effort surfacique applique sur les bords des elements situes en z = 0 (F_d = -z)
-                /// --------------------------------------------------------------------------------
+                /// effort surfacique applique sur les bords des elements situes en z = 0 : F_d = -8.281e6 z
+                /// ----------------------------------------------------------------------------------------
                 else if ( structure == "pipe" ) {
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
                         if ( center( *m.sub_mesh(Number<1>()).elem_list[i] )[2] < 1e-6 ) {
-                            m.sub_mesh(Number<1>()).elem_list[i]->set_field( "f_surf", Vec<T,dim>( 0., 0., -1. ) );
+                            m.sub_mesh(Number<1>()).elem_list[i]->set_field( "f_surf", Vec<T,dim>( 0., 0., -8.281e6 ) );
                         }
                     }
                 }
                 /// SAP 3D
-                /// effort surfacique applique sur les bords des elements situes en x = 0.1 (F_d = +1000 000 x)
-                /// -------------------------------------------------------------------------------------------
+                /// effort surfacique applique sur les bords des elements situes en x = 0.1 : F_d = +1e6 x
+                /// --------------------------------------------------------------------------------------
                 else if ( structure == "SAP" ) {
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
                         if ( center( *m.sub_mesh(Number<1>()).elem_list[i] )[0] > 0.1 - 1e-6 ) {
-                            m.sub_mesh(Number<1>()).elem_list[i]->set_field( "f_surf", Vec<T,dim>( 1000000., 0., 0. ) );
+                            m.sub_mesh(Number<1>()).elem_list[i]->set_field( "f_surf", Vec<T,dim>( 1e6, 0., 0. ) );
                         }
                     }
                 }
                 /// Inclusions/Trous spheriques 3D
-                /// effort surfacique applique sur les bords des elements situes en x = 1 (F_d = +x)
+                /// effort surfacique applique sur les bords des elements situes en x = 1 : F_d = +x
                 /// --------------------------------------------------------------------------------
                 else if ( structure == "spherical_inclusions" or structure == "spherical_holes" ) {
                     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {

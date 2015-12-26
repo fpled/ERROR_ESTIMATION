@@ -14,6 +14,7 @@
 #include "Material_properties.h"
 #include "Material_properties_homog.h"
 #include "Boundary_conditions.h"
+#include "Boundary_conditions_homog.h"
 #include "GEOMETRY/Calcul_geometry.h"
 #include "GEOMETRY/Geometry.h"
 #include "DISCRETIZATION_ERROR/Calcul_discretization_error.h"
@@ -33,12 +34,12 @@ int main( int argc, char **argv ) {
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "square_homog_32"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, eprouvette, weight_sensor, circular_inclusions, circular_holes
+    static const string structure = "square_homog_32"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes
                                                      // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes
     static const string mesh_size = "fine"; // maillage pour les structures plate_hole (2D ou 3D), plate_crack, structure_crack, test_specimen, weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
     static const string loading = "pull"; // chargement pour la structure spot_weld (3D) : pull, shear, peeling et pour la structure plate_crack (2D) : pull, shear
     static const unsigned deg_p = 1; // degre de l'analyse elements finis : 1, 2, ...
-    static const unsigned deg_k = 3; // degre supplementaire : 1, 2 , 3, ...
+    static const unsigned deg_k = 3; // degre supplementaire : 1, 2, 3, ...
     static const string boundary_condition_D = "penalty"; // methode de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalty
     static const bool display_constraints = 0; // affichage des contraintes cinematiques
     
@@ -140,7 +141,7 @@ int main( int argc, char **argv ) {
     
     /// Verification equilibre / solveur
     /// --------------------------------
-    static const bool verif_eq = 1; // verification de l'equilibre global elements finis
+    static const bool verif_eq = 0; // verification de l'equilibre global elements finis
     static const bool verif_compatibility_conditions = 1; // verification des conditions de compatibilite (equilibre elements finis) (methode EET)
     static const T tol_compatibility_conditions = 1e-6; // tolerance pour la verification des conditions de compatibilite (equilibre elements finis) (methode EET)
     static const bool verif_eq_force_fluxes = 1; // verification de l'equilibre des densites d'effort (methodes EET, EESPT)
@@ -199,9 +200,9 @@ int main( int argc, char **argv ) {
     static const bool save_vtu_crown = 1;
     static const bool display_vtu_crown = 0;
     
-    /// ------------------------------------------ ///
-    /// Construction de la solution elements finis ///
-    /// ------------------------------------------ ///
+    /// ------------------------------------------------------- ///
+    /// Construction de la solution elements finis du pb direct ///
+    /// ------------------------------------------------------- ///
     
     /// Maillage du pb direct
     /// ---------------------
@@ -209,7 +210,18 @@ int main( int argc, char **argv ) {
     TM m_ref;
     create_structure( m, m_ref, "direct", structure, mesh_size, loading, deg_p, refinement_degree_ref, want_global_discretization_error, want_local_discretization_error, want_solve_ref );
     display_structure( m, m_ref, "direct", structure, deg_p, want_solve_ref );
-    
+
+//    TM m_init;
+//    size_t offset = structure.rfind( "_" )+1;
+//    const string str = structure.substr( offset );
+//    const string vtu_name = "./square_init_" + str + "_Quad_direct_EET_k_3_J0.vtu";
+//    read_vtu( m_init, vtu_name.c_str() );
+//    for (unsigned i=0;i<m.node_list.size();++i) {
+//        for (unsigned d=0;d<dim;++d)
+//            m.node_list[i].dep_init[ d ] = m_init.node_list[i].dep[ d ];
+//    }
+
+
     /// Formulation du pb direct
     /// ------------------------
     TF f( m ); // creation d'une formulation du type TF avec le maillage m
@@ -220,6 +232,7 @@ int main( int argc, char **argv ) {
     set_material_properties( f, m, structure );
     set_material_properties_init( f, m, structure );
     set_boundary_conditions( f, m, boundary_condition_D, "direct", structure, loading, mesh_size );
+    set_boundary_conditions_init( f, m, boundary_condition_D, "direct", structure );
     if ( want_solve_ref ) {
         set_material_properties( f_ref, m_ref, structure );
         set_boundary_conditions( f_ref, m_ref, boundary_condition_D, "direct", structure, loading, mesh_size );
@@ -259,12 +272,17 @@ int main( int argc, char **argv ) {
 //    for (unsigned i=0;i<f.vectors[0].size();++i) {
 //        cout << "vector " << i << " : " << ( f.vectors[0] )[i] << endl;
 //    }
-    
+
     /// Verification de l'equilibre du pb direct
     /// ----------------------------------------
     if ( verif_eq )
         check_equilibrium( f, "direct" );
     
+    /// Calcul de la norme du champ de deplacement approche du pb direct
+    /// ----------------------------------------------------------------
+    calcul_norm_dep( m, f, "direct", want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation );
+    calcul_norm_dep_init( m, f, "direct", want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation );
+
     if ( want_solve_ref ) {
         /// Resolution du pb de reference associe au pb direct
         /// --------------------------------------------------
@@ -297,10 +315,8 @@ int main( int argc, char **argv ) {
     
     T theta = 0.;
     T theta_init = 0.;
-    T theta_init_corr = 0.;
     Vec<T> theta_elem;
     Vec<T> theta_elem_init;
-    Vec<T> theta_elem_init_corr;
     Vec< Vec<T> > dep_hat;
     
     if ( want_global_estimation or ( want_local_estimation and want_handbook_only == 0 and want_interest_quantity_only == 0 ) ) {
@@ -309,7 +325,7 @@ int main( int argc, char **argv ) {
         /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe pb direct ///
         /// ------------------------------------------------------------------------------------------------------------- ///
         
-        calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_init, theta_init_corr, theta_elem, theta_elem_init, theta_elem_init_corr, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment, debug_geometry, debug_force_fluxes, debug_force_fluxes_enhancement, debug_criterium_enhancement, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
+        calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_init, theta_elem, theta_elem_init, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment, debug_geometry, debug_force_fluxes, debug_force_fluxes_enhancement, debug_criterium_enhancement, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
         
     }
     
@@ -389,9 +405,9 @@ int main( int argc, char **argv ) {
         
         if ( want_interest_quantity_only == 0 ) {
             
-            /// ----------------------------------- ///
-            /// Construction de la solution adjoint ///
-            /// ----------------------------------- ///
+            /// ------------------------------------------------------- ///
+            /// Construction de la solution element finis du pb adjoint ///
+            /// ------------------------------------------------------- ///
             
             Vec<unsigned> elem_list_adjoint_interest_quantity;
             Vec<unsigned> elem_list_adjoint_enrichment_zone_1;
@@ -441,6 +457,10 @@ int main( int argc, char **argv ) {
             /// -----------------------------------------
             if ( verif_eq )
                 check_equilibrium( f_adjoint, "adjoint" );
+
+            /// Calcul de la norme du champ de deplacement approche du pb adjoint
+            /// -----------------------------------------------------------------
+            calcul_norm_dep( m_adjoint, f_adjoint, "adjoint", want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation );
             
             /// --------------------------------------------------------------------------------- ///
             /// Calcul et Affichage des informations relatives a la geometrie du maillage adjoint ///
@@ -456,12 +476,10 @@ int main( int argc, char **argv ) {
                 
                 T theta_adjoint = 0.;
                 T theta_adjoint_init = 0.;
-                T theta_adjoint_init_corr = 0.;
                 Vec<T> theta_adjoint_elem;
                 Vec<T> theta_adjoint_elem_init;
-                Vec<T> theta_adjoint_elem_init_corr;
                 Vec< Vec<T> > dep_adjoint_hat;
-                calcul_global_error_estimation( f_adjoint, m_adjoint, "adjoint", method_adjoint, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta_adjoint, theta_adjoint_init, theta_adjoint_init_corr, theta_adjoint_elem, theta_adjoint_elem_init, theta_adjoint_elem_init_corr, dep_adjoint_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, false, false, want_local_enrichment, debug_geometry_adjoint, debug_force_fluxes_adjoint, debug_force_fluxes_enhancement_adjoint, debug_criterium_enhancement_adjoint, debug_error_estimate_adjoint, debug_local_effectivity_index_adjoint, debug_method_adjoint, debug_method_enhancement_adjoint );
+                calcul_global_error_estimation( f_adjoint, m_adjoint, "adjoint", method_adjoint, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta_adjoint, theta_adjoint_init, theta_adjoint_elem, theta_adjoint_elem_init, dep_adjoint_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, false, false, want_local_enrichment, debug_geometry_adjoint, debug_force_fluxes_adjoint, debug_force_fluxes_enhancement_adjoint, debug_criterium_enhancement_adjoint, debug_error_estimate_adjoint, debug_local_effectivity_index_adjoint, debug_method_adjoint, debug_method_enhancement_adjoint );
                 
                 /// Construction de la correspondance entre maillages extraits et maillages initiaux direct/adjoint
                 /// -----------------------------------------------------------------------------------------------
