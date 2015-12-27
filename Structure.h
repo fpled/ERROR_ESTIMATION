@@ -839,27 +839,32 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             switch ( refinement_deg_ref ) {
             case 1 :
                 if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_ref and ( want_global_discretization_error or want_local_discretization_error ) ) ) {
-                    read_avs( m, "MESH_AVS/BLADE_SUPPORT_3D/blade_Tetra.avs" );
-//                    ReaderINP<TM> RI( m , "MESH_AVS/BLADE_SUPPORT_3D/blade_Tetra.inp" );
+//                    read_avs( m, "MESH_AVS/BLADE_3D/blade_Tetra.avs" );
+//                    read_inp( m, "MESH_AVS/BLADE_3D/blade_Tetra.inp" );
+                    ReaderINP<TM> RI( m, "MESH_AVS/BLADE_3D/blade_Tetra.inp" );
                 }
                 else
-                    read_vtu( m, "MESH_AVS/BLADE_SUPPORT_3D/blade_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
+                    read_vtu( m, "MESH_AVS/BLADE_3D/blade_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
                 break;
             case 2 :
                 if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_ref and ( want_global_discretization_error or want_local_discretization_error ) ) ) {
-                    read_avs( m, "MESH_AVS/BLADE_SUPPORT_3D/blade_Tetra.avs" );
-//                    ReaderINP<TM> RI( m , "MESH_AVS/BLADE_SUPPORT_3D/blade_Tetra.inp" );
+//                    read_avs( m, "MESH_AVS/BLADE_3D/blade_Tetra.avs" );
+//                    read_inp( m, "MESH_AVS/BLADE_3D/blade_Tetra.inp" );
+                    ReaderINP<TM> RI( m, "MESH_AVS/BLADE_3D/blade_Tetra.inp" );
                 }
                 else
-                    read_vtu( m, "MESH_AVS/BLADE_SUPPORT_3D/blade_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
+                    read_vtu( m, "MESH_AVS/BLADE_3D/blade_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
                 break;
             default :
-                read_avs( m, "MESH_AVS/BLADE_SUPPORT_3D/blade_Tetra.avs" );
-//                ReaderINP<TM> RI( m , "MESH_AVS/BLADE_SUPPORT_3D/blade_Tetra.inp" );
+//                read_avs( m, "MESH_AVS/BLADE_3D/blade_Tetra.avs" );
+//                read_inp( m, "MESH_AVS/BLADE_3D/blade_Tetra.inp" );
+                ReaderINP<TM> RI( m, "MESH_AVS/BLADE_3D/blade_Tetra.inp" );
                 break;
             }
             if ( want_ref ) {
-                read_avs( m_ref, "MESH_AVS/BLADE_SUPPORT_3D/blade_Tetra.avs" );
+//                read_avs( m_ref, "MESH_AVS/BLADE_3D/blade_Tetra.avs" );
+//                read_inp( m_ref, "MESH_AVS/BLADE_3D/blade_Tetra.inp" );
+                ReaderINP<TM> RI( m_ref, "MESH_AVS/BLADE_3D/blade_Tetra.inp" );
                 for (unsigned n=0;n<refinement_deg_ref;++n) {
                     divide_element( m_ref );
                 }
@@ -871,27 +876,32 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             switch ( refinement_deg_ref ) {
             case 1 :
                 if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_ref and ( want_global_discretization_error or want_local_discretization_error ) ) ) {
-                    read_avs( m, "MESH_AVS/PIPE_3D/pipe_Tetra.avs" );
-//                    ReaderINP<TM> RI( m , "MESH_AVS/PIPE_3D/pipe_Tetra.inp" );
+//                    read_avs( m, "MESH_AVS/PIPE_3D/pipe_Tetra.avs" );
+//                    read_inp( m, "MESH_AVS/PIPE_3D/pipe_Tetra.inp" );
+                    ReaderINP<TM> RI( m, "MESH_AVS/PIPE_3D/pipe_Tetra.inp" );
                 }
                 else
                     read_vtu( m, "MESH_AVS/PIPE_3D/pipe_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
             break;
             case 2 :
                 if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_ref and ( want_global_discretization_error or want_local_discretization_error ) ) ) {
-                    read_avs( m, "MESH_AVS/PIPE_3D/pipe_Tetra.avs" );
-//                    ReaderINP<TM> RI( m , "MESH_AVS/PIPE_3D/pipe_Tetra.inp" );
+//                    read_avs( m, "MESH_AVS/PIPE_3D/pipe_Tetra.avs" );
+//                    read_inp( m, "MESH_AVS/PIPE_3D/pipe_Tetra.inp" );
+                    ReaderINP<TM> RI( m, "MESH_AVS/PIPE_3D/pipe_Tetra.inp" );
                 }
                 else
                     read_vtu( m, "MESH_AVS/PIPE_3D/pipe_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
             break;
             default :
-                read_avs( m, "MESH_AVS/PIPE_3D/pipe_Tetra.avs" );
-//                ReaderINP<TM> RI( m , "MESH_AVS/PIPE_3D/pipe_Tetra.inp" );
+//                read_avs( m, "MESH_AVS/PIPE_3D/pipe_Tetra.avs" );
+//                read_inp( m, "MESH_AVS/PIPE_3D/pipe_Tetra.inp" );
+                ReaderINP<TM> RI( m, "MESH_AVS/PIPE_3D/pipe_Tetra.inp" );
                 break;
             }
             if ( want_ref ) {
-                read_avs( m_ref, "MESH_AVS/PIPE_3D/pipe_Tetra.avs" );
+//                read_avs( m_ref, "MESH_AVS/PIPE_3D/pipe_Tetra.avs" );
+//                read_inp( m_ref, "MESH_AVS/PIPE_3D/pipe_Tetra.inp" );
+                ReaderINP<TM> RI( m_ref, "MESH_AVS/PIPE_3D/pipe_Tetra.inp" );
                 for (unsigned n=0;n<refinement_deg_ref;++n) {
                     divide_element( m_ref );
                 }
@@ -979,33 +989,6 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
                 }
             }
         }
-        /// Eprouvette 3D
-        /// -------------------
-        else if ( structure == "test_specimen" ) {
-            switch ( refinement_deg_ref ) {
-            case 1 :
-                if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_ref and ( want_global_discretization_error or want_local_discretization_error ) ) )
-                    ReaderINP<TM> RI( m , "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-                else
-                    ReaderINP<TM> RI( m , "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-                break;
-            case 2 :
-                if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_ref and ( want_global_discretization_error or want_local_discretization_error ) ) )
-                    ReaderINP<TM> RI( m , "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-                else
-                    ReaderINP<TM> RI( m , "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-                break;
-            default :
-                ReaderINP<TM> RI( m , "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-                break;
-            }
-            if ( want_ref ) {
-                read_avs( m_ref, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-                for (unsigned n=0;n<refinement_deg_ref;++n) {
-                    divide_element( m_ref );
-                }
-            }
-        }
         /// Trous sphériques 3D
         /// -------------------
         else if ( structure == "spherical_holes" ) {
@@ -1028,6 +1011,43 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
             }
             if ( want_ref ) {
                 read_msh_2( m_ref, "MESH_GMSH/SPHERICAL_HOLES_3D/spherical_holes_Tetra.msh" );
+                for (unsigned n=0;n<refinement_deg_ref;++n) {
+                    divide_element( m_ref );
+                }
+            }
+        }
+        /// Eprouvette 3D
+        /// -------------
+        else if ( structure == "test_specimen" ) {
+            switch ( refinement_deg_ref ) {
+            case 1 :
+                if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_ref and ( want_global_discretization_error or want_local_discretization_error ) ) ) {
+//                    read_inp( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+                    ReaderINP<TM> RI( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+                }
+                else {
+//                    read_inp( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+                    ReaderINP<TM> RI( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+                }
+                break;
+            case 2 :
+                if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_ref and ( want_global_discretization_error or want_local_discretization_error ) ) ) {
+//                    read_inp( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+                    ReaderINP<TM> RI( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+                }
+                else {
+//                    read_inp( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+                    ReaderINP<TM> RI( m , "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+                }
+                break;
+            default :
+//                read_inp( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+                ReaderINP<TM> RI( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+                break;
+            }
+            if ( want_ref ) {
+//                read_inp( m_ref, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+                ReaderINP<TM> RI( m_ref, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
                 for (unsigned n=0;n<refinement_deg_ref;++n) {
                     divide_element( m_ref );
                 }

@@ -12,6 +12,7 @@
 #ifndef Boundary_conditions_h
 #define Boundary_conditions_h
 
+#include "LMT/include/mesh/ReaderINP.h"
 #include "INTEREST_QUANTITY/Interest_quantity.h"
 #include "GEOMETRY/Calcul_geometry.h"
 
@@ -721,6 +722,23 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                         }
                     }
                 }
+            }
+            /// Eprouvette 3D
+            /// blocage des noeuds situes en x = 0 dans toutes les directions
+            /// -------------------------------------------------------------
+            else if ( structure == "test_specimen" ) {
+                ReaderINP<TM> RI( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+//                RI.display_node();
+//                RI.display_element();
+//                RI.display_map_node_set( true );
+//                RI.display_map_element_set( true );
+//                RI.display_map_orientation();
+//                RI.display_map_solid_section();
+//                RI.display_map_material();
+//                RI.display_map_step();
+//                RI.display_map_surface( true );
+                RI.set_boundary_by_step( m, "Step-1" );
+//                ReaderINP<TM>::set_boundary_by_step( m, "Step-1" );
             }
             m.update_skin();
             if ( pb == "direct" ) {

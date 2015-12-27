@@ -139,7 +139,7 @@ void set_material_properties( TF &f, TM &m, const string &structure ) {
             /// Eprouvette 3D
             /// -------------
             else if ( structure == "test_specimen" ) {
-                young = 158e9;
+                young = 1.58e5;
                 poisson = 0.28;
                 T sigma_y = 289e6;
                 T K = 1300e6;
