@@ -263,15 +263,14 @@ int main( int argc, char **argv ) {
     f.call_after_solve();
 
 //    for (unsigned i=0;i<m.node_list.size();++i) {
-//        for (unsigned d=0;d<dim;++d) {
-//            cout << "noeud " << i << ", direction " << d << " : " << m.node_list[i].dep[d] << endl;
-//        }
+//        for (unsigned d=0;d<dim;++d)
+//            cout << "node[" << i << "].pos[" << d << "] = " << m.node_list[i].pos[d] << endl;
+//        for (unsigned d=0;d<dim;++d)
+//            cout << "node[" << i << "].dep[" << d << "] = " << m.node_list[i].dep[d] << endl;
 //        cout << endl << endl;
 //    }
-
-//    for (unsigned i=0;i<f.vectors[0].size();++i) {
-//        cout << "vector " << i << " : " << ( f.vectors[0] )[i] << endl;
-//    }
+//    for (unsigned i=0;i<f.vectors[0].size();++i)
+//        cout << "vector[" << i << "] = " << ( f.vectors[0] )[i] << endl;
 
     /// Verification de l'equilibre du pb direct
     /// ----------------------------------------

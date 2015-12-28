@@ -737,7 +737,7 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
 //                RI.display_map_material();
 //                RI.display_map_step();
 //                RI.display_map_surface( true );
-                RI.set_boundary_by_step( m, "Step-1" );
+                RI.set_constraint_by_step( f, "Step-1", penalty_val );
 //                ReaderINP<TM>::set_boundary_by_step( m, "Step-1" );
             }
             m.update_skin();
