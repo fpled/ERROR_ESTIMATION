@@ -26,16 +26,19 @@ using namespace std;
 int main( int argc, char **argv ) {
     TicToc t_total;
     t_total.start();
-    static const unsigned dim = 2;
+    static const unsigned dim = 3;
     static const bool wont_add_nz = true;
     typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "structure_crack"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes
+    static const string structure = "test_specimen"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes
                                                      // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes, test_specimen
-    static const string mesh_size = "fine"; // maillage pour les structures plate_hole (2D ou 3D), plate_crack, structure_crack, test_specimen, weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
-    static const string loading = "pull"; // chargement pour la structure spot_weld (3D) : pull, shear, peeling et pour la structure plate_crack (2D) : pull, shear
+    static const string mesh_size = "fine"; // maillage pour les structures plate_hole (2D ou 3D), plate_crack, structure_crack, test_specimen (2D), weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
+    static const string loading = "Step-1"; // chargement
+                                          // pour la structure spot_weld (3D) : pull, shear, peeling
+                                          // pour la structure plate_crack (2D) : pull, shear
+                                          // pour la structure test_specimen (3D) : Step-1, ..., Step-9,
     static const unsigned deg_p = 1; // degre de l'analyse elements finis : 1, 2, ...
     static const unsigned deg_k = 3; // degre supplementaire : 1, 2, 3, ...
     static const string boundary_condition_D = "penalty"; // methode de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalty
@@ -59,7 +62,7 @@ int main( int argc, char **argv ) {
     /// Global error estimation method
     /// ------------------------------
     static const bool want_global_estimation = 1; // calcul d'un estimateur d'erreur globale (au sens de la norme energetique)
-    static const string method = "EET"; //methode de construction de champs admissibles pour le pb direct : EET, SPET, EESPT
+    static const string method = "EET_SPET_EESPT"; //methode de construction de champs admissibles pour le pb direct : EET, SPET, EESPT
     static const string method_adjoint = "EET"; // methode de construction de champs admissibles pour le pb adjoint : EET, SPET, EESPT
 
     static const unsigned cost_function = 0; // fonction-cout pour les methodes EET, EESPT :
@@ -247,6 +250,16 @@ int main( int argc, char **argv ) {
 //    f.update_variables();
 //    f.call_after_solve();
     
+//    for (unsigned i=0;i<m.node_list.size();++i) {
+//        for (unsigned d=0;d<dim;++d)
+//            cout << "node[" << i << "].pos[" << d << "] = " << m.node_list[i].pos[d] << endl;
+//        for (unsigned d=0;d<dim;++d)
+//            cout << "node[" << i << "].dep[" << d << "] = " << m.node_list[i].dep[d] << endl;
+//        cout << endl << endl;
+//    }
+//    for (unsigned i=0;i<f.vectors[0].size();++i)
+//        cout << "vector[" << i << "] = " << ( f.vectors[0] )[i] << endl;
+
     /// Verification de l'equilibre du pb direct
     /// ----------------------------------------
     if ( verif_eq )

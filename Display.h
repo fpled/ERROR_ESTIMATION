@@ -158,10 +158,13 @@ void display_method( const string &pb, const string &method, const unsigned &cos
 /// ------------------------------
 template<class TM>
 string define_prefix( TM &m, const string &pb, const string &structure, const string &loading, const string &mesh_size ) {
+
+    static const unsigned dim = TM::dim;
+
     string prefix = structure;
-    if ( structure == "plate_crack" or structure == "spot_weld" )
+    if ( structure == "plate_crack" or structure == "spot_weld" or (structure == "test_specimen" and dim == 3) )
         prefix += "_" + loading;
-    if ( structure == "plate_hole" or structure == "plate_crack" or structure == "structure_crack" or structure == "test_specimen" or structure == "weight_sensor" or structure == "circle" or structure == "beam_hole" or structure == "plate_hole_full" or structure == "spot_weld" or structure == "reactor_head" or structure == "door_seal" or structure == "sphere" or structure == "sphere_center" or structure == "SAP" )
+    if ( structure == "plate_hole" or structure == "plate_crack" or structure == "structure_crack" or (structure == "test_specimen" and dim == 2) or structure == "weight_sensor" or structure == "circle" or structure == "beam_hole" or structure == "plate_hole_full" or structure == "spot_weld" or structure == "reactor_head" or structure == "door_seal" or structure == "sphere" or structure == "sphere_center" or structure == "SAP" )
         prefix += "_" + mesh_size;
     prefix += "_" + m.type_elements()[0] + "_" + pb;
     return prefix;

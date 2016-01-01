@@ -239,7 +239,7 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
             /// condition de periodicite aux noeuds situes en y = 0 et y = 1
             /// blocage du noeud (0.25, 0.25) dans toutes les directions
             // blocage de la moyenne du deplacement dans toutes les directions
-            /// application du champ de deplacement u a tous les noeuds
+            /// champ de deplacement applique a tous les noeuds
             /// ---------------------------------------------------------------
             else if ( structure.find("square") != string::npos ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
@@ -724,21 +724,13 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                 }
             }
             /// Eprouvette 3D
-            /// blocage des noeuds situes en x = 0 dans toutes les directions
-            /// -------------------------------------------------------------
+            /// loading Step-1, ..., Step-9 : champ de deplacement applique aux noeuds specifies dans le fichier .inp
+            /// -----------------------------------------------------------------------------------------------------
             else if ( structure == "test_specimen" ) {
-                ReaderINP<TM> RI( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-//                RI.display_node();
-//                RI.display_element();
-//                RI.display_map_node_set( true );
-//                RI.display_map_element_set( true );
-//                RI.display_map_orientation();
-//                RI.display_map_solid_section();
-//                RI.display_map_material();
-//                RI.display_map_step();
-//                RI.display_map_surface( true );
-                RI.set_constraint_by_step( f, "Step-1", penalty_val );
-//                ReaderINP<TM>::set_boundary_by_step( m, "Step-1" );
+                TM mesh;
+                ReaderINP<TM> RI( mesh, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+                f.get_initial_conditions();
+                RI.set_constraint_by_step( f, loading, penalty_val );
             }
             m.update_skin();
             if ( pb == "direct" ) {

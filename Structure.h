@@ -1019,35 +1019,28 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
         /// Eprouvette 3D
         /// -------------
         else if ( structure == "test_specimen" ) {
-            switch ( refinement_deg_ref ) {
-            case 1 :
-                if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_ref and ( want_global_discretization_error or want_local_discretization_error ) ) ) {
-//                    read_inp( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-                    ReaderINP<TM> RI( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-                }
-                else {
-//                    read_inp( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-                    ReaderINP<TM> RI( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-                }
-                break;
-            case 2 :
-                if ( ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) or ( want_ref and ( want_global_discretization_error or want_local_discretization_error ) ) ) {
-//                    read_inp( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-                    ReaderINP<TM> RI( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-                }
-                else {
-//                    read_inp( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-                    ReaderINP<TM> RI( m , "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-                }
-                break;
-            default :
-//                read_inp( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-                ReaderINP<TM> RI( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-                break;
-            }
+//            read_inp( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+            ReaderINP<TM> RI( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+//            RI.display_map_node();
+//            cout << "Number of nodes = " << m.node_list.size() << endl;
+//            for (unsigned i=0;i<m.node_list.size();++i) {
+//                cout << " node " << i << " at position ";
+//                for (unsigned d=0;d<dim;++d)
+//                    cout << m.node_list[i].pos[d] << " ";
+//                cout << endl;
+//            }
+//            RI.display_map_element();
+//            RI.display_match_inode_inp_lmtpp();
+//            RI.display_map_node_set( true );
+//            RI.display_map_element_set( true );
+//            RI.display_map_orientation();
+//            RI.display_map_solid_section();
+//            RI.display_map_material();
+//            RI.display_map_step();
+//            RI.display_map_surface( true );
             if ( want_ref ) {
 //                read_inp( m_ref, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-                ReaderINP<TM> RI( m_ref, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+                ReaderINP<TM> RI_ref( m_ref, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
                 for (unsigned n=0;n<refinement_deg_ref;++n) {
                     divide_element( m_ref );
                 }
