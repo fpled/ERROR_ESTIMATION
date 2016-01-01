@@ -21,8 +21,8 @@ import "INTEREST_QUANTITY/Interest_quantity.met"
 #------------------------------------------------------------------------------------------------------------------------------------------------------------
 want_discretization_error := false
 want_method_EET := true
-want_method_SPET := true
-want_method_EESPT := true
+want_method_SPET := false
+want_method_EESPT := false
 want_enhancement := false
 want_local_estimation := false
 want_local_improvement_steklov := false
