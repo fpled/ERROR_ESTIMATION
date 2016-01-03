@@ -10,28 +10,28 @@ def interpolation( var_inter, val, interpolation_base )
         return (1-var_inter[0])*val[0]+var_inter[0]*val[1]-4*(var_inter[0]-1)*var_inter[0]*val[2]
 
 #
-def interpolation_deg( var_inter, val, interpolation_base, deg ) when deg == 2
+def generic_interpolation( var_inter, val, interpolation_base, deg ) when deg == 2
     if interpolation_base == "lagrange"
         return val[2]*(2*var_inter[0]-1)*var_inter[0]+(1+(2*var_inter[0]-3)*var_inter[0])*val[0]-4*(var_inter[0]-1)*var_inter[0]*val[1]
     else if interpolation_base == "hierarchical"
         return val[0]*(1-var_inter[0])+val[2]*var_inter[0]-4*(var_inter[0]-1)*var_inter[0]*val[1]
 
 #
-def interpolation_deg( var_inter, val, interpolation_base, deg ) when deg == 3
+def generic_interpolation( var_inter, val, interpolation_base, deg ) when deg == 3
     if interpolation_base == "lagrange"
         return (1+((9-9.0/2.0*var_inter[0])*var_inter[0]-11.0/2.0)*var_inter[0])*val[0]+val[1]*(9+(27.0/2.0*var_inter[0]-45.0/2.0)*var_inter[0])*var_inter[0]+val[2]*((18-27.0/2.0*var_inter[0])*var_inter[0]-9.0/2.0)*var_inter[0]+val[3]*(1-9.0/2.0*var_inter[0]*(1-var_inter[0]))*var_inter[0]
     else if interpolation_base == "hierarchical"
         return val[0]*(1-var_inter[0])+val[1]*(9+(27.0/2.0*var_inter[0]-45.0/2.0)*var_inter[0])*var_inter[0]+val[2]*((18-27.0/2.0*var_inter[0])*var_inter[0]-9.0/2.0)*var_inter[0]+val[3]*var_inter[0]
 
 #
-def interpolation_deg( var_inter, val, interpolation_base, deg ) when deg == 4
+def generic_interpolation( var_inter, val, interpolation_base, deg ) when deg == 4
     if interpolation_base == "lagrange"
         return val[2]*((76+(64*var_inter[0]-128)*var_inter[0])*var_inter[0]-12)*var_inter[0]+val[1]*(16+((96-128.0/3.0*var_inter[0])*var_inter[0]-208.0/3.0)*var_inter[0])*var_inter[0]+val[0]*(1+((70.0/3.0+(32.0/3.0*var_inter[0]-80.0/3.0)*var_inter[0])*var_inter[0]-25.0/3.0)*var_inter[0])+(16.0/3.0+((224.0/3.0-128.0/3.0*var_inter[0])*var_inter[0]-112.0/3.0)*var_inter[0])*var_inter[0]*val[3]+val[4]*((22.0/3.0+(32.0/3.0*var_inter[0]-16)*var_inter[0])*var_inter[0]-1)*var_inter[0]
     else if interpolation_base == "hierarchical"
         return val[2]*((76+(64*var_inter[0]-128)*var_inter[0])*var_inter[0]-12)*var_inter[0]+val[0]*(1-var_inter[0])+val[1]*(16+((96-128.0/3.0*var_inter[0])*var_inter[0]-208.0/3.0)*var_inter[0])*var_inter[0]+(16.0/3.0+((224.0/3.0-128.0/3.0*var_inter[0])*var_inter[0]-112.0/3.0)*var_inter[0])*var_inter[0]*val[3]+val[4]*var_inter[0]
 
 #
-def interpolation_deg( var_inter, val, interpolation_base, deg ) when deg == 5
+def generic_interpolation( var_inter, val, interpolation_base, deg ) when deg == 5
     if interpolation_base == "lagrange"
         return val[4]*((1525.0/24.0+((6875.0/24.0-3125.0/24.0*var_inter[0])*var_inter[0]-5125.0/24.0)*var_inter[0])*var_inter[0]-25.0/4.0)*var_inter[0]+val[2]*((2675.0/12.0+((8125.0/12.0-3125.0/12.0*var_inter[0])*var_inter[0]-7375.0/12.0)*var_inter[0])*var_inter[0]-25)*var_inter[0]+val[0]*(1+((375.0/8.0+((625.0/8.0-625.0/24.0*var_inter[0])*var_inter[0]-2125.0/24.0)*var_inter[0])*var_inter[0]-137.0/12.0)*var_inter[0])+val[1]*(25+((8875.0/24.0+(3125.0/24.0*var_inter[0]-4375.0/12.0)*var_inter[0])*var_inter[0]-1925.0/12.0)*var_inter[0])*var_inter[0]+val[3]*(50.0/3.0+((6125.0/12.0+(3125.0/12.0*var_inter[0]-625)*var_inter[0])*var_inter[0]-325.0/2.0)*var_inter[0])*var_inter[0]+val[5]*(1+((875.0/24.0+(625.0/24.0*var_inter[0]-625.0/12.0)*var_inter[0])*var_inter[0]-125.0/12.0)*var_inter[0])*var_inter[0]
     else if interpolation_base == "hierarchical"

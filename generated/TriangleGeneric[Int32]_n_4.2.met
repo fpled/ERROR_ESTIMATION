@@ -1,0 +1,703 @@
+static const nvi := 2
+static const nb_nodes := 15
+static const nb_vertex_nodes := 3
+static const center_of_var_inter := [ 1.0/3.0, 1.0/3.0 ]
+#
+def interpolation( var_inter, val, interpolation_base )
+    if interpolation_base == "lagrange"
+        return val[13]*var_inter[0]*var_inter[1]*(16.0/3.0+var_inter[1]*(128.0/3.0*var_inter[1]-32))+((160-128*(var_inter[0]+var_inter[1]))*var_inter[1]-32*(1-var_inter[0]))*var_inter[1]*var_inter[0]*val[10]+((28-16*var_inter[0])*var_inter[0]+(76+(64*var_inter[0]+128*var_inter[1]-144)*var_inter[0]+(64*var_inter[1]-128)*var_inter[1])*var_inter[1]-12)*var_inter[1]*val[9]+val[4]*((22.0/3.0+(32.0/3.0*var_inter[0]-16)*var_inter[0])*var_inter[0]-1)*var_inter[0]+val[3]*(16.0/3.0*(1-var_inter[1])+(32*var_inter[1]+(224.0/3.0-128.0/3.0*(var_inter[0]+var_inter[1]))*var_inter[0]-112.0/3.0)*var_inter[0])*var_inter[0]+(16+((96-128*var_inter[1]-128.0/3.0*var_inter[0])*var_inter[0]+(192-128*var_inter[1])*var_inter[1]-208.0/3.0)*var_inter[0]+((96-128.0/3.0*var_inter[1])*var_inter[1]-208.0/3.0)*var_inter[1])*var_inter[0]*val[1]+val[0]*(1+var_inter[0]*(var_inter[0]*(70.0/3.0+var_inter[0]*(128.0/3.0*var_inter[1]+32.0/3.0*var_inter[0]-80.0/3.0)+var_inter[1]*(64*var_inter[1]-80))+var_inter[1]*(140.0/3.0+var_inter[1]*(128.0/3.0*var_inter[1]-80))-25.0/3.0)+var_inter[1]*(var_inter[1]*(70.0/3.0+var_inter[1]*(32.0/3.0*var_inter[1]-80.0/3.0))-25.0/3.0))+val[2]*((28-16*var_inter[1])*var_inter[1]+(76+(64*var_inter[0]-128*(1-var_inter[1]))*var_inter[0]+(64*var_inter[1]-144)*var_inter[1])*var_inter[0]-12)*var_inter[0]+val[5]*(16+((96-128.0/3.0*var_inter[0])*var_inter[0]-208.0/3.0)*var_inter[0]+((96-128.0/3.0*var_inter[1])*var_inter[1]+(192-128*(var_inter[0]+var_inter[1]))*var_inter[0]-208.0/3.0)*var_inter[1])*var_inter[1]+(96+(256*var_inter[1]+128*var_inter[0]-224)*var_inter[0]+(128*var_inter[1]-224)*var_inter[1])*var_inter[1]*var_inter[0]*val[6]+((160-128*(var_inter[0]+var_inter[1]))*var_inter[0]-32*(1-var_inter[1]))*var_inter[1]*var_inter[0]*val[7]+(16.0/3.0+(128.0/3.0*var_inter[0]-32)*var_inter[0])*var_inter[1]*var_inter[0]*val[8]+val[11]*var_inter[0]*var_inter[1]*(4+64*var_inter[0]*var_inter[1]-16*(var_inter[0]+var_inter[1]))+val[12]*var_inter[1]*(16.0/3.0*(1-var_inter[0])+var_inter[1]*(32*var_inter[0]+(224.0/3.0-128.0/3.0*(var_inter[0]+var_inter[1]))*var_inter[1]-112.0/3.0))+val[14]*var_inter[1]*(var_inter[1]*(22.0/3.0+var_inter[1]*(32.0/3.0*var_inter[1]-16))-1)
+    else if interpolation_base == "hierarchical"
+        return ((160-128*(var_inter[0]+var_inter[1]))*var_inter[1]-32*(1-var_inter[0]))*var_inter[1]*var_inter[0]*val[10]+val[9]*var_inter[1]*(var_inter[1]*(76-128*var_inter[1])-64*((1-var_inter[0])*pow(var_inter[0],2)-pow(var_inter[1],3))-12*(1-var_inter[0]))+(16.0/3.0+(128.0/3.0*var_inter[0]-32)*var_inter[0])*var_inter[1]*var_inter[0]*val[8]+((160-128*(var_inter[0]+var_inter[1]))*var_inter[0]-32*(1-var_inter[1]))*var_inter[1]*var_inter[0]*val[7]+val[3]*(16.0/3.0*(1-var_inter[1])+(32*var_inter[1]+(224.0/3.0-128.0/3.0*(var_inter[0]+var_inter[1]))*var_inter[0]-112.0/3.0)*var_inter[0])*var_inter[0]+val[1]*var_inter[0]*(var_inter[0]*(160.0/3.0*var_inter[1]+var_inter[0]*(96-128.0/3.0*(var_inter[0]+var_inter[1]))-208.0/3.0)+16*(1-var_inter[1]))+val[0]*(1-var_inter[0]-var_inter[1])+val[2]*var_inter[0]*(var_inter[0]*(76+var_inter[0]*(64*(var_inter[0]+var_inter[1])-128)-64*var_inter[1])-12*(1-var_inter[1]))+val[4]*var_inter[0]+val[5]*var_inter[1]*(16+((96-128.0/3.0*var_inter[1])*var_inter[1]-208.0/3.0)*var_inter[1]+var_inter[0]*(var_inter[0]*(32-128.0/3.0*var_inter[0])-16.0/3.0))+val[6]*var_inter[0]*var_inter[1]*(96+var_inter[1]*(128*var_inter[1]+256*var_inter[0]-224)+var_inter[0]*(128*var_inter[0]-224))+val[11]*var_inter[0]*var_inter[1]*(64*(1-var_inter[0])*var_inter[0]-12)+val[12]*var_inter[1]*(16.0/3.0+var_inter[1]*(var_inter[1]*(224.0/3.0-128.0/3.0*var_inter[1])-112.0/3.0)+var_inter[0]*(var_inter[0]*(160.0/3.0-128.0/3.0*var_inter[0])-16))+val[13]*var_inter[1]*var_inter[0]*(16+var_inter[0]*(128.0/3.0*var_inter[0]-160.0/3.0))+val[14]*var_inter[1]
+
+#
+def generic_interpolation( var_inter, val, interpolation_base, deg ) when deg == 4
+    if interpolation_base == "lagrange"
+        return (16.0/3.0+(128.0/3.0*var_inter[0]-32)*var_inter[0])*var_inter[1]*var_inter[0]*val[8]+(16+((96-128.0/3.0*var_inter[0])*var_inter[0]-208.0/3.0)*var_inter[0]+((96-128.0/3.0*var_inter[1])*var_inter[1]+(192-128*(var_inter[0]+var_inter[1]))*var_inter[0]-208.0/3.0)*var_inter[1])*var_inter[1]*val[5]+(16.0/3.0*(1-var_inter[1])+(32*var_inter[1]+(224.0/3.0-128.0/3.0*(var_inter[0]+var_inter[1]))*var_inter[0]-112.0/3.0)*var_inter[0])*var_inter[0]*val[3]+((28-16*var_inter[1])*var_inter[1]+(76+(64*var_inter[0]-128*(1-var_inter[1]))*var_inter[0]+(64*var_inter[1]-144)*var_inter[1])*var_inter[0]-12)*var_inter[0]*val[2]+(16+((96-128*var_inter[1]-128.0/3.0*var_inter[0])*var_inter[0]+(192-128*var_inter[1])*var_inter[1]-208.0/3.0)*var_inter[0]+((96-128.0/3.0*var_inter[1])*var_inter[1]-208.0/3.0)*var_inter[1])*var_inter[0]*val[1]+val[0]*(1+var_inter[1]*(var_inter[1]*(70.0/3.0+var_inter[1]*(32.0/3.0*var_inter[1]-80.0/3.0))-25.0/3.0)+var_inter[0]*(var_inter[0]*(70.0/3.0+var_inter[0]*(32.0/3.0*var_inter[0]-80.0/3.0))+var_inter[1]*(140.0/3.0+var_inter[1]*(128.0/3.0*var_inter[1]-80)+var_inter[0]*(128.0/3.0*var_inter[0]+64*var_inter[1]-80))-25.0/3.0))+((22.0/3.0+(32.0/3.0*var_inter[0]-16)*var_inter[0])*var_inter[0]-1)*var_inter[0]*val[4]+(96+(256*var_inter[1]+128*var_inter[0]-224)*var_inter[0]+(128*var_inter[1]-224)*var_inter[1])*var_inter[1]*var_inter[0]*val[6]+((160-128*(var_inter[0]+var_inter[1]))*var_inter[0]-32*(1-var_inter[1]))*var_inter[1]*var_inter[0]*val[7]+((28-16*var_inter[0])*var_inter[0]+(76+(64*var_inter[0]+128*var_inter[1]-144)*var_inter[0]+(64*var_inter[1]-128)*var_inter[1])*var_inter[1]-12)*var_inter[1]*val[9]+((160-128*(var_inter[0]+var_inter[1]))*var_inter[1]-32*(1-var_inter[0]))*var_inter[1]*var_inter[0]*val[10]+var_inter[0]*var_inter[1]*(4+64*var_inter[0]*var_inter[1]-16*(var_inter[0]+var_inter[1]))*val[11]+var_inter[1]*(16.0/3.0*(1-var_inter[0])+var_inter[1]*(32*var_inter[0]+(224.0/3.0-128.0/3.0*(var_inter[0]+var_inter[1]))*var_inter[1]-112.0/3.0))*val[12]+var_inter[0]*var_inter[1]*(16.0/3.0+var_inter[1]*(128.0/3.0*var_inter[1]-32))*val[13]+var_inter[1]*(var_inter[1]*(22.0/3.0+var_inter[1]*(32.0/3.0*var_inter[1]-16))-1)*val[14]
+    else if interpolation_base == "hierarchical"
+        return val[13]*var_inter[1]*var_inter[0]*(16+var_inter[0]*(128.0/3.0*var_inter[0]-160.0/3.0))+val[11]*var_inter[0]*var_inter[1]*(64*(1-var_inter[0])*var_inter[0]-12)+((160-128*(var_inter[0]+var_inter[1]))*var_inter[1]-32*(1-var_inter[0]))*var_inter[1]*var_inter[0]*val[10]+(16.0/3.0+(128.0/3.0*var_inter[0]-32)*var_inter[0])*var_inter[1]*var_inter[0]*val[8]+val[5]*var_inter[1]*(16+((96-128.0/3.0*var_inter[1])*var_inter[1]-208.0/3.0)*var_inter[1]+var_inter[0]*(var_inter[0]*(32-128.0/3.0*var_inter[0])-16.0/3.0))+var_inter[0]*val[4]+val[1]*var_inter[0]*(var_inter[0]*(160.0/3.0*var_inter[1]+var_inter[0]*(96-128.0/3.0*(var_inter[0]+var_inter[1]))-208.0/3.0)+16*(1-var_inter[1]))+(1-var_inter[0]-var_inter[1])*val[0]+((76+64*((var_inter[0]+var_inter[1])*var_inter[0]-var_inter[1])-128*var_inter[0])*var_inter[0]-12*(1-var_inter[1]))*var_inter[0]*val[2]+(16.0/3.0*(1-var_inter[1])+(32*var_inter[1]+(224.0/3.0-128.0/3.0*(var_inter[0]+var_inter[1]))*var_inter[0]-112.0/3.0)*var_inter[0])*var_inter[0]*val[3]+(96+(256*var_inter[1]+128*var_inter[0]-224)*var_inter[0]+(128*var_inter[1]-224)*var_inter[1])*var_inter[1]*var_inter[0]*val[6]+((160-128*(var_inter[0]+var_inter[1]))*var_inter[0]-32*(1-var_inter[1]))*var_inter[1]*var_inter[0]*val[7]+val[9]*var_inter[1]*(var_inter[1]*(76-128*var_inter[1])-64*((1-var_inter[0])*pow(var_inter[0],2)-pow(var_inter[1],3))-12*(1-var_inter[0]))+val[12]*var_inter[1]*(16.0/3.0+var_inter[1]*(var_inter[1]*(224.0/3.0-128.0/3.0*var_inter[1])-112.0/3.0)+var_inter[0]*(var_inter[0]*(160.0/3.0-128.0/3.0*var_inter[0])-16))+var_inter[1]*val[14]
+
+#
+def interpolation_vertex( var_inter, val_vertex )
+    return val_vertex[0]*(1-var_inter[0]-var_inter[1])+val_vertex[1]*var_inter[0]+val_vertex[2]*var_inter[1]
+#
+def nb_children( sub_nvi ) when sub_nvi==0
+    return 1
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==0
+    return child_var_inter
+def type_child( sub_nvi, num_child ) when sub_nvi==0
+    return TriangleGeneric[Int32]
+def node_number_child( sub_nvi, num_child ) when sub_nvi==0
+    return 0 .. 15
+#
+def nb_children( sub_nvi ) when sub_nvi==1
+    return 3
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==1 and num_child==0
+    return [child_var_inter[0]*(child_var_inter[0]*(22.0/3.0+child_var_inter[0]*(32.0/3.0*child_var_inter[0]-16))-1)+1.0/4.0*child_var_inter[0]*(16+((96-128.0/3.0*child_var_inter[0])*child_var_inter[0]-208.0/3.0)*child_var_inter[0])+1.0/2.0*child_var_inter[0]*(child_var_inter[0]*(76+child_var_inter[0]*(64*child_var_inter[0]-128))-12)+3.0/4.0*child_var_inter[0]*(16.0/3.0+child_var_inter[0]*(child_var_inter[0]*(224.0/3.0-128.0/3.0*child_var_inter[0])-112.0/3.0)),0]
+def type_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==0
+    return BarGeneric[Int32]
+def node_number_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==0
+    return [0,1,2,3,4]
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==1 and num_child==1
+    return [1+1.0/2.0*child_var_inter[0]*(child_var_inter[0]*(76+child_var_inter[0]*(64*child_var_inter[0]-128))-12)+3.0/4.0*child_var_inter[0]*(16+child_var_inter[0]*(child_var_inter[0]*(96-128.0/3.0*child_var_inter[0])-208.0/3.0))+child_var_inter[0]*(child_var_inter[0]*(70.0/3.0+(32.0/3.0*child_var_inter[0]-80.0/3.0)*child_var_inter[0])-25.0/3.0)+1.0/4.0*child_var_inter[0]*(16.0/3.0+child_var_inter[0]*(child_var_inter[0]*(224.0/3.0-128.0/3.0*child_var_inter[0])-112.0/3.0)),3.0/4.0*child_var_inter[0]*(16.0/3.0+child_var_inter[0]*(child_var_inter[0]*(224.0/3.0-128.0/3.0*child_var_inter[0])-112.0/3.0))+1.0/4.0*child_var_inter[0]*(16+child_var_inter[0]*(child_var_inter[0]*(96-128.0/3.0*child_var_inter[0])-208.0/3.0))+1.0/2.0*child_var_inter[0]*(child_var_inter[0]*(76+child_var_inter[0]*(64*child_var_inter[0]-128))-12)+child_var_inter[0]*(child_var_inter[0]*(22.0/3.0+child_var_inter[0]*(32.0/3.0*child_var_inter[0]-16))-1)]
+def type_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==1
+    return BarGeneric[Int32]
+def node_number_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==1
+    return [4,8,11,13,14]
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==1 and num_child==2
+    return [0,1+1.0/4.0*(16.0/3.0+((224.0/3.0-128.0/3.0*child_var_inter[0])*child_var_inter[0]-112.0/3.0)*child_var_inter[0])*child_var_inter[0]+1.0/2.0*((76+(64*child_var_inter[0]-128)*child_var_inter[0])*child_var_inter[0]-12)*child_var_inter[0]+((70.0/3.0+(32.0/3.0*child_var_inter[0]-80.0/3.0)*child_var_inter[0])*child_var_inter[0]-25.0/3.0)*child_var_inter[0]+3.0/4.0*(16+((96-128.0/3.0*child_var_inter[0])*child_var_inter[0]-208.0/3.0)*child_var_inter[0])*child_var_inter[0]]
+def type_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==2
+    return BarGeneric[Int32]
+def node_number_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==2
+    return [14,12,9,5,0]
+#
+def nb_children( sub_nvi ) when sub_nvi==2
+    return 3
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==2 and num_child==0
+    return [0,0]
+def type_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==0
+    return NodalElement
+def node_number_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==0
+    return [0]
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==2 and num_child==1
+    return [1,0]
+def type_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==1
+    return NodalElement
+def node_number_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==1
+    return [4]
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==2 and num_child==2
+    return [0,1]
+def type_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==2
+    return NodalElement
+def node_number_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==2
+    return [14]
+def normal( var_inter, pos_nodes )
+    assert( 0, "normal is defined only for nb_dim == nvi + 1" )
+#
+def jac_mat( var_inter, pos_nodes )
+    res := Mat[ type_promote(var_inter[0],pos_nodes[0][0],mul), Gen[ 2, 2 ] ]()
+    R_0 := pos_nodes[14][1]; R_1 := pos_nodes[14][0]; R_2 := pos_nodes[11][1]; R_3 := pos_nodes[9][1];
+    R_4 := pos_nodes[3][1]; R_5 := pos_nodes[0][1]; R_6 := pos_nodes[1][1]; R_7 := pos_nodes[2][1];
+    R_8 := pos_nodes[4][1]; R_9 := pos_nodes[5][1]; R_10 := pos_nodes[6][1]; R_11 := pos_nodes[7][1];
+    R_12 := pos_nodes[8][1]; R_13 := pos_nodes[10][1]; R_14 := pos_nodes[12][1]; R_15 := pos_nodes[13][1];
+    R_16 := pos_nodes[13][0]; R_17 := pos_nodes[12][0]; R_18 := pos_nodes[10][0]; R_19 := pos_nodes[9][0];
+    R_20 := pos_nodes[8][0]; R_21 := pos_nodes[7][0]; R_22 := pos_nodes[6][0]; R_23 := pos_nodes[5][0];
+    R_24 := pos_nodes[4][0]; R_25 := pos_nodes[3][0]; R_26 := pos_nodes[2][0]; R_27 := pos_nodes[1][0];
+    R_28 := pos_nodes[0][0]; R_29 := var_inter[0]; R_30 := 2.0*R_29; R_31 := (-128.0/3.0)*R_29;
+    R_32 := 96.0+R_31; R_32 = R_32*R_29; R_32 = (-208.0/3.0)+R_32; R_32 = R_32*R_29;
+    R_33 := 32.0+R_31; R_33 = R_29*R_33; R_33 = (-16.0/3.0)+R_33; R_33 = R_29*R_33;
+    R_34 := R_4*R_33; R_33 = R_25*R_33; R_35 := 64.0*R_29; R_36 := (-32.0)+R_35;
+    R_37 := (-16.0)*R_29; R_37 = 28.0+R_37; R_37 = R_37*R_29; R_38 := (-1.0)*R_29;
+    R_38 = 1.0+R_38; R_39 := (16.0/3.0)*R_38; R_38 = (-32.0)*R_38; R_40 := (-32.0)*R_29;
+    R_41 := 128.0*R_29; R_42 := (-64.0)+R_41; R_42 = R_29*R_42; R_42 = (16.0/3.0)+R_42;
+    R_43 := (-384.0)*R_29; R_44 := 384.0*R_29; R_45 := (-128.0)*R_29; R_46 := 32.0+R_45;
+    R_47 := 192.0+R_45; R_47 = R_29*R_47; R_48 := (-256.0)*R_29; R_49 := 256.0*R_29;
+    R_50 := (-512.0/3.0)*R_29; R_51 := 288.0+R_50; R_51 = R_29*R_51; R_52 := (256.0/3.0)*R_29;
+    R_53 := (128.0/3.0)*R_29; R_54 := (-32.0)+R_53; R_54 = R_54*R_29; R_54 = (16.0/3.0)+R_54;
+    R_54 = R_54*R_29; R_55 := R_12*R_54; R_54 = R_20*R_54; R_56 := (-48.0)+R_53;
+    R_56 = R_29*R_56; R_56 = (44.0/3.0)+R_56; R_56 = R_29*R_56; R_56 = (-1.0)+R_56;
+    R_8 = R_8*R_56; R_56 = R_24*R_56; R_24 = (-80.0)+R_53; R_24 = R_29*R_24;
+    R_57 := var_inter[1]; R_30 = R_57+R_30; R_36 = R_57*R_36; R_46 = R_57*R_46;
+    R_58 := 384.0*R_57; R_58 = R_49+R_58; R_58 = (-448.0)+R_58; R_58 = R_57*R_58;
+    R_59 := (-32.0)*R_57; R_60 := (-512.0/3.0)*R_57; R_61 := R_45+R_60; R_61 = 224.0+R_61;
+    R_61 = R_57*R_61; R_61 = R_35+R_61; R_61 = (-224.0/3.0)+R_61; R_61 = R_57*R_61;
+    R_61 = R_39+R_61; R_39 = R_14*R_61; R_61 = R_17*R_61; R_60 = 288.0+R_60;
+    R_60 = R_57*R_60; R_62 := R_29+R_57; R_63 := (-128.0)*R_62; R_64 := 192.0+R_63;
+    R_30 = R_64*R_30; R_64 = R_64*R_29; R_63 = 160.0+R_63; R_65 := R_63*R_29;
+    R_63 = R_63*R_57; R_63 = R_38+R_63; R_62 = 128.0*R_62; R_62 = (-144.0)+R_62;
+    R_66 := R_29*R_62; R_66 = R_59+R_66; R_66 = 28.0+R_66; R_66 = R_29*R_66;
+    R_59 = R_7*R_66; R_66 = R_26*R_66; R_62 = R_57*R_62; R_62 = R_40+R_62;
+    R_62 = 28.0+R_62; R_62 = R_57*R_62; R_40 = R_3*R_62; R_62 = R_19*R_62;
+    R_42 = R_57*R_42; R_12 = R_12*R_42; R_42 = R_20*R_42; R_20 = (-256.0)*R_57;
+    R_45 = R_45+R_20; R_45 = 192.0+R_45; R_45 = R_29*R_45; R_60 = R_45+R_60;
+    R_60 = (-416.0/3.0)+R_60; R_60 = R_57*R_60; R_43 = R_20+R_43; R_43 = 320.0+R_43;
+    R_43 = R_29*R_43; R_20 = 256.0*R_57; R_41 = R_20+R_41; R_67 := (-224.0)+R_41;
+    R_67 = R_67*R_29; R_58 = R_67+R_58; R_58 = 96.0+R_58; R_58 = R_29*R_58;
+    R_67 = R_10*R_58; R_58 = R_22*R_58; R_41 = (-384.0)+R_41; R_41 = R_57*R_41;
+    R_44 = R_20+R_44; R_44 = (-448.0)+R_44; R_44 = R_29*R_44; R_20 = 128.0*R_57;
+    R_68 := (-64.0)+R_20; R_68 = R_57*R_68; R_68 = (16.0/3.0)+R_68; R_68 = R_29*R_68;
+    R_69 := R_15*R_68; R_68 = R_16*R_68; R_35 = R_35+R_20; R_70 := (-160.0)+R_35;
+    R_70 = R_57*R_70; R_35 = (-144.0)+R_35; R_35 = R_35*R_29; R_35 = 2.0*R_35;
+    R_41 = R_35+R_41; R_41 = 152.0+R_41; R_41 = R_57*R_41; R_41 = R_37+R_41;
+    R_41 = (-12.0)+R_41; R_3 = R_3*R_41; R_41 = R_19*R_41; R_20 = R_20+R_49;
+    R_20 = (-224.0)+R_20; R_20 = R_57*R_20; R_44 = R_20+R_44; R_44 = 96.0+R_44;
+    R_44 = R_57*R_44; R_10 = R_10*R_44; R_44 = R_22*R_44; R_22 = (-1.0)*R_57;
+    R_22 = 1.0+R_22; R_20 = (-32.0)*R_22; R_65 = R_20+R_65; R_46 = R_65+R_46;
+    R_46 = R_29*R_46; R_65 = R_11*R_46; R_46 = R_21*R_46; R_43 = R_20+R_43;
+    R_43 = R_57*R_43; R_11 = R_11*R_43; R_43 = R_21*R_43; R_21 = (16.0/3.0)*R_22;
+    R_22 = (-384.0)*R_22; R_22 = R_49+R_22; R_22 = R_29*R_22; R_49 = (-384.0)*R_57;
+    R_20 = R_49+R_48; R_20 = 320.0+R_20; R_20 = R_57*R_20; R_20 = R_38+R_20;
+    R_20 = R_29*R_20; R_38 = R_13*R_20; R_20 = R_18*R_20; R_49 = R_50+R_49;
+    R_49 = 288.0+R_49; R_49 = R_29*R_49; R_19 = (-128.0)*R_57; R_31 = R_19+R_31;
+    R_31 = 96.0+R_31; R_31 = R_31*R_29; R_37 = 32.0+R_19; R_37 = R_29*R_37;
+    R_37 = R_63+R_37; R_37 = R_57*R_37; R_13 = R_13*R_37; R_37 = R_18*R_37;
+    R_48 = R_19+R_48; R_48 = 192.0+R_48; R_48 = R_57*R_48; R_51 = R_48+R_51;
+    R_51 = (-416.0/3.0)+R_51; R_51 = R_29*R_51; R_47 = R_48+R_47; R_47 = (-208.0/3.0)+R_47;
+    R_47 = R_57*R_47; R_48 = R_9*R_47; R_47 = R_23*R_47; R_50 = R_19+R_50;
+    R_50 = 224.0+R_50; R_50 = R_29*R_50; R_19 = 192.0+R_19; R_19 = R_19*R_57;
+    R_45 = R_19+R_45; R_45 = (-208.0/3.0)+R_45; R_45 = R_29*R_45; R_18 = R_6*R_45;
+    R_45 = R_27*R_45; R_31 = R_31+R_19; R_31 = (-208.0/3.0)+R_31; R_31 = R_31*R_29;
+    R_60 = R_31+R_60; R_60 = 16.0+R_60; R_60 = R_23*R_60; R_19 = 2.0*R_19;
+    R_49 = R_19+R_49; R_49 = (-416.0/3.0)+R_49; R_49 = R_29*R_49; R_19 = (-128.0/3.0)*R_57;
+    R_23 = 32.0+R_19; R_23 = R_57*R_23; R_23 = (-16.0/3.0)+R_23; R_23 = R_57*R_23;
+    R_14 = R_14*R_23; R_23 = R_17*R_23; R_19 = 96.0+R_19; R_19 = R_19*R_57;
+    R_30 = R_19+R_30; R_30 = (-416.0/3.0)+R_30; R_30 = R_57*R_30; R_30 = R_32+R_30;
+    R_30 = 16.0+R_30; R_30 = R_9*R_30; R_64 = R_19+R_64; R_64 = (-208.0/3.0)+R_64;
+    R_64 = R_64*R_57; R_51 = R_64+R_51; R_51 = 16.0+R_51; R_51 = R_6*R_51;
+    R_19 = (-208.0/3.0)+R_19; R_19 = R_19*R_57; R_49 = R_19+R_49; R_49 = 16.0+R_49;
+    R_49 = R_27*R_49; R_27 = (128.0/3.0)*R_57; R_19 = (-48.0)+R_27; R_19 = R_57*R_19;
+    R_19 = (44.0/3.0)+R_19; R_19 = R_57*R_19; R_19 = (-1.0)+R_19; R_0 = R_0*R_19;
+    R_19 = R_1*R_19; R_1 = (-32.0)+R_27; R_1 = R_57*R_1; R_1 = (16.0/3.0)+R_1;
+    R_1 = R_57*R_1; R_15 = R_15*R_1; R_1 = R_16*R_1; R_27 = (-80.0)+R_27;
+    R_27 = R_57*R_27; R_16 = (140.0/3.0)+R_27; R_16 = R_57*R_16; R_6 = 64.0*R_57;
+    R_50 = R_6+R_50; R_50 = (-224.0/3.0)+R_50; R_50 = R_29*R_50; R_50 = R_21+R_50;
+    R_4 = R_4*R_50; R_50 = R_25*R_50; R_25 = (-144.0)+R_6; R_25 = R_25*R_57;
+    R_25 = 2.0*R_25; R_22 = R_25+R_22; R_22 = 152.0+R_22; R_22 = R_29*R_22;
+    R_52 = R_6+R_52; R_52 = (-80.0)+R_52; R_52 = R_57*R_52; R_24 = R_52+R_24;
+    R_24 = (140.0/3.0)+R_24; R_24 = R_29*R_24; R_53 = R_53+R_6; R_53 = (-80.0)+R_53;
+    R_53 = R_29*R_53; R_70 = R_53+R_70; R_70 = (140.0/3.0)+R_70; R_70 = R_29*R_70;
+    R_70 = R_16+R_70; R_70 = (-25.0/3.0)+R_70; R_16 = R_5*R_70; R_16 = R_18+R_16;
+    R_59 = R_16+R_59; R_59 = R_34+R_59; R_30 = R_59+R_30; R_30 = R_67+R_30;
+    R_30 = R_65+R_30; R_30 = R_55+R_30; R_3 = R_30+R_3; R_3 = R_38+R_3;
+    R_70 = R_28*R_70; R_45 = R_70+R_45; R_45 = R_66+R_45; R_33 = R_45+R_33;
+    R_33 = R_60+R_33; R_58 = R_33+R_58; R_46 = R_58+R_46; R_46 = R_54+R_46;
+    R_46 = R_41+R_46; R_20 = R_46+R_20; R_27 = R_53+R_27; R_27 = (140.0/3.0)+R_27;
+    R_27 = R_57*R_27; R_24 = R_27+R_24; R_24 = (-25.0/3.0)+R_24; R_5 = R_5*R_24;
+    R_5 = R_51+R_5; R_24 = R_28*R_24; R_49 = R_24+R_49; R_6 = (-16.0)+R_6;
+    R_6 = R_29*R_6; R_36 = R_36+R_6; R_36 = 4.0+R_36; R_36 = R_29*R_36;
+    R_29 = R_2*R_36; R_3 = R_29+R_3; R_3 = R_39+R_3; R_3 = R_69+R_3;
+    R_3 = R_0+R_3; res(1,1) = R_3; R_6 = 2.0*R_6; R_3 = (-16.0)*R_57;
+    R_0 = 28.0+R_3; R_0 = R_0*R_57; R_22 = R_0+R_22; R_22 = (-12.0)+R_22;
+    R_7 = R_7*R_22; R_5 = R_7+R_5; R_4 = R_5+R_4; R_4 = R_8+R_4;
+    R_4 = R_48+R_4; R_4 = R_10+R_4; R_4 = R_11+R_4; R_4 = R_12+R_4;
+    R_40 = R_4+R_40; R_40 = R_13+R_40; R_22 = R_26*R_22; R_22 = R_49+R_22;
+    R_50 = R_22+R_50; R_56 = R_50+R_56; R_47 = R_56+R_47; R_44 = R_47+R_44;
+    R_43 = R_44+R_43; R_42 = R_43+R_42; R_62 = R_42+R_62; R_37 = R_62+R_37;
+    R_6 = R_3+R_6; R_6 = 4.0+R_6; R_6 = R_57*R_6; R_2 = R_2*R_6;
+    R_2 = R_40+R_2; R_2 = R_14+R_2; R_2 = R_15+R_2; res(0,1) = R_2;
+    R_2 = pos_nodes[11][0]; R_36 = R_2*R_36; R_36 = R_20+R_36; R_61 = R_36+R_61;
+    R_68 = R_61+R_68; R_19 = R_68+R_19; res(1,0) = R_19; R_6 = R_2*R_6;
+    R_37 = R_6+R_37; R_23 = R_37+R_23; R_1 = R_23+R_1; res(0,0) = R_1;
+    return res
+#
+def jac( var_inter, pos_nodes )
+    R_0 := pos_nodes[4][1]; R_1 := pos_nodes[14][0]; R_2 := pos_nodes[2][1]; R_3 := pos_nodes[10][1];
+    R_4 := pos_nodes[13][1]; R_5 := pos_nodes[11][1]; R_6 := pos_nodes[8][1]; R_7 := pos_nodes[3][1];
+    R_8 := pos_nodes[1][1]; R_9 := pos_nodes[7][1]; R_10 := pos_nodes[6][1]; R_11 := pos_nodes[12][1];
+    R_12 := pos_nodes[9][1]; R_13 := pos_nodes[5][1]; R_14 := pos_nodes[0][1]; R_15 := pos_nodes[14][1];
+    R_16 := pos_nodes[4][0]; R_17 := pos_nodes[3][0]; R_18 := pos_nodes[2][0]; R_19 := pos_nodes[1][0];
+    R_20 := pos_nodes[0][0]; R_21 := pos_nodes[11][0]; R_22 := pos_nodes[10][0]; R_23 := pos_nodes[9][0];
+    R_24 := pos_nodes[8][0]; R_25 := pos_nodes[12][0]; R_26 := pos_nodes[13][0]; R_27 := pos_nodes[7][0];
+    R_28 := pos_nodes[5][0]; R_29 := var_inter[0]; R_30 := (-16.0)*R_29; R_30 = 28.0+R_30;
+    R_30 = R_30*R_29; R_31 := 2.0*R_29; R_32 := (-128.0/3.0)*R_29; R_33 := 32.0+R_32;
+    R_33 = R_29*R_33; R_33 = (-16.0/3.0)+R_33; R_34 := R_17*R_33; R_33 = R_7*R_33;
+    R_35 := 96.0+R_32; R_35 = R_35*R_29; R_35 = (-208.0/3.0)+R_35; R_35 = R_35*R_29;
+    R_36 := 64.0*R_29; R_37 := (-32.0)+R_36; R_38 := (-512.0/3.0)*R_29; R_39 := 288.0+R_38;
+    R_39 = R_29*R_39; R_40 := (256.0/3.0)*R_29; R_41 := (128.0/3.0)*R_29; R_42 := (-32.0)+R_41;
+    R_42 = R_42*R_29; R_42 = (16.0/3.0)+R_42; R_43 := R_42*R_24; R_42 = R_42*R_6;
+    R_44 := (-48.0)+R_41; R_44 = R_29*R_44; R_44 = (44.0/3.0)+R_44; R_44 = R_29*R_44;
+    R_44 = (-1.0)+R_44; R_0 = R_0*R_44; R_44 = R_16*R_44; R_16 = (-80.0)+R_41;
+    R_16 = R_29*R_16; R_45 := (-1.0)*R_29; R_45 = 1.0+R_45; R_46 := (16.0/3.0)*R_45;
+    R_45 = (-32.0)*R_45; R_47 := (-32.0)*R_29; R_48 := 128.0*R_29; R_49 := (-64.0)+R_48;
+    R_49 = R_29*R_49; R_49 = (16.0/3.0)+R_49; R_6 = R_6*R_49; R_49 = R_24*R_49;
+    R_24 = (-384.0)*R_29; R_50 := (-128.0)*R_29; R_51 := 32.0+R_50; R_52 := 192.0+R_50;
+    R_52 = R_29*R_52; R_53 := (-256.0)*R_29; R_54 := 384.0*R_29; R_55 := 256.0*R_29;
+    R_56 := pos_nodes[6][0]; R_57 := var_inter[1]; R_58 := (-32.0)*R_57; R_37 = R_57*R_37;
+    R_51 = R_57*R_51; R_59 := 384.0*R_57; R_59 = R_55+R_59; R_59 = (-448.0)+R_59;
+    R_59 = R_57*R_59; R_60 := (-512.0/3.0)*R_57; R_61 := 288.0+R_60; R_61 = R_57*R_61;
+    R_60 = R_50+R_60; R_60 = 224.0+R_60; R_60 = R_57*R_60; R_60 = R_36+R_60;
+    R_60 = (-224.0/3.0)+R_60; R_60 = R_57*R_60; R_60 = R_46+R_60; R_46 = R_25*R_60;
+    R_60 = R_11*R_60; R_31 = R_57+R_31; R_62 := (-384.0)*R_57; R_63 := R_62+R_53;
+    R_63 = 320.0+R_63; R_63 = R_57*R_63; R_63 = R_45+R_63; R_64 := R_22*R_63;
+    R_63 = R_3*R_63; R_62 = R_38+R_62; R_62 = 288.0+R_62; R_62 = R_29*R_62;
+    R_65 := 64.0*R_57; R_66 := (-144.0)+R_65; R_66 = R_66*R_57; R_66 = 2.0*R_66;
+    R_40 = R_65+R_40; R_40 = (-80.0)+R_40; R_40 = R_57*R_40; R_16 = R_40+R_16;
+    R_16 = (140.0/3.0)+R_16; R_16 = R_29*R_16; R_41 = R_41+R_65; R_41 = (-80.0)+R_41;
+    R_41 = R_29*R_41; R_40 = (-16.0)+R_65; R_40 = R_29*R_40; R_37 = R_37+R_40;
+    R_37 = 4.0+R_37; R_67 := R_21*R_37; R_37 = R_5*R_37; R_40 = 2.0*R_40;
+    R_68 := (-16.0)*R_57; R_69 := 28.0+R_68; R_69 = R_69*R_57; R_40 = R_68+R_40;
+    R_40 = 4.0+R_40; R_5 = R_5*R_40; R_40 = R_21*R_40; R_21 = R_29+R_57;
+    R_68 = (-128.0)*R_21; R_70 := 192.0+R_68; R_71 := R_70*R_29; R_31 = R_70*R_31;
+    R_68 = 160.0+R_68; R_70 = R_68*R_29; R_68 = R_68*R_57; R_68 = R_45+R_68;
+    R_21 = 128.0*R_21; R_21 = (-144.0)+R_21; R_45 = R_29*R_21; R_45 = R_58+R_45;
+    R_45 = 28.0+R_45; R_58 = R_18*R_45; R_45 = R_2*R_45; R_21 = R_57*R_21;
+    R_21 = R_47+R_21; R_21 = 28.0+R_21; R_47 = R_12*R_21; R_21 = R_23*R_21;
+    R_72 := (-128.0/3.0)*R_57; R_73 := 96.0+R_72; R_73 = R_73*R_57; R_71 = R_73+R_71;
+    R_71 = (-208.0/3.0)+R_71; R_71 = R_71*R_57; R_31 = R_73+R_31; R_31 = (-416.0/3.0)+R_31;
+    R_31 = R_57*R_31; R_31 = R_35+R_31; R_31 = 16.0+R_31; R_31 = R_13*R_31;
+    R_73 = (-208.0/3.0)+R_73; R_73 = R_73*R_57; R_72 = 32.0+R_72; R_72 = R_57*R_72;
+    R_72 = (-16.0/3.0)+R_72; R_11 = R_11*R_72; R_72 = R_25*R_72; R_25 = (128.0/3.0)*R_57;
+    R_35 = (-48.0)+R_25; R_35 = R_57*R_35; R_35 = (44.0/3.0)+R_35; R_35 = R_57*R_35;
+    R_35 = (-1.0)+R_35; R_1 = R_1*R_35; R_35 = R_15*R_35; R_15 = (-80.0)+R_25;
+    R_15 = R_57*R_15; R_74 := (140.0/3.0)+R_15; R_74 = R_57*R_74; R_15 = R_41+R_15;
+    R_15 = (140.0/3.0)+R_15; R_15 = R_57*R_15; R_16 = R_15+R_16; R_16 = (-25.0/3.0)+R_16;
+    R_15 = R_14*R_16; R_16 = R_20*R_16; R_25 = (-32.0)+R_25; R_25 = R_57*R_25;
+    R_25 = (16.0/3.0)+R_25; R_75 := R_4*R_25; R_25 = R_26*R_25; R_76 := (-256.0)*R_57;
+    R_50 = R_50+R_76; R_50 = 192.0+R_50; R_50 = R_29*R_50; R_61 = R_50+R_61;
+    R_61 = (-416.0/3.0)+R_61; R_61 = R_57*R_61; R_24 = R_76+R_24; R_24 = 320.0+R_24;
+    R_24 = R_29*R_24; R_76 = (-1.0)*R_57; R_76 = 1.0+R_76; R_77 := (16.0/3.0)*R_76;
+    R_78 := (-384.0)*R_76; R_78 = R_55+R_78; R_78 = R_29*R_78; R_78 = R_66+R_78;
+    R_78 = 152.0+R_78; R_78 = R_29*R_78; R_78 = R_69+R_78; R_78 = (-12.0)+R_78;
+    R_2 = R_2*R_78; R_2 = R_0+R_2; R_78 = R_18*R_78; R_76 = (-32.0)*R_76;
+    R_70 = R_76+R_70; R_51 = R_70+R_51; R_70 = R_27*R_51; R_51 = R_9*R_51;
+    R_24 = R_76+R_24; R_9 = R_9*R_24; R_24 = R_27*R_24; R_27 = (-128.0)*R_57;
+    R_32 = R_27+R_32; R_32 = 96.0+R_32; R_32 = R_32*R_29; R_38 = R_27+R_38;
+    R_38 = 224.0+R_38; R_38 = R_29*R_38; R_38 = R_65+R_38; R_38 = (-224.0/3.0)+R_38;
+    R_38 = R_29*R_38; R_38 = R_77+R_38; R_7 = R_7*R_38; R_38 = R_17*R_38;
+    R_17 = 192.0+R_27; R_17 = R_17*R_57; R_32 = R_32+R_17; R_32 = (-208.0/3.0)+R_32;
+    R_32 = R_32*R_29; R_61 = R_32+R_61; R_61 = 16.0+R_61; R_61 = R_28*R_61;
+    R_50 = R_17+R_50; R_50 = (-208.0/3.0)+R_50; R_32 = R_19*R_50; R_34 = R_32+R_34;
+    R_43 = R_34+R_43; R_58 = R_43+R_58; R_64 = R_58+R_64; R_67 = R_64+R_67;
+    R_50 = R_8*R_50; R_17 = 2.0*R_17; R_62 = R_17+R_62; R_62 = (-416.0/3.0)+R_62;
+    R_62 = R_29*R_62; R_62 = R_73+R_62; R_62 = 16.0+R_62; R_62 = R_19*R_62;
+    R_62 = R_16+R_62; R_78 = R_62+R_78; R_38 = R_78+R_38; R_44 = R_38+R_44;
+    R_38 = 32.0+R_27; R_38 = R_29*R_38; R_38 = R_68+R_38; R_3 = R_3*R_38;
+    R_3 = R_11+R_3; R_3 = R_6+R_3; R_3 = R_75+R_3; R_3 = R_47+R_3;
+    R_3 = R_5+R_3; R_3 = R_9+R_3; R_38 = R_22*R_38; R_53 = R_27+R_53;
+    R_53 = 192.0+R_53; R_53 = R_57*R_53; R_39 = R_53+R_39; R_39 = (-416.0/3.0)+R_39;
+    R_39 = R_29*R_39; R_39 = R_71+R_39; R_39 = 16.0+R_39; R_39 = R_8*R_39;
+    R_39 = R_2+R_39; R_15 = R_39+R_15; R_7 = R_15+R_7; R_52 = R_53+R_52;
+    R_52 = (-208.0/3.0)+R_52; R_13 = R_13*R_52; R_52 = R_28*R_52; R_24 = R_52+R_24;
+    R_25 = R_24+R_25; R_24 = 256.0*R_57; R_48 = R_24+R_48; R_52 = (-224.0)+R_48;
+    R_52 = R_52*R_29; R_59 = R_52+R_59; R_59 = 96.0+R_59; R_52 = R_56*R_59;
+    R_59 = R_10*R_59; R_48 = (-384.0)+R_48; R_48 = R_57*R_48; R_54 = R_24+R_54;
+    R_54 = (-448.0)+R_54; R_54 = R_29*R_54; R_24 = 128.0*R_57; R_28 = (-64.0)+R_24;
+    R_28 = R_57*R_28; R_28 = (16.0/3.0)+R_28; R_26 = R_26*R_28; R_26 = R_67+R_26;
+    R_52 = R_26+R_52; R_70 = R_52+R_70; R_70 = R_29*R_70; R_28 = R_4*R_28;
+    R_63 = R_28+R_63; R_63 = R_37+R_63; R_63 = R_42+R_63; R_63 = R_33+R_63;
+    R_63 = R_50+R_63; R_63 = R_51+R_63; R_63 = R_59+R_63; R_45 = R_63+R_45;
+    R_45 = R_29*R_45; R_36 = R_36+R_24; R_63 = (-144.0)+R_36; R_63 = R_63*R_29;
+    R_63 = 2.0*R_63; R_48 = R_63+R_48; R_48 = 152.0+R_48; R_48 = R_57*R_48;
+    R_48 = R_30+R_48; R_48 = (-12.0)+R_48; R_23 = R_23*R_48; R_61 = R_23+R_61;
+    R_48 = R_12*R_48; R_36 = (-160.0)+R_36; R_36 = R_57*R_36; R_36 = R_41+R_36;
+    R_36 = (140.0/3.0)+R_36; R_36 = R_29*R_36; R_36 = R_74+R_36; R_36 = (-25.0/3.0)+R_36;
+    R_20 = R_20*R_36; R_20 = R_61+R_20; R_46 = R_20+R_46; R_1 = R_46+R_1;
+    R_1 = R_70+R_1; R_36 = R_14*R_36; R_36 = R_35+R_36; R_31 = R_36+R_31;
+    R_48 = R_31+R_48; R_60 = R_48+R_60; R_45 = R_60+R_45; R_55 = R_24+R_55;
+    R_55 = (-224.0)+R_55; R_55 = R_57*R_55; R_54 = R_55+R_54; R_54 = 96.0+R_54;
+    R_10 = R_10*R_54; R_3 = R_10+R_3; R_3 = R_13+R_3; R_3 = R_57*R_3;
+    R_3 = R_7+R_3; R_3 = R_1*R_3; R_3 = (-1.0)*R_3; R_54 = R_56*R_54;
+    R_25 = R_54+R_25; R_72 = R_25+R_72; R_49 = R_72+R_49; R_21 = R_49+R_21;
+    R_38 = R_21+R_38; R_40 = R_38+R_40; R_40 = R_57*R_40; R_44 = R_40+R_44;
+    R_45 = R_44*R_45; R_3 = R_45+R_3; res := R_3; 
+    return res
+#
+def inv_jac_mat( var_inter, pos_nodes )
+    res := Mat[ type_promote(var_inter[0],pos_nodes[0][0],mul), Gen[ 2, 2 ] ]()
+    R_0 := pos_nodes[4][1]; R_1 := pos_nodes[14][0]; R_2 := pos_nodes[2][1]; R_3 := pos_nodes[10][1];
+    R_4 := pos_nodes[13][1]; R_5 := pos_nodes[11][1]; R_6 := pos_nodes[8][1]; R_7 := pos_nodes[3][1];
+    R_8 := pos_nodes[1][1]; R_9 := pos_nodes[7][1]; R_10 := pos_nodes[6][1]; R_11 := pos_nodes[12][1];
+    R_12 := pos_nodes[9][1]; R_13 := pos_nodes[5][1]; R_14 := pos_nodes[0][1]; R_15 := pos_nodes[14][1];
+    R_16 := pos_nodes[4][0]; R_17 := pos_nodes[3][0]; R_18 := pos_nodes[2][0]; R_19 := pos_nodes[1][0];
+    R_20 := pos_nodes[0][0]; R_21 := pos_nodes[11][0]; R_22 := pos_nodes[10][0]; R_23 := pos_nodes[9][0];
+    R_24 := pos_nodes[8][0]; R_25 := pos_nodes[12][0]; R_26 := pos_nodes[13][0]; R_27 := pos_nodes[7][0];
+    R_28 := pos_nodes[5][0]; R_29 := var_inter[0]; R_30 := (-16.0)*R_29; R_30 = 28.0+R_30;
+    R_30 = R_30*R_29; R_31 := 2.0*R_29; R_32 := (-128.0/3.0)*R_29; R_33 := 32.0+R_32;
+    R_33 = R_29*R_33; R_33 = (-16.0/3.0)+R_33; R_34 := R_17*R_33; R_33 = R_7*R_33;
+    R_35 := 96.0+R_32; R_35 = R_35*R_29; R_35 = (-208.0/3.0)+R_35; R_35 = R_35*R_29;
+    R_36 := 64.0*R_29; R_37 := (-32.0)+R_36; R_38 := (-512.0/3.0)*R_29; R_39 := 288.0+R_38;
+    R_39 = R_29*R_39; R_40 := (256.0/3.0)*R_29; R_41 := (128.0/3.0)*R_29; R_42 := (-32.0)+R_41;
+    R_42 = R_42*R_29; R_42 = (16.0/3.0)+R_42; R_43 := R_42*R_24; R_42 = R_42*R_6;
+    R_44 := (-48.0)+R_41; R_44 = R_29*R_44; R_44 = (44.0/3.0)+R_44; R_44 = R_29*R_44;
+    R_44 = (-1.0)+R_44; R_0 = R_0*R_44; R_44 = R_16*R_44; R_16 = (-80.0)+R_41;
+    R_16 = R_29*R_16; R_45 := (-1.0)*R_29; R_45 = 1.0+R_45; R_46 := (16.0/3.0)*R_45;
+    R_45 = (-32.0)*R_45; R_47 := (-32.0)*R_29; R_48 := 128.0*R_29; R_49 := (-64.0)+R_48;
+    R_49 = R_29*R_49; R_49 = (16.0/3.0)+R_49; R_6 = R_6*R_49; R_49 = R_24*R_49;
+    R_24 = (-384.0)*R_29; R_50 := (-128.0)*R_29; R_51 := 32.0+R_50; R_52 := 192.0+R_50;
+    R_52 = R_29*R_52; R_53 := (-256.0)*R_29; R_54 := 384.0*R_29; R_55 := 256.0*R_29;
+    R_56 := pos_nodes[6][0]; R_57 := var_inter[1]; R_58 := (-32.0)*R_57; R_37 = R_57*R_37;
+    R_51 = R_57*R_51; R_59 := 384.0*R_57; R_59 = R_55+R_59; R_59 = (-448.0)+R_59;
+    R_59 = R_57*R_59; R_60 := (-512.0/3.0)*R_57; R_61 := 288.0+R_60; R_61 = R_57*R_61;
+    R_60 = R_50+R_60; R_60 = 224.0+R_60; R_60 = R_57*R_60; R_60 = R_36+R_60;
+    R_60 = (-224.0/3.0)+R_60; R_60 = R_57*R_60; R_60 = R_46+R_60; R_46 = R_25*R_60;
+    R_60 = R_11*R_60; R_31 = R_57+R_31; R_62 := (-384.0)*R_57; R_63 := R_62+R_53;
+    R_63 = 320.0+R_63; R_63 = R_57*R_63; R_63 = R_45+R_63; R_64 := R_22*R_63;
+    R_63 = R_3*R_63; R_62 = R_38+R_62; R_62 = 288.0+R_62; R_62 = R_29*R_62;
+    R_65 := 64.0*R_57; R_66 := (-144.0)+R_65; R_66 = R_66*R_57; R_66 = 2.0*R_66;
+    R_40 = R_65+R_40; R_40 = (-80.0)+R_40; R_40 = R_57*R_40; R_16 = R_40+R_16;
+    R_16 = (140.0/3.0)+R_16; R_16 = R_29*R_16; R_41 = R_41+R_65; R_41 = (-80.0)+R_41;
+    R_41 = R_29*R_41; R_40 = (-16.0)+R_65; R_40 = R_29*R_40; R_37 = R_37+R_40;
+    R_37 = 4.0+R_37; R_67 := R_21*R_37; R_37 = R_5*R_37; R_40 = 2.0*R_40;
+    R_68 := (-16.0)*R_57; R_69 := 28.0+R_68; R_69 = R_69*R_57; R_40 = R_68+R_40;
+    R_40 = 4.0+R_40; R_5 = R_5*R_40; R_40 = R_21*R_40; R_21 = R_29+R_57;
+    R_68 = (-128.0)*R_21; R_70 := 192.0+R_68; R_71 := R_70*R_29; R_31 = R_70*R_31;
+    R_68 = 160.0+R_68; R_70 = R_68*R_29; R_68 = R_68*R_57; R_68 = R_45+R_68;
+    R_21 = 128.0*R_21; R_21 = (-144.0)+R_21; R_45 = R_29*R_21; R_45 = R_58+R_45;
+    R_45 = 28.0+R_45; R_58 = R_18*R_45; R_45 = R_2*R_45; R_21 = R_57*R_21;
+    R_21 = R_47+R_21; R_21 = 28.0+R_21; R_47 = R_12*R_21; R_21 = R_23*R_21;
+    R_72 := (-128.0/3.0)*R_57; R_73 := 96.0+R_72; R_73 = R_73*R_57; R_71 = R_73+R_71;
+    R_71 = (-208.0/3.0)+R_71; R_71 = R_71*R_57; R_31 = R_73+R_31; R_31 = (-416.0/3.0)+R_31;
+    R_31 = R_57*R_31; R_31 = R_35+R_31; R_31 = 16.0+R_31; R_31 = R_13*R_31;
+    R_73 = (-208.0/3.0)+R_73; R_73 = R_73*R_57; R_72 = 32.0+R_72; R_72 = R_57*R_72;
+    R_72 = (-16.0/3.0)+R_72; R_11 = R_11*R_72; R_72 = R_25*R_72; R_25 = (128.0/3.0)*R_57;
+    R_35 = (-48.0)+R_25; R_35 = R_57*R_35; R_35 = (44.0/3.0)+R_35; R_35 = R_57*R_35;
+    R_35 = (-1.0)+R_35; R_1 = R_1*R_35; R_35 = R_15*R_35; R_15 = (-80.0)+R_25;
+    R_15 = R_57*R_15; R_74 := (140.0/3.0)+R_15; R_74 = R_57*R_74; R_15 = R_41+R_15;
+    R_15 = (140.0/3.0)+R_15; R_15 = R_57*R_15; R_16 = R_15+R_16; R_16 = (-25.0/3.0)+R_16;
+    R_15 = R_14*R_16; R_16 = R_20*R_16; R_25 = (-32.0)+R_25; R_25 = R_57*R_25;
+    R_25 = (16.0/3.0)+R_25; R_75 := R_4*R_25; R_25 = R_26*R_25; R_76 := (-256.0)*R_57;
+    R_50 = R_50+R_76; R_50 = 192.0+R_50; R_50 = R_29*R_50; R_61 = R_50+R_61;
+    R_61 = (-416.0/3.0)+R_61; R_61 = R_57*R_61; R_24 = R_76+R_24; R_24 = 320.0+R_24;
+    R_24 = R_29*R_24; R_76 = (-1.0)*R_57; R_76 = 1.0+R_76; R_77 := (16.0/3.0)*R_76;
+    R_78 := (-384.0)*R_76; R_78 = R_55+R_78; R_78 = R_29*R_78; R_78 = R_66+R_78;
+    R_78 = 152.0+R_78; R_78 = R_29*R_78; R_78 = R_69+R_78; R_78 = (-12.0)+R_78;
+    R_2 = R_2*R_78; R_2 = R_0+R_2; R_78 = R_18*R_78; R_76 = (-32.0)*R_76;
+    R_70 = R_76+R_70; R_51 = R_70+R_51; R_70 = R_27*R_51; R_51 = R_9*R_51;
+    R_24 = R_76+R_24; R_9 = R_9*R_24; R_24 = R_27*R_24; R_27 = (-128.0)*R_57;
+    R_32 = R_27+R_32; R_32 = 96.0+R_32; R_32 = R_32*R_29; R_38 = R_27+R_38;
+    R_38 = 224.0+R_38; R_38 = R_29*R_38; R_38 = R_65+R_38; R_38 = (-224.0/3.0)+R_38;
+    R_38 = R_29*R_38; R_38 = R_77+R_38; R_7 = R_7*R_38; R_38 = R_17*R_38;
+    R_17 = 192.0+R_27; R_17 = R_17*R_57; R_32 = R_32+R_17; R_32 = (-208.0/3.0)+R_32;
+    R_32 = R_32*R_29; R_61 = R_32+R_61; R_61 = 16.0+R_61; R_61 = R_28*R_61;
+    R_50 = R_17+R_50; R_50 = (-208.0/3.0)+R_50; R_32 = R_19*R_50; R_34 = R_32+R_34;
+    R_43 = R_34+R_43; R_58 = R_43+R_58; R_64 = R_58+R_64; R_67 = R_64+R_67;
+    R_50 = R_8*R_50; R_17 = 2.0*R_17; R_62 = R_17+R_62; R_62 = (-416.0/3.0)+R_62;
+    R_62 = R_29*R_62; R_62 = R_73+R_62; R_62 = 16.0+R_62; R_62 = R_19*R_62;
+    R_62 = R_16+R_62; R_78 = R_62+R_78; R_38 = R_78+R_38; R_44 = R_38+R_44;
+    R_38 = 32.0+R_27; R_38 = R_29*R_38; R_38 = R_68+R_38; R_3 = R_3*R_38;
+    R_3 = R_11+R_3; R_3 = R_6+R_3; R_3 = R_75+R_3; R_3 = R_47+R_3;
+    R_3 = R_5+R_3; R_3 = R_9+R_3; R_38 = R_22*R_38; R_53 = R_27+R_53;
+    R_53 = 192.0+R_53; R_53 = R_57*R_53; R_39 = R_53+R_39; R_39 = (-416.0/3.0)+R_39;
+    R_39 = R_29*R_39; R_39 = R_71+R_39; R_39 = 16.0+R_39; R_39 = R_8*R_39;
+    R_39 = R_2+R_39; R_15 = R_39+R_15; R_7 = R_15+R_7; R_52 = R_53+R_52;
+    R_52 = (-208.0/3.0)+R_52; R_13 = R_13*R_52; R_52 = R_28*R_52; R_24 = R_52+R_24;
+    R_25 = R_24+R_25; R_24 = 256.0*R_57; R_48 = R_24+R_48; R_52 = (-224.0)+R_48;
+    R_52 = R_52*R_29; R_59 = R_52+R_59; R_59 = 96.0+R_59; R_52 = R_56*R_59;
+    R_59 = R_10*R_59; R_48 = (-384.0)+R_48; R_48 = R_57*R_48; R_54 = R_24+R_54;
+    R_54 = (-448.0)+R_54; R_54 = R_29*R_54; R_24 = 128.0*R_57; R_28 = (-64.0)+R_24;
+    R_28 = R_57*R_28; R_28 = (16.0/3.0)+R_28; R_26 = R_26*R_28; R_26 = R_67+R_26;
+    R_52 = R_26+R_52; R_70 = R_52+R_70; R_70 = R_29*R_70; R_28 = R_4*R_28;
+    R_63 = R_28+R_63; R_63 = R_37+R_63; R_63 = R_42+R_63; R_63 = R_33+R_63;
+    R_63 = R_50+R_63; R_63 = R_51+R_63; R_63 = R_59+R_63; R_45 = R_63+R_45;
+    R_45 = R_29*R_45; R_36 = R_36+R_24; R_63 = (-144.0)+R_36; R_63 = R_63*R_29;
+    R_63 = 2.0*R_63; R_48 = R_63+R_48; R_48 = 152.0+R_48; R_48 = R_57*R_48;
+    R_48 = R_30+R_48; R_48 = (-12.0)+R_48; R_23 = R_23*R_48; R_61 = R_23+R_61;
+    R_48 = R_12*R_48; R_36 = (-160.0)+R_36; R_36 = R_57*R_36; R_36 = R_41+R_36;
+    R_36 = (140.0/3.0)+R_36; R_36 = R_29*R_36; R_36 = R_74+R_36; R_36 = (-25.0/3.0)+R_36;
+    R_20 = R_20*R_36; R_20 = R_61+R_20; R_46 = R_20+R_46; R_1 = R_46+R_1;
+    R_1 = R_70+R_1; R_36 = R_14*R_36; R_36 = R_35+R_36; R_31 = R_36+R_31;
+    R_48 = R_31+R_48; R_60 = R_48+R_60; R_45 = R_60+R_45; R_55 = R_24+R_55;
+    R_55 = (-224.0)+R_55; R_55 = R_57*R_55; R_54 = R_55+R_54; R_54 = 96.0+R_54;
+    R_10 = R_10*R_54; R_3 = R_10+R_3; R_3 = R_13+R_3; R_3 = R_57*R_3;
+    R_3 = R_7+R_3; R_7 = R_1*R_3; R_7 = (-1.0)*R_7; R_54 = R_56*R_54;
+    R_25 = R_54+R_25; R_72 = R_25+R_72; R_49 = R_72+R_49; R_21 = R_49+R_21;
+    R_38 = R_21+R_38; R_40 = R_38+R_40; R_40 = R_57*R_40; R_44 = R_40+R_44;
+    R_40 = R_44*R_45; R_7 = R_40+R_7; R_7 = 1/R_7; R_44 = R_7*R_44;
+    res(1,1) = R_44; R_1 = R_7*R_1; R_1 = (-1.0)*R_1; res(1,0) = R_1;
+    R_3 = R_7*R_3; R_3 = (-1.0)*R_3; res(0,1) = R_3; R_45 = R_7*R_45;
+    res(0,0) = R_45; 
+    return res
+#
+def measure( var_inter, pos_nodes )
+    R_0 := pos_nodes[7][0]; R_1 := 32.0*R_0; R_2 := 192.0*R_0; R_3 := 256.0*R_0;
+    R_4 := (-16.0)*R_0; R_5 := 96.0*R_0; R_6 := (-1.0)*R_0; R_7 := (-256.0)*R_0;
+    R_8 := (-96.0)*R_0; R_9 := (-192.0)*R_0; R_10 := (-32.0)*R_0; R_11 := (-160.0)*R_0;
+    R_12 := 160.0*R_0; R_13 := (-24.0)*R_0; R_14 := 128.0*R_0; R_15 := pos_nodes[4][0];
+    R_16 := (-1.0)*R_15; R_17 := (128.0/3.0)*R_15; R_18 := pos_nodes[9][0]; R_19 := (-64.0)*R_18;
+    R_20 := (-256.0)*R_18; R_21 := 8.0*R_18; R_22 := R_21+R_1; R_23 := 64.0*R_18;
+    R_24 := 256.0*R_18; R_25 := (-8.0)*R_18; R_26 := (-1.0)*R_18; R_27 := (-40.0)*R_18;
+    R_28 := 2.0*R_18; R_29 := (-12.0)*R_18; R_30 := pos_nodes[14][1]; R_31 := (-1.0)*R_30;
+    R_32 := pos_nodes[14][0]; R_33 := (-1.0)*R_32; R_34 := pos_nodes[0][0]; R_35 := (-4.0/3.0)*R_34;
+    R_36 := R_18+R_34; R_37 := (-16.0)*R_36; R_38 := 16.0*R_36; R_39 := 48.0*R_34;
+    R_40 := R_32+R_34; R_41 := 32.0*R_40; R_42 := (-128.0/3.0)*R_40; R_43 := R_20+R_42;
+    R_44 := (4.0/3.0)*R_40; R_22 = R_22+R_44; R_45 := (-16.0)*R_40; R_46 := (-32.0)*R_40;
+    R_47 := (128.0/3.0)*R_40; R_48 := 16.0*R_40; R_49 := (-4.0/3.0)*R_40; R_40 = (-52.0/3.0)*R_40;
+    R_50 := R_15+R_34; R_51 := (1.0/3.0)*R_50; R_50 = (-1.0/3.0)*R_50; R_52 := (-2.0/3.0)*R_34;
+    R_53 := (-1.0)*R_34; R_32 = R_32+R_53; R_54 := 16.0*R_32; R_55 := (1.0/3.0)*R_32;
+    R_56 := (-64.0)*R_32; R_32 = (-16.0)*R_32; R_33 = R_34+R_33; R_57 := (-48.0)*R_33;
+    R_58 := (-64.0)*R_33; R_59 := 64.0*R_33; R_60 := (-16.0)*R_33; R_61 := (-1.0/3.0)*R_33;
+    R_62 := 4.0*R_33; R_63 := (-2.0/3.0)*R_33; R_33 = (16.0/3.0)*R_33; R_64 := pos_nodes[2][0];
+    R_65 := R_64+R_26; R_65 = 4.0*R_65; R_6 = R_64+R_6; R_6 = (-2.0)*R_6;
+    R_66 := 256.0*R_64; R_67 := 112.0*R_64; R_68 := (-10.0)*R_64; R_69 := 28.0*R_64;
+    R_70 := 96.0*R_64; R_71 := (-1.0)*R_64; R_72 := R_0+R_71; R_73 := (-2.0)*R_72;
+    R_72 = 2.0*R_72; R_74 := pos_nodes[11][0]; R_75 := 12.0*R_74; R_4 = R_75+R_4;
+    R_4 = R_35+R_4; R_35 = R_64+R_74; R_75 = (-1.0)*R_35; R_76 := (-16.0)*R_35;
+    R_22 = R_22+R_76; R_77 := (-96.0)*R_35; R_78 := (-48.0)*R_35; R_79 := 128.0*R_35;
+    R_79 = R_7+R_79; R_80 := 48.0*R_35; R_81 := 96.0*R_35; R_82 := 16.0*R_35;
+    R_83 := R_35+R_26; R_83 = 80.0*R_83; R_35 = (-80.0)*R_35; R_35 = R_12+R_35;
+    R_40 = R_35+R_40; R_40 = R_27+R_40; R_27 = (-1.0)*R_74; R_35 = R_34+R_27;
+    R_35 = 4.0*R_35; R_36 = R_27+R_36; R_36 = 16.0*R_36; R_27 = R_64+R_27;
+    R_27 = (-2.0)*R_27; R_12 = (-6.0)*R_74; R_28 = R_12+R_28; R_28 = R_13+R_28;
+    R_12 = R_74+R_53; R_12 = (-4.0)*R_12; R_84 := 32.0*R_74; R_85 := R_74+R_71;
+    R_86 := 4.0*R_85; R_85 = (-64.0)*R_85; R_87 := pos_nodes[3][0]; R_88 := 8.0*R_87;
+    R_89 := (-320.0/3.0)*R_87; R_90 := R_87+R_74; R_0 = R_0+R_90; R_91 := (-1.0)*R_87;
+    R_92 := pos_nodes[8][0]; R_93 := (40.0/3.0)*R_92; R_28 = R_93+R_28; R_93 = (-64.0)*R_92;
+    R_94 := (-1.0)*R_92; R_95 := R_87+R_94; R_95 = (-16.0/3.0)*R_95; R_0 = R_94+R_0;
+    R_0 = (-128.0)*R_0; R_90 = R_94+R_90; R_71 = R_90+R_71; R_71 = (-32.0)*R_71;
+    R_90 = R_92+R_91; R_94 = (16.0/3.0)*R_90; R_90 = (128.0/3.0)*R_90; R_96 := pos_nodes[6][0];
+    R_97 := 4.0*R_96; R_64 = R_64+R_96; R_64 = R_74+R_64; R_74 = R_18+R_96;
+    R_98 := (-128.0)*R_96; R_98 = R_5+R_98; R_78 = R_98+R_78; R_98 = 320.0*R_96;
+    R_98 = R_79+R_98; R_79 = 128.0*R_96; R_5 = R_96+R_92; R_99 := 192.0*R_96;
+    R_100 := (-4.0)*R_96; R_101 := 12.0*R_96; R_28 = R_101+R_28; R_28 = R_52+R_28;
+    R_28 = R_68+R_28; R_28 = R_88+R_28; R_88 = R_96+R_91; R_88 = 32.0*R_88;
+    R_68 = (-80.0)*R_96; R_68 = R_14+R_68; R_68 = R_93+R_68; R_68 = R_84+R_68;
+    R_84 = (-1.0)*R_96; R_93 = R_87+R_84; R_93 = (-32.0)*R_93; R_14 = pos_nodes[1][0];
+    R_52 = (-192.0)*R_14; R_52 = R_98+R_52; R_98 = (-128.0)*R_14; R_87 = R_14+R_87;
+    R_87 = R_92+R_87; R_92 = (-4.0/3.0)*R_87; R_97 = R_92+R_97; R_87 = (4.0/3.0)*R_87;
+    R_92 = (-112.0/3.0)*R_14; R_101 = (-1.0)*R_14; R_5 = R_101+R_5; R_91 = R_5+R_91;
+    R_91 = 64.0*R_91; R_5 = R_14+R_96; R_102 := pos_nodes[13][0]; R_103 := R_102+R_34;
+    R_103 = R_103+R_101; R_104 := R_14+R_102; R_105 := R_104+R_84; R_16 = R_102+R_16;
+    R_53 = R_102+R_53; R_106 := R_102+R_101; R_107 := (-64.0)*R_106; R_108 := 64.0*R_106;
+    R_32 = R_108+R_32; R_108 = (-8.0/3.0)*R_106; R_108 = R_63+R_108; R_94 = R_108+R_94;
+    R_108 = (-1.0)*R_102; R_63 = R_14+R_108; R_109 := 64.0*R_63; R_63 = (4.0/3.0)*R_63;
+    R_5 = R_108+R_5; R_110 := pos_nodes[10][0]; R_64 = R_110+R_64; R_64 = R_101+R_64;
+    R_64 = R_108+R_64; R_64 = (-128.0)*R_64; R_23 = R_64+R_23; R_23 = R_3+R_23;
+    R_23 = R_46+R_23; R_46 = R_110+R_101; R_46 = 160.0*R_46; R_3 = R_96+R_110;
+    R_64 = (-1.0)*R_3; R_64 = R_104+R_64; R_75 = R_64+R_75; R_75 = (-128.0)*R_75;
+    R_75 = R_7+R_75; R_19 = R_75+R_19; R_41 = R_19+R_41; R_3 = R_101+R_3;
+    R_3 = R_108+R_3; R_19 = (-64.0)*R_3; R_3 = 64.0*R_3; R_15 = R_15+R_110;
+    R_15 = R_101+R_15; R_15 = 16.0*R_15; R_75 = (-48.0)*R_110; R_68 = R_75+R_68;
+    R_68 = R_17+R_68; R_68 = R_92+R_68; R_68 = R_70+R_68; R_68 = R_89+R_68;
+    R_89 = R_14+R_110; R_70 = 64.0*R_89; R_92 = (-64.0)*R_89; R_17 = 4.0*R_89;
+    R_89 = R_108+R_89; R_89 = R_84+R_89; R_89 = (-16.0)*R_89; R_71 = R_89+R_71;
+    R_89 = R_110+R_84; R_75 = 384.0*R_89; R_7 = (-384.0)*R_89; R_64 = (-192.0)*R_89;
+    R_104 = 192.0*R_89; R_111 := R_104+R_109; R_111 = R_60+R_111; R_60 = R_104+R_60;
+    R_89 = (-8.0)*R_89; R_94 = R_89+R_94; R_86 = R_94+R_86; R_110 = (-1.0)*R_110;
+    R_74 = R_110+R_74; R_105 = R_105+R_110; R_105 = 64.0*R_105; R_40 = R_105+R_40;
+    R_96 = R_96+R_110; R_105 = (-384.0)*R_96; R_94 = 8.0*R_96; R_96 = (-4.0)*R_96;
+    R_5 = R_110+R_5; R_5 = (-32.0)*R_5; R_89 = pos_nodes[5][0]; R_112 := (-2.0/3.0)*R_89;
+    R_97 = R_112+R_97; R_97 = R_51+R_97; R_73 = R_97+R_73; R_97 = 32.0*R_89;
+    R_97 = R_78+R_97; R_37 = R_97+R_37; R_70 = R_37+R_70; R_37 = R_89+R_102;
+    R_37 = R_34+R_37; R_37 = R_84+R_37; R_14 = R_14+R_89; R_14 = R_14+R_108;
+    R_84 = (-32.0)*R_89; R_38 = R_84+R_38; R_38 = R_38+R_8; R_80 = R_38+R_80;
+    R_79 = R_80+R_79; R_79 = R_92+R_79; R_8 = R_84+R_8; R_8 = R_67+R_8;
+    R_8 = R_91+R_8; R_8 = R_36+R_8; R_84 = R_99+R_84; R_11 = R_84+R_11;
+    R_83 = R_11+R_83; R_39 = R_83+R_39; R_98 = R_39+R_98; R_39 = (2.0/3.0)*R_89;
+    R_39 = R_100+R_39; R_100 = R_87+R_39; R_100 = R_6+R_100; R_100 = R_50+R_100;
+    R_39 = R_72+R_39; R_87 = R_39+R_87; R_50 = R_87+R_50; R_87 = (-8.0)*R_89;
+    R_39 = R_87+R_29; R_39 = R_13+R_39; R_39 = R_69+R_39; R_39 = R_15+R_39;
+    R_39 = R_93+R_39; R_39 = R_35+R_39; R_87 = R_88+R_87; R_29 = R_87+R_29;
+    R_13 = R_29+R_13; R_69 = R_13+R_69; R_15 = R_69+R_15; R_15 = R_12+R_15;
+    R_18 = R_18+R_89; R_18 = 16.0*R_18; R_12 = (-1.0)*R_89; R_106 = R_12+R_106;
+    R_74 = R_12+R_74; R_69 = 128.0*R_74; R_74 = (-128.0)*R_74; R_16 = R_16+R_12;
+    R_13 = pos_nodes[12][0]; R_102 = R_102+R_13; R_102 = R_101+R_102; R_102 = R_102+R_12;
+    R_102 = (-128.0)*R_102; R_102 = R_58+R_102; R_75 = R_75+R_102; R_102 = R_105+R_102;
+    R_34 = R_13+R_34; R_34 = R_108+R_34; R_110 = R_34+R_110; R_110 = R_110+R_12;
+    R_110 = R_110+R_26; R_110 = 64.0*R_110; R_110 = R_52+R_110; R_108 = R_13+R_108;
+    R_108 = 64.0*R_108; R_98 = R_108+R_98; R_108 = R_89+R_13; R_52 = (512.0/3.0)*R_108;
+    R_43 = R_52+R_43; R_20 = R_52+R_20; R_42 = R_20+R_42; R_20 = (-16.0/3.0)*R_108;
+    R_21 = R_21+R_20; R_1 = R_21+R_1; R_21 = R_44+R_1; R_21 = R_21+R_76;
+    R_1 = R_76+R_1; R_1 = R_44+R_1; R_22 = R_20+R_22; R_20 = (-512.0/3.0)*R_108;
+    R_20 = R_24+R_20; R_47 = R_20+R_47; R_20 = R_26+R_108; R_24 = 32.0*R_20;
+    R_24 = R_2+R_24; R_77 = R_24+R_77; R_19 = R_77+R_19; R_45 = R_19+R_45;
+    R_20 = (-32.0)*R_20; R_20 = R_9+R_20; R_20 = R_3+R_20; R_20 = R_48+R_20;
+    R_20 = R_81+R_20; R_81 = (16.0/3.0)*R_108; R_49 = R_81+R_49; R_10 = R_49+R_10;
+    R_25 = R_10+R_25; R_82 = R_25+R_82; R_108 = (112.0/3.0)*R_108; R_40 = R_108+R_40;
+    R_108 = (-1.0)*R_13; R_106 = R_108+R_106; R_106 = (-8.0/3.0)*R_106; R_4 = R_106+R_4;
+    R_4 = R_95+R_4; R_4 = R_65+R_4; R_4 = R_94+R_4; R_103 = R_103+R_108;
+    R_94 = (128.0/3.0)*R_103; R_69 = R_94+R_69; R_103 = (-128.0/3.0)*R_103; R_103 = R_74+R_103;
+    R_37 = R_108+R_37; R_26 = R_37+R_26; R_26 = 32.0*R_26; R_26 = R_66+R_26;
+    R_26 = R_0+R_26; R_26 = R_46+R_26; R_14 = R_14+R_108; R_14 = (-128.0)*R_14;
+    R_7 = R_14+R_7; R_59 = R_7+R_59; R_56 = R_7+R_56; R_16 = R_16+R_108;
+    R_16 = (4.0/3.0)*R_16; R_28 = R_16+R_28; R_28 = R_17+R_28; R_53 = R_53+R_108;
+    R_53 = (-16.0/3.0)*R_53; R_68 = R_53+R_68; R_68 = R_18+R_68; R_108 = R_89+R_108;
+    R_89 = 32.0*R_108; R_54 = R_89+R_54; R_54 = R_54+R_104; R_54 = R_54+R_109;
+    R_89 = (-32.0)*R_108; R_89 = R_32+R_89; R_89 = R_64+R_89; R_18 = (2.0/3.0)*R_108;
+    R_55 = R_18+R_55; R_55 = R_27+R_55; R_55 = R_63+R_55; R_55 = R_96+R_55;
+    R_18 = R_61+R_18; R_27 = R_18+R_27; R_96 = R_27+R_96; R_63 = R_96+R_63;
+    R_108 = (-8.0)*R_108; R_108 = R_71+R_108; R_62 = R_108+R_62; R_12 = R_13+R_12;
+    R_13 = (-96.0)*R_12; R_57 = R_13+R_57; R_57 = R_107+R_57; R_57 = R_104+R_57;
+    R_104 = 32.0*R_12; R_104 = R_32+R_104; R_104 = R_64+R_104; R_64 = (-32.0)*R_12;
+    R_111 = R_64+R_111; R_60 = R_64+R_60; R_60 = R_109+R_60; R_12 = (-32.0/3.0)*R_12;
+    R_5 = R_12+R_5; R_90 = R_5+R_90; R_85 = R_90+R_85; R_33 = R_85+R_33;
+    R_85 = pos_nodes[0][1]; R_90 = (4.0/3.0)*R_85; R_5 = (-4.0/3.0)*R_85; R_12 = R_85+R_30;
+    R_109 = (128.0/3.0)*R_12; R_64 = (4.0/3.0)*R_12; R_32 = (-128.0/3.0)*R_12; R_107 = (-4.0/3.0)*R_12;
+    R_13 = 16.0*R_12; R_12 = 32.0*R_12; R_31 = R_85+R_31; R_108 = 64.0*R_31;
+    R_71 = (-1.0/3.0)*R_31; R_96 = (16.0/3.0)*R_31; R_27 = 4.0*R_31; R_31 = (-2.0/3.0)*R_31;
+    R_18 = (-1.0)*R_85; R_30 = R_30+R_18; R_61 = (2.0/3.0)*R_30; R_53 = (1.0/3.0)*R_30;
+    R_17 = (-16.0/3.0)*R_30; R_30 = (-16.0)*R_30; R_16 = (-2.0/3.0)*R_85; R_7 = pos_nodes[2][1];
+    R_14 = (-28.0)*R_7; R_46 = 112.0*R_7; R_0 = 256.0*R_7; R_66 = (-1.0)*R_7;
+    R_37 = 28.0*R_7; R_74 = 96.0*R_7; R_94 = (-10.0)*R_7; R_65 = pos_nodes[7][1];
+    R_95 = 24.0*R_65; R_106 = 16.0*R_65; R_25 = 96.0*R_65; R_10 = 32.0*R_65;
+    R_10 = R_64+R_10; R_64 = 256.0*R_65; R_49 = (-32.0)*R_65; R_81 = R_65+R_66;
+    R_48 = 2.0*R_81; R_81 = (-2.0)*R_81; R_3 = (-16.0)*R_65; R_9 = (-192.0)*R_65;
+    R_19 = (-96.0)*R_65; R_77 = (-256.0)*R_65; R_24 = (-1.0)*R_65; R_24 = R_7+R_24;
+    R_24 = (-2.0)*R_24; R_2 = 128.0*R_65; R_44 = (-24.0)*R_65; R_76 = pos_nodes[11][1];
+    R_52 = (-1.0)*R_76; R_34 = R_85+R_52; R_105 = 4.0*R_34; R_34 = (-4.0)*R_34;
+    R_58 = (-12.0)*R_76; R_101 = 12.0*R_76; R_3 = R_101+R_3; R_101 = R_7+R_76;
+    R_29 = (-48.0)*R_101; R_87 = (-16.0)*R_101; R_87 = R_10+R_87; R_10 = (-128.0)*R_101;
+    R_88 = 16.0*R_101; R_35 = 48.0*R_101; R_93 = 96.0*R_101; R_101 = 128.0*R_101;
+    R_101 = R_101+R_77; R_72 = R_76+R_66; R_6 = 2.0*R_72; R_83 = (-64.0)*R_72;
+    R_72 = 4.0*R_72; R_11 = R_76+R_18; R_84 = (-4.0)*R_11; R_99 = 32.0*R_76;
+    R_36 = (-6.0)*R_76; R_91 = pos_nodes[3][1]; R_67 = (-1.0)*R_91; R_65 = R_91+R_65;
+    R_65 = R_76+R_65; R_92 = R_91+R_76; R_80 = (-320.0/3.0)*R_91; R_38 = 8.0*R_91;
+    R_36 = R_38+R_36; R_38 = pos_nodes[9][1]; R_97 = 12.0*R_38; R_95 = R_97+R_95;
+    R_97 = 256.0*R_38; R_78 = 8.0*R_38; R_78 = R_87+R_78; R_87 = (-256.0)*R_38;
+    R_32 = R_87+R_32; R_87 = (-8.0)*R_38; R_49 = R_87+R_49; R_87 = R_85+R_38;
+    R_52 = R_52+R_87; R_52 = 16.0*R_52; R_51 = (-16.0)*R_87; R_87 = 16.0*R_87;
+    R_112 = R_38+R_66; R_113 := 4.0*R_112; R_112 = (-4.0)*R_112; R_114 := (-64.0)*R_38;
+    R_77 = R_114+R_77; R_114 = (-1.0)*R_38; R_115 := R_7+R_114; R_115 = 4.0*R_115;
+    R_11 = R_11+R_114; R_11 = (-16.0)*R_11; R_116 := (-12.0)*R_38; R_117 := 2.0*R_38;
+    R_36 = R_117+R_36; R_117 = pos_nodes[8][1]; R_118 := R_117+R_67; R_119 := (-16.0/3.0)*R_118;
+    R_118 = (16.0/3.0)*R_118; R_120 := (-1.0)*R_117; R_65 = R_65+R_120; R_65 = (-128.0)*R_65;
+    R_92 = R_120+R_92; R_92 = R_66+R_92; R_92 = (-32.0)*R_92; R_120 = R_91+R_120;
+    R_66 = (-128.0/3.0)*R_120; R_66 = R_83+R_66; R_120 = (-16.0/3.0)*R_120; R_61 = R_120+R_61;
+    R_31 = R_31+R_120; R_83 = (-64.0)*R_117; R_121 := (40.0/3.0)*R_117; R_36 = R_121+R_36;
+    R_121 = pos_nodes[6][1]; R_122 := (-128.0)*R_121; R_123 := (-320.0)*R_121; R_124 := R_123+R_64;
+    R_125 := 128.0*R_121; R_126 := 4.0*R_121; R_7 = R_7+R_121; R_127 := R_117+R_121;
+    R_127 = R_67+R_127; R_67 = R_38+R_121; R_128 := 320.0*R_121; R_129 := (-4.0)*R_121;
+    R_130 := (-1.0)*R_121; R_131 := R_91+R_130; R_132 := 32.0*R_131; R_131 = (-32.0)*R_131;
+    R_133 := (-80.0)*R_121; R_134 := 12.0*R_121; R_36 = R_134+R_36; R_134 = pos_nodes[13][1];
+    R_135 := R_121+R_134; R_136 := R_85+R_134; R_137 := (-1.0)*R_134; R_138 := pos_nodes[12][1];
+    R_67 = R_138+R_67; R_67 = R_137+R_67; R_139 := (-1.0)*R_138; R_136 = R_139+R_136;
+    R_140 := R_85+R_138; R_141 := R_137+R_140; R_141 = (16.0/3.0)*R_141; R_142 := pos_nodes[4][1];
+    R_85 = R_85+R_142; R_143 := (1.0/3.0)*R_85; R_85 = (-1.0/3.0)*R_85; R_144 := (128.0/3.0)*R_142;
+    R_145 := R_142+R_138; R_146 := pos_nodes[5][1]; R_147 := 8.0*R_146; R_148 := 32.0*R_146;
+    R_149 := R_122+R_148; R_149 = R_25+R_149; R_149 = R_149+R_51; R_149 = R_29+R_149;
+    R_150 := (-2.0/3.0)*R_146; R_151 := R_138+R_146; R_152 := (-512.0/3.0)*R_151; R_152 = R_97+R_152;
+    R_109 = R_152+R_109; R_152 = R_109*R_26; R_152 = (7.0/30720.0)*R_152; R_97 = R_109*R_8;
+    R_97 = (-11.0/15360.0)*R_97; R_109 = R_109*R_4; R_109 = (1.0/768.0)*R_109; R_153 := (-16.0/3.0)*R_151;
+    R_78 = R_153+R_78; R_78 = R_78*R_4; R_78 = (-1.0/96.0)*R_78; R_153 = (512.0/3.0)*R_151;
+    R_32 = R_153+R_32; R_32 = R_32*R_4; R_32 = (-1.0/1280.0)*R_32; R_153 = (16.0/3.0)*R_151;
+    R_49 = R_153+R_49; R_49 = R_88+R_49; R_49 = R_107+R_49; R_107 = R_49*R_4;
+    R_107 = (1.0/96.0)*R_107; R_88 = R_49*R_8; R_88 = (-1.0/160.0)*R_88; R_153 = R_69*R_49;
+    R_153 = (1.0/768.0)*R_153; R_154 := R_49*R_26; R_154 = (7.0/2880.0)*R_154; R_49 = R_103*R_49;
+    R_49 = (-1.0/1280.0)*R_49; R_151 = R_151+R_114; R_151 = (-32.0)*R_151; R_103 = (-32.0)*R_146;
+    R_35 = R_103+R_35; R_35 = R_19+R_35; R_35 = R_125+R_35; R_125 = (-1.0)*R_146;
+    R_67 = R_67+R_125; R_67 = R_67+R_18; R_67 = (-32.0)*R_67; R_65 = R_67+R_65;
+    R_0 = R_65+R_0; R_65 = R_138+R_125; R_67 = 8.0*R_65; R_65 = (-2.0/3.0)*R_65;
+    R_155 := (2.0/3.0)*R_146; R_156 := R_146+R_139; R_157 := (-32.0)*R_156; R_158 := (32.0/3.0)*R_156;
+    R_156 = (-8.0)*R_156; R_159 := (-8.0)*R_146; R_38 = R_38+R_146; R_160 := R_134+R_38;
+    R_38 = 16.0*R_38; R_145 = R_146+R_145; R_145 = R_145+R_137; R_145 = (-4.0/3.0)*R_145;
+    R_36 = R_145+R_36; R_36 = R_36+R_44; R_94 = R_36+R_94; R_16 = R_94+R_16;
+    R_94 = pos_nodes[10][1]; R_160 = R_94+R_160; R_18 = R_160+R_18; R_18 = R_18+R_139;
+    R_18 = 64.0*R_18; R_123 = R_18+R_123; R_64 = R_123+R_64; R_123 = R_121+R_94;
+    R_123 = R_123+R_137; R_7 = R_94+R_7; R_7 = R_76+R_7; R_76 = R_94+R_130;
+    R_18 = 8.0*R_76; R_160 = (-8.0)*R_76; R_76 = (-192.0)*R_76; R_36 = R_146+R_94;
+    R_36 = R_114+R_36; R_36 = R_130+R_36; R_36 = (-128.0)*R_36; R_145 = (-1.0)*R_94;
+    R_135 = R_145+R_135; R_140 = R_145+R_140; R_140 = R_137+R_140; R_140 = R_125+R_140;
+    R_114 = R_140+R_114; R_140 = (-64.0)*R_114; R_114 = 64.0*R_114; R_125 = R_121+R_145;
+    R_161 := 384.0*R_125; R_162 := (-4.0)*R_125; R_125 = 8.0*R_125; R_61 = R_125+R_61;
+    R_61 = R_72+R_61; R_31 = R_31+R_125; R_72 = R_31+R_72; R_142 = R_142+R_94;
+    R_31 = (-48.0)*R_94; R_163 := pos_nodes[1][1]; R_164 := R_163+R_145; R_164 = (-160.0)*R_164;
+    R_164 = R_0+R_164; R_164 = R_42*R_164; R_164 = (7.0/30720.0)*R_164; R_165 := 192.0*R_163;
+    R_124 = R_124+R_165; R_140 = R_124+R_140; R_140 = R_140+R_10; R_124 = R_140*R_59;
+    R_124 = (1.0/5120.0)*R_124; R_166 := R_140*R_55; R_166 = (-1.0/192.0)*R_166; R_140 = R_140*R_86;
+    R_140 = (1.0/1152.0)*R_140; R_165 = R_64+R_165; R_10 = R_165+R_10; R_59 = R_10*R_59;
+    R_59 = (1.0/30720.0)*R_59; R_138 = R_163+R_138; R_138 = R_146+R_138; R_138 = R_137+R_138;
+    R_10 = (-8.0/3.0)*R_138; R_10 = R_58+R_10; R_10 = R_90+R_10; R_10 = R_119+R_10;
+    R_10 = R_18+R_10; R_106 = R_10+R_106; R_106 = R_113+R_106; R_106 = R_106*R_20;
+    R_106 = (-1.0/192.0)*R_106; R_138 = (8.0/3.0)*R_138; R_3 = R_138+R_3; R_120 = R_3+R_120;
+    R_120 = R_5+R_120; R_120 = R_115+R_120; R_120 = R_125+R_120; R_125 = R_42*R_120;
+    R_125 = (1.0/768.0)*R_125; R_120 = R_47*R_120; R_120 = (-1.0/1280.0)*R_120; R_3 = R_112+R_3;
+    R_160 = R_3+R_160; R_5 = R_160+R_5; R_5 = R_118+R_5; R_118 = R_41*R_5;
+    R_118 = (-1.0/640.0)*R_118; R_21 = R_5*R_21; R_21 = (1.0/96.0)*R_21; R_160 = R_82*R_5;
+    R_160 = (-1.0/96.0)*R_160; R_3 = R_23*R_5; R_3 = (1.0/1152.0)*R_3; R_5 = R_5*R_20;
+    R_5 = (1.0/960.0)*R_5; R_146 = R_163+R_146; R_146 = R_137+R_146; R_139 = R_146+R_139;
+    R_139 = (-128.0)*R_139; R_139 = R_161+R_139; R_139 = R_108+R_139; R_108 = R_139*R_39;
+    R_108 = (-1.0/1280.0)*R_108; R_161 = R_110*R_139; R_161 = (7.0/30720.0)*R_161; R_146 = R_139*R_28;
+    R_146 = (7.0/2880.0)*R_146; R_112 = R_100*R_139; R_112 = (-1.0/160.0)*R_112; R_47 = R_79*R_139;
+    R_47 = (-11.0/15360.0)*R_47; R_139 = R_139*R_68; R_139 = (1.0/7680.0)*R_139; R_115 = R_163+R_134;
+    R_115 = (-1.0)*R_115; R_7 = R_115+R_7; R_7 = 128.0*R_7; R_77 = R_7+R_77;
+    R_77 = R_12+R_77; R_12 = R_69*R_77; R_12 = (7.0/30720.0)*R_12; R_7 = R_4*R_77;
+    R_7 = (7.0/2880.0)*R_7; R_115 = R_77*R_26; R_115 = (1.0/7680.0)*R_115; R_77 = R_8*R_77;
+    R_77 = (-1.0/1280.0)*R_77; R_138 = (-192.0)*R_163; R_101 = R_138+R_101; R_101 = R_128+R_101;
+    R_114 = R_101+R_114; R_101 = R_114*R_62; R_101 = (1.0/1280.0)*R_101; R_128 = R_114*R_33;
+    R_128 = (-1.0/7680.0)*R_128; R_138 = R_114*R_55; R_138 = (1.0/960.0)*R_138; R_111 = R_111*R_114;
+    R_111 = (-1.0/3072.0)*R_111; R_113 = R_114*R_86; R_113 = (-1.0/640.0)*R_113; R_114 = R_60*R_114;
+    R_114 = (-1.0/2560.0)*R_114; R_91 = R_163+R_91; R_91 = R_117+R_91; R_117 = (-4.0/3.0)*R_91;
+    R_117 = R_81+R_117; R_126 = R_117+R_126; R_150 = R_126+R_150; R_143 = R_150+R_143;
+    R_150 = R_56*R_143; R_150 = (-1.0/192.0)*R_150; R_143 = R_104*R_143; R_143 = (1.0/96.0)*R_143;
+    R_91 = (4.0/3.0)*R_91; R_48 = R_91+R_48; R_48 = R_48+R_129; R_48 = R_48+R_155;
+    R_48 = R_85+R_48; R_126 = R_48*R_56; R_126 = (1.0/960.0)*R_126; R_48 = R_48*R_104;
+    R_48 = (-1.0/96.0)*R_48; R_117 = R_91+R_85; R_117 = R_117+R_129; R_117 = R_117+R_155;
+    R_117 = R_117+R_24; R_117 = R_117*R_62; R_117 = (-1.0/24.0)*R_117; R_129 = R_91+R_129;
+    R_129 = R_155+R_129; R_24 = R_129+R_24; R_24 = R_85+R_24; R_85 = R_24*R_63;
+    R_85 = -0.5*R_85; R_129 = R_24*R_86; R_129 = (1.0/12.0)*R_129; R_24 = R_24*R_33;
+    R_24 = (1.0/80.0)*R_24; R_121 = R_163+R_121; R_121 = R_145+R_121; R_121 = R_137+R_121;
+    R_121 = (-32.0)*R_121; R_66 = R_121+R_66; R_66 = R_158+R_66; R_17 = R_17+R_66;
+    R_158 = R_110*R_17; R_158 = (1.0/7680.0)*R_158; R_17 = R_79*R_17; R_17 = (-1.0/1280.0)*R_17;
+    R_66 = R_96+R_66; R_96 = R_66*R_50; R_96 = (-1.0/80.0)*R_96; R_66 = R_66*R_28;
+    R_66 = (1.0/160.0)*R_66; R_121 = R_163+R_137; R_121 = (8.0/3.0)*R_121; R_61 = R_121+R_61;
+    R_145 = R_110*R_61; R_145 = (7.0/2880.0)*R_145; R_61 = R_79*R_61; R_61 = (-1.0/160.0)*R_61;
+    R_121 = R_72+R_121; R_72 = R_121*R_50; R_72 = (-1.0/12.0)*R_72; R_155 = R_121*R_28;
+    R_155 = (1.0/24.0)*R_155; R_91 = R_121*R_15; R_91 = (-1.0/80.0)*R_91; R_121 = R_121*R_68;
+    R_121 = (1.0/160.0)*R_121; R_81 = (-1.0)*R_163; R_135 = R_135+R_81; R_135 = 16.0*R_135;
+    R_135 = R_92+R_135; R_135 = R_67+R_135; R_135 = R_135+R_27; R_67 = R_110*R_135;
+    R_67 = (-1.0/1280.0)*R_67; R_135 = R_79*R_135; R_135 = (7.0/2880.0)*R_135; R_123 = R_123+R_81;
+    R_123 = 64.0*R_123; R_123 = R_9+R_123; R_123 = R_151+R_123; R_123 = R_93+R_123;
+    R_123 = R_13+R_123; R_8 = R_8*R_123; R_8 = (7.0/2880.0)*R_8; R_69 = R_69*R_123;
+    R_69 = (-11.0/15360.0)*R_69; R_4 = R_4*R_123; R_4 = (-1.0/160.0)*R_4; R_26 = R_123*R_26;
+    R_26 = (-1.0/1280.0)*R_26; R_127 = R_127+R_81; R_127 = 64.0*R_127; R_103 = R_127+R_103;
+    R_19 = R_103+R_19; R_46 = R_19+R_46; R_52 = R_46+R_52; R_43 = R_43*R_52;
+    R_43 = (-1.0/2560.0)*R_43; R_52 = R_42*R_52; R_52 = (-1.0/3072.0)*R_52; R_46 = R_11+R_46;
+    R_11 = R_41*R_46; R_11 = (1.0/1280.0)*R_11; R_1 = R_1*R_46; R_1 = (-1.0/192.0)*R_1;
+    R_42 = R_45*R_46; R_42 = (1.0/1152.0)*R_42; R_19 = R_82*R_46; R_19 = (1.0/960.0)*R_19;
+    R_46 = R_20*R_46; R_46 = (-1.0/640.0)*R_46; R_103 = R_94+R_81; R_103 = 160.0*R_103;
+    R_0 = R_103+R_0; R_41 = R_41*R_0; R_41 = (-1.0/7680.0)*R_41; R_103 = R_22*R_0;
+    R_103 = (1.0/1152.0)*R_103; R_20 = R_20*R_0; R_20 = (1.0/1280.0)*R_20; R_0 = R_82*R_0;
+    R_0 = (-1.0/640.0)*R_0; R_136 = R_81+R_136; R_136 = (128.0/3.0)*R_136; R_136 = R_36+R_136;
+    R_82 = R_82*R_136; R_82 = (-1.0/2560.0)*R_82; R_22 = R_22*R_136; R_22 = (1.0/768.0)*R_22;
+    R_125 = R_22+R_125; R_45 = R_45*R_136; R_45 = (-1.0/3072.0)*R_45; R_23 = R_23*R_136;
+    R_23 = (7.0/30720.0)*R_23; R_136 = R_40*R_136; R_136 = (-1.0/2560.0)*R_136; R_134 = R_134+R_81;
+    R_40 = 64.0*R_134; R_40 = R_157+R_40; R_40 = R_76+R_40; R_40 = R_30+R_40;
+    R_30 = R_40*R_68; R_30 = (-1.0/1280.0)*R_30; R_73 = R_73*R_40; R_73 = (-1.0/96.0)*R_73;
+    R_76 = R_40*R_28; R_76 = (-1.0/160.0)*R_76; R_157 = R_79*R_40; R_157 = (1.0/768.0)*R_157;
+    R_22 = R_110*R_40; R_22 = (-1.0/3072.0)*R_22; R_39 = R_40*R_39; R_39 = (7.0/2880.0)*R_39;
+    R_36 = R_70*R_40; R_36 = (-1.0/2560.0)*R_36; R_100 = R_100*R_40; R_100 = (1.0/96.0)*R_100;
+    R_40 = R_98*R_40; R_40 = (-1.0/2560.0)*R_40; R_134 = (-4.0/3.0)*R_134; R_65 = R_134+R_65;
+    R_53 = R_53+R_65; R_53 = R_6+R_53; R_53 = R_162+R_53; R_79 = R_79*R_53;
+    R_79 = (1.0/96.0)*R_79; R_70 = R_53*R_70; R_70 = (-1.0/96.0)*R_70; R_110 = R_53*R_110;
+    R_110 = (-1.0/160.0)*R_110; R_6 = R_65+R_6; R_71 = R_6+R_71; R_162 = R_71+R_162;
+    R_71 = R_15*R_162; R_71 = (1.0/24.0)*R_71; R_6 = R_162*R_28; R_6 = (-1.0/12.0)*R_6;
+    R_65 = R_50*R_162; R_65 = 0.5*R_65; R_68 = R_162*R_68; R_68 = (-1.0/80.0)*R_68;
+    R_81 = R_142+R_81; R_142 = (-16.0)*R_81; R_95 = R_142+R_95; R_95 = R_34+R_95;
+    R_147 = R_95+R_147; R_14 = R_147+R_14; R_14 = R_132+R_14; R_14 = R_89*R_14;
+    R_14 = (1.0/1152.0)*R_14; R_81 = 16.0*R_81; R_81 = R_116+R_81; R_81 = R_44+R_81;
+    R_81 = R_37+R_81; R_81 = R_159+R_81; R_105 = R_81+R_105; R_105 = R_131+R_105;
+    R_159 = R_105*R_86; R_159 = (1.0/80.0)*R_159; R_37 = R_56*R_105; R_37 = (1.0/1280.0)*R_37;
+    R_105 = R_105*R_63; R_105 = (-1.0/24.0)*R_105; R_44 = R_84+R_81; R_44 = R_131+R_44;
+    R_44 = R_44*R_89; R_44 = (-1.0/640.0)*R_44; R_81 = R_131+R_81; R_84 = R_81+R_84;
+    R_84 = R_84*R_62; R_84 = (-1.0/160.0)*R_84; R_81 = (-112.0/3.0)*R_163; R_80 = R_81+R_80;
+    R_80 = R_99+R_80; R_80 = R_83+R_80; R_80 = R_31+R_80; R_80 = R_133+R_80;
+    R_80 = R_2+R_80; R_80 = R_144+R_80; R_80 = R_141+R_80; R_74 = R_80+R_74;
+    R_74 = R_38+R_74; R_38 = R_89*R_74; R_38 = (1.0/1280.0)*R_38; R_80 = R_56*R_74;
+    R_80 = (-1.0/7680.0)*R_80; R_141 = R_74*R_63; R_141 = (1.0/80.0)*R_141; R_74 = R_74*R_86;
+    R_74 = (-1.0/160.0)*R_74; R_94 = R_163+R_94; R_163 = 64.0*R_94; R_122 = R_122+R_163;
+    R_148 = R_122+R_148; R_25 = R_148+R_25; R_29 = R_25+R_29; R_51 = R_29+R_51;
+    R_51 = R_51*R_62; R_51 = (1.0/1152.0)*R_51; R_149 = R_163+R_149; R_163 = R_149*R_55;
+    R_163 = (1.0/96.0)*R_163; R_149 = R_149*R_86; R_149 = (-1.0/192.0)*R_149; R_29 = (-64.0)*R_94;
+    R_29 = R_35+R_29; R_87 = R_29+R_87; R_57 = R_87*R_57; R_57 = (-1.0/2560.0)*R_57;
+    R_29 = R_87*R_62; R_29 = (-1.0/640.0)*R_29; R_35 = R_87*R_33; R_35 = (1.0/1280.0)*R_35;
+    R_25 = R_87*R_86; R_25 = (1.0/960.0)*R_25; R_60 = R_60*R_87; R_60 = (1.0/768.0)*R_60;
+    R_60 = R_125+R_60; R_153 = R_60+R_153; R_109 = R_153+R_109; R_157 = R_109+R_157;
+    R_157 = R_149+R_157; R_106 = R_157+R_106; R_75 = R_75*R_87; R_75 = (-1.0/3072.0)*R_75;
+    R_55 = R_87*R_55; R_55 = (-1.0/96.0)*R_55; R_87 = R_89*R_87; R_87 = (-1.0/2560.0)*R_87;
+    R_137 = R_137+R_94; R_130 = R_137+R_130; R_130 = (-16.0)*R_130; R_156 = R_130+R_156;
+    R_92 = R_156+R_92; R_27 = R_92+R_27; R_50 = R_27*R_50; R_50 = (1.0/24.0)*R_50;
+    R_28 = R_27*R_28; R_28 = (-1.0/80.0)*R_28; R_15 = R_27*R_15; R_15 = (1.0/160.0)*R_15;
+    R_94 = 4.0*R_94; R_16 = R_94+R_16; R_63 = R_16*R_63; R_63 = (1.0/12.0)*R_63;
+    R_54 = R_16*R_54; R_54 = (-1.0/192.0)*R_54; R_54 = R_106+R_54; R_150 = R_54+R_150;
+    R_1 = R_150+R_1; R_110 = R_1+R_110; R_61 = R_110+R_61; R_166 = R_61+R_166;
+    R_112 = R_166+R_112; R_76 = R_112+R_76; R_88 = R_76+R_88; R_4 = R_88+R_4;
+    R_4 = R_45+R_4; R_111 = R_4+R_111; R_111 = R_75+R_111; R_52 = R_111+R_52;
+    R_69 = R_52+R_69; R_97 = R_69+R_97; R_97 = R_22+R_97; R_97 = R_47+R_97;
+    R_73 = R_97+R_73; R_73 = R_48+R_73; R_73 = R_78+R_73; R_70 = R_73+R_70;
+    R_70 = R_160+R_70; R_70 = R_55+R_70; R_146 = R_70+R_146; R_146 = R_42+R_146;
+    R_145 = R_146+R_145; R_145 = R_135+R_145; R_103 = R_145+R_103; R_103 = R_140+R_103;
+    R_102 = R_16*R_102; R_102 = (1.0/1152.0)*R_102; R_103 = R_102+R_103; R_103 = R_3+R_103;
+    R_14 = R_103+R_14; R_51 = R_14+R_51; R_51 = R_39+R_51; R_51 = R_154+R_51;
+    R_8 = R_51+R_8; R_8 = R_7+R_8; R_6 = R_8+R_6; R_72 = R_6+R_72;
+    R_72 = R_129+R_72; R_63 = R_72+R_63; R_71 = R_63+R_71; R_50 = R_71+R_50;
+    R_50 = R_155+R_50; R_86 = R_16*R_86; R_86 = (-1.0/24.0)*R_86; R_50 = R_86+R_50;
+    R_105 = R_50+R_105; R_105 = R_117+R_105; R_161 = R_105+R_161; R_161 = R_23+R_161;
+    R_164 = R_161+R_164; R_164 = R_59+R_164; R_12 = R_164+R_12; R_152 = R_12+R_152;
+    R_152 = R_65+R_152; R_152 = R_32+R_152; R_152 = R_49+R_152; R_152 = R_36+R_152;
+    R_82 = R_152+R_82; R_82 = R_87+R_82; R_82 = R_120+R_82; R_85 = R_82+R_85;
+    R_79 = R_85+R_79; R_163 = R_79+R_163; R_163 = R_143+R_163; R_21 = R_163+R_21;
+    R_21 = R_100+R_21; R_107 = R_21+R_107; R_126 = R_107+R_126; R_104 = R_104*R_16;
+    R_104 = (1.0/960.0)*R_104; R_126 = R_104+R_126; R_126 = R_5+R_126; R_126 = R_19+R_126;
+    R_138 = R_126+R_138; R_25 = R_138+R_25; R_41 = R_25+R_41; R_128 = R_41+R_128;
+    R_128 = R_80+R_128; R_128 = R_158+R_128; R_128 = R_139+R_128; R_128 = R_115+R_128;
+    R_11 = R_128+R_11; R_11 = R_20+R_11; R_35 = R_11+R_35; R_101 = R_35+R_101;
+    R_37 = R_101+R_37; R_38 = R_37+R_38; R_67 = R_38+R_67; R_67 = R_17+R_67;
+    R_108 = R_67+R_108; R_30 = R_108+R_30; R_30 = R_26+R_30; R_30 = R_77+R_30;
+    R_30 = R_46+R_30; R_118 = R_30+R_118; R_118 = R_0+R_118; R_118 = R_113+R_118;
+    R_29 = R_118+R_29; R_56 = R_56*R_16; R_56 = (-1.0/640.0)*R_56; R_29 = R_56+R_29;
+    R_29 = R_44+R_29; R_57 = R_29+R_57; R_57 = R_40+R_57; R_43 = R_57+R_43;
+    R_43 = R_114+R_43; R_43 = R_136+R_43; R_43 = R_68+R_43; R_43 = R_91+R_43;
+    R_43 = R_96+R_43; R_43 = R_28+R_43; R_43 = R_24+R_43; R_159 = R_43+R_159;
+    R_159 = R_141+R_159; R_62 = R_16*R_62; R_62 = (1.0/80.0)*R_62; R_159 = R_62+R_159;
+    R_159 = R_66+R_159; R_159 = R_15+R_159; R_159 = R_121+R_159; R_159 = R_84+R_159;
+    R_159 = R_74+R_159; R_33 = R_16*R_33; R_33 = (-1.0/160.0)*R_33; R_159 = R_33+R_159;
+    R_124 = R_159+R_124; res := R_124; 
+    return res

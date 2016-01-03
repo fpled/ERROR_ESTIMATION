@@ -1,0 +1,315 @@
+static const nvi := 2
+static const nb_nodes := 9
+static const nb_vertex_nodes := 4
+static const center_of_var_inter := [ 1.0/2.0, 1.0/2.0 ]
+#
+def interpolation( var_inter, val, interpolation_base )
+    if interpolation_base == "lagrange"
+        return (8*var_inter[1]-4)*(1-var_inter[0])*var_inter[1]*var_inter[0]*val[7]+(-4*(1-var_inter[1])-8*(var_inter[1]-1)*var_inter[0])*var_inter[1]*var_inter[0]*val[5]+val[1]*var_inter[0]*(4*(1-var_inter[0])+var_inter[1]*(-12*(1-var_inter[0])-8*var_inter[1]*(var_inter[0]-1)))+(1+((9+(4*var_inter[0]-6)*var_inter[1]-6*var_inter[0])*var_inter[0]+2*var_inter[1]-3)*var_inter[1]+var_inter[0]*(2*var_inter[0]-3))*val[0]+val[2]*var_inter[0]*(var_inter[1]*(3+var_inter[1]*(4*var_inter[0]-2)-6*var_inter[0])+2*var_inter[0]-1)+val[3]*var_inter[1]*(4+var_inter[0]*(8*var_inter[0]-12))*(1-var_inter[1])+((3+(4*var_inter[1]-2)*var_inter[0]-6*var_inter[1])*var_inter[0]+2*var_inter[1]-1)*var_inter[1]*val[6]+val[8]*var_inter[0]*var_inter[1]*(1+var_inter[1]*(4*var_inter[0]-2)-2*var_inter[0])-16*val[4]*var_inter[1]*var_inter[0]*(var_inter[0]+var_inter[1]*(1-var_inter[0])-1)
+    else if interpolation_base == "hierarchical"
+        return val[6]*var_inter[1]*(1-var_inter[0])+4*var_inter[1]*var_inter[0]*(1-var_inter[1])*val[5]+4*val[3]*(1+var_inter[1]*(var_inter[0]-1)-var_inter[0])*var_inter[1]+(1+var_inter[1]*(var_inter[0]-1)-var_inter[0])*val[0]+4*val[1]*(1+var_inter[1]*(var_inter[0]-1)-var_inter[0])*var_inter[0]+val[2]*var_inter[0]*(1-var_inter[1])+4*var_inter[0]*(1-var_inter[0])*var_inter[1]*val[7]+var_inter[1]*var_inter[0]*val[8]-16*val[4]*var_inter[1]*var_inter[0]*(var_inter[0]+var_inter[1]*(1-var_inter[0])-1)
+
+#
+def generic_interpolation( var_inter, val, interpolation_base, deg ) when deg == 2
+    if interpolation_base == "lagrange"
+        return val[1]*var_inter[0]*(1-var_inter[0])*(4+var_inter[1]*(8*var_inter[1]-12))+val[0]*(1+var_inter[0]*(2*var_inter[0]-3)+var_inter[1]*(2*var_inter[1]+var_inter[0]*(9+4*var_inter[1]*var_inter[0]-6*(var_inter[1]+var_inter[0]))-3))+var_inter[0]*(var_inter[1]*(3+var_inter[1]*(4*var_inter[0]-2)-6*var_inter[0])+2*var_inter[0]-1)*val[2]+(4*(1-var_inter[1])+var_inter[0]*(-8*(var_inter[1]-1)*var_inter[0]-12*(1-var_inter[1])))*var_inter[1]*val[3]+(-4*(1-var_inter[1])-8*(var_inter[1]-1)*var_inter[0])*var_inter[1]*var_inter[0]*val[5]+var_inter[1]*(var_inter[0]*(3+(4*var_inter[0]-6)*var_inter[1]-2*var_inter[0])+2*var_inter[1]-1)*val[6]+(8*var_inter[1]-4)*(1-var_inter[0])*var_inter[1]*var_inter[0]*val[7]+val[8]*var_inter[0]*var_inter[1]*(1+4*var_inter[1]*var_inter[0]-2*(var_inter[1]+var_inter[0]))-16*var_inter[1]*var_inter[0]*(var_inter[0]+var_inter[1]*(1-var_inter[0])-1)*val[4]
+    else if interpolation_base == "hierarchical"
+        return var_inter[1]*var_inter[0]*val[8]+var_inter[1]*(1-var_inter[0])*val[6]+4*var_inter[1]*var_inter[0]*(1-var_inter[1])*val[5]+4*(1+var_inter[1]*(var_inter[0]-1)-var_inter[0])*var_inter[1]*val[3]+4*val[1]*(1+var_inter[1]*(var_inter[0]-1)-var_inter[0])*var_inter[0]+(1+var_inter[1]*(var_inter[0]-1)-var_inter[0])*val[0]+val[2]*var_inter[0]*(1-var_inter[1])+4*var_inter[0]*(1-var_inter[0])*var_inter[1]*val[7]-16*var_inter[0]*var_inter[1]*(var_inter[0]+var_inter[1]*(1-var_inter[0])-1)*val[4]
+
+#
+def interpolation_vertex( var_inter, val_vertex )
+    return (1+var_inter[1]*(var_inter[0]-1)-var_inter[0])*val_vertex[0]+val_vertex[1]*var_inter[0]*(1-var_inter[1])+val_vertex[2]*var_inter[1]*(1-var_inter[0])+var_inter[1]*var_inter[0]*val_vertex[3]
+#
+def nb_children( sub_nvi ) when sub_nvi==0
+    return 1
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==0
+    return child_var_inter
+def type_child( sub_nvi, num_child ) when sub_nvi==0
+    return QuadGeneric[Int32]
+def node_number_child( sub_nvi, num_child ) when sub_nvi==0
+    return 0 .. 9
+#
+def nb_children( sub_nvi ) when sub_nvi==1
+    return 4
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==1 and num_child==0
+    return [child_var_inter[0]*(2*child_var_inter[0]-1)-2*(child_var_inter[0]-1)*child_var_inter[0],0]
+def type_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==0
+    return BarGeneric[Int32]
+def node_number_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==0
+    return [0,1,2]
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==1 and num_child==1
+    return [1+child_var_inter[0]*(2*child_var_inter[0]-1)+child_var_inter[0]*(2*child_var_inter[0]-3)-4*(child_var_inter[0]-1)*child_var_inter[0],child_var_inter[0]*(2*child_var_inter[0]-1)-2*(child_var_inter[0]-1)*child_var_inter[0]]
+def type_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==1
+    return BarGeneric[Int32]
+def node_number_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==1
+    return [2,5,8]
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==1 and num_child==2
+    return [1+(2*child_var_inter[0]-3)*child_var_inter[0]-2*(child_var_inter[0]-1)*child_var_inter[0],1+(2*child_var_inter[0]-1)*child_var_inter[0]+(2*child_var_inter[0]-3)*child_var_inter[0]-4*(child_var_inter[0]-1)*child_var_inter[0]]
+def type_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==2
+    return BarGeneric[Int32]
+def node_number_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==2
+    return [8,7,6]
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==1 and num_child==3
+    return [0,1+child_var_inter[0]*(2*child_var_inter[0]-3)-2*child_var_inter[0]*(child_var_inter[0]-1)]
+def type_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==3
+    return BarGeneric[Int32]
+def node_number_child( sub_nvi, num_child ) when sub_nvi==1 and num_child==3
+    return [6,3,0]
+#
+def nb_children( sub_nvi ) when sub_nvi==2
+    return 4
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==2 and num_child==0
+    return [0,0]
+def type_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==0
+    return NodalElement
+def node_number_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==0
+    return [0]
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==2 and num_child==1
+    return [1,0]
+def type_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==1
+    return NodalElement
+def node_number_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==1
+    return [2]
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==2 and num_child==2
+    return [1,1]
+def type_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==2
+    return NodalElement
+def node_number_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==2
+    return [8]
+def var_inter_from_child_var_inter( sub_nvi, num_child, child_var_inter ) when sub_nvi==2 and num_child==3
+    return [0,1]
+def type_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==3
+    return NodalElement
+def node_number_child( sub_nvi, num_child ) when sub_nvi==2 and num_child==3
+    return [6]
+def normal( var_inter, pos_nodes )
+    assert( 0, "normal is defined only for nb_dim == nvi + 1" )
+#
+def jac_mat( var_inter, pos_nodes )
+    res := Mat[ type_promote(var_inter[0],pos_nodes[0][0],mul), Gen[ 2, 2 ] ]()
+    R_0 := pos_nodes[7][1]; R_1 := pos_nodes[4][1]; R_2 := pos_nodes[3][1]; R_3 := pos_nodes[2][1];
+    R_4 := pos_nodes[1][1]; R_5 := pos_nodes[0][1]; R_6 := pos_nodes[5][1]; R_7 := pos_nodes[6][1];
+    R_8 := pos_nodes[8][1]; R_9 := pos_nodes[8][0]; R_10 := pos_nodes[7][0]; R_11 := pos_nodes[6][0];
+    R_12 := pos_nodes[3][0]; R_13 := pos_nodes[2][0]; R_14 := pos_nodes[1][0]; R_15 := pos_nodes[0][0];
+    R_16 := pos_nodes[4][0]; R_17 := var_inter[0]; R_18 := 8.0*R_17; R_18 = (-2.0)+R_18;
+    R_19 := (-8.0)*R_17; R_20 := 12.0+R_19; R_20 = R_17*R_20; R_20 = (-4.0)+R_20;
+    R_19 = 4.0+R_19; R_21 := (-6.0)*R_17; R_22 := (-2.0)*R_17; R_22 = 1.0+R_22;
+    R_23 := 4.0*R_17; R_24 := (-6.0)+R_23; R_25 := R_24*R_17; R_25 = 4.0+R_25;
+    R_26 := (-2.0)+R_23; R_27 := (-1.0)*R_17; R_27 = 1.0+R_27; R_28 := var_inter[1];
+    R_18 = R_28*R_18; R_20 = R_28*R_20; R_19 = R_28*R_19; R_25 = R_28*R_25;
+    R_29 := 16.0*R_28; R_30 := (-12.0)+R_29; R_30 = R_30*R_27; R_30 = R_17*R_30;
+    R_31 := R_4*R_30; R_30 = R_14*R_30; R_29 = (-4.0)+R_29; R_29 = R_29*R_27;
+    R_29 = R_17*R_29; R_32 := R_0*R_29; R_29 = R_10*R_29; R_24 = R_24*R_28;
+    R_33 := R_24+R_21; R_33 = 9.0+R_33; R_33 = R_33*R_17; R_33 = R_33+R_25;
+    R_33 = (-3.0)+R_33; R_34 := R_5*R_33; R_34 = R_31+R_34; R_33 = R_15*R_33;
+    R_30 = R_33+R_30; R_33 = R_28*R_22; R_31 = (-6.0)*R_28; R_35 := 4.0*R_28;
+    R_36 := (-12.0)+R_35; R_36 = R_17*R_36; R_36 = R_24+R_36; R_36 = 9.0+R_36;
+    R_36 = R_28*R_36; R_36 = R_36+R_23; R_36 = (-3.0)+R_36; R_36 = R_5*R_36;
+    R_5 = (-2.0)+R_35; R_5 = R_5*R_17; R_24 = R_31+R_5; R_24 = 3.0+R_24;
+    R_24 = R_24*R_17; R_25 = R_24+R_25; R_25 = (-1.0)+R_25; R_24 = R_7*R_25;
+    R_25 = R_11*R_25; R_5 = 2.0*R_5; R_5 = R_31+R_5; R_5 = 3.0+R_5;
+    R_5 = R_28*R_5; R_7 = R_7*R_5; R_5 = R_11*R_5; R_35 = (-6.0)+R_35;
+    R_35 = R_28*R_35; R_35 = 4.0+R_35; R_35 = R_17*R_35; R_26 = R_28*R_26;
+    R_11 = (-1.0)*R_26; R_11 = R_17+R_11; R_11 = (-2.0)*R_11; R_11 = 1.0+R_11;
+    R_11 = R_17*R_11; R_11 = R_9*R_11; R_31 = 2.0*R_26; R_31 = R_31+R_21;
+    R_31 = 3.0+R_31; R_31 = R_17*R_31; R_37 := R_3*R_31; R_37 = R_34+R_37;
+    R_31 = R_13*R_31; R_31 = R_30+R_31; R_26 = R_21+R_26; R_26 = 3.0+R_26;
+    R_26 = R_28*R_26; R_35 = R_26+R_35; R_35 = (-1.0)+R_35; R_3 = R_3*R_35;
+    R_35 = R_13*R_35; R_13 = R_28+R_17; R_26 = (-2.0)*R_13; R_18 = R_26+R_18;
+    R_18 = 1.0+R_18; R_18 = R_17*R_18; R_18 = R_8*R_18; R_13 = (-6.0)*R_13;
+    R_21 = 8.0*R_28; R_30 = (-2.0)+R_21; R_30 = R_17*R_30; R_30 = R_26+R_30;
+    R_30 = 1.0+R_30; R_30 = R_28*R_30; R_8 = R_8*R_30; R_30 = R_9*R_30;
+    R_9 = (-4.0)+R_21; R_33 = R_9*R_33; R_0 = R_0*R_33; R_33 = R_10*R_33;
+    R_10 = (-12.0)+R_21; R_10 = R_28*R_10; R_10 = 4.0+R_10; R_10 = R_22*R_10;
+    R_4 = R_4*R_10; R_4 = R_36+R_4; R_3 = R_4+R_3; R_10 = R_14*R_10;
+    R_21 = (-6.0)+R_21; R_21 = R_17*R_21; R_13 = R_21+R_13; R_13 = 9.0+R_13;
+    R_13 = R_28*R_13; R_23 = R_13+R_23; R_23 = (-3.0)+R_23; R_23 = R_15*R_23;
+    R_10 = R_23+R_10; R_35 = R_10+R_35; R_27 = R_28*R_27; R_10 = 2.0*R_27;
+    R_10 = R_17+R_10; R_10 = (-1.0)+R_10; R_10 = R_17*R_10; R_23 = R_1*R_10;
+    R_23 = (-16.0)*R_23; R_10 = R_16*R_10; R_10 = (-16.0)*R_10; R_15 = (-1.0)+R_28;
+    R_15 = R_15*R_17; R_13 = (-8.0)*R_15; R_15 = (-16.0)*R_15; R_21 = (-1.0)*R_28;
+    R_14 = 2.0+R_21; R_14 = R_17*R_14; R_14 = R_27+R_14; R_14 = (-1.0)+R_14;
+    R_14 = R_28*R_14; R_1 = R_1*R_14; R_1 = (-16.0)*R_1; R_14 = R_16*R_14;
+    R_14 = (-16.0)*R_14; R_21 = 1.0+R_21; R_16 = 4.0*R_21; R_27 = (-12.0)*R_21;
+    R_4 = R_13+R_27; R_4 = R_17*R_4; R_4 = R_16+R_4; R_20 = R_4+R_20;
+    R_4 = R_2*R_20; R_4 = R_37+R_4; R_4 = R_23+R_4; R_20 = R_12*R_20;
+    R_20 = R_31+R_20; R_10 = R_20+R_10; R_27 = R_15+R_27; R_27 = R_28*R_27;
+    R_2 = R_2*R_27; R_2 = R_3+R_2; R_1 = R_2+R_1; R_27 = R_12*R_27;
+    R_27 = R_35+R_27; R_27 = R_14+R_27; R_21 = (-4.0)*R_21; R_13 = R_21+R_13;
+    R_19 = R_13+R_19; R_19 = R_17*R_19; R_17 = R_6*R_19; R_4 = R_17+R_4;
+    R_4 = R_24+R_4; R_4 = R_32+R_4; R_4 = R_18+R_4; res(1,1) = R_4;
+    R_15 = R_21+R_15; R_15 = R_28*R_15; R_6 = R_6*R_15; R_1 = R_6+R_1;
+    R_1 = R_7+R_1; R_0 = R_1+R_0; R_0 = R_8+R_0; res(0,1) = R_0;
+    R_0 = pos_nodes[5][0]; R_19 = R_0*R_19; R_10 = R_19+R_10; R_10 = R_25+R_10;
+    R_10 = R_29+R_10; R_11 = R_10+R_11; res(1,0) = R_11; R_15 = R_0*R_15;
+    R_27 = R_15+R_27; R_5 = R_27+R_5; R_33 = R_5+R_33; R_30 = R_33+R_30;
+    res(0,0) = R_30; 
+    return res
+#
+def jac( var_inter, pos_nodes )
+    R_0 := pos_nodes[1][1]; R_1 := pos_nodes[7][1]; R_2 := pos_nodes[5][1]; R_3 := pos_nodes[8][1];
+    R_4 := pos_nodes[4][1]; R_5 := pos_nodes[2][1]; R_6 := pos_nodes[3][1]; R_7 := pos_nodes[0][1];
+    R_8 := pos_nodes[6][1]; R_9 := pos_nodes[2][0]; R_10 := pos_nodes[1][0]; R_11 := pos_nodes[0][0];
+    R_12 := pos_nodes[5][0]; R_13 := pos_nodes[6][0]; R_14 := pos_nodes[4][0]; R_15 := pos_nodes[7][0];
+    R_16 := pos_nodes[3][0]; R_17 := var_inter[0]; R_18 := 8.0*R_17; R_18 = (-2.0)+R_18;
+    R_19 := (-8.0)*R_17; R_20 := 4.0+R_19; R_19 = 12.0+R_19; R_19 = R_17*R_19;
+    R_19 = (-4.0)+R_19; R_21 := (-6.0)*R_17; R_22 := 4.0*R_17; R_23 := (-6.0)+R_22;
+    R_24 := R_23*R_17; R_24 = 4.0+R_24; R_25 := (-2.0)+R_22; R_26 := (-1.0)*R_17;
+    R_26 = 1.0+R_26; R_27 := (-2.0)*R_17; R_27 = 1.0+R_27; R_28 := pos_nodes[8][0];
+    R_29 := var_inter[1]; R_30 := 16.0*R_29; R_31 := (-12.0)+R_30; R_32 := R_10*R_31;
+    R_31 = R_0*R_31; R_30 = (-4.0)+R_30; R_33 := R_15*R_30; R_32 = R_33+R_32;
+    R_32 = R_26*R_32; R_30 = R_1*R_30; R_31 = R_30+R_31; R_31 = R_26*R_31;
+    R_20 = R_29*R_20; R_18 = R_29*R_18; R_19 = R_29*R_19; R_23 = R_23*R_29;
+    R_30 = R_23+R_21; R_30 = 9.0+R_30; R_30 = R_30*R_17; R_24 = R_29*R_24;
+    R_30 = R_30+R_24; R_30 = (-3.0)+R_30; R_33 = R_11*R_30; R_30 = R_7*R_30;
+    R_25 = R_29*R_25; R_34 := (-1.0)*R_25; R_34 = R_17+R_34; R_34 = (-2.0)*R_34;
+    R_34 = 1.0+R_34; R_34 = R_28*R_34; R_35 := 2.0*R_25; R_35 = R_35+R_21;
+    R_35 = 3.0+R_35; R_36 := R_9*R_35; R_34 = R_36+R_34; R_35 = R_5*R_35;
+    R_25 = R_21+R_25; R_25 = 3.0+R_25; R_25 = R_29*R_25; R_21 = 4.0*R_29;
+    R_36 = (-12.0)+R_21; R_36 = R_17*R_36; R_36 = R_23+R_36; R_36 = 9.0+R_36;
+    R_36 = R_29*R_36; R_36 = R_36+R_22; R_36 = (-3.0)+R_36; R_36 = R_7*R_36;
+    R_7 = (-6.0)+R_21; R_7 = R_29*R_7; R_7 = 4.0+R_7; R_7 = R_17*R_7;
+    R_7 = R_25+R_7; R_7 = (-1.0)+R_7; R_5 = R_5*R_7; R_7 = R_9*R_7;
+    R_21 = (-2.0)+R_21; R_21 = R_21*R_17; R_9 = 2.0*R_21; R_25 = (-6.0)*R_29;
+    R_21 = R_25+R_21; R_21 = 3.0+R_21; R_21 = R_21*R_17; R_24 = R_21+R_24;
+    R_24 = (-1.0)+R_24; R_21 = R_13*R_24; R_33 = R_21+R_33; R_24 = R_8*R_24;
+    R_30 = R_24+R_30; R_9 = R_25+R_9; R_9 = 3.0+R_9; R_8 = R_8*R_9;
+    R_9 = R_13*R_9; R_26 = R_29*R_26; R_13 = 2.0*R_26; R_13 = R_17+R_13;
+    R_13 = (-1.0)+R_13; R_25 = R_14*R_13; R_25 = (-16.0)*R_25; R_13 = R_4*R_13;
+    R_13 = (-16.0)*R_13; R_24 = (-1.0)*R_29; R_21 = 2.0+R_24; R_21 = R_17*R_21;
+    R_21 = R_26+R_21; R_21 = (-1.0)+R_21; R_4 = R_4*R_21; R_4 = (-16.0)*R_4;
+    R_21 = R_14*R_21; R_21 = (-16.0)*R_21; R_24 = 1.0+R_24; R_14 = 4.0*R_24;
+    R_26 = (-4.0)*R_24; R_24 = (-12.0)*R_24; R_23 = (-1.0)+R_29; R_23 = R_23*R_17;
+    R_37 := (-8.0)*R_23; R_38 := R_26+R_37; R_20 = R_38+R_20; R_38 = R_12*R_20;
+    R_34 = R_38+R_34; R_34 = R_25+R_34; R_32 = R_34+R_32; R_32 = R_17*R_32;
+    R_20 = R_2*R_20; R_37 = R_37+R_24; R_37 = R_17*R_37; R_37 = R_14+R_37;
+    R_19 = R_37+R_19; R_37 = R_16*R_19; R_33 = R_37+R_33; R_32 = R_33+R_32;
+    R_19 = R_6*R_19; R_19 = R_30+R_19; R_23 = (-16.0)*R_23; R_26 = R_26+R_23;
+    R_2 = R_2*R_26; R_26 = R_12*R_26; R_24 = R_23+R_24; R_6 = R_6*R_24;
+    R_24 = R_16*R_24; R_16 = 8.0*R_29; R_23 = (-12.0)+R_16; R_23 = R_29*R_23;
+    R_23 = 4.0+R_23; R_23 = R_27*R_23; R_0 = R_0*R_23; R_0 = R_36+R_0;
+    R_5 = R_0+R_5; R_23 = R_10*R_23; R_10 = (-6.0)+R_16; R_10 = R_17*R_10;
+    R_0 = (-4.0)+R_16; R_1 = R_1*R_0; R_1 = R_27*R_1; R_15 = R_0*R_15;
+    R_27 = R_15*R_27; R_27 = R_24+R_27; R_16 = (-2.0)+R_16; R_16 = R_17*R_16;
+    R_24 = R_29+R_17; R_15 = (-6.0)*R_24; R_15 = R_10+R_15; R_15 = 9.0+R_15;
+    R_15 = R_29*R_15; R_22 = R_15+R_22; R_22 = (-3.0)+R_22; R_22 = R_11*R_22;
+    R_23 = R_22+R_23; R_7 = R_23+R_7; R_24 = (-2.0)*R_24; R_18 = R_24+R_18;
+    R_18 = 1.0+R_18; R_18 = R_3*R_18; R_20 = R_18+R_20; R_20 = R_13+R_20;
+    R_20 = R_35+R_20; R_31 = R_20+R_31; R_31 = R_17*R_31; R_31 = R_19+R_31;
+    R_16 = R_24+R_16; R_16 = 1.0+R_16; R_3 = R_3*R_16; R_8 = R_3+R_8;
+    R_8 = R_2+R_8; R_8 = R_6+R_8; R_8 = R_4+R_8; R_8 = R_1+R_8;
+    R_8 = R_29*R_8; R_8 = R_5+R_8; R_8 = R_32*R_8; R_8 = (-1.0)*R_8;
+    R_16 = R_28*R_16; R_27 = R_16+R_27; R_21 = R_27+R_21; R_9 = R_21+R_9;
+    R_26 = R_9+R_26; R_26 = R_29*R_26; R_7 = R_26+R_7; R_31 = R_7*R_31;
+    R_8 = R_31+R_8; res := R_8; 
+    return res
+#
+def inv_jac_mat( var_inter, pos_nodes )
+    res := Mat[ type_promote(var_inter[0],pos_nodes[0][0],mul), Gen[ 2, 2 ] ]()
+    R_0 := pos_nodes[2][0]; R_1 := pos_nodes[1][0]; R_2 := pos_nodes[0][0]; R_3 := pos_nodes[5][0];
+    R_4 := pos_nodes[6][0]; R_5 := pos_nodes[4][0]; R_6 := pos_nodes[7][0]; R_7 := pos_nodes[3][0];
+    R_8 := pos_nodes[8][0]; R_9 := pos_nodes[1][1]; R_10 := pos_nodes[7][1]; R_11 := pos_nodes[5][1];
+    R_12 := pos_nodes[8][1]; R_13 := pos_nodes[4][1]; R_14 := pos_nodes[2][1]; R_15 := pos_nodes[3][1];
+    R_16 := pos_nodes[0][1]; R_17 := var_inter[0]; R_18 := (-2.0)*R_17; R_18 = 1.0+R_18;
+    R_19 := 8.0*R_17; R_19 = (-2.0)+R_19; R_20 := (-1.0)*R_17; R_20 = 1.0+R_20;
+    R_21 := (-8.0)*R_17; R_22 := 4.0+R_21; R_21 = 12.0+R_21; R_21 = R_17*R_21;
+    R_21 = (-4.0)+R_21; R_23 := (-6.0)*R_17; R_24 := 4.0*R_17; R_25 := (-2.0)+R_24;
+    R_26 := (-6.0)+R_24; R_27 := R_26*R_17; R_27 = 4.0+R_27; R_28 := var_inter[1];
+    R_29 := 8.0*R_28; R_30 := (-12.0)+R_29; R_30 = R_28*R_30; R_30 = 4.0+R_30;
+    R_30 = R_18*R_30; R_31 := R_9*R_30; R_30 = R_1*R_30; R_32 := (-6.0)+R_29;
+    R_32 = R_17*R_32; R_33 := (-4.0)+R_29; R_34 := R_10*R_33; R_34 = R_18*R_34;
+    R_33 = R_33*R_6; R_18 = R_33*R_18; R_29 = (-2.0)+R_29; R_29 = R_17*R_29;
+    R_33 = 16.0*R_28; R_35 := (-12.0)+R_33; R_1 = R_1*R_35; R_35 = R_9*R_35;
+    R_33 = (-4.0)+R_33; R_6 = R_6*R_33; R_1 = R_6+R_1; R_1 = R_20*R_1;
+    R_33 = R_10*R_33; R_35 = R_33+R_35; R_35 = R_20*R_35; R_22 = R_28*R_22;
+    R_19 = R_28*R_19; R_33 = R_28+R_17; R_10 = (-6.0)*R_33; R_10 = R_32+R_10;
+    R_10 = 9.0+R_10; R_10 = R_28*R_10; R_10 = R_10+R_24; R_10 = (-3.0)+R_10;
+    R_10 = R_2*R_10; R_30 = R_10+R_30; R_33 = (-2.0)*R_33; R_29 = R_33+R_29;
+    R_29 = 1.0+R_29; R_10 = R_12*R_29; R_29 = R_8*R_29; R_19 = R_33+R_19;
+    R_19 = 1.0+R_19; R_19 = R_12*R_19; R_20 = R_28*R_20; R_12 = 2.0*R_20;
+    R_12 = R_17+R_12; R_12 = (-1.0)+R_12; R_33 = R_5*R_12; R_33 = (-16.0)*R_33;
+    R_12 = R_13*R_12; R_12 = (-16.0)*R_12; R_25 = R_28*R_25; R_32 = (-1.0)*R_25;
+    R_32 = R_17+R_32; R_32 = (-2.0)*R_32; R_32 = 1.0+R_32; R_32 = R_8*R_32;
+    R_8 = R_23+R_25; R_8 = 3.0+R_8; R_8 = R_28*R_8; R_25 = 2.0*R_25;
+    R_25 = R_25+R_23; R_25 = 3.0+R_25; R_6 = R_0*R_25; R_32 = R_6+R_32;
+    R_25 = R_14*R_25; R_21 = R_28*R_21; R_6 = (-1.0)+R_28; R_6 = R_6*R_17;
+    R_9 = (-16.0)*R_6; R_6 = (-8.0)*R_6; R_36 := (-1.0)*R_28; R_37 := 2.0+R_36;
+    R_37 = R_17*R_37; R_37 = R_20+R_37; R_37 = (-1.0)+R_37; R_13 = R_13*R_37;
+    R_13 = (-16.0)*R_13; R_37 = R_5*R_37; R_37 = (-16.0)*R_37; R_36 = 1.0+R_36;
+    R_5 = (-4.0)*R_36; R_20 = R_5+R_9; R_38 := R_11*R_20; R_20 = R_3*R_20;
+    R_5 = R_5+R_6; R_22 = R_5+R_22; R_3 = R_3*R_22; R_32 = R_3+R_32;
+    R_32 = R_33+R_32; R_1 = R_32+R_1; R_1 = R_17*R_1; R_22 = R_11*R_22;
+    R_22 = R_19+R_22; R_22 = R_12+R_22; R_22 = R_25+R_22; R_35 = R_22+R_35;
+    R_35 = R_17*R_35; R_22 = (-12.0)*R_36; R_9 = R_9+R_22; R_25 = R_15*R_9;
+    R_9 = R_7*R_9; R_18 = R_9+R_18; R_18 = R_29+R_18; R_37 = R_18+R_37;
+    R_22 = R_6+R_22; R_22 = R_17*R_22; R_36 = 4.0*R_36; R_22 = R_36+R_22;
+    R_21 = R_22+R_21; R_7 = R_7*R_21; R_21 = R_15*R_21; R_26 = R_26*R_28;
+    R_23 = R_26+R_23; R_23 = 9.0+R_23; R_23 = R_23*R_17; R_27 = R_28*R_27;
+    R_23 = R_23+R_27; R_23 = (-3.0)+R_23; R_2 = R_2*R_23; R_23 = R_16*R_23;
+    R_15 = 4.0*R_28; R_22 = (-12.0)+R_15; R_22 = R_17*R_22; R_22 = R_26+R_22;
+    R_22 = 9.0+R_22; R_22 = R_28*R_22; R_24 = R_22+R_24; R_24 = (-3.0)+R_24;
+    R_24 = R_16*R_24; R_31 = R_24+R_31; R_24 = (-6.0)+R_15; R_24 = R_28*R_24;
+    R_24 = 4.0+R_24; R_24 = R_17*R_24; R_24 = R_8+R_24; R_24 = (-1.0)+R_24;
+    R_14 = R_14*R_24; R_14 = R_31+R_14; R_24 = R_0*R_24; R_24 = R_30+R_24;
+    R_15 = (-2.0)+R_15; R_15 = R_15*R_17; R_30 = 2.0*R_15; R_0 = (-6.0)*R_28;
+    R_30 = R_0+R_30; R_30 = 3.0+R_30; R_31 = R_4*R_30; R_31 = R_37+R_31;
+    R_20 = R_31+R_20; R_20 = R_28*R_20; R_24 = R_20+R_24; R_15 = R_0+R_15;
+    R_15 = 3.0+R_15; R_17 = R_15*R_17; R_27 = R_17+R_27; R_27 = (-1.0)+R_27;
+    R_4 = R_4*R_27; R_2 = R_4+R_2; R_2 = R_7+R_2; R_1 = R_2+R_1;
+    R_2 = pos_nodes[6][1]; R_30 = R_2*R_30; R_30 = R_10+R_30; R_30 = R_38+R_30;
+    R_30 = R_25+R_30; R_30 = R_13+R_30; R_30 = R_34+R_30; R_30 = R_28*R_30;
+    R_30 = R_14+R_30; R_14 = R_1*R_30; R_14 = (-1.0)*R_14; R_27 = R_2*R_27;
+    R_23 = R_27+R_23; R_21 = R_23+R_21; R_35 = R_21+R_35; R_21 = R_24*R_35;
+    R_14 = R_21+R_14; R_14 = 1/R_14; R_24 = R_24*R_14; res(1,1) = R_24;
+    R_1 = R_1*R_14; R_1 = (-1.0)*R_1; res(1,0) = R_1; R_30 = R_30*R_14;
+    R_30 = (-1.0)*R_30; res(0,1) = R_30; R_14 = R_35*R_14; res(0,0) = R_14;
+    return res
+#
+def measure( var_inter, pos_nodes )
+    R_0 := pos_nodes[4][0]; R_1 := (-8.0)*R_0; R_2 := (-16.0)*R_0; R_0 = 32.0*R_0;
+    R_3 := pos_nodes[5][0]; R_4 := (-1.0)*R_3; R_5 := pos_nodes[3][0]; R_6 := (-1.0)*R_5;
+    R_6 = R_3+R_6; R_7 := R_5+R_3; R_7 = 8.0*R_7; R_7 = R_2+R_7;
+    R_4 = R_5+R_4; R_2 = 4.0*R_4; R_4 = 8.0*R_4; R_8 := pos_nodes[1][0];
+    R_5 = R_8+R_5; R_5 = R_3+R_5; R_3 = (-1.0)*R_8; R_9 := pos_nodes[7][0];
+    R_8 = R_8+R_9; R_8 = 4.0*R_8; R_8 = R_1+R_8; R_5 = R_9+R_5;
+    R_5 = (-16.0)*R_5; R_1 = R_5+R_0; R_3 = R_9+R_3; R_9 = (-8.0)*R_3;
+    R_10 := (-4.0)*R_3; R_11 := pos_nodes[2][0]; R_12 := (-1.0)*R_11; R_13 := pos_nodes[8][0];
+    R_14 := R_11+R_13; R_14 = (-1.0)*R_14; R_15 := (-1.0)*R_13; R_16 := R_13+R_12;
+    R_17 := pos_nodes[6][0]; R_18 := R_17+R_13; R_19 := R_11+R_17; R_19 = R_13+R_19;
+    R_20 := (-1.0)*R_17; R_13 = R_13+R_20; R_21 := pos_nodes[0][0]; R_22 := R_21+R_12;
+    R_22 = R_13+R_22; R_13 = (-1.0)*R_21; R_18 = R_13+R_18; R_18 = R_18+R_12;
+    R_18 = 4.0*R_18; R_9 = R_18+R_9; R_19 = R_21+R_19; R_19 = 8.0*R_19;
+    R_1 = R_19+R_1; R_0 = R_19+R_0; R_0 = R_5+R_0; R_17 = R_17+R_21;
+    R_14 = R_14+R_17; R_14 = (-2.0)*R_14; R_2 = R_14+R_2; R_17 = R_17+R_15;
+    R_12 = R_17+R_12; R_12 = (-4.0)*R_12; R_4 = R_12+R_4; R_11 = R_11+R_21;
+    R_11 = R_20+R_11; R_11 = R_15+R_11; R_11 = (-2.0)*R_11; R_11 = R_10+R_11;
+    R_20 = R_21+R_20; R_16 = R_20+R_16; R_20 = pos_nodes[8][1]; R_21 = (-1.0)*R_20;
+    R_10 = pos_nodes[2][1]; R_15 = R_10+R_21; R_15 = (-1.0)*R_15; R_12 = (-1.0)*R_10;
+    R_17 = R_20+R_12; R_14 = R_10+R_20; R_5 = pos_nodes[6][1]; R_19 = (-1.0)*R_5;
+    R_20 = R_20+R_19; R_18 = R_5+R_14; R_13 = pos_nodes[0][1]; R_23 := R_13+R_19;
+    R_17 = R_23+R_17; R_7 = R_17*R_7; R_17 = R_1*R_17; R_1 = (-1.0)*R_13;
+    R_1 = R_5+R_1; R_15 = R_1+R_15; R_15 = 2.0*R_15; R_1 = R_13+R_12;
+    R_20 = R_1+R_20; R_8 = R_20*R_8; R_0 = R_20*R_0; R_10 = R_10+R_13;
+    R_19 = R_10+R_19; R_19 = R_19+R_21; R_19 = (-4.0)*R_19; R_5 = R_5+R_13;
+    R_21 = R_5+R_21; R_12 = R_21+R_12; R_12 = (-4.0)*R_12; R_5 = (-1.0)*R_5;
+    R_14 = R_5+R_14; R_14 = 2.0*R_14; R_18 = R_13+R_18; R_18 = 8.0*R_18;
+    R_13 = pos_nodes[4][1]; R_5 = (-8.0)*R_13; R_21 = (-16.0)*R_13; R_13 = 32.0*R_13;
+    R_10 = R_18+R_13; R_20 = pos_nodes[3][1]; R_1 = pos_nodes[7][1]; R_23 = R_1+R_20;
+    R_24 := pos_nodes[5][1]; R_25 := R_20+R_24; R_25 = 8.0*R_25; R_25 = R_21+R_25;
+    R_25 = R_16*R_25; R_21 = (-1.0)*R_24; R_21 = R_20+R_21; R_20 = R_3*R_21;
+    R_26 := R_21*R_11; R_26 = (-2.0)*R_26; R_26 = R_25+R_26; R_26 = (-1.0)*R_26;
+    R_25 = 8.0*R_21; R_25 = R_12+R_25; R_9 = R_25*R_9; R_21 = 4.0*R_21;
+    R_21 = R_14+R_21; R_3 = R_21*R_3; R_8 = R_3+R_8; R_8 = (-1.0)*R_8;
+    R_11 = R_21*R_11; R_23 = R_24+R_23; R_24 = pos_nodes[1][1]; R_21 = R_1+R_24;
+    R_21 = 4.0*R_21; R_5 = R_21+R_5; R_5 = R_5*R_22; R_21 = (-1.0)*R_24;
+    R_21 = R_1+R_21; R_1 = R_21*R_6; R_1 = R_20+R_1; R_20 = R_2*R_21;
+    R_5 = R_20+R_5; R_5 = R_8+R_5; R_5 = (1.0/12.0)*R_5; R_1 = R_5+R_1;
+    R_5 = (-4.0)*R_21; R_15 = R_5+R_15; R_6 = R_6*R_15; R_6 = 2.0*R_6;
+    R_6 = R_7+R_6; R_6 = R_26+R_6; R_6 = 0.5*R_6; R_15 = R_2*R_15;
+    R_17 = R_15+R_17; R_21 = (-8.0)*R_21; R_21 = R_19+R_21; R_21 = R_4*R_21;
+    R_0 = R_21+R_0; R_23 = R_24+R_23; R_23 = (-16.0)*R_23; R_10 = R_23+R_10;
+    R_22 = R_10*R_22; R_22 = R_9+R_22; R_22 = R_17+R_22; R_13 = R_23+R_13;
+    R_18 = R_13+R_18; R_16 = R_18*R_16; R_11 = R_16+R_11; R_0 = R_11+R_0;
+    R_0 = (-1.0)*R_0; R_22 = R_0+R_22; R_22 = (1.0/12.0)*R_22; R_6 = R_22+R_6;
+    R_6 = (1.0/12.0)*R_6; R_1 = R_6+R_1; res := R_1; 
+    return res
