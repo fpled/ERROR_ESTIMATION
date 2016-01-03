@@ -368,8 +368,8 @@ def calc_elem_correction_interest_quantity_wo_sigma_hat_m( list_f, rep )
         corr_SPET := symbol( "(method == \"SPET\" ? 1 : 0)" )
         corr_EET_EESPT := symbol( "((method == \"EET\" or method == \"EESPT\") ? 1 : 0)" )
         base := Vec[ Op ]()
-        base_EET_EESPT := e->get_upper_degree_shape_functions( admissible_field_base, deg_p + deg_k )
-        base_SPET := e->get_upper_degree_shape_functions( "hierarchical", deg_p + deg_k )
+        base_EET_EESPT := e->get_generic_shape_functions( admissible_field_base, deg_p + deg_k )
+        base_SPET := e->get_generic_shape_functions( "hierarchical", deg_p + deg_k )
         base = corr_EET_EESPT * base_EET_EESPT + corr_SPET * base_SPET
         coeffs_dep_hat_expr := Vec[ Vec[ Op, base.size ], e->dim ]()
         sym_dep_hat_expr := Vec[ Op ]()
@@ -389,14 +389,16 @@ def calc_elem_correction_interest_quantity_wo_sigma_hat_m( list_f, rep )
             sy = symbol( "dep_hat[ elem.number ][ $i ]", tex_name = "\\hat{U}[ elem.number ][ $i ]" )
             sym_dep_hat.push_back( sy )
         sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
+
         e->assume_const_jac = true
         epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
         sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
         epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
         sigma_hat_const_jac := sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
         e->assume_const_jac = hyp_const_jac
-        for f_adjoint in list_f
-            if f_adjoint->nb_dim == f->nb_dim
+
+        for _f_adjoint in list_f
+            if _f_adjoint->nb_dim == f->nb_dim
                 _e_adjoint := child_cast( _f_adjoint->pe )
                 e_adjoint := new SymbolicElement[ _e_adjoint->name, _e_adjoint->dim ]( name_elem = "elem_adjoint", tex_symbol_pos = "P_{adjoint}", node_numbers_to_node_numbers_in_parent_cpp = range(_e_adjoint->nb_nodes).map( _e_adjoint->corr_cpp ) )
                 e_adjoint->assume_const_jac = e->assume_const_jac
@@ -504,8 +506,8 @@ def calc_elem_correction_interest_quantity_w_sigma_hat_m( list_f, rep )
         corr_SPET := symbol( "(method == \"SPET\" ? 1 : 0)" )
         corr_EET_EESPT := symbol( "((method == \"EET\" or method == \"EESPT\") ? 1 : 0)" )
         base := Vec[ Op ]()
-        base_EET_EESPT := e->get_upper_degree_shape_functions( admissible_field_base, deg_p + deg_k )
-        base_SPET := e->get_upper_degree_shape_functions( "hierarchical", deg_p + deg_k )
+        base_EET_EESPT := e->get_generic_shape_functions( admissible_field_base, deg_p + deg_k )
+        base_SPET := e->get_generic_shape_functions( "hierarchical", deg_p + deg_k )
         base = corr_EET_EESPT * base_EET_EESPT + corr_SPET * base_SPET
         coeffs_dep_hat_expr := Vec[ Vec[ Op, base.size ], e->dim ]()
         sym_dep_hat_expr := Vec[ Op ]()
@@ -551,8 +553,8 @@ def calc_elem_correction_interest_quantity_w_sigma_hat_m( list_f, rep )
             corr_SPET_adjoint := symbol( "(method_adjoint == \"SPET\" ? 1 : 0)" )
             corr_EET_EESPT_adjoint := symbol( "( (method_adjoint == \"EET\" or method_adjoint == \"EESPT\") ? 1 : 0)" )
             base_adjoint := Vec[ Op ]()
-            base_EET_EESPT_adjoint := e_adjoint->get_upper_degree_shape_functions( admissible_field_base, deg_p_adjoint + deg_k )
-            base_SPET_adjoint := e_adjoint->get_upper_degree_shape_functions( "hierarchical", deg_p_adjoint + deg_k )
+            base_EET_EESPT_adjoint := e_adjoint->get_generic_shape_functions( admissible_field_base, deg_p_adjoint + deg_k )
+            base_SPET_adjoint := e_adjoint->get_generic_shape_functions( "hierarchical", deg_p_adjoint + deg_k )
             base_adjoint = corr_EET_EESPT_adjoint * base_EET_EESPT_adjoint + corr_SPET_adjoint * base_SPET_adjoint
             coeffs_dep_adjoint_hat_expr := Vec[ Vec[ Op, base_adjoint.size ], e_adjoint->dim ]()
             sym_dep_adjoint_hat_expr := Vec[ Op ]()
@@ -582,6 +584,7 @@ def calc_elem_correction_interest_quantity_w_sigma_hat_m( list_f, rep )
 
             e_adjoint->assume_const_jac = true
             epsilon_proj_const_jac := ( epsilon_const_jac ).subs( e->var_inter, e_var_inter )
+            sigma_proj_const_jac := ( sigma_const_jac ).subs( e->var_inter, e_var_inter )
             sigma_hat_proj_const_jac := ( sigma_hat_const_jac ).subs( e->var_inter, e_var_inter )
             epsilon_adjoint_const_jac := e_adjoint->grad_sym( f_adjoint->dep.expr )
             sigma_adjoint_const_jac := sigma_hooke_iso( epsilon_adjoint_const_jac, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D )
@@ -676,8 +679,8 @@ def calc_elem_error_estimate_lambda( list_f, rep )
         corr_SPET := symbol( "(method == \"SPET\" ? 1 : 0)" )
         corr_EET_EESPT := symbol( "((method == \"EET\" or method == \"EESPT\") ? 1 : 0)" )
         base := Vec[ Op ]()
-        base_EET_EESPT := e->get_upper_degree_shape_functions( admissible_field_base, deg_p + deg_k )
-        base_SPET := e->get_upper_degree_shape_functions( "hierarchical", deg_p + deg_k )
+        base_EET_EESPT := e->get_generic_shape_functions( admissible_field_base, deg_p + deg_k )
+        base_SPET := e->get_generic_shape_functions( "hierarchical", deg_p + deg_k )
         base = corr_EET_EESPT * base_EET_EESPT + corr_SPET * base_SPET
         coeffs_dep_hat_expr := Vec[ Vec[ Op, base.size ], e->dim ]()
         sym_dep_hat_expr := Vec[ Op ]()
@@ -703,14 +706,14 @@ def calc_elem_error_estimate_lambda( list_f, rep )
         dep_hat_proj := ( dep_hat ).subs( e->var_inter, e_var_inter )
         epsilon_proj := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
         sigma_hat_proj := ( sigma_hat ).subs( e->var_inter, e_var_inter )
-        # sigma_proj := ( child_cast(f)->sigma.expr ).subs( e->var_inter, e_var_inter )
+        sigma_proj := ( child_cast(f)->sigma.expr ).subs( e->var_inter, e_var_inter )
         sigma_hat_proj_const_in_elem := sigma_hat_proj.subs( e_lambda->var_inter, e_lambda->get_center_of_var_inter() )
         # sigma_proj_const_in_elem := sigma_proj.subs( e_lambda->var_inter, e_lambda->get_center_of_var_inter() )
 
         deg_p_lambda := max( e_lambda->order_interpolation )
-        points := e_lambda->upper_degree_points( deg_p_lambda + deg_k )
+        points := e_lambda->generic_points( deg_p_lambda + deg_k )
         dep_hat_lambda_e := Vec[ Op ]()
-        for x in 0 .. ( e_lambda->upper_degree_points( deg_p_lambda + deg_k ) ).size
+        for x in 0 .. ( e_lambda->generic_points( deg_p_lambda + deg_k ) ).size
             val_on_points_for_dep_hat_proj := dep_hat_proj.subs( e_lambda->var_inter, points[ x ] )
             for d in 0 .. e_lambda->dim
                 dep_hat_lambda_e.push_back( val_on_points_for_dep_hat_proj[ d ] )
@@ -726,7 +729,7 @@ def calc_elem_error_estimate_lambda( list_f, rep )
         file_ <<< "        if ( not is_inside_linear( $(e_lambda->name)(), pos_nodes_lambda, elem.pos(i) ) )"
         file_ <<< "            same_element = 0;"
         file_ <<< "    }"
-        file_ <<< "    dep_hat_lambda[ elem_lambda.number ].resize( $(( e_lambda->upper_degree_points( deg_p_lambda + deg_k ) ).size) * $(e_lambda->dim) );"
+        file_ <<< "    dep_hat_lambda[ elem_lambda.number ].resize( $(( e_lambda->generic_points( deg_p_lambda + deg_k ) ).size) * $(e_lambda->dim) );"
         file_ <<< "    if ( same_element ) {"
         file_ <<< "        dep_hat_lambda[ elem_lambda.number ] = dep_hat[ elem.number ];"
         file_ <<< "    }"
@@ -865,8 +868,8 @@ def calc_elem_weighted_error_estimate_lambda( list_f, rep )
         corr_SPET := symbol( "(method == \"SPET\" ? 1 : 0)" )
         corr_EET_EESPT := symbol( "((method == \"EET\" or method == \"EESPT\") ? 1 : 0)" )
         base := Vec[ Op ]()
-        base_EET_EESPT := e->get_upper_degree_shape_functions( admissible_field_base, deg_p + deg_k )
-        base_SPET := e->get_upper_degree_shape_functions( "hierarchical", deg_p + deg_k )
+        base_EET_EESPT := e->get_generic_shape_functions( admissible_field_base, deg_p + deg_k )
+        base_SPET := e->get_generic_shape_functions( "hierarchical", deg_p + deg_k )
         base = corr_EET_EESPT * base_EET_EESPT + corr_SPET * base_SPET
         coeffs_dep_hat_expr := Vec[ Vec[ Op, base.size ], e->dim ]()
         sym_dep_hat_expr := Vec[ Op ]()
@@ -890,6 +893,7 @@ def calc_elem_weighted_error_estimate_lambda( list_f, rep )
 
         e_var_inter := e->var_inter_for_pos( e_lambda->pos, 1 )
         epsilon_proj := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
+        sigma_proj := ( child_cast(f)->sigma.expr ).subs( e->var_inter, e_var_inter )
         sigma_hat_proj := ( sigma_hat ).subs( e->var_inter, e_var_inter )
 
         weighted_theta := Op( 0 )
@@ -979,8 +983,8 @@ def calc_skin_elem_error_estimate_lambda_boundary( list_f, rep )
         corr_SPET := symbol( "(method == \"SPET\" ? 1 : 0)" )
         corr_EET_EESPT := symbol( "((method == \"EET\" or method == \"EESPT\") ? 1 : 0)" )
         base := Vec[ Op ]()
-        base_EET_EESPT := e->get_upper_degree_shape_functions( admissible_field_base, deg_p + deg_k )
-        base_SPET := e->get_upper_degree_shape_functions( "hierarchical", deg_p + deg_k )
+        base_EET_EESPT := e->get_generic_shape_functions( admissible_field_base, deg_p + deg_k )
+        base_SPET := e->get_generic_shape_functions( "hierarchical", deg_p + deg_k )
         base = corr_EET_EESPT * base_EET_EESPT + corr_SPET * base_SPET
         coeffs_dep_hat_expr := Vec[ Vec[ Op, base.size ], e->dim ]()
         sym_dep_hat_expr := Vec[ Op ]()
@@ -1082,8 +1086,8 @@ def calc_elem_correction_interest_quantity_lambda( list_f, rep )
         corr_SPET := symbol( "(method == \"SPET\" ? 1 : 0)" )
         corr_EET_EESPT := symbol( "((method == \"EET\" or method == \"EESPT\") ? 1 : 0)" )
         base := Vec[ Op ]()
-        base_EET_EESPT := e->get_upper_degree_shape_functions( admissible_field_base, deg_p + deg_k )
-        base_SPET := e->get_upper_degree_shape_functions( "hierarchical", deg_p + deg_k )
+        base_EET_EESPT := e->get_generic_shape_functions( admissible_field_base, deg_p + deg_k )
+        base_SPET := e->get_generic_shape_functions( "hierarchical", deg_p + deg_k )
         base = corr_EET_EESPT * base_EET_EESPT + corr_SPET * base_SPET
         coeffs_dep_hat_expr := Vec[ Vec[ Op, base.size ], e->dim ]()
         sym_dep_hat_expr := Vec[ Op ]()
@@ -1130,8 +1134,8 @@ def calc_elem_correction_interest_quantity_lambda( list_f, rep )
                 corr_SPET_adjoint := symbol( "(method_adjoint == \"SPET\" ? 1 : 0)" )
                 corr_EET_EESPT_adjoint := symbol( "( (method_adjoint == \"EET\" or method_adjoint == \"EESPT\") ? 1 : 0)" )
                 base_adjoint := Vec[ Op ]()
-                base_EET_EESPT_adjoint := e_adjoint->get_upper_degree_shape_functions( admissible_field_base, deg_p_adjoint + deg_k )
-                base_SPET_adjoint := e_adjoint->get_upper_degree_shape_functions( "hierarchical", deg_p_adjoint + deg_k )
+                base_EET_EESPT_adjoint := e_adjoint->get_generic_shape_functions( admissible_field_base, deg_p_adjoint + deg_k )
+                base_SPET_adjoint := e_adjoint->get_generic_shape_functions( "hierarchical", deg_p_adjoint + deg_k )
                 base_adjoint = corr_EET_EESPT_adjoint * base_EET_EESPT_adjoint + corr_SPET_adjoint * base_SPET_adjoint
                 coeffs_dep_adjoint_hat_expr := Vec[ Vec[ Op, base_adjoint.size ], e_adjoint->dim ]()
                 sym_dep_adjoint_hat_expr := Vec[ Op ]()
@@ -1229,8 +1233,8 @@ def calc_elem_error_estimate_proj_on_adjoint( list_f, rep )
         corr_SPET := symbol( "(method == \"SPET\" ? 1 : 0)" )
         corr_EET_EESPT := symbol( "((method == \"EET\" or method == \"EESPT\") ? 1 : 0)" )
         base := Vec[ Op ]()
-        base_EET_EESPT := e->get_upper_degree_shape_functions( admissible_field_base, deg_p + deg_k )
-        base_SPET := e->get_upper_degree_shape_functions( "hierarchical", deg_p + deg_k )
+        base_EET_EESPT := e->get_generic_shape_functions( admissible_field_base, deg_p + deg_k )
+        base_SPET := e->get_generic_shape_functions( "hierarchical", deg_p + deg_k )
         base = corr_EET_EESPT * base_EET_EESPT + corr_SPET * base_SPET
         coeffs_dep_hat_expr := Vec[ Vec[ Op, base.size ], e->dim ]()
         sym_dep_hat_expr := Vec[ Op ]()
@@ -1274,6 +1278,7 @@ def calc_elem_error_estimate_proj_on_adjoint( list_f, rep )
 
                 e_var_inter := e->var_inter_for_pos( e_adjoint->pos, 1 )
                 epsilon_proj := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
+                sigma_proj := ( child_cast(f)->sigma.expr ).subs( e->var_inter, e_var_inter )
                 sigma_hat_proj := ( sigma_hat ).subs( e->var_inter, e_var_inter )
 
                 theta_proj := Op( 0 )

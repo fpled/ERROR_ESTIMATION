@@ -25,7 +25,7 @@ def calc_nb_points_elem( list_f, rep )
         file_ <<< "template<class TN, class TNG, class TD, unsigned NET>"
         file_ <<< "void calc_nb_points_elem( const Element<$(e->name),TN,TNG,TD,NET> &elem, Vec<unsigned> &nb_points_elem ) {"
         deg_p := max( e->order_interpolation )
-        points := e->upper_degree_points( deg_p + deg_k )
+        points := e->generic_points( deg_p + deg_k )
         file_ <<< "    nb_points_elem[ elem.number ] = $( points.size );"
         file_ <<< "}"
         file_ <<< "}"
@@ -49,7 +49,7 @@ def calc_nb_points_face( list_f, rep )
         file_ <<< "template<class TN, class TNG, class TD, unsigned NET>"
         file_ <<< "void calc_nb_points_face( const Element<$(face.name),TN,TNG,TD,NET> &child_elem, Vec<unsigned> &nb_points_face ) {"
         deg_p := max( face.order_interpolation )
-        points := face.upper_degree_points( deg_p + deg_k )
+        points := face.generic_points( deg_p + deg_k )
         file_ <<< "    nb_points_face[ child_elem.number ] = $( points.size );"
         file_ <<< "}"
         file_ <<< "}"
@@ -72,7 +72,7 @@ def calc_pos_elem( list_f, rep )
         file_ <<< "void calc_pos_elem( const Element<$(e->name),TN,TNG,TD,NET> &elem, Vec< Vec< Vec<T> > > &pos_elem ) {"
         file_ <<< "    #define PNODE(N) elem.node(N)"
         deg_p := max( e->order_interpolation )
-        points := e->upper_degree_points( deg_p + deg_k )
+        points := e->generic_points( deg_p + deg_k )
         cw := CodeWriterAlt( "T" )
         for p in 0 .. points.size
             for d in 0 .. e->dim
@@ -104,7 +104,7 @@ def calc_pos_face( list_f, rep )
         file_ <<< "void calc_pos_face( const Element<$(face.name),TN,TNG,TD,NET> &elem, Vec< Vec< Vec<T> > > &pos_face ) {"
         file_ <<< "    #define PNODE(N) elem.node(N)"
         deg_p := max( face.order_interpolation )
-        points := face.upper_degree_points( deg_p + deg_k )
+        points := face.generic_points( deg_p + deg_k )
         cw := CodeWriterAlt( "T" )
         for p in 0 .. points.size
             for d in 0 .. face.dim
@@ -141,7 +141,7 @@ def calc_vertex_nodal_matrix_K( list_f, rep )
         file_ <<< "void calc_vertex_nodal_matrix_K( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<unsigned> > &elem_list_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, const Vec< Vec< Vec<unsigned> > > &patch_elem, Vec< Mat<T, Sym<> > > &K ) {"
         file_ <<< "    #define PNODE(N) elem.node(N)"
         deg_p := max( e->order_interpolation )
-        nb_points := e->upper_degree_points(deg_p + deg_k).size
+        nb_points := e->generic_points(deg_p + deg_k).size
         sym_u := Vec[ Op ]()
         u := e->new_variable( "u", interpolation_type = "enriched_nodal", deg = deg_p + deg_k, nb_dim = [ e->dim ], sym = sym_u, interpolation_base = "hierarchical" )
         sym_v := Vec[ Op ]()
@@ -234,8 +234,8 @@ def calc_vertex_nodal_vector_F( list_f, rep )
             file_ <<< "    Vec<Vec<double, $(e->dim)-1> > valeurs_face;"
         file_ <<< "    Vec<unsigned> ind_in_elem_list_vertex_node;"
         deg_p := max( e->order_interpolation )
-        points := e->upper_degree_points( deg_p + deg_k )
-        base := e->get_upper_degree_shape_functions( "hierarchical", deg_p + deg_k )
+        points := e->generic_points( deg_p + deg_k )
+        base := e->get_generic_shape_functions( "hierarchical", deg_p + deg_k )
         base_vertex := Vec[ Op, points.size ]()
         for p in 0 .. points.size
             if e->point_is_a_vertex( points[ p ] )
@@ -440,7 +440,7 @@ def calc_elem_vector_E( list_f, rep )
         file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class T>"
         file_ <<< "void calc_elem_vector_E( const Element<$(e->name),TN,TNG,TD,NET> &elem, const Vec< Vec<unsigned> > &elem_list_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, const Vec< Vec< Vec<unsigned> > > &patch_elem, const Vec< Vec<T> > &U, Vec< Vec<T> > &E ) {"
         deg_p := max( e->order_interpolation )
-        nb_points := e->upper_degree_points( deg_p + deg_k ).size
+        nb_points := e->generic_points( deg_p + deg_k ).size
         file_ <<< "    Vec<unsigned> ind_in_elem_list_vertex_node;"
         for n in 0 .. e->nb_nodes
             if e->node_number_is_a_vertex( n )
@@ -476,7 +476,7 @@ def calc_elem_error_estimate_SPET( list_f, rep )
         file_ <<< "void calc_elem_error_estimate_SPET( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<T> > &E, const TTVV &vectors, const Vec<unsigned> &indices, Vec<T> &theta_elem, T &theta ) {"
         file_ <<< "    #define PNODE(N) elem.node(N)"
         deg_p := max( e->order_interpolation )
-        base := e->get_upper_degree_shape_functions( "hierarchical", deg_p + deg_k )
+        base := e->get_generic_shape_functions( "hierarchical", deg_p + deg_k )
         sym_e_e_expr := Vec[ Op ]()
         e_e_expr := e->new_variable( "e", interpolation_type = "enriched_nodal", deg = deg_p + deg_k, nb_dim = [ e->dim ], sym = sym_e_e_expr, interpolation_base = "hierarchical" )
         sym_e_e := Vec[ Op ]()
@@ -560,7 +560,7 @@ def calc_elem_error_estimate_init_SPET( list_f, rep )
         file_ <<< "void calc_elem_error_estimate_init_SPET( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<T> > &E, const TTVV &vectors, const Vec<unsigned> &indices, Vec<T> &theta_elem, Vec<T> &theta_elem_init, T &theta, T &theta_init ) {"
         file_ <<< "    #define PNODE(N) elem.node(N)"
         deg_p := max( e->order_interpolation )
-        base := e->get_upper_degree_shape_functions( "hierarchical", deg_p + deg_k )
+        base := e->get_generic_shape_functions( "hierarchical", deg_p + deg_k )
         sym_e_e_expr := Vec[ Op ]()
         e_e_expr := e->new_variable( "e", interpolation_type = "enriched_nodal", deg = deg_p + deg_k, nb_dim = [ e->dim ], sym = sym_e_e_expr, interpolation_base = "hierarchical" )
         sym_e_e := Vec[ Op ]()

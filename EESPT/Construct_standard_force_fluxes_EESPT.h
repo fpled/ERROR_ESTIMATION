@@ -412,7 +412,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     Vec<unsigned> degre_p;
     degre_p.resize( m.elem_list.size() );
     degre_p.set( 0 );
-    apply( m.elem_list, Get_Degre_p(), degre_p );
+    apply( m.elem_list, Get_Elem_Degree(), degre_p );
 
     if ( debug_method ) {
         cout << "degre du premier element : " << degre_p[ 0 ] << endl;

@@ -92,11 +92,11 @@ void calcul_standard_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
         xi_sup = I_h + I_hh + theta * theta_adjoint / 2;
         
         cout << "borne inferieure :" << endl;
-        cout << "xi_inf = I_h + I_hh - ( theta * theta_adjoint ) / 2" << endl;
+        cout << "xi_inf = I_h + I_hh - 1/2 * ( theta * theta_adjoint )" << endl;
         cout << "       = " << xi_inf << endl << endl;
         
         cout << "borne superieure :" << endl;
-        cout << "xi_sup = I_h + I_hh + ( theta * theta_adjoint ) / 2" << endl;
+        cout << "xi_sup = I_h + I_hh + 1/2 * ( theta * theta_adjoint )" << endl;
         cout << "       = " << xi_sup << endl << endl;
     }
 }

@@ -26,13 +26,13 @@ using namespace std;
 int main( int argc, char **argv ) {
     TicToc t_total;
     t_total.start();
-    static const unsigned dim = 3;
+    static const unsigned dim = 2;
     static const bool wont_add_nz = true;
     typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "test_specimen"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes
+    static const string structure = "structure_crack"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes
                                                      // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes, test_specimen
     static const string mesh_size = "fine"; // maillage pour les structures plate_hole (2D ou 3D), plate_crack, structure_crack, test_specimen (2D), weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
     static const string loading = "Step-1"; // chargement
@@ -84,18 +84,18 @@ int main( int argc, char **argv ) {
     
     /// Goal-oriented error estimation method
     /// -------------------------------------
-    static const bool want_local_estimation = 0; // calcul de l'erreur locale sur une quantite d'interet
+    static const bool want_local_estimation = 1; // calcul de l'erreur locale sur une quantite d'interet
     static const bool want_interest_quantity_only = 0; // calcul de la quantite d'interet uniquement
     static const bool want_handbook_only = 0; // calcul de la solution handbook uniquement
     static const bool want_introduction_sigma_hat_m = 1; // introduction de sigma_hat_m pour le calcul de l'erreur sur une quantite d'interet locale
-    static const bool want_local_refinement = 1; // raffinement local du mailage adjoint
-    static const bool want_local_enrichment = 0; // enrichissement local avec fonctions handbook
+    static const bool want_local_refinement = 0; // raffinement local du mailage adjoint
+    static const bool want_local_enrichment = 1; // enrichissement local avec fonctions handbook
     static const bool want_local_improvement = 0; // amelioration des bornes pour le calcul de l'erreur locale sur une quantite d'interet
     static const bool want_solve_eig_local_improvement = 0; // resolution du pb aux valeurs propres generalisees pour calculer la constante dans l'amelioration des bornes d'erreur locale
     static const bool use_mask_eig_local_improvement = 0; // utilisation d'un masque (image) pour definir le maillage du pb aux valeurs propres generalisees
     static const bool want_solve_local_ref = 0; // calcul de la quantite d'interet (quasi-)exacte sur un maillage de reference
-    static const string interest_quantity = "mean_sigma"; // quantite d'interet : mean_sigma, mean_epsilon, pointwise_dep, pointwise_sigma, pointwise_epsilon, SIF (stress intensity factor)
-    static const string direction_extractor = "xx"; // direction de l'operateur d'extraction pour quantite d'interet mean_sigma, mean_epsilon, pointwise_sigma, pointwise_epsilon : xx, yy, xy, zz, xz, yz
+    static const string interest_quantity = "pointwise_dep"; // quantite d'interet : mean_sigma, mean_epsilon, pointwise_dep, pointwise_sigma, pointwise_epsilon, SIF (stress intensity factor)
+    static const string direction_extractor = "x"; // direction de l'operateur d'extraction pour quantite d'interet mean_sigma, mean_epsilon, pointwise_sigma, pointwise_epsilon : xx, yy, xy, zz, xz, yz
                                                    // direction de l'operateur d'extraction pour quantite d'interet pointwise_dep : x, y, z
                                                    // direction de l'operateur d'extraction pour quantite d'interet SIF (stress intensity factor) : I, II, III
     
@@ -142,7 +142,7 @@ int main( int argc, char **argv ) {
     
     /// Verification equilibre / solveur
     /// --------------------------------
-    static const bool verif_eq = 0; // verification de l'equilibre global elements finis
+    static const bool verif_eq = 1; // verification de l'equilibre global elements finis
     static const bool verif_compatibility_conditions = 1; // verification des conditions de compatibilite (equilibre elements finis) (methode EET)
     static const T tol_compatibility_conditions = 1e-6; // tolerance pour la verification des conditions de compatibilite (equilibre elements finis) (methode EET)
     static const bool verif_eq_force_fluxes = 1; // verification de l'equilibre des densites d'effort (methodes EET, EESPT)

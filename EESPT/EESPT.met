@@ -380,24 +380,24 @@ def remove_kernel( list_f, rep )
         file_ <<< "#endif"
     return file_names
 
-# Methode qui genere un fichier get_degre_p_$(f->name).$(e->dim).$(e->name).h pour calculer le degre p d'un element dans l'analyse elements finis
-#------------------------------------------------------------------------------------------------------------------------------------------------
-def get_degre_p( list_f, rep )
+# Methode qui genere un fichier get_elem_degree_$(f->name).$(e->dim).$(e->name).h pour calculer le degre p d'un element dans l'analyse elements finis
+#----------------------------------------------------------------------------------------------------------------------------------------------------
+def get_elem_deg( list_f, rep )
     file_names := Vec[String]()
     for f in list_f
         e := child_cast( f->pe )
-        file_name := "get_degre_p_$(f->name).$(e->dim).$(e->name).h"
+        file_name := "get_elem_degree_$(f->name).$(e->dim).$(e->name).h"
         file_names.push_back( file_name )
-        file_ := File( rep + "/get_degre_p_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ := File( rep + "/get_elem_degree_$(f->name).$(e->dim).$(e->name).h", "w" )
         cw := CodeWriterAlt( "unsigned" )
         deg_p := max( e->order_interpolation )
-        cw.add( "degre_p[ elem.number ]", deg_p, add )
+        cw.add( "degree[ elem.number ]", deg_p, add )
         file_ <<<<
-            #ifndef get_degre_p_$(f->name)_$(e->dim)_$(e->name)_h
-            #define get_degre_p_$(f->name)_$(e->dim)_$(e->name)_h
+            #ifndef get_elem_degree_$(f->name)_$(e->dim)_$(e->name)_h
+            #define get_elem_degree_$(f->name)_$(e->dim)_$(e->name)_h
             namespace LMT {
             template<class TN, class TNG, class TD, unsigned NET> 
-            void get_degre_p( const Element<$(e->name),TN,TNG,TD,NET> &elem, Vec<unsigned> &degre_p ) {
+            void get_elem_degree( const Element<$(e->name),TN,TNG,TD,NET> &elem, Vec<unsigned> &degree ) {
             $(cw.to_string( 4 ))
             }
             }
