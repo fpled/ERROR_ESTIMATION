@@ -26,13 +26,13 @@ using namespace std;
 int main( int argc, char **argv ) {
     TicToc t_total;
     t_total.start();
-    static const unsigned dim = 2;
+    static const unsigned dim = 3;
     static const bool wont_add_nz = true;
     typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "structure_crack"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes
+    static const string structure = "test_specimen"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes
                                                      // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes, test_specimen
     static const string mesh_size = "fine"; // maillage pour les structures plate_hole (2D ou 3D), plate_crack, structure_crack, test_specimen (2D), weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
     static const string loading = "Step-1"; // chargement
@@ -88,14 +88,14 @@ int main( int argc, char **argv ) {
     static const bool want_interest_quantity_only = 0; // calcul de la quantite d'interet uniquement
     static const bool want_handbook_only = 0; // calcul de la solution handbook uniquement
     static const bool want_introduction_sigma_hat_m = 1; // introduction de sigma_hat_m pour le calcul de l'erreur sur une quantite d'interet locale
-    static const bool want_local_refinement = 0; // raffinement local du mailage adjoint
-    static const bool want_local_enrichment = 1; // enrichissement local avec fonctions handbook
+    static const bool want_local_refinement = 1; // raffinement local du mailage adjoint
+    static const bool want_local_enrichment = 0; // enrichissement local avec fonctions handbook
     static const bool want_local_improvement = 0; // amelioration des bornes pour le calcul de l'erreur locale sur une quantite d'interet
     static const bool want_solve_eig_local_improvement = 0; // resolution du pb aux valeurs propres generalisees pour calculer la constante dans l'amelioration des bornes d'erreur locale
     static const bool use_mask_eig_local_improvement = 0; // utilisation d'un masque (image) pour definir le maillage du pb aux valeurs propres generalisees
     static const bool want_solve_local_ref = 0; // calcul de la quantite d'interet (quasi-)exacte sur un maillage de reference
-    static const string interest_quantity = "pointwise_dep"; // quantite d'interet : mean_sigma, mean_epsilon, pointwise_dep, pointwise_sigma, pointwise_epsilon, SIF (stress intensity factor)
-    static const string direction_extractor = "x"; // direction de l'operateur d'extraction pour quantite d'interet mean_sigma, mean_epsilon, pointwise_sigma, pointwise_epsilon : xx, yy, xy, zz, xz, yz
+    static const string interest_quantity = "mean_sigma"; // quantite d'interet : mean_sigma, mean_epsilon, pointwise_dep, pointwise_sigma, pointwise_epsilon, SIF (stress intensity factor)
+    static const string direction_extractor = "xx"; // direction de l'operateur d'extraction pour quantite d'interet mean_sigma, mean_epsilon, pointwise_sigma, pointwise_epsilon : xx, yy, xy, zz, xz, yz
                                                    // direction de l'operateur d'extraction pour quantite d'interet pointwise_dep : x, y, z
                                                    // direction de l'operateur d'extraction pour quantite d'interet SIF (stress intensity factor) : I, II, III
     
@@ -105,7 +105,7 @@ int main( int argc, char **argv ) {
     static const string pointwise_interest_quantity = "node"; // definition de la quantite d'interet ponctuelle : node, pos
     static const unsigned node_interest_quantity( 661 ); // noeud definissant la zone d'interet (quantite d'interet pointwise_dep, pointwise_sigma, pointwise_epsilon)
     static const Pvec pos_interest_quantity( 49.5, 135.5 ); // position definissant la zone d'interet (quantite d'interet pointwise_dep, pointwise_sigma, pointwise_epsilon)
-    static const Pvec pos_crack_tip( 109, 105. ); // position de la pointe de fissure (quantite d'interet SIF) : ( 3.5, 0. ) pour plate_crack et ( 109., 105. ) pour structure_crack
+    static const Pvec pos_crack_tip( 109., 105. ); // position de la pointe de fissure (quantite d'interet SIF) : ( 3.5, 0. ) pour plate_crack et ( 109., 105. ) pour structure_crack
     static const T angle_crack = atan2( -17, -3 ); // angle de la fissure (en rad) (quantite d'interet SIF) : 0. pour plate_crack et atan2( -17, -3 ) pour structure_crack
     static const T radius_Ri = 6; // rayon du cercle interieur a la couronne omega entourant la pointe de fissure (quantite d'interet SIF) : 1.6 pour plate_crack et 6 pour structure_crack
     static const T radius_Re = 8; // rayon du cercle exterieur a la couronne omega entourant la pointe de fissure (quantite d'interet SIF) : 3.4 pour plate_crack et 8 pour structure_crack
@@ -334,14 +334,14 @@ int main( int argc, char **argv ) {
         /// Calcul de la quantite d'interet locale approchee I_h ///
         /// ---------------------------------------------------- ///
         
-        T I_h;
+        T I_h = 0.;
         calcul_interest_quantity( m, m_crown, f, f_crown, "direct", interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, I_h );
         
         /// ---------------------------------------------------------- ///
         /// Calcul de la quantite d'interet locale (quasi-)exacte I_ex ///
         /// ---------------------------------------------------------- ///
         
-        T I_ex;
+        T I_ex = 0.;
         if ( want_solve_local_ref ) {
             create_structure( m_local_ref, m_local_ref, "direct", structure, mesh_size, loading, deg_p );
             

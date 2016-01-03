@@ -536,112 +536,113 @@ def calc_elem_correction_interest_quantity_w_sigma_hat_m( list_f, rep )
         e->assume_const_jac = hyp_const_jac
 
         for _f_adjoint in list_f
-            _e_adjoint := child_cast( _f_adjoint->pe )
-            e_adjoint := new SymbolicElement[ _e_adjoint->name, _e_adjoint->dim ]( name_elem = "elem_adjoint", tex_symbol_pos = "P_{adjoint}", node_numbers_to_node_numbers_in_parent_cpp = range(_e_adjoint->nb_nodes).map( _e_adjoint->corr_cpp ) )
-            e_adjoint->assume_const_jac = e->assume_const_jac
-            Tf_adjoint := _f_adjoint->name
-            f_adjoint := new FormulationElasticity[ e_adjoint->dim ]( @e_adjoint, "adjoint_" )
-            f_adjoint->name = Tf_adjoint
-            f_adjoint->make_matrices( @e_adjoint, integration_type, e_adjoint->assume_const_jac, degre_poly_handbook )
-            file_ <<< "template<class TN, class TN_adjoint, class TNG, class TNG_adjoint, class TD, class TD_adjoint, unsigned NET, unsigned NET_adjoint, class TM, class TF, class TTVV, class S, class B, class T>"
-            file_ <<< "void calc_elem_correction_interest_quantity_w_sigma_hat_m( const Element<$(e->name),TN,TNG,TD,NET> &elem, const Element<$(e_adjoint->name),TN_adjoint,TNG_adjoint,TD_adjoint,NET_adjoint> &elem_adjoint, const TM &m, const TM &m_adjoint, const TF &f, const TF &f_adjoint, const TTVV &vectors, const TTVV &adjoint_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &adjoint_indices, const S &method, const S &method_adjoint, const B &want_local_enrichment, const Vec< Vec<T> > &dep_hat, const Vec< Vec<T> > &dep_adjoint_hat, T &I_hh ) {"
-            file_ <<< "    #define PNODE(N) elem.node(N)"
-            # Calcul approche de la correction I_hh_w_sigma_hat_m sur la quantite d'interet locale sur chaque element : on repere si le centre de l'element e_adjoint est inclus dans l'element e
-            #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-            deg_p_adjoint := max( e_adjoint->order_interpolation )
-            dep_adjoint_hat_expr := Vec[ Op, e_adjoint->dim ]()
-            corr_SPET_adjoint := symbol( "(method_adjoint == \"SPET\" ? 1 : 0)" )
-            corr_EET_EESPT_adjoint := symbol( "( (method_adjoint == \"EET\" or method_adjoint == \"EESPT\") ? 1 : 0)" )
-            base_adjoint := Vec[ Op ]()
-            base_EET_EESPT_adjoint := e_adjoint->get_generic_shape_functions( admissible_field_base, deg_p_adjoint + deg_k )
-            base_SPET_adjoint := e_adjoint->get_generic_shape_functions( "hierarchical", deg_p_adjoint + deg_k )
-            base_adjoint = corr_EET_EESPT_adjoint * base_EET_EESPT_adjoint + corr_SPET_adjoint * base_SPET_adjoint
-            coeffs_dep_adjoint_hat_expr := Vec[ Vec[ Op, base_adjoint.size ], e_adjoint->dim ]()
-            sym_dep_adjoint_hat_expr := Vec[ Op ]()
-            for d in 0 .. e_adjoint->dim
-                for x in 0 .. base_adjoint.size
-                    coeffs_dep_adjoint_hat_expr[ d ][ x ] = symbol( "{\\hat{U}}^{N$x}_{$d}" )
-                dep_adjoint_hat_expr[ d ] = dot( coeffs_dep_adjoint_hat_expr[ d ], base_adjoint )
-            for x in 0 .. base_adjoint.size
+            if _f_adjoint->nb_dim == f->nb_dim
+                _e_adjoint := child_cast( _f_adjoint->pe )
+                e_adjoint := new SymbolicElement[ _e_adjoint->name, _e_adjoint->dim ]( name_elem = "elem_adjoint", tex_symbol_pos = "P_{adjoint}", node_numbers_to_node_numbers_in_parent_cpp = range(_e_adjoint->nb_nodes).map( _e_adjoint->corr_cpp ) )
+                e_adjoint->assume_const_jac = e->assume_const_jac
+                Tf_adjoint := _f_adjoint->name
+                f_adjoint := new FormulationElasticity[ e_adjoint->dim ]( @e_adjoint, "adjoint_" )
+                f_adjoint->name = Tf_adjoint
+                f_adjoint->make_matrices( @e_adjoint, integration_type, e_adjoint->assume_const_jac, degre_poly_handbook )
+                file_ <<< "template<class TN, class TN_adjoint, class TNG, class TNG_adjoint, class TD, class TD_adjoint, unsigned NET, unsigned NET_adjoint, class TM, class TF, class TTVV, class S, class B, class T>"
+                file_ <<< "void calc_elem_correction_interest_quantity_w_sigma_hat_m( const Element<$(e->name),TN,TNG,TD,NET> &elem, const Element<$(e_adjoint->name),TN_adjoint,TNG_adjoint,TD_adjoint,NET_adjoint> &elem_adjoint, const TM &m, const TM &m_adjoint, const TF &f, const TF &f_adjoint, const TTVV &vectors, const TTVV &adjoint_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &adjoint_indices, const S &method, const S &method_adjoint, const B &want_local_enrichment, const Vec< Vec<T> > &dep_hat, const Vec< Vec<T> > &dep_adjoint_hat, T &I_hh ) {"
+                file_ <<< "    #define PNODE(N) elem.node(N)"
+                # Calcul approche de la correction I_hh_w_sigma_hat_m sur la quantite d'interet locale sur chaque element : on repere si le centre de l'element e_adjoint est inclus dans l'element e
+                #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                deg_p_adjoint := max( e_adjoint->order_interpolation )
+                dep_adjoint_hat_expr := Vec[ Op, e_adjoint->dim ]()
+                corr_SPET_adjoint := symbol( "(method_adjoint == \"SPET\" ? 1 : 0)" )
+                corr_EET_EESPT_adjoint := symbol( "( (method_adjoint == \"EET\" or method_adjoint == \"EESPT\") ? 1 : 0)" )
+                base_adjoint := Vec[ Op ]()
+                base_EET_EESPT_adjoint := e_adjoint->get_generic_shape_functions( admissible_field_base, deg_p_adjoint + deg_k )
+                base_SPET_adjoint := e_adjoint->get_generic_shape_functions( "hierarchical", deg_p_adjoint + deg_k )
+                base_adjoint = corr_EET_EESPT_adjoint * base_EET_EESPT_adjoint + corr_SPET_adjoint * base_SPET_adjoint
+                coeffs_dep_adjoint_hat_expr := Vec[ Vec[ Op, base_adjoint.size ], e_adjoint->dim ]()
+                sym_dep_adjoint_hat_expr := Vec[ Op ]()
                 for d in 0 .. e_adjoint->dim
-                    sym_dep_adjoint_hat_expr.push_back( coeffs_dep_adjoint_hat_expr[ d ][ x ] )
-            epsilon_adjoint_hat_expr := e_adjoint->grad_sym( dep_adjoint_hat_expr )
-            sigma_adjoint_hat_expr := corr_SPET_adjoint * f_adjoint->sigma.expr + sigma_hooke_iso( epsilon_adjoint_hat_expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D )
-            sym_dep_adjoint_hat := Vec[ Op ]()
-            for i in 0 .. sym_dep_adjoint_hat_expr.size
-                sy := Op()
-                sy = symbol( "dep_adjoint_hat[ elem_adjoint.number ][ $i ]", tex_name = "\\hat{\\tilde{U}}[ elem_adjoint.number ][ $i ]" )
-                sym_dep_adjoint_hat.push_back( sy )
-            sigma_adjoint_hat := sigma_adjoint_hat_expr.subs( sym_dep_adjoint_hat_expr, sym_dep_adjoint_hat )
+                    for x in 0 .. base_adjoint.size
+                        coeffs_dep_adjoint_hat_expr[ d ][ x ] = symbol( "{\\hat{U}}^{N$x}_{$d}" )
+                    dep_adjoint_hat_expr[ d ] = dot( coeffs_dep_adjoint_hat_expr[ d ], base_adjoint )
+                for x in 0 .. base_adjoint.size
+                    for d in 0 .. e_adjoint->dim
+                        sym_dep_adjoint_hat_expr.push_back( coeffs_dep_adjoint_hat_expr[ d ][ x ] )
+                epsilon_adjoint_hat_expr := e_adjoint->grad_sym( dep_adjoint_hat_expr )
+                sigma_adjoint_hat_expr := corr_SPET_adjoint * f_adjoint->sigma.expr + sigma_hooke_iso( epsilon_adjoint_hat_expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D )
+                sym_dep_adjoint_hat := Vec[ Op ]()
+                for i in 0 .. sym_dep_adjoint_hat_expr.size
+                    sy := Op()
+                    sy = symbol( "dep_adjoint_hat[ elem_adjoint.number ][ $i ]", tex_name = "\\hat{\\tilde{U}}[ elem_adjoint.number ][ $i ]" )
+                    sym_dep_adjoint_hat.push_back( sy )
+                sigma_adjoint_hat := sigma_adjoint_hat_expr.subs( sym_dep_adjoint_hat_expr, sym_dep_adjoint_hat )
 
-            e_var_inter := e->var_inter_for_pos( e_adjoint->pos, 1 )
-            epsilon_proj := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
-            sigma_proj := ( child_cast(f)->sigma.expr ).subs( e->var_inter, e_var_inter )
-            sigma_hat_proj := ( sigma_hat ).subs( e->var_inter, e_var_inter )
+                e_var_inter := e->var_inter_for_pos( e_adjoint->pos, 1 )
+                epsilon_proj := ( child_cast(f)->epsilon.expr ).subs( e->var_inter, e_var_inter )
+                sigma_proj := ( child_cast(f)->sigma.expr ).subs( e->var_inter, e_var_inter )
+                sigma_hat_proj := ( sigma_hat ).subs( e->var_inter, e_var_inter )
 
-            corr_I_hh := Op( 0 )
-            corr_I_hh_handbook := Op( 0 )
+                corr_I_hh := Op( 0 )
+                corr_I_hh_handbook := Op( 0 )
 
-            e_adjoint->assume_const_jac = true
-            epsilon_proj_const_jac := ( epsilon_const_jac ).subs( e->var_inter, e_var_inter )
-            sigma_proj_const_jac := ( sigma_const_jac ).subs( e->var_inter, e_var_inter )
-            sigma_hat_proj_const_jac := ( sigma_hat_const_jac ).subs( e->var_inter, e_var_inter )
-            epsilon_adjoint_const_jac := e_adjoint->grad_sym( f_adjoint->dep.expr )
-            sigma_adjoint_const_jac := sigma_hooke_iso( epsilon_adjoint_const_jac, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D )
-            epsilon_adjoint_hat_const_jac := e_adjoint->grad_sym( dep_adjoint_hat_expr )
-            sigma_adjoint_hat_const_jac := corr_SPET_adjoint * sigma_adjoint_const_jac + sigma_hooke_iso( epsilon_adjoint_hat_const_jac, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D )
-            e_adjoint->assume_const_jac = hyp_const_jac
-            degre_poly := ( ( sigma_hat_proj_const_jac - sigma_proj_const_jac ) : eps_hooke_iso( ( sigma_adjoint_hat_const_jac + sigma_adjoint_const_jac ), f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ) ).poly_deg( e_adjoint->var_inter )
+                e_adjoint->assume_const_jac = true
+                epsilon_proj_const_jac := ( epsilon_const_jac ).subs( e->var_inter, e_var_inter )
+                sigma_proj_const_jac := ( sigma_const_jac ).subs( e->var_inter, e_var_inter )
+                sigma_hat_proj_const_jac := ( sigma_hat_const_jac ).subs( e->var_inter, e_var_inter )
+                epsilon_adjoint_const_jac := e_adjoint->grad_sym( f_adjoint->dep.expr )
+                sigma_adjoint_const_jac := sigma_hooke_iso( epsilon_adjoint_const_jac, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D )
+                epsilon_adjoint_hat_const_jac := e_adjoint->grad_sym( dep_adjoint_hat_expr )
+                sigma_adjoint_hat_const_jac := corr_SPET_adjoint * sigma_adjoint_const_jac + sigma_hooke_iso( epsilon_adjoint_hat_const_jac, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D )
+                e_adjoint->assume_const_jac = hyp_const_jac
+                degre_poly := ( ( sigma_hat_proj_const_jac - sigma_proj_const_jac ) : eps_hooke_iso( ( sigma_adjoint_hat_const_jac + sigma_adjoint_const_jac ), f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ) ).poly_deg( e_adjoint->var_inter )
 
-            if integration_type == "gauss_num"
-                if integration_lang == "metil"
-                    corr_I_hh = 1/2 * ( e_adjoint->gauss_num_integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_adjoint_hat + f_adjoint->sigma.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly ) )
+                if integration_type == "gauss_num"
+                    if integration_lang == "metil"
+                        corr_I_hh = 1/2 * ( e_adjoint->gauss_num_integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_adjoint_hat + f_adjoint->sigma.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly ) )
+                        if want_local_enrichment
+                            corr_I_hh_handbook = e_adjoint->gauss_num_integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( f_adjoint->sigma_handbook_PUM.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_handbook )
+                    else if integration_lang == "cpp"
+                        corr_I_hh = 1/2 * ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_adjoint_hat + f_adjoint->sigma.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ) ) * e_adjoint->jac
+                        if want_local_enrichment
+                            corr_I_hh_handbook = ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( f_adjoint->sigma_handbook_PUM.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ) ) * e_adjoint->jac
+                else if integration_type == "formal"
+                    corr_I_hh = 1/2 * ( e_adjoint->integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_adjoint_hat + f_adjoint->sigma.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly ) )
                     if want_local_enrichment
-                        corr_I_hh_handbook = e_adjoint->gauss_num_integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( f_adjoint->sigma_handbook_PUM.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_handbook )
-                else if integration_lang == "cpp"
-                    corr_I_hh = 1/2 * ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_adjoint_hat + f_adjoint->sigma.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ) ) * e_adjoint->jac
+                        corr_I_hh_handbook = e_adjoint->integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( f_adjoint->sigma_handbook_PUM.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_handbook )
+                if integration_type == "gauss_num" and integration_lang == "cpp"
+                    file_ <<< "    Vec<double> poids;"
+                    file_ <<< "    Vec<Vec<double, $(e_adjoint->dim)> > valeurs;"
+                    file_ <<< "    gauss_points( $(e_adjoint->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
+                    file_ <<< "    for (unsigned n=0; n<poids.size(); ++n) {"
+                    file_ <<< "        Vec<double> var_inter( valeurs[ n ] );"
+                    file_ <<< "        T I_hh_tmp = 0.0;"
+                    cw := CodeWriterAlt( "T" )
+                    cw.add( "I_hh_tmp", corr_I_hh, reassign )
+                    file_ <<< "$(cw.to_string( 8 ))"
+                    file_ <<< "        I_hh += poids[ n ] * I_hh_tmp;"
+                    file_ <<< "    }"
                     if want_local_enrichment
-                        corr_I_hh_handbook = ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( f_adjoint->sigma_handbook_PUM.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ) ) * e_adjoint->jac
-            else if integration_type == "formal"
-                corr_I_hh = 1/2 * ( e_adjoint->integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_adjoint_hat + f_adjoint->sigma.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly ) )
-                if want_local_enrichment
-                    corr_I_hh_handbook = e_adjoint->integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( f_adjoint->sigma_handbook_PUM.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_handbook )
-            if integration_type == "gauss_num" and integration_lang == "cpp"
-                file_ <<< "    Vec<double> poids;"
-                file_ <<< "    Vec<Vec<double, $(e_adjoint->dim)> > valeurs;"
-                file_ <<< "    gauss_points( $(e_adjoint->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
-                file_ <<< "    for (unsigned n=0; n<poids.size(); ++n) {"
-                file_ <<< "        Vec<double> var_inter( valeurs[ n ] );"
-                file_ <<< "        T I_hh_tmp = 0.0;"
-                cw := CodeWriterAlt( "T" )
-                cw.add( "I_hh_tmp", corr_I_hh, reassign )
-                file_ <<< "$(cw.to_string( 8 ))"
-                file_ <<< "        I_hh += poids[ n ] * I_hh_tmp;"
-                file_ <<< "    }"
-                if want_local_enrichment
-                    file_ <<< "    if ( want_local_enrichment ) {"
-                    file_ <<< "        gauss_points( $(e_adjoint->name_for_gauss_point)(), $(degre_poly_handbook), poids, valeurs );"
-                    file_ <<< "        for (unsigned n=0; n<poids.size(); ++n) {"
-                    file_ <<< "            Vec<double> var_inter( valeurs[ n ] );"
-                    file_ <<< "            T I_hh_tmp = 0.0;"
-                    cw_handbook := CodeWriterAlt( "T" )
-                    cw_handbook.add( "I_hh_tmp", corr_I_hh_handbook, reassign )
-                    file_ <<< "$(cw_handbook.to_string( 12 ))"
-                    file_ <<< "            I_hh += poids[ n ] * I_hh_tmp;"
-                    file_ <<< "        }"
-                    file_ <<< "    }"
-            else
-                cw := CodeWriterAlt( "T" )
-                cw.add( "I_hh", corr_I_hh, add )
-                file_ <<< "$(cw.to_string( 4 ))"
-                if want_local_enrichment
-                    file_ <<< "    if ( want_local_enrichment ) {"
-                    cw_handbook := CodeWriterAlt( "T" )
-                    cw_handbook.add( "I_hh", corr_I_hh_handbook, add )
-                    file_ <<< "$(cw_handbook.to_string( 8 ))"
-                    file_ <<< "    }"
-            file_ <<< "    #undef PNODE"
-            file_ <<< "}"
+                        file_ <<< "    if ( want_local_enrichment ) {"
+                        file_ <<< "        gauss_points( $(e_adjoint->name_for_gauss_point)(), $(degre_poly_handbook), poids, valeurs );"
+                        file_ <<< "        for (unsigned n=0; n<poids.size(); ++n) {"
+                        file_ <<< "            Vec<double> var_inter( valeurs[ n ] );"
+                        file_ <<< "            T I_hh_tmp = 0.0;"
+                        cw_handbook := CodeWriterAlt( "T" )
+                        cw_handbook.add( "I_hh_tmp", corr_I_hh_handbook, reassign )
+                        file_ <<< "$(cw_handbook.to_string( 12 ))"
+                        file_ <<< "            I_hh += poids[ n ] * I_hh_tmp;"
+                        file_ <<< "        }"
+                        file_ <<< "    }"
+                else
+                    cw := CodeWriterAlt( "T" )
+                    cw.add( "I_hh", corr_I_hh, add )
+                    file_ <<< "$(cw.to_string( 4 ))"
+                    if want_local_enrichment
+                        file_ <<< "    if ( want_local_enrichment ) {"
+                        cw_handbook := CodeWriterAlt( "T" )
+                        cw_handbook.add( "I_hh", corr_I_hh_handbook, add )
+                        file_ <<< "$(cw_handbook.to_string( 8 ))"
+                        file_ <<< "    }"
+                file_ <<< "    #undef PNODE"
+                file_ <<< "}"
         file_ <<< "}"
         file_ <<< "#endif"
     return file_names
@@ -1146,7 +1147,7 @@ def calc_elem_correction_interest_quantity_lambda( list_f, rep )
                 for x in 0 .. base_adjoint.size
                     for d in 0 .. e_adjoint->dim
                         sym_dep_adjoint_hat_expr.push_back( coeffs_dep_adjoint_hat_expr[ d ][ x ] )
-                epsilon_adjoint_hat_expr := e->grad_sym( dep_adjoint_hat_expr )
+                epsilon_adjoint_hat_expr := e_adjoint->grad_sym( dep_adjoint_hat_expr )
                 sigma_adjoint_hat_expr := corr_SPET_adjoint * f_adjoint->sigma.expr + sigma_hooke_iso( epsilon_adjoint_hat_expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D )
 
                 sym_dep_adjoint_hat := Vec[ Op ]()

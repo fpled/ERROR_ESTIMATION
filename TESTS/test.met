@@ -2,10 +2,25 @@ import "EF/std_elements.met"
 import "../Handbook_functions.met"
 
 dim := 2
-e := SymbolicElement[ Triangle, dim ]()
-face := SymbolicElement[ Bar, dim ]()
-# infon e.get_name()
-# infon e.get_order_interpolation()
+e := SymbolicElement[ QuadGeneric[ 1 ], dim ]()
+#face := SymbolicElement[ Bar, dim ]()
+infon e.get_name()
+infon e.get_order_interpolation()
+e2 := SymbolicElement[ QuadGeneric[ 2 ], dim ]()
+infon e2.get_name()
+infon e2.get_order_interpolation()
+e3 := SymbolicElement[ QuadGeneric[ 3 ], dim ]()
+infon e3.get_name()
+infon e3.get_order_interpolation()
+e4 := SymbolicElement[ QuadGeneric[ 4 ], dim ]()
+infon e4.get_name()
+infon e4.get_order_interpolation()
+e5 := SymbolicElement[ QuadGeneric[ 5 ], dim ]()
+infon e5.get_name()
+infon e5.get_order_interpolation()
+e6 := SymbolicElement[ QuadGeneric[ 6 ], dim ]()
+infon e6.get_name()
+infon e6.get_order_interpolation()
 # infon max( e.order_interpolation )
 # e.assume_const_jac = false
 # infon e.assume_const_jac
@@ -17,7 +32,7 @@ face := SymbolicElement[ Bar, dim ]()
 # e.grad_sym(dep).display_tex()
 # e_bar := SymbolicElement[ Bar ]()
 
-e_ref := new SymbolicElement[ Quad, dim ]( name_elem = "elem_ref", tex_symbol_pos = "P_{\\text{ref}}" )
+#e_ref := new SymbolicElement[ Quad, dim ]( name_elem = "elem_ref", tex_symbol_pos = "P_{\\text{ref}}" )
 #infon e_ref->assume_const_jac
 
 #toto := symbol( "toto", tex_name = "\\varphi_{\\text{local enrichment}}^{\\text{handbook} \\tilde{\\sigma}}")
@@ -61,9 +76,9 @@ e_ref := new SymbolicElement[ Quad, dim ]( name_elem = "elem_ref", tex_symbol_po
 # e.pos_nodes[0] = [1 1]
 # e.pos_nodes[1] = [0.62315 0.65463]
 # e.pos_nodes[2] = [1 0.5]
-e.pos_nodes[0] = [0 0]
-e.pos_nodes[1] = [1 0]
-e.pos_nodes[2] = [0 1]
+#e.pos_nodes[0] = [0 0]
+#e.pos_nodes[1] = [1 0]
+#e.pos_nodes[2] = [0 1]
 #~
 e.pos_nodes[0] = [106 19] # 32
 e.pos_nodes[1] = [115 11] # 18
@@ -362,7 +377,7 @@ e.pos_nodes[3] = [110 22] # 33
 # admissible_field_base := "lagrange"
 # dep_hat_test := Vec[ Op, e.dim ]()
 # base := Vec[ Op ]()
-# base = e.get_upper_degree_shape_functions( admissible_field_base, deg_p + deg_k )
+# base = e.get_generic_shape_functions( admissible_field_base, deg_p + deg_k )
 # infon base.size
 # coeffs_dep_hat_test := Vec[ Vec[ Op, base.size ], e.dim ]()
 # sym_dep_hat_test := Vec[ Op ]()
@@ -378,13 +393,13 @@ e.pos_nodes[3] = [110 22] # 33
 
 
 # (e.get_shape_functions( "lagrange" )).display_tex()
-# (e.get_upper_degree_shape_functions( "lagrange", 1 )).display_tex()
-# (e.get_upper_degree_shape_functions( "lagrange", 2 )).display_tex()
-# (e.get_upper_degree_shape_functions( "lagrange", 3 )).display_tex()
+# (e.get_generic_shape_functions( "lagrange", 1 )).display_tex()
+# (e.get_generic_shape_functions( "lagrange", 2 )).display_tex()
+# (e.get_generic_shape_functions( "lagrange", 3 )).display_tex()
 # (e.get_shape_functions( "hierarchical" )).display_tex()
-# (e.get_upper_degree_shape_functions( "hierarchical", 1 )).display_tex()
-# (e.get_upper_degree_shape_functions( "hierarchical", 2 )).display_tex()
-# (e.get_upper_degree_shape_functions( "hierarchical", 3 )).display_tex()
+# (e.get_generic_shape_functions( "hierarchical", 1 )).display_tex()
+# (e.get_generic_shape_functions( "hierarchical", 2 )).display_tex()
+# (e.get_generic_shape_functions( "hierarchical", 3 )).display_tex()
 
 # lagrange_shape_func := e.get_shape_functions( "lagrange" )
 # hierarchical_shape_func := e.get_shape_functions( "hierarchical" )
@@ -399,9 +414,9 @@ e.pos_nodes[3] = [110 22] # 33
     # infon val_shape_func_hie
 # for deg in deg_p .. deg_p + deg_k + 1
     # infon deg
-    # points := e.upper_degree_points( deg )
-    # shape_func_lag := e.get_upper_degree_shape_functions( "lagrange", deg )
-    # shape_func_hie := e.get_upper_degree_shape_functions( "hierarchical", deg )
+    # points := e.generic_points( deg )
+    # shape_func_lag := e.get_generic_shape_functions( "lagrange", deg )
+    # shape_func_hie := e.get_generic_shape_functions( "hierarchical", deg )
     # shape_func_lag.display_tex()
     # shape_func_hie.display_tex()
     # for i in 0 .. points.size
@@ -590,7 +605,7 @@ e.pos_nodes[3] = [110 22] # 33
 # f_vol_enhanced.display_tex( "f_vol_" + cpt++ )
 # dep_hat_test := Vec[ Op, e.dim ]()
 # base := Vec[ Op ]()
-# base = e.get_upper_degree_shape_functions( admissible_field_base, deg_p + deg_k )
+# base = e.get_generic_shape_functions( admissible_field_base, deg_p + deg_k )
 # coeffs_dep_hat_test := Vec[ Vec[ Op, base.size ], e.dim ]()
 # sym_dep_hat_test := Vec[ Op ]()
 # for d in 0 .. e.dim
@@ -665,7 +680,7 @@ e.pos_nodes[3] = [110 22] # 33
 
 # deg_p := max( e.order_interpolation )
 # deg_k := 2
-# points := e.upper_degree_points( deg_p + deg_k )
+# points := e.generic_points( deg_p + deg_k )
 # for p in 0 .. points.size
 #     infon e.point_is_on_edge( points[ p ] )
 # hierarchical_base := Vec[ Op, points.size ]()
@@ -689,13 +704,13 @@ e.pos_nodes[3] = [110 22] # 33
         # if e.construct_lagrange_shape_function_using_current_base_( points.size, points, e.var_inter, lagrange_base, canonical_base )
             # break
 
-# infon e.upper_degree_points(4).size
-# infon e.upper_degree_points(4)
-# for n in 0 .. e.upper_degree_points(4).size
-    # infon (e.upper_degree_points(4))[ n ]
+# infon e.generic_points(4).size
+# infon e.generic_points(4)
+# for n in 0 .. e.generic_points(4).size
+    # infon (e.generic_points(4))[ n ]
 # deg_k := 1
 # deg_p := max( e.order_interpolation )
-# points := e.upper_degree_points( deg_p + deg_k )
+# points := e.generic_points( deg_p + deg_k )
 # for p in 0 .. points.size
     # infon e.point_is_on_edge( points[ p ] )
 # base := Vec[ Op, points.size ]()
@@ -772,7 +787,7 @@ e.pos_nodes[3] = [110 22] # 33
         # ( test[ d ].subs( e.var_inter, points[ n ] ) ).display_tex( "test_d_" + cpt++ )
     # for face_ in e.children( 1 )
         # face := child_cast( face_ )
-        # points_face := face->upper_degree_points( deg_p + deg_k )
+        # points_face := face->generic_points( deg_p + deg_k )
         # for p in 0 .. points_face.size
             # ( e.projection_on_child_elem( test[ d ], face ) ).subs( face->var_inter, points_face[ p ] ).display_tex( "test_proj_d_" + cpt_1++ )
 

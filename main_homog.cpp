@@ -104,7 +104,7 @@ int main( int argc, char **argv ) {
     static const string pointwise_interest_quantity = "node"; // definition de la quantite d'interet ponctuelle : node, pos
     static const unsigned node_interest_quantity( 661 ); // noeud definissant la zone d'interet (quantite d'interet pointwise_dep, pointwise_sigma, pointwise_epsilon)
     static const Pvec pos_interest_quantity( 49.5, 135.5 ); // position definissant la zone d'interet (quantite d'interet pointwise_dep, pointwise_sigma, pointwise_epsilon)
-    static const Pvec pos_crack_tip( 109, 105. ); // position de la pointe de fissure (quantite d'interet SIF) : ( 3.5, 0. ) pour plate_crack et ( 109., 105. ) pour structure_crack
+    static const Pvec pos_crack_tip( 109., 105. ); // position de la pointe de fissure (quantite d'interet SIF) : ( 3.5, 0. ) pour plate_crack et ( 109., 105. ) pour structure_crack
     static const T angle_crack = atan2( -17, -3 ); // angle de la fissure (en rad) (quantite d'interet SIF) : 0. pour plate_crack et atan2( -17, -3 ) pour structure_crack
     static const T radius_Ri = 6; // rayon du cercle interieur a la couronne omega entourant la pointe de fissure (quantite d'interet SIF) : 1.6 pour plate_crack et 6 pour structure_crack
     static const T radius_Re = 8; // rayon du cercle exterieur a la couronne omega entourant la pointe de fissure (quantite d'interet SIF) : 3.4 pour plate_crack et 8 pour structure_crack
@@ -349,14 +349,14 @@ int main( int argc, char **argv ) {
         /// Calcul de la quantite d'interet locale approchee I_h ///
         /// ---------------------------------------------------- ///
         
-        T I_h;
+        T I_h = 0.;
         calcul_interest_quantity( m, m_crown, f, f_crown, "direct", interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, I_h );
         
         /// ---------------------------------------------------------- ///
         /// Calcul de la quantite d'interet locale (quasi-)exacte I_ex ///
         /// ---------------------------------------------------------- ///
         
-        T I_ex;
+        T I_ex = 0.;
         if ( want_solve_local_ref ) {
             create_structure( m_local_ref, m_local_ref, "direct", structure, mesh_size, loading, deg_p, refinement_degree_ref );
             
