@@ -40,7 +40,7 @@ int main( int argc, char **argv ) {
                                           // pour la structure plate_crack (2D) : pull, shear
                                           // pour la structure test_specimen (3D) : Step-1, ..., Step-9,
     static const unsigned deg_p = 1; // degre de l'analyse elements finis : 1, 2, ...
-    static const unsigned deg_k = 3; // degre supplementaire : 1, 2, 3, ...
+    static const unsigned deg_k = 2; // degre supplementaire : 1, 2, 3, ...
     static const string boundary_condition_D = "penalty"; // methode de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalty
     static const bool display_constraints = 0; // affichage des contraintes cinematiques
     
@@ -84,7 +84,7 @@ int main( int argc, char **argv ) {
     
     /// Goal-oriented error estimation method
     /// -------------------------------------
-    static const bool want_local_estimation = 1; // calcul de l'erreur locale sur une quantite d'interet
+    static const bool want_local_estimation = 0; // calcul de l'erreur locale sur une quantite d'interet
     static const bool want_interest_quantity_only = 0; // calcul de la quantite d'interet uniquement
     static const bool want_handbook_only = 0; // calcul de la solution handbook uniquement
     static const bool want_introduction_sigma_hat_m = 1; // introduction de sigma_hat_m pour le calcul de l'erreur sur une quantite d'interet locale
