@@ -158,6 +158,11 @@ clone_metil: clean_metil
 install_metil:
 	cd ../METIL-build; make -j4 install
 
+pull:
+	-git pull
+	cd ../METIL; git pull
+	cd ../LMTpp; git pull
+
 # Excludes for rsync ---------------------------
 
 exclude = --exclude '*.o' --exclude 'core' --exclude '*.log' --exclude '*.eps' --exclude '*.dvi' --exclude '*.pdf' --exclude '*.tex' --exclude '*.aux' --exclude '*.patch' --exclude '*.kdevelop' --exclude '*.kdev4' --exclude '*.filelist' --exclude '*.pcs' --exclude '*.kdevses' --exclude '*.m' --exclude '*.pyc' --exclude '*.cc' --exclude '*.bz2' --exclude '*.cache' --exclude '*.dblite' --exclude '*.git' --exclude '.sconsign' --exclude 'LMT/.git' --exclude 'Doxyfile' --exclude 'build' --exclude 'TESTS' --exclude 'RESULTS' --exclude 'i686.tok'
