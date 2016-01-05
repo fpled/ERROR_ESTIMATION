@@ -37,7 +37,7 @@ List_Machine_Names = pommard chablis
 Machine_Name = pommard
 Machine_Name_Results = pommard
 # Name of station
-Station_Name = stationmeca22
+Station_Name = pcmsmemeca22
 # Name of problem
 Pb_Name = error_estimation
 Pb_Name_Space = space
