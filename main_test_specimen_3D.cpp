@@ -227,53 +227,70 @@ int main( int argc, char **argv ) {
     TF f( m ); // creation d'une formulation du type TF avec le maillage m
     TF f_ref( m_ref );
     
-    /// Proprietes materiaux et Conditions aux limites du pb direct
-    /// -----------------------------------------------------------
-    set_material_properties( f, m, structure );
-    set_boundary_conditions( f, m, boundary_condition_D, "direct", structure, loading, mesh_size );
-    if ( want_solve_ref ) {
-        set_material_properties( f_ref, m_ref, structure );
-        set_boundary_conditions( f_ref, m_ref, boundary_condition_D, "direct", structure, loading, mesh_size );
+    static const unsigned nb_steps = 9;
+    string prefix = define_prefix( m, pb, structure, loading, mesh_size );
+
+    DisplayParaview dp;
+
+    for ( unsigned j = 0; j < nb_steps; ++j ) {
+
+        /// Proprietes materiaux et Conditions aux limites du pb direct
+        /// -----------------------------------------------------------
+        set_material_properties( f, m, structure );
+        set_boundary_conditions( f, m, boundary_condition_D, "direct", structure, "Step-" + to_string(j+1), mesh_size );
+        if ( want_solve_ref ) {
+            set_material_properties( f_ref, m_ref, structure );
+            set_boundary_conditions( f_ref, m_ref, boundary_condition_D, "direct", structure, "Step-" + to_string(j+1), mesh_size );
+        }
+
+        /// Verification des contraintes cinematiques
+        /// -----------------------------------------
+        if ( display_constraints )
+            check_constraints( f );
+
+        /// Resolution du pb direct
+        /// -----------------------
+        TicToc t;
+        t.start();
+        if ( want_iterative_solver == 0 )
+            f.solve();
+        else
+            f.solve( iterative_criterium );
+        t.stop();
+        cout << "Temps de calcul du pb direct : " << t.res << endl << endl;
+
+        //    f.allocate_matrices();
+        //    f.shift();
+        //    f.assemble();
+        ////    f.solve_system();
+        //    f.get_initial_conditions();
+        //    f.update_variables();
+        //    f.call_after_solve();
+
+        //    for (unsigned i=0;i<m.node_list.size();++i) {
+        //        for (unsigned d=0;d<dim;++d)
+        //            cout << "node[" << i << "].pos[" << d << "] = " << m.node_list[i].pos[d] << endl;
+        //        for (unsigned d=0;d<dim;++d)
+        //            cout << "node[" << i << "].dep[" << d << "] = " << m.node_list[i].dep[d] << endl;
+        //        cout << endl << endl;
+        //    }
+        //    for (unsigned i=0;i<f.vectors[0].size();++i)
+        //        cout << "vector[" << i << "] = " << ( f.vectors[0] )[i] << endl;
+
+        /// Verification de l'equilibre du pb direct
+        /// ----------------------------------------
+        if ( verif_eq )
+            check_equilibrium( f, "direct" );
+
+        /// Sauvegarde
+        /// ----------
+        dp.add_mesh_iter( m, prefix + "_step", Vec<std::string>("all"), j+1 );
     }
-    
-    /// Verification des contraintes cinematiques
-    /// -----------------------------------------
-    if ( display_constraints )
-        check_constraints( f );
-    
-    /// Resolution du pb direct
-    /// -----------------------
-    TicToc t;
-    t.start();
-    if ( want_iterative_solver == 0 )
-        f.solve();
+
+    if ( display_pvd )
+        dp.exec( prefix );
     else
-        f.solve( iterative_criterium );
-    t.stop();
-    cout << "Temps de calcul du pb direct : " << t.res << endl << endl;
-
-//    f.allocate_matrices();
-//    f.shift();
-//    f.assemble();
-////    f.solve_system();
-//    f.get_initial_conditions();
-//    f.update_variables();
-//    f.call_after_solve();
-    
-//    for (unsigned i=0;i<m.node_list.size();++i) {
-//        for (unsigned d=0;d<dim;++d)
-//            cout << "node[" << i << "].pos[" << d << "] = " << m.node_list[i].pos[d] << endl;
-//        for (unsigned d=0;d<dim;++d)
-//            cout << "node[" << i << "].dep[" << d << "] = " << m.node_list[i].dep[d] << endl;
-//        cout << endl << endl;
-//    }
-//    for (unsigned i=0;i<f.vectors[0].size();++i)
-//        cout << "vector[" << i << "] = " << ( f.vectors[0] )[i] << endl;
-
-    /// Verification de l'equilibre du pb direct
-    /// ----------------------------------------
-    if ( verif_eq )
-        check_equilibrium( f, "direct" );
+        dp.make_pvd_file( prefix );
 
     /// Calcul de la norme du champ de deplacement approche du pb direct
     /// ----------------------------------------------------------------

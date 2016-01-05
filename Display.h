@@ -162,7 +162,7 @@ string define_prefix( TM &m, const string &pb, const string &structure, const st
     static const unsigned dim = TM::dim;
 
     string prefix = structure;
-    if ( structure == "plate_crack" or structure == "spot_weld" or (structure == "test_specimen" and dim == 3) )
+    if ( structure == "plate_crack" or structure == "spot_weld" )
         prefix += "_" + loading;
     if ( structure == "plate_hole" or structure == "plate_crack" or structure == "structure_crack" or (structure == "test_specimen" and dim == 2) or structure == "weight_sensor" or structure == "circle" or structure == "beam_hole" or structure == "plate_hole_full" or structure == "spot_weld" or structure == "reactor_head" or structure == "door_seal" or structure == "sphere" or structure == "sphere_center" or structure == "SAP" )
         prefix += "_" + mesh_size;
@@ -237,9 +237,8 @@ void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &
     
     string prefix_crown = prefix;
     
-    if ( want_local_estimation and ( interest_quantity == "SIF" or interest_quantity == "stress_intensity_factor" ) ) {
+    if ( want_local_estimation and ( interest_quantity == "SIF" or interest_quantity == "stress_intensity_factor" ) )
         prefix_crown += "_crown";
-    }
     
     string prefix_lambda_min = prefix;
     string prefix_lambda_max = prefix;
@@ -278,13 +277,10 @@ void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &
     const string prefix_lambda_opt_ = prefix_lambda_opt;
     const string prefix_ref_ = prefix_ref;
     
-    if ( display_vtu ) {
+    if ( display_vtu )
         display( m, prefix_ );
-    }
-    else if ( save_vtu ) {
-        DisplayParaview dp;
-        dp.set_mesh( m, prefix_ );
-    }
+    else if ( save_vtu )
+        save( m, prefix_ );
     if ( display_pvd or save_pvd ) {
         DisplayParaview dp;
         dp.add_mesh( m, prefix_ );
@@ -293,42 +289,28 @@ void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &
         else
             dp.make_pvd_file( prefix_ );
     }
-    if ( display_vtu_ref ) {
+    if ( display_vtu_ref )
         display( m_ref, prefix_ref_ );
-    }
-    else if ( save_vtu_ref ) {
-        DisplayParaview dp;
-        dp.set_mesh( m_ref, prefix_ref_ );
-    }
+    else if ( save_vtu_ref )
+        save( m_ref, prefix_ref_ );
     if ( want_local_estimation and ( interest_quantity == "SIF" or interest_quantity == "stress_intensity_factor" ) ) {
-        if ( display_vtu_crown ) {
+        if ( display_vtu_crown )
             display( m_crown, prefix_crown_ );
-        }
-        else if ( save_vtu_crown ) {
-            DisplayParaview dp;
-            dp.set_mesh( m_crown, prefix_crown_ );
-        }
+        else if ( save_vtu_crown )
+            save( m_crown, prefix_crown_ );
     }
     if ( want_local_estimation and want_local_improvement ) {
         if ( local_improvement == "steklov" ) {
-            if ( display_vtu_lambda ) {
-                display( m_lambda_min, prefix_lambda_min_ );
-                display( m_lambda_max, prefix_lambda_max_ );
-            }
-            else if ( save_vtu_lambda ) {
-                DisplayParaview dp_min;
-                dp_min.set_mesh( m_lambda_min, prefix_lambda_min_ );
-                DisplayParaview dp_max;
-                dp_max.set_mesh( m_lambda_max, prefix_lambda_max_ );
-            }
+            if ( display_vtu_lambda )
+                display( m_lambda_min, prefix_lambda_min_ ); display( m_lambda_max, prefix_lambda_max_ );
+            else if ( save_vtu_lambda )
+                save( m_lambda_min, prefix_lambda_min_ ); save( m_lambda_max, prefix_lambda_max_ );
         }
         else if ( local_improvement == "rayleigh" ) {
             if ( display_vtu_lambda )
                 display( m_lambda_opt, prefix_lambda_opt_ );
-            else if ( save_vtu_lambda ) {
-                DisplayParaview dp_opt;
-                dp_opt.set_mesh( m_lambda_opt, prefix_lambda_opt_ );
-            }
+            else if ( save_vtu_lambda )
+                save( m_lambda_opt, prefix_lambda_opt_ );
         }
     }
 }
