@@ -22,6 +22,16 @@
 #include "Calcul_global_error_estimation_homog.h"
 #include "Calcul_goal_oriented_error_estimation.h"
 
+#include "LMT/include/containers/gnuplot.h"
+#include "LMT/include/containers/matlabplot.h"
+#include "LMT/include/containers/matcholamd.h"
+#include "LMT/include/containers/conjugate_gradient.h"
+#include "LMT/include/containers/MatWithTinyBlocks.h"
+
+#include "LMT/include/util/MKL_direct_solver.h"
+#include "LMT/include/util/MKL_iterative_solver.h"
+#include "LMT/include/util/MUMPS_solver.h"
+
 using namespace LMT;
 using namespace std;
 

@@ -856,19 +856,22 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     }
     if ( verif_solver_minimisation ) {
         if ( enhancement == 0 ) {
-            cout << "Verification de la resolution des problemes de minimisation pour la technique EET" << endl << endl;
+            cout << "Verification de la resolution des problemes de minimisation pour la technique EET : ";
         }
         else {
-            cout << "Verification de la resolution des problemes de minimisation associes a la partie standard des densites d'effort pour la technique EET" << endl << endl;
+            cout << "Verification de la resolution des problemes de minimisation associes a la partie standard des densites d'effort pour la technique EET : ";
         }
+        cout << "tolerance = " << tol_solver_minimisation << endl << endl;
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                if ( norm_2( K[ i ][ d ] * U[ i ][ d ] - F[ i ][ d ] ) / norm_2( F[ i ][ d ] ) > tol_solver_minimisation ) {
+                T residual = norm_2( K[ i ][ d ] * U[ i ][ d ] - F[ i ][ d ] );
+                T b = norm_2( F[ i ][ d ] );
+                if ( residual / b > tol_solver_minimisation ) {
                     cout << "residu associe au noeud " << i << " dans la direction " << d << " :" << endl;
-                    cout << "K * U - F =" << endl;
-                    cout << K[ i ][ d ] * U[ i ][ d ] - F[ i ][ d ] << endl << endl;
-                    cout << "norme 2 du residu = " << norm_2( K[ i ][ d ] * U[ i ][ d ] - F[ i ][ d ] ) << endl << endl;
-                    cout << "norme 2 du residu relatif = " << norm_2( K[ i ][ d ] * U[ i ][ d ] - F[ i ][ d ] ) / norm_2( F[ i ][ d ] ) << endl << endl;
+//                    cout << "K * U - F =" << endl;
+//                    cout << K[ i ][ d ] * U[ i ][ d ] - F[ i ][ d ] << endl << endl;
+                    cout << "norme du residu = " << residual << endl << endl;
+                    cout << "norme du residu relatif = " << residual / b << endl << endl;
                 }
             }
         }

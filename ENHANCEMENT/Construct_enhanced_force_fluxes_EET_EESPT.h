@@ -161,12 +161,14 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
         cout << "Verification de la resolution des problemes locaux associes a la partie amelioree des densites d'effort pour la technique " << method << " : tolerance = " << tol_solver_enhancement << endl << endl;
         for (unsigned n=0;n<elem_list_enh.size();++n) {
             for (unsigned i=0;i<nb_unk_local_enh[ n ];++i) {
-                if ( norm_2( K_hat[ elem_list_enh[ n ] ] * dep_hat_enh[ n ][ i ] - F_hat_enh[ n ][ i ] ) / norm_2( F_hat_enh[ n ][ i ] ) > tol_solver_enhancement ) {
+                T residual = norm_2( K_hat[ elem_list_enh[ n ] ] * dep_hat_enh[ n ][ i ] - F_hat_enh[ n ][ i ] );
+                T b = norm_2( F_hat_enh[ n ][ i ] );
+                if ( residual / b > tol_solver_enhancement ) {
                     cout << "residu pour l'element " << elem_list_enh[ n ] << " avec cas de charge " << i << " :" << endl << endl;
-                    cout << "K_hat * dep_hat_enh - F_hat_enh =" << endl;
-                    cout << K_hat[ elem_list_enh[ n ] ] * dep_hat_enh[ n ][ i ] - F_hat_enh[ n ][ i ] << endl << endl;
-                    cout << "norme 2 du residu = " << norm_2( K_hat[ elem_list_enh[ n ] ] * dep_hat_enh[ n ][ i ] - F_hat_enh[ n ][ i ] ) << endl << endl;
-                    cout << "norme 2 du residu relatif = " << norm_2( K_hat[ elem_list_enh[ n ] ] * dep_hat_enh[ n ][ i ] - F_hat_enh[ n ][ i ] ) / norm_2( F_hat_enh[ n ][ i ] ) << endl << endl;
+//                    cout << "K_hat * dep_hat_enh - F_hat_enh =" << endl;
+//                    cout << K_hat[ elem_list_enh[ n ] ] * dep_hat_enh[ n ][ i ] - F_hat_enh[ n ][ i ] << endl << endl;
+                    cout << "norme du residu = " << residual << endl << endl;
+                    cout << "norme du residu relatif = " << residual / b << endl << endl;
                 }
             }
         }
@@ -727,11 +729,13 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     }
     if ( verif_solver_minimisation_enhancement ) {
         cout << "Verification de la resolution du probleme global de minimsation pour la technique " << method << " amelioree" << endl << endl;
-        if ( norm_2( K_enh * U_enh - F_enh ) / norm_2( F_enh ) > tol_solver_minimisation_enhancement ) {
-            cout << "residu K_enh * U_enh - F_enh =" << endl;
-            cout << K_enh * U_enh - F_enh << endl << endl;
-            cout << "norme 2 du residu =" << endl;
-            cout << norm_2( K_enh * U_enh - F_enh ) / norm_2( F_enh ) << endl << endl;
+        T residual = norm_2( K_enh * U_enh - F_enh );
+        T b = norm_2( F_enh );
+        if ( residual / b > tol_solver_minimisation_enhancement ) {
+//            cout << "residu K_enh * U_enh - F_enh :" << endl;
+//            cout << K_enh * U_enh - F_enh << endl << endl;
+            cout << "norme du residu = " << residual << endl << endl;
+            cout << "norme du residu relatif = " << residual / b << endl << endl;
         }
     }
 

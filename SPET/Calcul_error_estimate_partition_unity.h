@@ -295,12 +295,14 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
      if ( verif_solver ) {
          cout << "Verification de la resolution des problemes locaux auto-equilibres par patch : tolerance = " << tol_solver << endl << endl;
          for (unsigned j=0;j<nb_vertex_nodes;++j) {
-            if ( norm_2( K[ j ] * U[ j ] - F[ j ] ) / norm_2( F[ j ] ) > tol_solver ) {
+             T residual = norm_2( K[ j ] * U[ j ] - F[ j ] );
+             T b = norm_2( F[ j ] );
+            if ( residual / b > tol_solver ) {
                 cout << "residu associe au noeud sommet " << j << " :" << endl;
-                cout << "K * U - F =" << endl;
-                cout << K[ j ] * U[ j ] - F[ j ] << endl << endl;
-                cout << "norme 2 du residu = " << norm_2( K[ j ] * U[ j ] - F[ j ] ) << endl << endl;
-                cout << "norme 2 du residu relatif =" << norm_2( K[ j ] * U[ j ] - F[ j ] ) / norm_2( F[ j ] ) << endl << endl;
+//                cout << "K * U - F =" << endl;
+//                cout << K[ j ] * U[ j ] - F[ j ] << endl << endl;
+                cout << "norme du residu = " << residual << endl << endl;
+                cout << "norme du residu relatif =" << residual / b << endl << endl;
             }
         }
     }

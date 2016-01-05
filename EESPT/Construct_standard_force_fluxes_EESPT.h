@@ -823,15 +823,17 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         }
     }
     if ( verif_solver_minimisation ) {
-        cout << "Verification de la resolution des problemes de minimisation pour la technique EESPT" << endl << endl;
+        cout << "Verification de la resolution des problemes de minimisation pour la technique EESPT : tolerance = " << tol_solver_minimisation << endl << endl;
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             for (unsigned d=0;d<dim;++d) {
-                if ( norm_2( K[ j ][ d ] * U[ j ][ d ] - F[ j ][ d ] ) / norm_2( F[ j ][ d ] ) > tol_solver_minimisation ) {
+                T residual = norm_2( K[ j ][ d ] * U[ j ][ d ] - F[ j ][ d ] );
+                T b = norm_2( F[ j ][ d ] );
+                if ( residual / b > tol_solver_minimisation ) {
                     cout << "residu associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
-                    cout << "K * U - F =" << endl;
-                    cout << K[ j ][ d ] * U[ j ][ d ] - F[ j ][ d ] << endl << endl;
-                    cout << "norme 2 du residu = " << norm_2( K[ j ][ d ] * U[ j ][ d ] - F[ j ][ d ] ) / norm_2( F[ j ][ d ] ) << endl << endl;
-                    cout << "norme 2 du residu relatif = " << norm_2( K[ j ][ d ] * U[ j ][ d ] - F[ j ][ d ] ) / norm_2( F[ j ][ d ] ) << endl << endl;
+//                    cout << "K * U - F =" << endl;
+//                    cout << K[ j ][ d ] * U[ j ][ d ] - F[ j ][ d ] << endl << endl;
+                    cout << "norme du residu = " << residual << endl << endl;
+                    cout << "norme du residu relatif = " << residual / b << endl << endl;
                 }
             }
         }

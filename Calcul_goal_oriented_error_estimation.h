@@ -287,7 +287,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
                 cout << "h = " << generalized_eig_val_eq << endl << endl;
                 cout << "residu associe aux conditions d'equilibre :" << endl;
                 cout << residual_vec << endl << endl;
-                cout << "norme 2 du residu sur les conditions d'equilibre = " << residual << endl << endl;
+                cout << "norme du residu sur les conditions d'equilibre = " << residual << endl << endl;
                 elem_size_mask /= 2.;
                 nb_iterations++;
             }
@@ -456,7 +456,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
             cout << "h = " << generalized_eig_val_eq << endl << endl;
             cout << "residu associe aux conditions d'equilibre :" << endl;
             cout << residual_vec << endl << endl;
-            cout << "norme 2 du residu sur les conditions d'equilibre = " << residual << endl << endl;
+            cout << "norme du residu sur les conditions d'equilibre = " << residual << endl << endl;
     
 //            if ( local_improvement == "steklov" ) {
 //                cout << "constante h :" << endl;

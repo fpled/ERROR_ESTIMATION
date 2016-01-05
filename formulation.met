@@ -65,7 +65,7 @@ admissible_field_base := "lagrange"
 
 # Enrichissement du degre de l'analyse elements finis p -> p+k pour la resolution des problemes locaux elementaires/par patch
 #----------------------------------------------------------------------------------------------------------------------------
-deg_k := 2
+deg_k := 3
 
 # Choix de la technique d'integration : formal, gauss_num
 #--------------------------------------------------------
@@ -255,11 +255,11 @@ formList := [ FormulationElasticity ]
 
 # Liste d'elements
 #-----------------
-#elemList := [ Triangle ]
+elemList := [ Triangle ]
 #elemList := [ Triangle, Quad ]
 #elemList := [ Triangle, Tetra ]
 #elemList := [ Tetra ]
-elemList := [ Hexa ]
+#elemList := [ Hexa ]
 
 # Liste de fonctions
 #-------------------

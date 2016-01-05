@@ -1,26 +1,23 @@
 import "EF/std_elements.met"
 import "../Handbook_functions.met"
 
-dim := 2
-e := SymbolicElement[ QuadGeneric[ 1 ], dim ]()
+dim := 3
+e := SymbolicElement[ Hexa_20, dim ]()
 #face := SymbolicElement[ Bar, dim ]()
 infon e.get_name()
 infon e.get_order_interpolation()
-e2 := SymbolicElement[ QuadGeneric[ 2 ], dim ]()
-infon e2.get_name()
-infon e2.get_order_interpolation()
-e3 := SymbolicElement[ QuadGeneric[ 3 ], dim ]()
-infon e3.get_name()
-infon e3.get_order_interpolation()
-e4 := SymbolicElement[ QuadGeneric[ 4 ], dim ]()
-infon e4.get_name()
-infon e4.get_order_interpolation()
-e5 := SymbolicElement[ QuadGeneric[ 5 ], dim ]()
-infon e5.get_name()
-infon e5.get_order_interpolation()
-e6 := SymbolicElement[ QuadGeneric[ 6 ], dim ]()
-infon e6.get_name()
-infon e6.get_order_interpolation()
+#e2 := SymbolicElement[ QuadGeneric[ 2 ], dim ]()
+#infon e2.get_name()
+#infon e2.get_order_interpolation()
+#e3 := SymbolicElement[ QuadGeneric[ 3 ], dim ]()
+#infon e3.get_name()
+#infon e3.get_order_interpolation()
+#e4 := SymbolicElement[ QuadGeneric[ 4 ], dim ]()
+#infon e4.get_name()
+#infon e4.get_order_interpolation()
+#e5 := SymbolicElement[ QuadGeneric[ 5 ], dim ]()
+#infon e5.get_name()
+#infon e5.get_order_interpolation()
 # infon max( e.order_interpolation )
 # e.assume_const_jac = false
 # infon e.assume_const_jac

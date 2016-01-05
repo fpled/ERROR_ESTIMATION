@@ -91,12 +91,14 @@ void construct_dep_hat( const TM &m, const TF &f, const string &method, const st
     if ( verif_solver ) {
         cout << "Verification de la resolution des problemes locaux pour la technique " << method << " : tolerance = " << tol_solver << endl << endl;
         for (unsigned n=0;n<m.elem_list.size();++n) {
-            if ( norm_2( K_hat[ n ] * dep_hat[ n ] - F_hat[ n ] ) / norm_2( F_hat[ n ] ) > tol_solver ) {
+            T residual = norm_2( K_hat[ n ] * dep_hat[ n ] - F_hat[ n ] );
+            T b = norm_2( F_hat[ n ] );
+            if ( residual / b > tol_solver ) {
                 cout << "residu associe a l'element " << n << " :" << endl;
-                cout << "K_hat * dep_hat - F_hat = " << endl;
-                cout << K_hat[ n ] * dep_hat[ n ] - F_hat[ n ] << endl << endl;
-                cout << "norme 2 du residu = " << norm_2( K_hat[ n ] * dep_hat[ n ] - F_hat[ n ] ) << endl << endl;
-                cout << "norme 2 du residu relatif = " << norm_2( K_hat[ n ] * dep_hat[ n ] - F_hat[ n ] ) / norm_2( F_hat[ n ] ) << endl << endl;
+//                cout << "K_hat * dep_hat - F_hat = " << endl;
+//                cout << K_hat[ n ] * dep_hat[ n ] - F_hat[ n ] << endl << endl;
+                cout << "norme du residu = " << residual << endl << endl;
+                cout << "norme du residu relatif = " << residual / b << endl << endl;
             }
         }
     }

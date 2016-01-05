@@ -20,19 +20,29 @@
 #include "Calcul_global_error_estimation.h"
 #include "Calcul_goal_oriented_error_estimation.h"
 
+#include "LMT/include/containers/gnuplot.h"
+#include "LMT/include/containers/matlabplot.h"
+#include "LMT/include/containers/matcholamd.h"
+#include "LMT/include/containers/conjugate_gradient.h"
+#include "LMT/include/containers/MatWithTinyBlocks.h"
+
+#include "LMT/include/util/MKL_direct_solver.h"
+#include "LMT/include/util/MKL_iterative_solver.h"
+#include "LMT/include/util/MUMPS_solver.h"
+
 using namespace LMT;
 using namespace std;
 
 int main( int argc, char **argv ) {
     TicToc t_total;
     t_total.start();
-    static const unsigned dim = 3;
+    static const unsigned dim = 2;
     static const bool wont_add_nz = true;
     typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "test_specimen"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes
+    static const string structure = "structure_crack"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes
                                                      // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes, test_specimen
     static const string mesh_size = "fine"; // maillage pour les structures plate_hole (2D ou 3D), plate_crack, structure_crack, test_specimen (2D), weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
     static const string loading = "Step-1"; // chargement
@@ -40,7 +50,7 @@ int main( int argc, char **argv ) {
                                           // pour la structure plate_crack (2D) : pull, shear
                                           // pour la structure test_specimen (3D) : Step-1, ..., Step-9,
     static const unsigned deg_p = 1; // degre de l'analyse elements finis : 1, 2, ...
-    static const unsigned deg_k = 2; // degre supplementaire : 1, 2, 3, ...
+    static const unsigned deg_k = 3; // degre supplementaire : 1, 2, 3, ...
     static const string boundary_condition_D = "penalty"; // methode de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalty
     static const bool display_constraints = 0; // affichage des contraintes cinematiques
     

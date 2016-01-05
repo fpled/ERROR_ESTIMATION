@@ -40,7 +40,7 @@ def add_elem_norm_dep( list_f, rep )
         else if integration_type == "formal"
             norm_dep = e->integration( child_cast(f)->epsilon.expr : child_cast(f)->sigma.expr, order_diff = degre_poly  )
         cw := CodeWriterAlt( "T" )
-        cw.add( "norm_dep", norm_dep, add )
+        cw.add( "norm_dep_elem[ elem.number ]", norm_dep, reassign )
         file_ <<< "$(cw.to_string( 4 ))"
         file_ <<<<
                 norm_dep += norm_dep_elem[ elem.number ];

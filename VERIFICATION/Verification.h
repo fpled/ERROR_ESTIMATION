@@ -20,9 +20,25 @@ using namespace std;
 /// Verification de l'equilibre du pb direct/adjoint
 /// ------------------------------------------------
 template<class TF>
-void check_equilibrium( const TF &f, const string &pb ) {
+void check_equilibrium( TF &f, const string &pb ) {
+    TicToc t_eq;
+    t_eq.start();
     typedef typename TF::ScalarType T;
-    cout << "Verification de l'equilibre global du pb " << pb << " : erreur = " << norm_2( f.matrices(Number<0>()) * f.vectors[0] - f.sollicitation ) << ", erreur relative = " << norm_2( f.matrices(Number<0>()) * f.vectors[0] - f.sollicitation ) / norm_2( f.sollicitation ) << endl << endl;
+    Mat<T,Sym<>,SparseCholMod > *ptr_mat;
+    f.get_mat( ptr_mat );
+//    PRINTN( *ptr_mat );
+//    display_structure( *ptr_mat, "stiffness_matrix" );
+    Mat<T,Sym<>,SparseLine<> > K = *ptr_mat; // f.matrices(Number<0>())
+    Vec<T> &U = f.get_result( 0 ); // f.vectors[0]
+    Vec<T> &F = f.get_sollicitation(); // f.sollicitation
+    T residual = norm_2( K * U - F );
+    cout << "Verification de l'equilibre global du pb " << pb << " :" << endl;
+//    cout << "residu K * U - F :" << endl;
+//    cout << K * U - F << endl << endl;
+    cout << "norme du residu = " << residual << endl;
+    cout << "norme du residu relatif = " << residual / norm_2( F ) << endl << endl;
+    t_eq.stop();
+    cout << "Temps de calcul du residu du pb " << pb << " : " << t_eq.res << endl << endl;
 }
 
 /// Construction du vecteur de vecteurs residual_force_fluxes
