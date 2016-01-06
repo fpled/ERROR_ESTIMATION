@@ -21,8 +21,8 @@ using namespace std;
 /// ------------------------------------------------
 template<class TF>
 void check_equilibrium( TF &f, const string &pb ) {
-    TicToc t_eq;
-    t_eq.start();
+//    TicToc t_eq;
+//    t_eq.start();
     typedef typename TF::ScalarType T;
     Mat<T,Sym<>,SparseCholMod > *ptr_mat;
     f.get_mat( ptr_mat );
@@ -37,8 +37,8 @@ void check_equilibrium( TF &f, const string &pb ) {
 //    cout << K * U - F << endl << endl;
     cout << "norme du residu = " << residual << endl;
     cout << "norme du residu relatif = " << residual / norm_2( F ) << endl << endl;
-    t_eq.stop();
-    cout << "Temps de calcul du residu du pb " << pb << " : " << t_eq.res << endl << endl;
+//    t_eq.stop();
+//    cout << "Temps de calcul du residu du pb " << pb << " : " << t_eq.res << endl << endl;
 }
 
 /// Construction du vecteur de vecteurs residual_force_fluxes

@@ -228,7 +228,7 @@ int main( int argc, char **argv ) {
     TF f_ref( m_ref );
     
     static const unsigned nb_steps = 9;
-    string prefix = define_prefix( m, pb, structure, loading, mesh_size );
+    string prefix = define_prefix( m, "direct", structure, loading, mesh_size );
 
     DisplayParaview dp;
 

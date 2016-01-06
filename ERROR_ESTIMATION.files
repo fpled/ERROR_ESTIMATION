@@ -43,6 +43,7 @@ generated/Bar_5.2.met
 generated/Bar_6.1.met
 generated/Bar_6.2.met
 generated/Bar_7.1.met
+generated/Bar_7.2.met
 generated/Bar_8.1.met
 generated/BarGeneric[Int32]_n_1.1.met
 generated/BarGeneric[Int32]_n_1.2.met
@@ -80,10 +81,14 @@ generated/Tetra_10.3.met
 generated/Triangle.2.met
 generated/Triangle.3.met
 generated/Triangle_10.2.met
+generated/Triangle_12.2.met
 generated/Triangle_15.2.met
+generated/Triangle_15_.2.met
+generated/Triangle_18.2.met
 generated/Triangle_21.2.met
 generated/Triangle_6.2.met
 generated/Triangle_6.3.met
+generated/Triangle_9.2.met
 generated/TriangleGeneric[Int32]_n_1.2.met
 generated/TriangleGeneric[Int32]_n_2.2.met
 generated/TriangleGeneric[Int32]_n_3.2.met
@@ -1869,6 +1874,7 @@ Handbook_functions.met
 main.cpp
 main_homog.cpp
 main_pgd.cpp
+main_test_specimen_3D.cpp
 Makefile
 Material_properties.h
 Material_properties.met
