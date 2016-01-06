@@ -301,10 +301,14 @@ void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &
     }
     if ( want_local_estimation and want_local_improvement ) {
         if ( local_improvement == "steklov" ) {
-            if ( display_vtu_lambda )
-                display( m_lambda_min, prefix_lambda_min_ ); display( m_lambda_max, prefix_lambda_max_ );
-            else if ( save_vtu_lambda )
-                save( m_lambda_min, prefix_lambda_min_ ); save( m_lambda_max, prefix_lambda_max_ );
+            if ( display_vtu_lambda ) {
+                display( m_lambda_min, prefix_lambda_min_ );
+                display( m_lambda_max, prefix_lambda_max_ );
+            }
+            else if ( save_vtu_lambda ) {
+                save( m_lambda_min, prefix_lambda_min_ );
+                save( m_lambda_max, prefix_lambda_max_ );
+            }
         }
         else if ( local_improvement == "rayleigh" ) {
             if ( display_vtu_lambda )
