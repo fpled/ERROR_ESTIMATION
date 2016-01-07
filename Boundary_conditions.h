@@ -261,7 +261,6 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                             }
                         }
                     }
-//                    else if ( ( 0.25 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.25 + 1e-6 and ( ( 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) or ( 0.75 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.75 + 1e-6 ) ) ) or ( 0.75 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.75 + 1e-6 and ( ( 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) or ( 0.75 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.75 + 1e-6 ) ) ) ) {
                     else if ( 0.25 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.25 + 1e-6 and 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) {
                         for (unsigned d=0;d<dim;++d) {
                             f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
@@ -726,10 +725,11 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
             /// Eprouvette 3D
             /// loading Step-1, ..., Step-9 : champ de deplacement applique aux noeuds specifies dans le fichier .inp
             /// -----------------------------------------------------------------------------------------------------
-            else if ( structure == "test_specimen" ) {
+            else if ( structure.find("test_specimen") != string::npos ) {
                 TM mesh;
-                ReaderINP<TM> RI( mesh, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-                f.get_initial_conditions();
+                size_t off = structure.rfind( "_" );
+                string str = structure.substr( off+1 );
+                ReaderINP<TM> RI( mesh, ("MESH_AVS/TEST_SPECIMEN_3D/test_specimen_" + str + "_Hexa.inp").c_str() );
                 RI.set_constraint_by_step( f, loading, penalty_val );
             }
             m.update_skin();

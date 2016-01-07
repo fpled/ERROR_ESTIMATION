@@ -42,13 +42,13 @@ int main( int argc, char **argv ) {
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "test_specimen"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes
-                                                     // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes, test_specimen
-    static const string mesh_size = "fine"; // maillage pour les structures plate_hole (2D ou 3D), plate_crack, structure_crack, test_specimen (2D), weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
-    static const string loading = "Step-1"; // chargement
+    static const string structure = "test_specimen_5"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes, square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
+                                                     // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes, test_specimen_n (n=5,10,15,20,25)
+    static const string mesh_size = "fine"; // taille du maillage pour les structures plate_hole (2D ou 3D), plate_crack, structure_crack, test_specimen (2D), weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
+    static const string loading = "Step-2"; // chargement
                                           // pour la structure spot_weld (3D) : pull, shear, peeling
                                           // pour la structure plate_crack (2D) : pull, shear
-                                          // pour la structure test_specimen (3D) : Step-1, ..., Step-9,
+                                          // pour la structure test_specimen_n (3D) : Step-1, ..., Step-9
     static const unsigned deg_p = 1; // degre de l'analyse elements finis : 1, 2, ...
     static const unsigned deg_k = 3; // degre supplementaire : 1, 2, 3, ...
     static const string boundary_condition_D = "penalty"; // methode de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalty
@@ -87,8 +87,9 @@ int main( int argc, char **argv ) {
     /// ------------------
     static const bool enhancement_with_geometric_criterium = 0; // amelioration de la construction des densites d'effort (methodes EET, EESPT) basee sur un critere geometrique
     static const string geometric_criterium = "radius_ratio"; // critere d'amelioration geometrique : radius_ratio, edge_ratio
-    static const T val_geometric_criterium = 0.34; // valeur du critere d'amelioration geometrique : rapport entre rayon du cercle/sphere inscrit(e) et rayon du cercle/sphere circonscrit(e) pour critere radius_ratio
-                                                   // valeur du critere d'amelioration geometrique : rapport entre rayon du cercle/sphere inscrit(e) et rayon du cercle/sphere circonscrit(e) pour critere radius_ratio
+    static const T val_geometric_criterium = 0.34; // valeur du critere d'amelioration geometrique
+                                                  // pour le critere radius_ratio : rapport entre rayon du cercle/sphere inscrit(e) et rayon du cercle/sphere circonscrit(e) à un élément
+                                                  // pour le critere edge_ratio : rapport entre longueur/aire minimale et longueur/aire maximale des bords/faces d'un élément
     static const bool enhancement_with_estimator_criterium = 0; // amelioration de la construction des densites d'effort (methodes EET, EESPT) basee sur un critere sur l'estimateur d'erreur
     static const T val_estimator_criterium = 0.8; // valeur du critere d'amelioration sur l'estimateur d'erreur : rapport entre la contribution elementaire au carre a l'erreur estimee et la contribution elementaire maximale au carre
     
@@ -105,9 +106,10 @@ int main( int argc, char **argv ) {
     static const bool use_mask_eig_local_improvement = 0; // utilisation d'un masque (image) pour definir le maillage du pb aux valeurs propres generalisees
     static const bool want_solve_local_ref = 0; // calcul de la quantite d'interet (quasi-)exacte sur un maillage de reference
     static const string interest_quantity = "mean_sigma"; // quantite d'interet : mean_sigma, mean_epsilon, pointwise_dep, pointwise_sigma, pointwise_epsilon, SIF (stress intensity factor)
-    static const string direction_extractor = "xx"; // direction de l'operateur d'extraction pour quantite d'interet mean_sigma, mean_epsilon, pointwise_sigma, pointwise_epsilon : xx, yy, xy, zz, xz, yz
-                                                   // direction de l'operateur d'extraction pour quantite d'interet pointwise_dep : x, y, z
-                                                   // direction de l'operateur d'extraction pour quantite d'interet SIF (stress intensity factor) : I, II, III
+    static const string direction_extractor = "xx"; // direction de l'operateur d'extraction
+                                                   // pour les quantites d'interet mean_sigma, mean_epsilon, pointwise_sigma, pointwise_epsilon : xx, yy, xy, zz, xz, yz
+                                                   // pour la quantite d'interet pointwise_dep : x, y, z
+                                                   // pour la quantite d'interet SIF (stress intensity factor) : I, II, III
     
     /// Zone of interest
     /// ----------------
@@ -139,7 +141,7 @@ int main( int argc, char **argv ) {
     static const T k_max = 7.; // parametre k_max du domaines homothetique (amelioration steklov) : facteur multiplicatif devant le rayon du cercle/sphere (shape circle/sphere)
     static const T k_opt = 4.4; // parametre k_opt du domaine homothetique (amelioration rayleigh) : facteur multiplicatif devant le rayon du cercle/sphere (shape circle/sphere)
     static const string integration_k = "trapeze"; // type d'integration sur le parametre k (amelioration steklov) : gauss, trapeze, IPP
-    static const unsigned integration_nb_points = 100; // nb d'intervalles pour l'integration type trapeze sur le parametre k (amelioration steklov)
+    static const unsigned integration_nb_points = 1000; // nb d'intervalles pour l'integration type trapeze sur le parametre k (amelioration steklov)
     
     /// Parameters for iterative solver
     /// -------------------------------
@@ -259,22 +261,12 @@ int main( int argc, char **argv ) {
 //    f.get_initial_conditions();
 //    f.update_variables();
 //    f.call_after_solve();
-    
-//    for (unsigned i=0;i<m.node_list.size();++i) {
-//        for (unsigned d=0;d<dim;++d)
-//            cout << "node[" << i << "].pos[" << d << "] = " << m.node_list[i].pos[d] << endl;
-//        for (unsigned d=0;d<dim;++d)
-//            cout << "node[" << i << "].dep[" << d << "] = " << m.node_list[i].dep[d] << endl;
-//        cout << endl << endl;
-//    }
-//    for (unsigned i=0;i<f.vectors[0].size();++i)
-//        cout << "vector[" << i << "] = " << ( f.vectors[0] )[i] << endl;
 
     /// Verification de l'equilibre du pb direct
     /// ----------------------------------------
     if ( verif_eq )
         check_equilibrium( f, "direct" );
-
+    
     /// Calcul de la norme du champ de deplacement approche du pb direct
     /// ----------------------------------------------------------------
     calcul_norm_dep( m, f, "direct", want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation );
@@ -422,8 +414,8 @@ int main( int argc, char **argv ) {
             /// -------------------------
             TF f_adjoint( m_adjoint );
             
-            /// Conditions aux limites du pb adjoint
-            /// ------------------------------------
+            /// Proprietes materiaux et Conditions aux limites du pb adjoint
+            /// ------------------------------------------------------------
             set_material_properties( f_adjoint, m_adjoint, structure );
             set_boundary_conditions( f_adjoint, m_adjoint, boundary_condition_D, "adjoint", structure, loading, mesh_size );
             set_load_conditions( m_adjoint, f_adjoint, m, m_crown, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, interest_quantity, direction_extractor, pointwise_interest_quantity, want_local_enrichment );
@@ -455,7 +447,7 @@ int main( int argc, char **argv ) {
             /// Calcul de la norme du champ de deplacement approche du pb adjoint
             /// -----------------------------------------------------------------
             calcul_norm_dep( m_adjoint, f_adjoint, "adjoint", want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation );
-
+            
             /// --------------------------------------------------------------------------------- ///
             /// Calcul et Affichage des informations relatives a la geometrie du maillage adjoint ///
             /// --------------------------------------------------------------------------------- ///

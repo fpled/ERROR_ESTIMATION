@@ -138,7 +138,7 @@ void set_material_properties( TF &f, TM &m, const string &structure ) {
             }
             /// Eprouvette 3D
             /// -------------
-            else if ( structure == "test_specimen" ) {
+            else if ( structure.find("test_specimen") != string::npos ) {
                 young = 1.58e5;
                 poisson = 0.28;
                 T sigma_y = 289e6;

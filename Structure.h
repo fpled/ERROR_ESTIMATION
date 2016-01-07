@@ -16,12 +16,12 @@
 #include "LMT/include/mesh/read_msh_2.h" // sert a definir la fonction read_msh_2() pour charger un maillage a partir d'un fichier .msh
 #include "LMT/include/mesh/read_avs.h" // sert a definir la fonction read_avs() pour charger un maillage a partir d'un fichier .avs
 #include "LMT/include/mesh/read_inp.h" // sert a definir la fonction read_inp() pour charger un maillage a partir d'un fichier .inp
-#include "LMT/include/mesh/ReaderINP.h" // sert a definir la fonction read_inp() pour charger un maillage a partir d'un fichier .inp
+#include "LMT/include/mesh/ReaderINP.h" // sert a definir la fonction parse() pour charger un maillage et lire des donnees a partir d'un fichier .inp
 #include "LMT/include/mesh/read_vtu.h" // sert a definir la fonction read_vtu() pour charger un maillage a partir d'un fichier .vtu
 #include "LMT/include/mesh/read_vtk.h" // sert a definir la fonction read_vtk() pour charger un maillage a partir d'un fichier .vtk
 #include "LMT/include/mesh/remove_lonely_nodes.h" // sert a retirer les noeuds seuls d'un maillage
 #include "LMT/include/mesh/refinement.h" // sert a raffiner un maillage selon un critere donne
-#include "LMT/include/util/Hdf.h"
+#include "LMT/include/util/Hdf.h" // sert a lire des donnees a partir d'un fichier .h5 ou .hdf5
 #include "LMT/include/containers/Tens3.h"
 #include "GEOMETRY/Calcul_geometry.h"
 #include <stdio.h>
@@ -1018,9 +1018,11 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
         }
         /// Eprouvette 3D
         /// -------------
-        else if ( structure == "test_specimen" ) {
-//            read_inp( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-            ReaderINP<TM> RI( m, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+        else if ( structure.find("test_specimen") != string::npos ) {
+            size_t off = structure.rfind( "_" );
+            string str = structure.substr( off+1 );
+//            read_inp( m, ("MESH_AVS/TEST_SPECIMEN_3D/test_specimen_" + str + "_Hexa.inp").c_str() );
+            ReaderINP<TM> RI( m, ("MESH_AVS/TEST_SPECIMEN_3D/test_specimen_" + str + "_Hexa.inp").c_str() );
 //            RI.display_map_node();
 //            cout << "Number of nodes = " << m.node_list.size() << endl;
 //            for (unsigned i=0;i<m.node_list.size();++i) {
@@ -1039,8 +1041,8 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
 //            RI.display_map_step();
 //            RI.display_map_surface( true );
             if ( want_ref ) {
-//                read_inp( m_ref, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
-                ReaderINP<TM> RI_ref( m_ref, "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp" );
+//                read_inp( m_ref, ("MESH_AVS/TEST_SPECIMEN_3D/test_specimen_" + str + "_Hexa.inp").c_str() );
+                ReaderINP<TM> RI_ref( m_ref, ("MESH_AVS/TEST_SPECIMEN_3D/test_specimen_" + str + "_Hexa.inp").c_str() );
                 for (unsigned n=0;n<refinement_deg_ref;++n) {
                     divide_element( m_ref );
                 }
