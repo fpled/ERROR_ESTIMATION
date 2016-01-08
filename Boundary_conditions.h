@@ -729,8 +729,8 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                 TM mesh;
                 size_t off = structure.rfind( "_" );
                 string str = structure.substr( off+1 );
-                const string filename = "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_" + str + "_Hexa.inp";
-                ReaderINP<TM> RI( mesh, filename.c_str() );
+                const char* filename = ("MESH_AVS/TEST_SPECIMEN_3D/test_specimen_" + str + "_Hexa.inp").c_str();
+                ReaderINP<TM> RI( mesh, filename );
                 RI.set_constraint_by_step( f, loading, penalty_val );
             }
             m.update_skin();

@@ -1021,9 +1021,9 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
         else if ( structure.find("test_specimen") != string::npos ) {
             size_t off = structure.rfind( "_" );
             string str = structure.substr( off+1 );
-            const string filename = "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_" + str + "_Hexa.inp";
-//            read_inp( m, filename.c_str() );
-            ReaderINP<TM> RI( m, filename.c_str() );
+            const char* filename = ("MESH_AVS/TEST_SPECIMEN_3D/test_specimen_" + str + "_Hexa.inp").c_str();
+//            read_inp( m, filename );
+            ReaderINP<TM> RI( m, filename );
 //            RI.display_map_node();
 //            cout << "Number of nodes = " << m.node_list.size() << endl;
 //            for (unsigned i=0;i<m.node_list.size();++i) {
@@ -1042,8 +1042,8 @@ void create_structure( TM &m, TM &m_ref, const string &pb, const string &structu
 //            RI.display_map_step();
 //            RI.display_map_surface( true );
             if ( want_ref ) {
-//                read_inp( m_ref, filename.c_str() );
-                ReaderINP<TM> RI_ref( m_ref, filename.c_str() );
+//                read_inp( m_ref, filename );
+                ReaderINP<TM> RI_ref( m_ref, filename );
                 for (unsigned n=0;n<refinement_deg_ref;++n) {
                     divide_element( m_ref );
                 }
