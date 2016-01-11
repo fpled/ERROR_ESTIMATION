@@ -1,23 +1,11 @@
 import "EF/std_elements.met"
 import "../Handbook_functions.met"
 
-dim := 3
-e := SymbolicElement[ Hexa_20, dim ]()
+dim := 2
+e := SymbolicElement[ Quad_16, dim ]()
 #face := SymbolicElement[ Bar, dim ]()
 infon e.get_name()
 infon e.get_order_interpolation()
-#e2 := SymbolicElement[ QuadGeneric[ 2 ], dim ]()
-#infon e2.get_name()
-#infon e2.get_order_interpolation()
-#e3 := SymbolicElement[ QuadGeneric[ 3 ], dim ]()
-#infon e3.get_name()
-#infon e3.get_order_interpolation()
-#e4 := SymbolicElement[ QuadGeneric[ 4 ], dim ]()
-#infon e4.get_name()
-#infon e4.get_order_interpolation()
-#e5 := SymbolicElement[ QuadGeneric[ 5 ], dim ]()
-#infon e5.get_name()
-#infon e5.get_order_interpolation()
 # infon max( e.order_interpolation )
 # e.assume_const_jac = false
 # infon e.assume_const_jac
@@ -519,7 +507,7 @@ e.pos_nodes[3] = [110 22] # 33
 # a := e.gauss_num_integration( e.var_inter[ 0 ], order_diff = 2 )
 # b := e.gauss_num_integration( e.var_inter[ 1 ], order_diff = 2 )
 # c := e.gauss_num_integration( e.var_inter[ 0 ] * e.var_inter[ 1 ], order_diff = 2 )
-# infon 106*(1+c-b-a)+110*(b-c)+115*(a-c)+115*c 
+# infon 106*(1+c-b-a)+110*(b-c)+115*(a-c)+115*c
 # infon 19*(1-a-b+c)+22*(b-c)+11*(a-c)+18*c
 
 # P := dot( e.get_shape_functions( "lagrange" ), e.pos_nodes )
@@ -860,7 +848,7 @@ e.pos_nodes[3] = [110 22] # 33
 # infon e.get_nb_dim()
 # infon c->get_nb_nodes_()
 # for i in 1 .. (@c).get_nb_nodes_()
-    # infon c->interpolation( diff((@c).val[i]) ) 
+    # infon c->interpolation( diff((@c).val[i]) )
     # infon c->get_shape_functions()[0]
 # phi := e.new_variable( "\\phi", interpolation_type = "nodal", sym = sym_phi )
 # for c_ in e.children(1)
@@ -869,11 +857,11 @@ e.pos_nodes[3] = [110 22] # 33
     # int_phi_phj := Mat[Op](c->nb_nodes,c->nb_nodes)
     # infon c->num_child
     # for i in 0 .. c->nb_nodes
-        # phi_i := c->shape_functions[i] 
+        # phi_i := c->shape_functions[i]
         # infon phi_i             # fonction de forme numero i
         # for j in 0 .. c->nb_nodes
             # phi_j := c->shape_functions[j]
-            # infon phi_j 
+            # infon phi_j
             # int_phi_phj[ i, j ] = c->integration( phi_i * phi_j )
         # int_phi_phj.display_tex( "x_" + cpt++ )
         # for k in 0 .. dim
@@ -946,7 +934,7 @@ e.pos_nodes[3] = [110 22] # 33
 # infon e.projection_with_normals ( normals, point, nb_iterations = 1 )
 #  infon e.get_shape_functions()
 #  e.get_shape_functions().display_tex( "x_" + cpt++ )
-# infon e.area_intersection( e ) 
+# infon e.area_intersection( e )
 # infon e
 # infon e.TE::children
 # infon e.children( 1 )[0]->name
@@ -1123,7 +1111,7 @@ for gamma_ in e.children( 1 )
     gamma_node_numbers_to_vertex_node_numbers := gamma->node_numbers_to_vertex_node_numbers
     infon gamma_node_numbers_to_vertex_node_numbers
     gamma_vertex_node_numbers_to_node_numbers_in_parent_cpp := gamma->vertex_node_numbers_to_node_numbers_in_parent_cpp
-    infon gamma_vertex_node_numbers_to_node_numbers_in_parent_cpp 
+    infon gamma_vertex_node_numbers_to_node_numbers_in_parent_cpp
 ~#
 # for i in 0 .. e.nb_nodes
     # if e.node_number_is_a_vertex( i )
@@ -1134,7 +1122,7 @@ for gamma_ in e.children( 1 )
                 # nb_ddl_vh_star_e += e.dim * ( gamma->nb_vertex_nodes -1 )
         # nb_ddl_vh_star_e += e.dim
         # infon nb_ddl_vh_star_e
-        
+
 # for gamma_ in e.children( 1 )
     # gamma := child_cast( gamma_ )
     # normale := gamma->normal
@@ -1152,7 +1140,7 @@ for gamma_ in e.children( 1 )
     # if e.node_number_is_a_vertex( n )
         # lambda_n := e.shape_functions_vertex[ e.corr_cpp(n) ]
         # lambda_n.display_tex( "x_" + cpt++ )
-        
+
 # sym_vh_star_e := Vec[ Op ]()
 # vh_star_e := e.new_variable( "\\v_h^{\\ast}", nb_dim = [ e.dim ], sym = sym_vh_star_e, interpolation_type = "vertex_nodal" )
 # sym_vh_star_e.display_tex( "x_" + cpt++ )
@@ -1175,11 +1163,11 @@ for gamma_ in e.children( 1 )
     # face := child_cast( face_ )
     # int_phi_phj := Mat[Op](face->nb_nodes,face->nb_nodes)
     # for i in 0 .. face->nb_nodes
-        # phi_i := face->shape_functions[i] 
+        # phi_i := face->shape_functions[i]
         # infon phi_i             # fonction de forme numero i
         # for j in 0 .. face->nb_nodes
             # phi_j := face->shape_functions[j]
-            # infon phi_j 
+            # infon phi_j
             # int_phi_phj[ i, j ] = face->integration( phi_i * phi_j )
     # int_phi_phj.display_tex( "x_" + cpt++ )
     # ( face->integration( (1-face->var_inter[0]-face->var_inter[1])*face->var_inter[0] ) ).display_tex( "x_" + cpt++ )
@@ -1225,7 +1213,7 @@ for gamma_ in e.children( 1 )
             # e.pos_nodes[2] = [0 1 0]
             # e.pos_nodes[3] = [0 0 1]
             # B_e.display_tex( "tmp_" + cpt++ )
-            
+
 # mes_symboles := Vec[Op]()
 # sig := e.new_variable( "sig", nb_dim = [e.dim,e.dim], sym = mes_symboles, interpolation_type = "elementary" )
 # sig.display_tex( "x_" + cpt++ )
@@ -1251,12 +1239,12 @@ for gamma_ in e.children( 1 )
 # infon e.integration( e.shape_functions[ 1 ] )
 # infon e.integration( e.shape_functions[ 2 ] )
 # infon e.integration( e.shape_functions[ 3 ] )
-        
-        
+
+
 # for face_ in e.children( 1 )
     # face := child_cast( face_ )
     # for i in 0 .. face->nb_nodes
-        # phi_i := face->shape_functions[i] 
+        # phi_i := face->shape_functions[i]
         # infon phi_i             # fonction de forme numero i
         # toto := face->integration( phi_i )
     # int := integration( 1-face->var_inter[0], face->var_inter[0], 0, 1 )
@@ -1265,8 +1253,8 @@ for gamma_ in e.children( 1 )
     # infon int2
         # toto .display_tex( "x_" + cpt++ )
 
-        
-        
+
+
 
 # cw_1.add( "K", K, __print__ )
 # cw_1.add( "dep_hat", dep_hat, __print__ )
@@ -1379,5 +1367,3 @@ for gamma_ in e.children( 1 )
     #for j in 0 .. K_hat.nb_cols
         #mat_hat[i,j] = Float96( K_hat[i,j] )
 #mat_hat.display_tex( "mat_hat" )
-
-

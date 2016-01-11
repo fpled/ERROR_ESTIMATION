@@ -27,10 +27,8 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale ///
     /// ------------------------------------------------------------------------------------------------------- ///
     
-    cout << "------------------------------------------------------------" << endl;
-    cout << "Construction d'un champ de contrainte admissible par element" << endl;
-    cout << "Calcul d'un estimateur d'erreur globale" << endl;
-    cout << "------------------------------------------------------------" << endl << endl;
+    cout << "Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale" << endl;
+    cout << "-------------------------------------------------------------------------------------------------------" << endl << endl;
 
     theta = 0.;
     theta_init = 0.;
@@ -50,8 +48,8 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
 
     if ( debug_error_estimate or debug_method or debug_method_enhancement ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
-            T ecre_elem = theta_elem[ n ] / 2;
-            T ecre_elem_init = theta_elem_init[ n ] / 2;
+            T ecre_elem = theta_elem[ n ] / 2.;
+            T ecre_elem_init = theta_elem_init[ n ] / 2.;
             cout << "contribution a la mesure globale de l'erreur en relation de comportement au carre de l'element " << n << " :" << endl;
             cout << "ecre_elem^2 = " << ecre_elem << endl;
             cout << "ecre_elem_init^2 = " << ecre_elem_init << endl;

@@ -26,8 +26,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     
     static const unsigned dim = TM::dim;
     
-    TicToc t_construct_force_fluxes_std;
-    t_construct_force_fluxes_std.start();
+    TicToc t_force_fluxes_std;
+    t_force_fluxes_std.start();
 
     Vec<unsigned> node_cpt_face;
     Vec< Vec<unsigned> > node_list_face;
@@ -62,7 +62,6 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     Vec< Vec<unsigned> > face_type;
     construct_face_type( m, f, face_type, debug_geometry );
 
-    cout << "-------------------------------------------" << endl;
     cout << "Construction standard des densites d'effort" << endl;
     cout << "-------------------------------------------" << endl << endl;
 
@@ -70,7 +69,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     /// Calcul du nb de lignes de la matrice A[ j ][ d ] : nb_unk[ j ][ d ]
     /// --------------------------------------------------------------------------------------------------------------------------------------
 
-    cout << "Calcul du vecteur nb_unk" << endl << endl;
+    if ( debug_method )
+        cout << "Calcul du vecteur nb_unk" << endl << endl;
 
     Vec< Vec<unsigned> > nb_unk;
     nb_unk.resize( nb_vertex_nodes );
@@ -79,25 +79,25 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         nb_unk[ j ].set( 0 );
     }
 
-    m.update_skin();
     Vec< Vec< Vec<unsigned> > > face_ind;
     face_ind.resize( m.sub_mesh(Number<1>()).elem_list.size() );
     for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
         face_ind[ k ].resize( dim );
     }
 
+    m.update_skin();
     apply( m.sub_mesh(Number<1>()).elem_list, Calcul_Face_Ind_EESPT(), face_ind, nb_unk, connect_node_to_vertex_node ); // nb_unk[ j ][ d ] contient le nb de lignes de la matrice A[ j ][ d ] associee au j eme noeud sommet dans la direction d // face_ind[ k ][ d ][ numero_noeud_sommet_dans_face (0 ou 1) ] = indice de debut de ligne dans la matrice A[ j ][ d ] pour chaque face k du maillage et chaque la direction d
 
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "nb d'inconnues lambda_F_hat associees au noeud sommet " << j << " dans la direction " << d << " : " << nb_unk[ j ][ d ] << endl;
+                cout << "nb d'inconnues lambda_F_hat associees au noeud sommet " << j << " dans la direction " << d << " = " << nb_unk[ j ][ d ] << endl;
             }
         }
         cout << endl;
         for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "indice de debut de ligne de la face " << k << " dans les matrices A[ noeud sommet connecte a la face " << k << " ] dans la direction " << d << " : " << face_ind[ k ][ d ] << endl;
+                cout << "indice de debut de ligne de la face " << k << " dans les matrices A[ noeud sommet connecte a la face " << k << " ] dans la direction " << d << " = " << face_ind[ k ][ d ] << endl;
             }
         }
         cout << endl << endl;
@@ -107,7 +107,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     /// Calcul du nb de colonnes de la matrice A[ j ][ d ] : nb_eq[ j ][ d ]
     /// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    cout << "Calcul du vecteur nb_eq" << endl << endl;
+    if ( debug_method )
+        cout << "Calcul du vecteur nb_eq" << endl << endl;
 
     Vec< Vec<unsigned> > nb_eq; 
     nb_eq.resize( nb_vertex_nodes );
@@ -127,13 +128,13 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "nb d'equations associees au noeud sommet " << j << " dans la direction " << d << " : " << nb_eq[ j ][ d ] << endl;
+                cout << "nb d'equations associees au noeud sommet " << j << " dans la direction " << d << " = " << nb_eq[ j ][ d ] << endl;
             }
         }
         cout << endl;
         for (unsigned n=0;n<m.elem_list.size();++n) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "indice de debut de colonne de l'element " << n << " dans les matrices A[ noeud sommet connecte a l'element " << n << " dans la direction " << d << " ] : " << vertex_nodal_ind[ n ][ d ] << endl;
+                cout << "indice de debut de colonne de l'element " << n << " dans les matrices A[ noeud sommet connecte a l'element " << n << " dans la direction " << d << " ] = " << vertex_nodal_ind[ n ][ d ] << endl;
             }
         }
         cout << endl << endl;
@@ -142,7 +143,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     /// Construction des matrices A[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
     /// --------------------------------------------------------------------------------------------------
 
-    cout << "Construction des matrices A" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des matrices A" << endl << endl;
 
     Vec< Vec< Mat<T, Gen<>, SparseLine<> > > > A; 
     A.resize( nb_vertex_nodes );
@@ -165,8 +167,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "dimension de la matrice A associee au noeud sommet " << j << " dans la direction " << d << " : ( " << nb_unk[ j ][ d ] << ", " << nb_eq[ j ][ d ] << " )" << endl;
-                cout << "matrice A associee au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                cout << "dimension de la matrice A associee au noeud sommet " << j << " dans la direction " << d << " = ( " << nb_unk[ j ][ d ] << ", " << nb_eq[ j ][ d ] << " )" << endl;
+                cout << "matrice A associee au noeud sommet " << j << " dans la direction " << d << " =" << endl;
                 cout << A[ j ][ d ] << endl << endl;
             }
         }
@@ -176,7 +178,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     /// Construction des vecteurs R[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
     /// --------------------------------------------------------------------------------------------------
 
-    cout << "Construction des vecteurs R" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des vecteurs R" << endl << endl;
 
     Vec< Vec< Vec<T> > > R;
     R.resize( nb_vertex_nodes );
@@ -203,8 +206,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "dimension du vecteur R associe au noeud sommet " << j << " dans la direction " << d << " : " << nb_eq[ j ][ d ] << endl;
-                cout << "vecteur R associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                cout << "dimension du vecteur R associe au noeud sommet " << j << " dans la direction " << d << " = " << nb_eq[ j ][ d ] << endl;
+                cout << "vecteur R associe au noeud sommet " << j << " dans la direction " << d << " =" << endl;
                 cout << R[ j ][ d ] << endl << endl;
             }
         }
@@ -217,8 +220,10 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     /// Construction de la liste des noeuds connectes a un noeud sommet et appartenant au bord du patch : edge_node_list_vertex_node[ j ]
     /// ----------------------------------------------------------------------------------------------------------------------------------
 
-    cout << "Construction de la liste des noeuds connectes a un noeud sommet" << endl << endl;
-    cout << "Construction de la liste des noeuds connectes a un noeud sommet et appartenant au bord du patch" << endl << endl;
+    if ( debug_method )  {
+        cout << "Construction de la liste des noeuds connectes a un noeud sommet" << endl;
+        cout << "Construction de la liste des noeuds connectes a un noeud sommet et appartenant au bord du patch" << endl << endl;
+    }
 
     Vec< Vec<unsigned> > node_list_vertex_node;
     node_list_vertex_node.resize( nb_vertex_nodes );
@@ -243,8 +248,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
 
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
-            cout << "liste des noeuds connectes au noeud sommet " << j << " : " << node_list_vertex_node[ j ] << endl ;
-            cout << "liste des noeuds connectes au noeud sommet " << j << " et appartenant au bord du patch : " << edge_node_list_vertex_node[ j ] << endl << endl;
+            cout << "liste des noeuds connectes au noeud sommet " << j << " = " << node_list_vertex_node[ j ] << endl ;
+            cout << "liste des noeuds connectes au noeud sommet " << j << " et appartenant au bord du patch = " << edge_node_list_vertex_node[ j ] << endl << endl;
         }
     }
 
@@ -253,12 +258,14 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     face_list_vertex_node.free();
 
     /// Suppression du noyau des matrices A[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
-    /// Stockage des inconnues non bloques : eq_indep[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
+    /// Stockage des inconnues non bloquees : eq_indep[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
     /// Calcul du nb d'equations independantes : nb_eq_indep[ i ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
     /// ---------------------------------------------------------------------------------------------------------------------------
 
-    cout << "Suppression du noyau des matrices A" << endl << endl;
-    cout << "Calcul du vecteur nb_eq_indep" << endl << endl;
+    if ( debug_method ) {
+        cout << "Suppression du noyau des matrices A" << endl;
+        cout << "Calcul du vecteur nb_eq_indep" << endl << endl;
+    }
 
     Vec< Vec<unsigned> > nb_eq_indep;
     nb_eq_indep.resize( nb_vertex_nodes );
@@ -304,10 +311,10 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "nb d'equations associees au noeud sommet " << j << " dans la direction " << d << " avant suppression du noyau : " << nb_eq[ j ][ d ] << endl;
-                cout << "nb d'equations supprimees associees au noeud sommet " << j << " dans la direction " << d << " : " << ( nb_eq[ j ][ d ] - nb_eq_indep[ j ][ d ] ) << endl;
-                cout << "nb d'equations independantes associees au noeud sommet " << j << " dans la direction " << d << " apres suppression du noyau : " << nb_eq_indep[ j ][ d ] << endl;
-                cout << "indices des colonnes dans la matrice A_tilde et des lignes dans le vecteur R_tilde associes au noeud sommet " << j << " dans la direction " << d << " : " << eq_indep[ j ][ d ] << endl << endl;
+                cout << "nb d'equations associees au noeud sommet " << j << " dans la direction " << d << " avant suppression du noyau = " << nb_eq[ j ][ d ] << endl;
+                cout << "nb d'equations supprimees associees au noeud sommet " << j << " dans la direction " << d << " = " << ( nb_eq[ j ][ d ] - nb_eq_indep[ j ][ d ] ) << endl;
+                cout << "nb d'equations independantes associees au noeud sommet " << j << " dans la direction " << d << " apres suppression du noyau = " << nb_eq_indep[ j ][ d ] << endl;
+                cout << "indices des colonnes dans la matrice A_tilde et des lignes dans le vecteur R_tilde associes au noeud sommet " << j << " dans la direction " << d << " = " << eq_indep[ j ][ d ] << endl << endl;
             }
         }
     }
@@ -322,7 +329,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     /// Construction des matrices A_tilde[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
     /// --------------------------------------------------------------------------------------------------------
 
-    cout << "Construction des matrices A_tilde" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des matrices A_tilde" << endl << endl;
 
     Vec< Vec< Mat<T, Gen<>, SparseLine<> > > > A_tilde;
     A_tilde.resize( nb_vertex_nodes );
@@ -345,8 +353,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "dimension de la matrice A_tilde associee au noeud sommet " << j << " dans la direction " << d << " : ( " << nb_unk[ j ][ d ] << ", " << nb_eq_indep[ j ][ d ] << " )" << endl;
-                cout << "matrice A_tilde associee au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                cout << "dimension de la matrice A_tilde associee au noeud sommet " << j << " dans la direction " << d << " = ( " << nb_unk[ j ][ d ] << ", " << nb_eq_indep[ j ][ d ] << " )" << endl;
+                cout << "matrice A_tilde associee au noeud sommet " << j << " dans la direction " << d << " =" << endl;
                 cout << A_tilde[ j ][ d ] << endl << endl;
             }
         }
@@ -358,7 +366,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     /// Construction des vecteurs R_tilde[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
     /// --------------------------------------------------------------------------------------------------------
 
-    cout << "Construction des vecteurs R_tilde" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des vecteurs R_tilde" << endl << endl;
 
     Vec< Vec< Vec<T> > > R_tilde;
     R_tilde.resize( nb_vertex_nodes );
@@ -382,8 +391,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "dimension du vecteur R_tilde associe au noeud sommet " << j << " dans la direction " << d << " : " << nb_eq_indep[ j ][ d ] << endl;
-                cout << "vecteur R_tilde associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                cout << "dimension du vecteur R_tilde associe au noeud sommet " << j << " dans la direction " << d << " = " << nb_eq_indep[ j ][ d ] << endl;
+                cout << "vecteur R_tilde associe au noeud sommet " << j << " dans la direction " << d << " =" << endl;
                 cout << R_tilde[ j ][ d ] << endl << endl;
             }
         }
@@ -396,7 +405,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     /// Construction des vecteurs lambda_F[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
     /// ------------------------------------------------------------------------------------------------------------
 
-    cout << "Construction des vecteurs lambda_F" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des vecteurs lambda_F" << endl << endl;
 
     Vec< Vec< Vec<T> > > lambda_F;
     lambda_F.resize( nb_vertex_nodes );
@@ -414,16 +424,13 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     degre_p.set( 0 );
     apply( m.elem_list, Get_Elem_Degree(), degre_p );
 
-    if ( debug_method ) {
-        cout << "degre du premier element : " << degre_p[ 0 ] << endl;
-    }
-
     if ( degre_p[ 0 ] == 1 ) {
         
         /// Cas p = 1
         /// ---------
         
-        cout << "Cas : p = 1" << endl << endl;
+        if ( debug_method )
+            cout << "Cas : degre p = 1" << endl << endl;
         
         Vec< Vec< Vec<T> > > lambda_F_face;
         lambda_F_face.resize( m.sub_mesh(Number<1>()).elem_list.size() );
@@ -439,7 +446,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         /// Construction des matrices B[ k ][ d ] pour chaque face k du maillage et chaque direction d
         /// ------------------------------------------------------------------------------------------
         
-        cout << "Construction des matrices B" << endl << endl;
+        if ( debug_method )
+            cout << "Construction des matrices B" << endl << endl;
         
         Vec< Vec< Mat<T, Gen<>, SparseUMFPACK > > > B; 
         B.resize( m.sub_mesh(Number<1>()).elem_list.size() );
@@ -456,8 +464,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         if ( debug_method ) {
             for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
                 for (unsigned d=0;d<dim;++d) {
-                    cout << "dimension de la matrice B associe a la face " << k << " dans la direction " << d << " : ( " << vertex_node_cpt_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << ", " << vertex_node_cpt_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << " )" << endl;
-                    cout << "matrice B associe a la face " << k << " dans la direction " << d << " :" << endl;
+                    cout << "dimension de la matrice B associe a la face " << k << " dans la direction " << d << " = ( " << vertex_node_cpt_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << ", " << vertex_node_cpt_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << " )" << endl;
+                    cout << "matrice B associe a la face " << k << " dans la direction " << d << " =" << endl;
                     cout << B[ k ][ d ] << endl << endl;
                 }
             }
@@ -466,7 +474,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         /// Construction des vecteurs Q[ k ][ d ] pour chaque face k du maillage et chaque direction d
         /// ------------------------------------------------------------------------------------------
         
-        cout << "Construction des vecteurs Q" << endl << endl;
+        if ( debug_method )
+            cout << "Construction des vecteurs Q" << endl << endl;
         
         Vec< Vec< Vec<T> > > Q; 
         Q.resize( m.sub_mesh(Number<1>()).elem_list.size() );
@@ -486,14 +495,14 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         calcul_skin_elem_vector_Q_p_1.node_list_face = &node_list_face;
         calcul_skin_elem_vector_Q_p_1.pb = &pb;
         calcul_skin_elem_vector_Q_p_1.want_local_enrichment = &want_local_enrichment;
-        
+
         apply( m.elem_list, calcul_skin_elem_vector_Q_p_1, m, f, Q );
         
         if ( debug_method ) {
             for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
                 for (unsigned d=0;d<dim;++d) {
-                    cout << "dimension du vecteur Q associe a la face " << k << " dans la direction " << d << " : " << vertex_node_cpt_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << endl;
-                    cout << "vecteur Q associe a la face " << k << " dans la direction " << d << " :" << endl;
+                    cout << "dimension du vecteur Q associe a la face " << k << " dans la direction " << d << " = " << vertex_node_cpt_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << endl;
+                    cout << "vecteur Q associe a la face " << k << " dans la direction " << d << " =" << endl;
                     cout << Q[ k ][ d ] << endl << endl;
                 }
             }
@@ -503,11 +512,10 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         /// Construction des vecteurs lambda_F_face[ k ][ d ] pour chaque face k du maillage et chaque direction d
         /// ----------------------------------------------------------------------------------------------------------------------------------------------
         
-        cout << "Resolution des systemes lineaires sur chaque face du maillage : B * lambda_F_face = Q" << endl;
-        cout << "Construction des vecteurs lambda_F_face" << endl << endl;
-        
-        TicToc t_solve_p_1_EESPT;
-        t_solve_p_1_EESPT.start();
+        if ( debug_method ) {
+            cout << "Resolution des systemes lineaires B * lambda_F_face = Q" << endl;
+            cout << "Construction des vecteurs lambda_F_face" << endl << endl;
+        }
         
         for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
             for (unsigned d=0;d<dim;++d) {
@@ -516,14 +524,11 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
             }
         }
         
-        t_solve_p_1_EESPT.stop();
-        cout << "Temps de calcul de la resolution des systemes lineaires pour la technique EESPT : " << t_solve_p_1_EESPT.res << endl << endl;
-        
         if ( debug_method ) {
             for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
                 for (unsigned d=0;d<dim;++d) {
-                    cout << "dimension du vecteur lambda_F_face associe a la face " << k << " dans la direction " << d << " : " << vertex_node_cpt_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << endl;
-                    cout << "vecteur lambda_F_face associe a la face " << k << " dans la direction " << d << " :" << endl;
+                    cout << "dimension du vecteur lambda_F_face associe a la face " << k << " dans la direction " << d << " = " << vertex_node_cpt_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << endl;
+                    cout << "vecteur lambda_F_face associe a la face " << k << " dans la direction " << d << " =" << endl;
                     cout << lambda_F_face[ k ][ d ] << endl << endl;
                 }
             }
@@ -536,7 +541,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         /// Construction des vecteurs lambda_F[ j ][ d ] pour chaque sommet j du maillage et chaque direction d
         /// ------------------------------------------------------------------------------------------------------
         
-        cout << "Construction des vecteurs lambda_F" << endl << endl;
+        if ( debug_method )
+            cout << "Construction des vecteurs lambda_F" << endl << endl;
         
         Calcul_Vertex_Nodal_Vector_lambda_F_p_1 calcul_vertex_nodal_vector_lambda_F_p_1;
         calcul_vertex_nodal_vector_lambda_F_p_1.face_ind = &face_ind;
@@ -552,9 +558,11 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         /// Cas p >= 2
         /// ----------
         
-        cout << "Cas : p >= 2" << endl << endl;
+        if ( debug_method )
+            cout << "Cas : degre p >= 2" << endl << endl;
         
-        cout << "Construction des vecteurs lambda_F" << endl << endl;
+        if ( debug_method )
+            cout << "Construction des vecteurs lambda_F" << endl << endl;
         
         Calcul_Vertex_Nodal_Vector_lambda_F_p_2 calcul_vertex_nodal_vector_lambda_F_p_2;
         calcul_vertex_nodal_vector_lambda_F_p_2.connect_node_to_vertex_node = &connect_node_to_vertex_node;
@@ -571,8 +579,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "dimension du vecteur lambda_F associe au noeud sommet " << j << " dans la direction " << d << " : " << nb_unk[ j ][ d ] << endl;
-                cout << "vecteur lambda_F associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                cout << "dimension du vecteur lambda_F associe au noeud sommet " << j << " dans la direction " << d << " = " << nb_unk[ j ][ d ] << endl;
+                cout << "vecteur lambda_F associe au noeud sommet " << j << " dans la direction " << d << " =" << endl;
                 cout << lambda_F[ j ][ d ] << endl << endl;
             }
         }
@@ -583,10 +591,12 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     node_list_face.free();
 
     /// Condition de minimsation
-    /// ------------------------
+    /// si minimisation[ j ][ d ] = 0, pas d'etape de minimisation d'une fonction-cout pour le noeud sommet j du maillage dans la direction d
+    /// si minimisation[ j ][ d ] = 1, etape de minimisation d'une fonction-cout pour le noeud sommet j du maillage dans la direction d
+    /// -------------------------------------------------------------------------------------------------------------------------------------
 
-    cout << "Condition de minimsation" << endl << endl; // si minimisation[ j ][ d ] = 0, alors il n'y a pas d'etape de minimisation d'une fonction-cout pour le noeud sommet j du maillage dans la direction d
-                                                        // si minimisation[ j ][ d ] = 1, il y a une etape de minimisation d'une fonction-cout pour le noeud sommet j du maillage dans la direction d
+    if ( debug_method )
+        cout << "Condition de minimsation" << endl << endl;
 
     Vec< Vec<bool> > minimisation; 
     minimisation.resize( nb_vertex_nodes );
@@ -607,7 +617,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "etape de minimisation associee au noeud sommet " << j << " dans la direction " << d << " : " << minimisation[ j ][ d ] << endl << endl;
+                cout << "etape de minimisation associee au noeud sommet " << j << " dans la direction " << d << " = " << minimisation[ j ][ d ] << endl << endl;
             }
         }
     }
@@ -615,9 +625,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     /// Construction des matrices de minimisation M[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
     /// ------------------------------------------------------------------------------------------------------------------
 
-    cout << "Construction des matrices M" << endl << endl;
-
-    cout << "valeur du coefficient de penalisation : " << penalty_val_N << endl << endl;
+    if ( debug_method )
+        cout << "Construction des matrices M" << endl << endl;
 
     Vec< Vec< Mat< T, Diag<> > > > M; 
     M.resize( nb_vertex_nodes );
@@ -632,8 +641,6 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         }
     }
 
-    m.update_skin();
-
     Calcul_Vertex_Nodal_Matrix_M<T> calcul_vertex_nodal_matrix_M;
     calcul_vertex_nodal_matrix_M.connect_node_to_vertex_node = &connect_node_to_vertex_node;
     calcul_vertex_nodal_matrix_M.face_type = &face_type;
@@ -642,14 +649,15 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     calcul_vertex_nodal_matrix_M.penalty_val_N = &penalty_val_N;
     calcul_vertex_nodal_matrix_M.minimisation = &minimisation;
 
+    m.update_skin();
     apply( m.sub_mesh(Number<1>()).elem_list, calcul_vertex_nodal_matrix_M, m, f, M );
 
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             for (unsigned d=0;d<dim;++d) {
                 if ( minimisation[ j ][ d ] ) {
-                    cout << "dimension de la matrice de minimisation M associee au noeud sommet " << j << " dans la direction " << d << " : ( " << nb_unk[ j ][ d ] << ", " << nb_unk[ j ][ d ] << " )" << endl;
-                    cout << "matrice M associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                    cout << "dimension de la matrice de minimisation M associee au noeud sommet " << j << " dans la direction " << d << " = ( " << nb_unk[ j ][ d ] << ", " << nb_unk[ j ][ d ] << " )" << endl;
+                    cout << "matrice M associe au noeud sommet " << j << " dans la direction " << d << " =" << endl;
                     cout << M[ j ][ d ] << endl << endl;
                 }
             }
@@ -661,7 +669,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     /// Construction des matrices K[ j ][ d ] et des vecteurs F[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
     /// ------------------------------------------------------------------------------------------------------------------------------
 
-    cout << "Construction des matrices K et des vecteurs F" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des matrices K et des vecteurs F" << endl << endl;
 
     Vec< Vec< Mat<T> > > K; 
     K.resize( nb_vertex_nodes );
@@ -671,9 +680,6 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
 
     Vec< Vec< Vec<T> > > U; 
     U.resize( nb_vertex_nodes );
-
-    TicToc t_construct_K_F_EESPT;
-    t_construct_K_F_EESPT.start();
 
     for (unsigned j=0;j<nb_vertex_nodes;++j) {
         K[ j ].resize( dim );
@@ -720,21 +726,18 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         }
     }
 
-    t_construct_K_F_EESPT.stop();
-    cout << "Temps de calcul de remplissage des matrices K et des vecteurs F associes aux problemes de minimisation pour la technique EESPT : " << t_construct_K_F_EESPT.res << endl << endl;
-
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "dimension de la matrice K associee au noeud sommet " << j << " dans la direction " << d << " : ( " << K[ j ][ d ].nb_rows() << ", " << K[ j ][ d ].nb_cols() << " ) "<< endl;
-                cout << "matrice K associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                cout << "dimension de la matrice K associee au noeud sommet " << j << " dans la direction " << d << " = ( " << K[ j ][ d ].nb_rows() << ", " << K[ j ][ d ].nb_cols() << " ) "<< endl;
+                cout << "matrice K associe au noeud sommet " << j << " dans la direction " << d << " =" << endl;
                 cout << K[ j ][ d ] << endl << endl;
             }
         }
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "dimension du vecteur F associe au noeud sommet " << j << " dans la direction " << d << " : " << F[ j ][ d ].size() << endl;
-                cout << "vecteur F associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                cout << "dimension du vecteur F associe au noeud sommet " << j << " dans la direction " << d << " = " << F[ j ][ d ].size() << endl;
+                cout << "vecteur F associe au noeud sommet " << j << " dans la direction " << d << " =" << endl;
                 cout << F[ j ][ d ] << endl << endl;
             }
         }
@@ -752,11 +755,13 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     /// Construction des vecteurs U[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
     /// --------------------------------------------------------------------------------------------------------------------------------------------
 
-    cout << "Resolution des problemes de minimisation K * U = F" << endl;
-    cout << "Construction des vecteurs U" << endl << endl;
+    if ( debug_method ) {
+        cout << "Resolution des pbs de minimisation K * U = F" << endl;
+        cout << "Construction des vecteurs U" << endl << endl;
+    }
 
-    TicToc t_solve_minimization_EESPT;
-    t_solve_minimization_EESPT.start();
+    TicToc t_solve_minimization;
+    t_solve_minimization.start();
 
     for (unsigned j=0;j<nb_vertex_nodes;++j) {
         for (unsigned d=0;d<dim;++d) {
@@ -810,20 +815,22 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         }
     }
 
-    t_solve_minimization_EESPT.stop();
-    cout << "Temps de calcul de la resolution des problemes de minimisation pour la technique EESPT : " << t_solve_minimization_EESPT.res << endl << endl;
+    t_solve_minimization.stop();
+    if ( debug_method )
+        cout << "Temps de calcul de la resolution des pbs de minimisation = " << t_solve_minimization.res << endl << endl;
 
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "dimension du vecteur U associe au noeud sommet " << j << " dans la direction " << d << " : " << U[ j ][ d ].size() << endl;
-                cout << "vecteur U associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                cout << "dimension du vecteur U associe au noeud sommet " << j << " dans la direction " << d << " = " << U[ j ][ d ].size() << endl;
+                cout << "vecteur U associe au noeud sommet " << j << " dans la direction " << d << " =" << endl;
                 cout << U[ j ][ d ] << endl << endl;
             }
         }
     }
     if ( verif_solver_minimisation ) {
-        cout << "Verification de la resolution des problemes de minimisation pour la technique EESPT : tolerance = " << tol_solver_minimisation << endl << endl;
+        if ( debug_method )
+            cout << "Verification de la resolution des pbs de minimisation : tolerance = " << tol_solver_minimisation << endl << endl;
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             for (unsigned d=0;d<dim;++d) {
                 T residual = norm_2( K[ j ][ d ] * U[ j ][ d ] - F[ j ][ d ] );
@@ -831,8 +838,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
                 if ( residual / b > tol_solver_minimisation ) {
                     cout << "residu associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
 //                    cout << "K * U - F =" << endl;
-//                    cout << K[ j ][ d ] * U[ j ][ d ] - F[ j ][ d ] << endl << endl;
-                    cout << "norme du residu = " << residual << endl << endl;
+//                    cout << K[ j ][ d ] * U[ j ][ d ] - F[ j ][ d ] << endl;
+                    cout << "norme du residu = " << residual << endl;
                     cout << "norme du residu relatif = " << residual / b << endl << endl;
                 }
             }
@@ -844,9 +851,10 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     minimisation.free();
 
     /// Construction des vecteurs lambda_F_hat[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
-    /// ----------------------------------------------------------------------------------------------------------------
+    /// -------------------------------------------------------------------------------------------------------------
 
-    cout << "Construction des vecteurs lambda_F_hat" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des vecteurs lambda_F_hat" << endl << endl;
 
     Vec< Vec< Vec<T> > > lambda_F_hat;
     lambda_F_hat.resize( nb_vertex_nodes );
@@ -877,8 +885,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "dimension du vecteur lambda_F_hat associee au noeud sommet " << j << " dans la direction " << d << " : " << nb_unk[ j ][ d ] << endl;
-                cout << "vecteur lambda_F_hat associe au noeud sommet " << j << " dans la direction " << d << " :" << endl;
+                cout << "dimension du vecteur lambda_F_hat associee au noeud sommet " << j << " dans la direction " << d << " = " << nb_unk[ j ][ d ] << endl;
+                cout << "vecteur lambda_F_hat associe au noeud sommet " << j << " dans la direction " << d << " =" << endl;
                 cout << lambda_F_hat[ j ][ d ] << endl << endl;
                 if ( norm_2( trans( A[ j ][ d ] ) * lambda_F_hat[ j ][ d ] - R[ j ][ d ] ) / norm_2( R[ j ][ d ] ) > tol_solver_minimisation ) {
                     cout << "A^T * lambda_F_hat - R =" << endl;
@@ -897,7 +905,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     /// Construction des matrices mat_force_fluxes[ k ] pour chaque face k du maillage
     /// ---------------------------------------------------------------------------------------------------------
 
-    cout << "Construction des vecteurs vec_force_fluxes_std et des matrices mat_force_fluxes_std" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des vecteurs vec_force_fluxes_std et des matrices mat_force_fluxes_std" << endl << endl;
 
     vec_force_fluxes.resize( m.sub_mesh(Number<1>()).elem_list.size() );
 
@@ -927,16 +936,16 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     if ( debug_force_fluxes or debug_method ) {
         for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "dimension du vecteur des densites d'effort associe a la face " << k << " dans la direction " << d << " : " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << endl;
-                cout << "vecteur des densites d'effort associe a la face " << k << " dans la direction " << d << " :" << endl;
+                cout << "dimension du vecteur des densites d'effort associe a la face " << k << " dans la direction " << d << " = " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << endl;
+                cout << "vecteur des densites d'effort associe a la face " << k << " dans la direction " << d << " =" << endl;
                 cout << vec_force_fluxes[ k ][ d ] << endl << endl;
             }
         }
     }
     if ( debug_force_fluxes or debug_method ) {
         for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
-            cout << "dimension de la matrice des densites d'effort associee a la face " << k << " : ( " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << ", " << dim << " )" << endl;
-            cout << "matrice des densites d'effort associee a la face " << k << " :" << endl;
+            cout << "dimension de la matrice des densites d'effort associee a la face " << k << " = ( " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << ", " << dim << " )" << endl;
+            cout << "matrice des densites d'effort associee a la face " << k << " =" << endl;
             cout << mat_force_fluxes[ k ] << endl << endl;
         }
     }
@@ -946,8 +955,8 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     mat_force_fluxes.free();
     connect_node_to_vertex_node.free();
 
-    t_construct_force_fluxes_std.stop();
-    cout << "Temps de calcul de la construction standard des densites d'effort pour la technique EESPT : " << t_construct_force_fluxes_std.res << endl << endl;
+    t_force_fluxes_std.stop();
+    cout << "Temps de calcul de la construction standard des densites d'effort = " << t_force_fluxes_std.res << endl << endl;
 
 }
 

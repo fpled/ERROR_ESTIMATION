@@ -23,11 +23,12 @@ using namespace std;
 template<class TM, class TF, class T>
 void construct_F_hat( TM &m, const TF &f, const string &pb, const bool &balancing, const Vec<bool> &elem_flag_bal, const Vec<bool> &elem_flag_enh, const Vec< Vec< Vec<T> > > &vec_force_fluxes, Vec< Vec<T> > &F_hat, const bool want_local_enrichment = false, const bool debug_method = false, const bool debug_geometry = false ) {
 
-    if ( balancing ) {
-        cout << "Construction des vecteurs F_hat avec procedure d'equilibrage" << endl << endl;
-    }
-    else {
-        cout << "Construction des vecteurs F_hat" << endl << endl;
+
+    if ( debug_method ) {
+        cout << "Construction des vecteurs F_hat";
+        if ( balancing )
+            cout << " avec procedure d'equilibrage";
+        cout << endl << endl;
     }
 
     Vec<unsigned> node_cpt_face;
@@ -56,7 +57,7 @@ void construct_F_hat( TM &m, const TF &f, const string &pb, const bool &balancin
 
     if ( debug_method ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
-            cout << "vecteur F_hat de l'element " << n << " :" << endl;
+            cout << "vecteur F_hat de l'element " << n << " =" << endl;
             cout << F_hat[ n ] << endl << endl;
         }
     }

@@ -27,8 +27,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     
     static const unsigned dim = TM::dim;
     
-    TicToc t_construct_force_fluxes_std;
-    t_construct_force_fluxes_std.start();
+    TicToc t_force_fluxes_std;
+    t_force_fluxes_std.start();
     
     Vec<unsigned> elem_cpt_node;
     Vec< Vec<unsigned> > elem_list_node;
@@ -62,15 +62,15 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     /// Construction des projections des densites d'effort ///
     /// -------------------------------------------------- ///
 
-    cout << "-----------------------------------------------------------" << endl;
-    cout << "Construction des projections des densites d'effort standard" << endl;
-    cout << "-----------------------------------------------------------" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des projections des densites d'effort standard" << endl << endl;
 
     /// Reperage pour chaque face k et chaque direction d de l'indice de debut de ligne dans les vecteurs b[ i ][ d ] et de debut de colonne dans les matrices B[ i ][ d ] : face_ind[ k ][ d ]
     /// Calcul du nb de lignes du vecteur b[ i ][ d ] et de colonnes de la matrice B[ i ][ d ] : nb_unk[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
     /// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    cout << "Calcul des vecteurs nb_unk" << endl << endl;
+    if ( debug_method )
+        cout << "Calcul des vecteurs nb_unk" << endl << endl;
 
     Vec< Vec<unsigned> > nb_unk; 
     nb_unk.resize( m.node_list.size() );
@@ -92,14 +92,14 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     if ( debug_method ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "nb d'inconnues associees au noeud " << i << " dans la direction " << d << " : " << nb_unk[ i ][ d ] << endl;
+                cout << "nb d'inconnues associees au noeud " << i << " dans la direction " << d << " = " << nb_unk[ i ][ d ] << endl;
             }
             cout << endl << endl;
         }
         cout << endl;
         for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "indice de debut de ligne de la face " << k << " dans la direction " << d << " dans les vecteurs b[ noeud connecte a la face " << k << " ][ " << d << " ] et de debut de colonne dans les matrices B[ noeud connecte a la face " << k << " ][ " << d << " ]: " << face_ind[ k ][ d ] << endl;
+                cout << "indice de debut de ligne de la face " << k << " dans la direction " << d << " dans les vecteurs b[ noeud connecte a la face " << k << " ][ " << d << " ] et de debut de colonne dans les matrices B[ noeud connecte a la face " << k << " ][ " << d << " ] = " << face_ind[ k ][ d ] << endl;
             }
             cout << endl << endl;
         }
@@ -109,7 +109,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     /// Calcul du nb de lignes du vecteur r[ i ][ d ] et de la matrice B[ i ][ d ] : nb_eq[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
     /// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    cout << "Calcul des vecteurs nb_eq" << endl << endl;
+    if ( debug_method )
+        cout << "Calcul des vecteurs nb_eq" << endl << endl;
 
     Vec< Vec<unsigned> > nb_eq; 
     nb_eq.resize( m.node_list.size() );
@@ -131,14 +132,14 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     if ( debug_method ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "nb d'equations associees au noeud " << i << " dans la direction " << d << " : " << nb_eq[ i ][ d ] << endl;
+                cout << "nb d'equations associees au noeud " << i << " dans la direction " << d << " = " << nb_eq[ i ][ d ] << endl;
             }
             cout << endl << endl;
         }
         cout << endl;
         for (unsigned n=0;n<m.elem_list.size();++n) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "indice de debut de ligne de l'element " << n << " dans la direction " << d << " dans les vecteurs r[ noeud connecte a l'element " << n << " ][ " << d << " ] et dans les matrices B[ noeud connecte a l'element " << n << " ][ " << d << " ] : " << elem_ind[ n ][ d ] << endl;
+                cout << "indice de debut de ligne de l'element " << n << " dans la direction " << d << " dans les vecteurs r[ noeud connecte a l'element " << n << " ][ " << d << " ] et dans les matrices B[ noeud connecte a l'element " << n << " ][ " << d << " ] = " << elem_ind[ n ][ d ] << endl;
             }
             cout << endl << endl;
         }
@@ -147,7 +148,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     /// Construction des matrices B[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
     /// -------------------------------------------------------------------------------------------
 
-    cout << "Construction des matrices B" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des matrices B" << endl << endl;
 
     Vec< Vec< Mat<T, Gen<>, SparseLine<> > > > B;
     B.resize( m.node_list.size() );
@@ -169,8 +171,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     if ( debug_method ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "dimension de la matrice B associe au noeud " << i << " dans la direction " << d << " : ( " << nb_eq[ i ][ d ] << ", " << nb_unk[ i ][ d ] << " )" << endl;
-                cout << "matrice B associe au noeud " << i << " dans la direction " << d << " :" << endl;
+                cout << "dimension de la matrice B associe au noeud " << i << " dans la direction " << d << " = ( " << nb_eq[ i ][ d ] << ", " << nb_unk[ i ][ d ] << " )" << endl;
+                cout << "matrice B associe au noeud " << i << " dans la direction " << d << " =" << endl;
                 cout << B[ i ][ d ] << endl << endl;
             }
         }
@@ -179,7 +181,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     /// Construction des vecteurs r[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
     /// -------------------------------------------------------------------------------------------
 
-    cout << "Construction des vecteurs r" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des vecteurs r" << endl << endl;
 
     Vec< Vec< Vec<T> > > r;
     r.resize( m.node_list.size() );
@@ -211,8 +214,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     if ( debug_method ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "dimension du vecteur r associe au noeud " << i << " dans la direction " << d << " : " << nb_eq[ i ][ d ] << endl;
-                cout << "vecteur r associe au noeud " << i << " dans la direction " << d << " :" << endl;
+                cout << "dimension du vecteur r associe au noeud " << i << " dans la direction " << d << " = " << nb_eq[ i ][ d ] << endl;
+                cout << "vecteur r associe au noeud " << i << " dans la direction " << d << " =" << endl;
                 cout << r[ i ][ d ] << endl << endl;
             }
         }
@@ -224,45 +227,31 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     /// -----------------------------------------------------------------------------------------------------------
 
     if ( verif_compatibility_conditions ) {
-        
-        cout << "Verification des conditions de compatibilite (equilibre elements finis) pour les noeuds interieurs (type 0) : tolerance = " << tol_compatibility_conditions << endl << endl;
-        
-        Vec< Vec<T> > verif_eq_0;
-        verif_eq_0.resize( m.node_list.size() );
-        
-        for (unsigned i=0;i<m.node_list.size();++i) {
-            verif_eq_0[ i ].resize( dim );
-            verif_eq_0[ i ].set( 0. );
-        }
-        
+
+        if ( debug_method )
+            cout << "Verification des conditions de compatibilite (equilibre elements finis) pour les noeuds interieurs (type 0) : tolerance = " << tol_compatibility_conditions << endl << endl;
+
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
                 if ( node_type[ i ][ d ] == 0 ) {
-                    for (unsigned n=0;n<elem_cpt_node[ i ];n++) {
-                        verif_eq_0[ i ][ d ] += r[ i ][ d ][ n ];
+                    T residual = 0;
+                    for (unsigned n=0;n<elem_cpt_node[ i ];n++)
+                        residual += r[ i ][ d ][ n ];
+                    if ( fabs( residual ) > tol_compatibility_conditions ) {
+                        cout << "verification des conditions de compatibilite au noeud " << i << " dans la direction " << d << " :" << endl;
+                        cout << residual << " != 0" << endl << endl;
                     }
                 }
             }
         }
-        
-        for (unsigned i=0;i<m.node_list.size();++i) {
-            for (unsigned d=0;d<dim;++d) {
-                if ( node_type[ i ][ d ] == 0 ) {
-                    if ( fabs( verif_eq_0[ i ][ d ] ) > tol_compatibility_conditions ) {
-                        cout << "verification des conditions de compatibilite (equilibre elements finis) du noeud " << i << " de type " << node_type[ i ][ d ] << " dans la direction " << d << " :" << endl;
-                        cout << verif_eq_0[ i ][ d ] << " != 0" << endl << endl;
-                    }
-                }
-            }
-        }
-        verif_eq_0.free();
     }
 
     /// Reperage pour chaque face k connectee au noeud i et chaque direction d de l'indice de debut de ligne dans les matrices C[ i ][ d ] et de debut de ligne dans les vecteurs q[ i ][ d ] : nodal_ind[ i ][ d ][ k ]
     /// Calcul du nb de lignes de la matrice C[ i ][ d ] et du vecteur q[ i ][ d ] : nb_eq_imp[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
     /// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    cout << "Calcul des vecteurs nb_eq_imp" << endl << endl;
+    if ( debug_method )
+        cout << "Calcul des vecteurs nb_eq_imp" << endl << endl;
 
     Vec< Vec<unsigned> > nb_eq_imp;
     nb_eq_imp.resize( m.node_list.size() );
@@ -294,11 +283,11 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     if ( debug_method ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "nb d'equations imposees associees au noeud " << i << " dans la direction " << d << " : " << nb_eq_imp[ i ][ d ] << endl;
+                cout << "nb d'equations imposees associees au noeud " << i << " dans la direction " << d << " = " << nb_eq_imp[ i ][ d ] << endl;
                 if ( node_type[ i ][ d ] == 2 or node_type[ i ][ d ] == 12 ) {
                     for (unsigned k=0;k<face_cpt_node[ i ];++k) {
                         if ( face_type[ face_list_node[ i ][ k ] ][ d ] == 2 ) {
-                            cout << "indice de debut de ligne de la face " << face_list_node[ i ][ k ] << " dans la direction " << d << " dans la matrice C[ " << i << " ][ " << d << " ] : " << nodal_ind[ i ][ d ][ k ] << endl;
+                            cout << "indice de debut de ligne de la face " << face_list_node[ i ][ k ] << " dans la direction " << d << " dans la matrice C[ " << i << " ][ " << d << " ] = " << nodal_ind[ i ][ d ][ k ] << endl;
                         }
                     }
                 }
@@ -310,7 +299,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     /// Construction des matrices C[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
     /// -------------------------------------------------------------------------------------------
 
-    cout << "Construction des matrices C" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des matrices C" << endl << endl;
 
     Vec< Vec< Mat<T, Gen<>, SparseLine<> > > > C;
     C.resize( m.node_list.size() );
@@ -334,8 +324,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
                 if ( node_type[ i ][ d ] == 2 or node_type[ i ][ d ] == 12 ) {
-                    cout << "dimension de la matrice C associe au noeud " << i << " dans la direction " << d << " : ( " << nb_eq_imp[ i ][ d ] << ", " << nb_unk[ i ][ d ] << " )" << endl;
-                    cout << "matrice C associe au noeud " << i << " dans la direction " << d << " :" << endl;
+                    cout << "dimension de la matrice C associe au noeud " << i << " dans la direction " << d << " = ( " << nb_eq_imp[ i ][ d ] << ", " << nb_unk[ i ][ d ] << " )" << endl;
+                    cout << "matrice C associe au noeud " << i << " dans la direction " << d << " =" << endl;
                     cout << C[ i ][ d ] << endl << endl;
                 }
             }
@@ -345,7 +335,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     /// Construction des vecteurs q[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
     /// -------------------------------------------------------------------------------------------
 
-    cout << "Construction des vecteurs q" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des vecteurs q" << endl << endl;
 
     Vec< Vec< Vec<T> > > q;
     q.resize( m.node_list.size() );
@@ -377,8 +368,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
                 if ( node_type[ i ][ d ] == 2 or node_type[ i ][ d ] == 12 ) {
-                    cout << "dimension du vecteur q associe au noeud " << i << " dans la direction " << d << " : " << nb_eq_imp[ i ][ d ] << endl;
-                    cout << "vecteur q associe au noeud " << i << " dans la direction " << d << " :" << endl;
+                    cout << "dimension du vecteur q associe au noeud " << i << " dans la direction " << d << " = " << nb_eq_imp[ i ][ d ] << endl;
+                    cout << "vecteur q associe au noeud " << i << " dans la direction " << d << " =" << endl;
                     cout << q[ i ][ d ] << endl << endl;
                 }
             }
@@ -389,49 +380,28 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     /// ----------------------------------------------------------------------------------------------------------------------------
 
     if ( verif_compatibility_conditions ) {
-        
-        cout << "Verification des conditions de compatibilite (equilibre elements finis) pour les noeuds sur la frontière de Neumann (type 2) : tolerance = " << tol_compatibility_conditions << endl << endl;
-        
-        Vec< Vec<T> > verif_eq_sum_r;
-        verif_eq_sum_r.resize( m.node_list.size() );
-        
-        Vec< Vec<T> > verif_eq_sum_q;
-        verif_eq_sum_q.resize( m.node_list.size() );
-        
-        for (unsigned i=0;i<m.node_list.size();++i) {
-            verif_eq_sum_r[ i ].resize( dim );
-            verif_eq_sum_r[ i ].set( 0. );
-            verif_eq_sum_q[ i ].resize( dim );
-            verif_eq_sum_q[ i ].set( 0. );
-        }
-        
+
+        if ( debug_method )
+            cout << "Verification des conditions de compatibilite (equilibre elements finis) pour les noeuds sur la frontière de Neumann (type 2) : tolerance = " << tol_compatibility_conditions << endl << endl;
+
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
                 if ( node_type[ i ][ d ] == 2 ) {
-                    for (unsigned n=0;n<elem_cpt_node[ i ];n++) {
-                        verif_eq_sum_r[ i ][ d ] += r[ i ][ d ][ n ];
-                    }
+                    T sum_r = 0.;
+                    for (unsigned n=0;n<elem_cpt_node[ i ];n++)
+                        sum_r += r[ i ][ d ][ n ];
+                    T sum_q = 0.;
                     for (unsigned k=0;k<face_cpt_node[ i ];k++) {
-                        if ( face_type[ face_list_node[ i ][ k ] ][ d ] == 2 ) {
-                            verif_eq_sum_q[ i ][ d ] += q[ i ][ d ][ nodal_ind[ i ][ d ][ k ] ];
-                        }
+                        if ( face_type[ face_list_node[ i ][ k ] ][ d ] == 2 )
+                            sum_q -= q[ i ][ d ][ nodal_ind[ i ][ d ][ k ] ];
                     }
-                }
-            }
-        }
-        
-        for (unsigned i=0;i<m.node_list.size();++i) {
-            for (unsigned d=0;d<dim;++d) {
-                if ( node_type[ i ][ d ] == 2 ) {
                     if ( fabs( verif_eq_sum_r[ i ][ d ] - verif_eq_sum_q[ i ][ d ] ) > tol_compatibility_conditions ) {
-                        cout << "verification des conditions de compatibilite (equilibre elements finis) au noeud " << i << " de type " << node_type[ i ][ d ] << " dans la direction " << d << " :" << endl;
-                        cout << verif_eq_sum_r[ i ][ d ] << " != " << verif_eq_sum_q[ i ][ d ] << endl << endl;
+                        cout << "verification des conditions de compatibilite au noeud " << i << " dans la direction " << d << " :" << endl;
+                        cout << sum_r << " != " << sum_q << endl << endl;
                     }
                 }
             }
         }
-        verif_eq_sum_r.free();
-        verif_eq_sum_q.free();
     }
 
     nodal_ind.free();
@@ -442,7 +412,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     /// Calcul du nb d'equations independantes : nb_eq_indep[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
     /// --------------------------------------------------------------------------------------------------------------------
 
-    cout << "Calcul des vecteurs nb_eq_indep" << endl << endl;
+    if ( debug_method )
+        cout << "Calcul des vecteurs nb_eq_indep" << endl << endl;
 
     Vec< Vec<unsigned> > nb_eq_indep; 
     nb_eq_indep.resize( m.node_list.size() );
@@ -466,16 +437,18 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     if ( debug_method ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "nb d'equations independantes associees au noeud " << i << " dans la direction " << d << " : " << nb_eq_indep[ i ][ d ] << endl << endl;
+                cout << "nb d'equations independantes associees au noeud " << i << " dans la direction " << d << " = " << nb_eq_indep[ i ][ d ] << endl << endl;
             }
         }
     }
 
     /// Condition de minimsation
-    /// ------------------------
+    /// si minimisation[ i ][ d ] = 0, pas d'etape de minimisation d'une fonction-cout pour le noeud i du maillage dans la direction d
+    /// si minimisation[ i ][ d ] = 1, etape de minimisation d'une fonction-cout pour le noeud i du maillage dans la direction d
+    /// ------------------------------------------------------------------------------------------------------------------------------
 
-    cout << "Condition de minimsation" << endl << endl; // si minimisation[ i ][ d ] = 0, alors il n'y a pas d'etape de minimisation d'une fonction-cout pour le noeud i du maillage dans la direction d
-                                                        // si minimisation[ i ][ d ] = 1, il y a une etape de minimisation d'une fonction-cout pour le noeud i du maillage dans la direction d
+    if ( debug_method )
+        cout << "Condition de minimsation" << endl << endl;
 
     Vec< Vec<bool> > minimisation; 
     minimisation.resize( m.node_list.size() );
@@ -485,21 +458,30 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
         minimisation[ i ].set( 0 );
     }
 
-    /// Si node_type[ i ][ d ] = 0 ou node_type[ i ][ d ] = 1,
-    /// -----------------------------------------------------
-//    - si i est un noeud sommet (en 2D ou 3D) ou i est un noeud interieur a une arete (en 3D), alors il y a une etape de minimsation : minimisation[ i ][ d ] = 1
-//    - si i est un noeud non sommet (en 2D) ou i est un noeud interieur a une face (en 3D), alors il n'y a pas d'etape de minimsation : minimisation[ i ][ d ] = 0
-//    autrement dit :
-//    - si nb_eq_indep[ i ][ d ] < nb_unk[ i ][ d ], alors minimisation[ i ][ d ] = 1
-//    - sinon nb_eq_indep[ i ][ d ] = nb_unk[ i ][ d ], alors minimisation[ i ][ d ] = 0
-    /// Si node_type[ i ][ d ] = 12 ou node_type[ i ][ d ] = 2,
-    /// ------------------------------------------------------
-//    - si nb_eq_imp[ i ][ d ] = nb_unk[ i ][ d ] ( toutes les faces connectees au noeud i dans la direction d sont de type 2, possible uniquement pour node_type[ i ][ d ] = 2 ), alors il n'y a pas d'etape de minimsation : minimisation[ i ][ d ] = 0
-//    - sinon,
-//    - si nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] >= nb_unk[ i ][ d ], alors il n'y a pas d'etape de minimsation : minimisation[ i ][ d ] = 0
-//        - si nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] = nb_unk[ i ][ d ], on resoud explicitement
-//        - si nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] > nb_unk[ i ][ d ], on tronque B[ i ][ d ] et r[ i ][ d ] puis on resoud explicitement
-//        - si nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] < nb_unk[ i ][ d ], alors il y a une etape de minimsation : minimisation[ i ][ d ] = 1
+    /// Cas node_type[ i ][ d ] = 0 ou 1
+    /// --------------------------------
+    // si i est un noeud sommet (en 2D ou 3D) ou i est un noeud interieur a une arete (en 3D)
+    //     etape de minimsation : minimisation[ i ][ d ] = 1
+    // si i est un noeud non sommet (en 2D) ou i est un noeud interieur a une face (en 3D)
+    //     pas d'etape de minimsation : minimisation[ i ][ d ] = 0
+    // autrement dit :
+    // si nb_eq_indep[ i ][ d ] < nb_unk[ i ][ d ]
+    //     etape de minimsation : minimisation[ i ][ d ] = 1
+    // sinon ( nb_eq_indep[ i ][ d ] = nb_unk[ i ][ d ] )
+    //     pas d'etape de minimsation : minimisation[ i ][ d ] = 0
+    /// Cas node_type[ i ][ d ] = 12 ou 2
+    /// ---------------------------------
+    // si nb_eq_imp[ i ][ d ] = nb_unk[ i ][ d ] ( toutes les faces connectees au noeud i dans la direction d sont de type 2, possible uniquement pour node_type[ i ][ d ] = 2 )
+    //     pas d'etape de minimsation : minimisation[ i ][ d ] = 0
+    // sinon ( nb_eq_imp[ i ][ d ] < nb_unk[ i ][ d ] )
+    //     si nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] >= nb_unk[ i ][ d ]
+    //         pas d'etape de minimsation : minimisation[ i ][ d ] = 0
+    //         si nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] = nb_unk[ i ][ d ]
+    //             resolution explicite
+    //         si nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] > nb_unk[ i ][ d ]
+    //             troncature de B[ i ][ d ] et r[ i ][ d ] puis resolution explicite
+    //     si nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] < nb_unk[ i ][ d ]
+    //         etape de minimsation : minimisation[ i ][ d ] = 1
     for (unsigned i=0;i<m.node_list.size();++i) {
         for (unsigned d=0;d<dim;++d) {
 //             if ( node_type[ i ][ d ] == 0 or node_type[ i ][ d ] == 1 ) {
@@ -521,7 +503,7 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     if ( debug_method ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "etape de minimisation associee au noeud " << i << " dans la direction " << d << " : " << minimisation[ i ][ d ] << endl << endl;
+                cout << "etape de minimisation associee au noeud " << i << " dans la direction " << d << " = " << minimisation[ i ][ d ] << endl << endl;
             }
         }
     }
@@ -529,7 +511,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     /// Construction des matrices de minimisation M[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
     /// -----------------------------------------------------------------------------------------------------------
 
-    cout << "Construction des matrices M" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des matrices M" << endl << endl;
 
     Vec< Vec< Mat< T, Diag<> > > > M;
     M.resize( m.node_list.size() );
@@ -544,21 +527,20 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
         }
     }
 
-    m.update_skin();
-
     Calcul_Nodal_Matrix_M calcul_nodal_matrix_M;
     calcul_nodal_matrix_M.face_ind = &face_ind;
     calcul_nodal_matrix_M.cost_function = &cost_function;
     calcul_nodal_matrix_M.minimisation = &minimisation;
 
+    m.update_skin();
     apply( m.sub_mesh(Number<1>()).elem_list, calcul_nodal_matrix_M, m, f, M );
 
     if ( debug_method ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
                 if ( minimisation[ i ][ d ] ) {
-                    cout << "dimension de la matrice de minimisation M associee au noeud " << i << " dans la direction " << d << " : ( " << nb_unk[ i ][ d ] << ", " << nb_unk[ i ][ d ] << " )" << endl;
-                    cout << "matrice M associe au noeud " << i << " dans la direction " << d << " :" << endl;
+                    cout << "dimension de la matrice de minimisation M associee au noeud " << i << " dans la direction " << d << " = ( " << nb_unk[ i ][ d ] << ", " << nb_unk[ i ][ d ] << " )" << endl;
+                    cout << "matrice M associe au noeud " << i << " dans la direction " << d << " =" << endl;
                     cout << M[ i ][ d ] << endl << endl;
                 }
             }
@@ -568,7 +550,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     /// Construction des vecteurs de minimisation b[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
     /// -----------------------------------------------------------------------------------------------------------
 
-    cout << "Construction des vecteurs b" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des vecteurs b" << endl << endl;
 
     Vec< Vec< Vec<T> > > b;
     b.resize( m.node_list.size() );
@@ -604,8 +587,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
                 if ( minimisation[ i ][ d ] ) {
-                    cout << "dimension du vecteur de minimisation b associee au noeud " << i << " dans la direction " << d << " : " << nb_unk[ i ][ d ] << endl;
-                    cout << "vecteur b associe au noeud " << i << " dans la direction " << d << " :" << endl;
+                    cout << "dimension du vecteur de minimisation b associee au noeud " << i << " dans la direction " << d << " = " << nb_unk[ i ][ d ] << endl;
+                    cout << "vecteur b associe au noeud " << i << " dans la direction " << d << " =" << endl;
                     cout << b[ i ][ d ] << endl << endl;
                 }
             }
@@ -618,7 +601,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     /// Construction des matrices K[ i ][ d ] et des vecteurs F[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
     /// -----------------------------------------------------------------------------------------------------------------------
 
-    cout << "Construction des matrices K et des vecteurs F" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des matrices K et des vecteurs F" << endl << endl;
 
     Vec< Vec< Mat<T> > > K;
     K.resize( m.node_list.size() );
@@ -628,9 +612,6 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
 
     Vec< Vec< Vec<T> > > U;
     U.resize( m.node_list.size() );
-
-    TicToc t_construct_K_F_EET;
-    t_construct_K_F_EET.start();
 
     for (unsigned i=0;i<m.node_list.size();++i) {
         K[ i ].resize( dim );
@@ -698,7 +679,6 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
                 }
             }
             else if ( node_type[ i ][ d ] == 2 or node_type[ i ][ d ] == 12 ) {
-                    // si minimisation[ i ][ d ] = 0
                 if ( nb_eq_imp[ i ][ d ] == nb_unk[ i ][ d ] ) { // possible uniquement si node_type[ i ][ d ] = 2
                     Vec<unsigned> vec_unk = range( nb_unk[ i ][ d ] );
                     K[ i ][ d ]( vec_unk, vec_unk ) = C[ i ][ d ]( vec_unk, vec_unk ) * 1.;
@@ -715,7 +695,6 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
                     F[ i ][ d ][ vec_eq_imp ] = q[ i ][ d ][ vec_eq_imp ] * 1.;
                     F[ i ][ d ][ vec_eq_imp_to_unk ] = r[ i ][ d ][ vec_unk_minus_eq_imp ] * 1.;
                 }
-                    // si minimisation[ i ] = 1
                 else if ( nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] < nb_unk[ i ][ d ] ) {
                     Vec<unsigned> vec_unk = range( nb_unk[ i ][ d ] );
                     Vec<unsigned> vec_eq_imp = range( nb_eq_imp[ i ][ d ] );
@@ -765,21 +744,18 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
         }
     }
 
-    t_construct_K_F_EET.stop();
-    cout << "Temps de calcul de remplissage des matrices K et des vecteurs F associes aux problemes de minimisation pour la technique EET : " << t_construct_K_F_EET.res << endl << endl;
-
     if ( debug_method ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "dimension de la matrice K associee au noeud " << i << " dans la direction " << d << " : ( " << K[ i ][ d ].nb_rows() << ", " << K[ i ][ d ].nb_cols() << " ) "<< endl;
-                cout << "matrice K associe au noeud " << i << " dans la direction " << d << " :" << endl;
+                cout << "dimension de la matrice K associee au noeud " << i << " dans la direction " << d << " = ( " << K[ i ][ d ].nb_rows() << ", " << K[ i ][ d ].nb_cols() << " ) "<< endl;
+                cout << "matrice K associe au noeud " << i << " dans la direction " << d << " =" << endl;
                 cout << K[ i ][ d ] << endl << endl;
             }
         }
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "dimension du vecteur F associe au noeud " << i << " dans la direction " << d << " : " << F[ i ][ d ].size() << endl;
-                cout << "vecteur F associe au noeud " << i << " dans la direction " << d << " :" << endl;
+                cout << "dimension du vecteur F associe au noeud " << i << " dans la direction " << d << " = " << F[ i ][ d ].size() << endl;
+                cout << "vecteur F associe au noeud " << i << " dans la direction " << d << " =" << endl;
                 cout << F[ i ][ d ] << endl << endl;
             }
         }
@@ -800,16 +776,13 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     /// Construction des vecteurs U[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
     /// --------------------------------------------------------------------------------------------------------------------------------------
 
-    if ( enhancement == 0 ) {
-        cout << "Resolution des problemes de minimisation K * U = F" << endl;
+    if ( debug_method ) {
+        cout << "Resolution des pbs de minimisation K * U = F" << endl;
+        cout << "Construction des vecteurs U" << endl << endl;
     }
-    else {
-        cout << "Resolution des problemes de minimisation K * U = F associes a la partie standard des densites d'effort" << endl;
-    }
-    cout << "Construction des vecteurs U" << endl << endl;
 
-    TicToc t_solve_minimization_EET;
-    t_solve_minimization_EET.start();
+    TicToc t_solve_minimization;
+    t_solve_minimization.start();
 
     for (unsigned i=0;i<m.node_list.size();++i) {
         for (unsigned d=0;d<dim;++d) {
@@ -859,31 +832,24 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
         }
     }
 
-    t_solve_minimization_EET.stop();
-    if ( enhancement == 0 ) {
-        cout << "Temps de calcul de la resolution des problemes de minimisation pour la technique EET : " << t_solve_minimization_EET.res << endl << endl;
-    }
-    else {
-        cout << "Temps de calcul de la resolution des problemes de minimisation associes a la partie standard des densites d'effort pour la technique EET : " << t_solve_minimization_EET.res << endl << endl;
-    }
+    t_solve_minimization.stop();
+    if ( debug_method )
+        cout << "Temps de calcul de la resolution des pbs de minimisation = " << t_solve_minimization.res << endl << endl;
 
     if ( debug_method ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "dimension du vecteur U associe au noeud " << i << " dans la direction " << d << " : " << U[ i ][ d ].size() << endl;
-                cout << "vecteur U associe au noeud " << i << " dans la direction " << d << " :" << endl;
+                cout << "dimension du vecteur U associe au noeud " << i << " dans la direction " << d << " = " << U[ i ][ d ].size() << endl;
+                cout << "vecteur U associe au noeud " << i << " dans la direction " << d << " =" << endl;
                 cout << U[ i ][ d ] << endl << endl;
             }
         }
     }
+
     if ( verif_solver_minimisation ) {
-        if ( enhancement == 0 ) {
-            cout << "Verification de la resolution des problemes de minimisation pour la technique EET : ";
-        }
-        else {
-            cout << "Verification de la resolution des problemes de minimisation associes a la partie standard des densites d'effort pour la technique EET : ";
-        }
-        cout << "tolerance = " << tol_solver_minimisation << endl << endl;
+        if ( debug_method )
+            cout << "Verification de la resolution des pbs de minimisation : tolerance = " << tol_solver_minimisation << endl << endl;
+
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
                 T residual = norm_2( K[ i ][ d ] * U[ i ][ d ] - F[ i ][ d ] );
@@ -891,8 +857,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
                 if ( residual / b > tol_solver_minimisation ) {
                     cout << "residu associe au noeud " << i << " dans la direction " << d << " :" << endl;
 //                    cout << "K * U - F =" << endl;
-//                    cout << K[ i ][ d ] * U[ i ][ d ] - F[ i ][ d ] << endl << endl;
-                    cout << "norme du residu = " << residual << endl << endl;
+//                    cout << K[ i ][ d ] * U[ i ][ d ] - F[ i ][ d ] << endl;
+                    cout << "norme du residu = " << residual << endl;
                     cout << "norme du residu relatif = " << residual / b << endl << endl;
                 }
             }
@@ -906,7 +872,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     /// Construction des vecteurs de projection b_hat[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
     /// -------------------------------------------------------------------------------------------------------------
 
-    cout << "Construction des vecteurs b_hat" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des vecteurs b_hat" << endl << endl;
 
     Vec< Vec< Vec<T> > > b_hat;
     b_hat.resize( m.node_list.size() );
@@ -936,8 +903,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     if ( debug_method ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "dimension du vecteur b_hat associe au noeud " << i << " dans la direction " << d << " : " << nb_unk[ i ][ d ] << endl;
-                cout << "vecteur b_hat associe au noeud " << i << " dans la direction " << d << " :" << endl;
+                cout << "dimension du vecteur b_hat associe au noeud " << i << " dans la direction " << d << " = " << nb_unk[ i ][ d ] << endl;
+                cout << "vecteur b_hat associe au noeud " << i << " dans la direction " << d << " =" << endl;
                 cout << b_hat[ i ][ d ] << endl << endl;
             }
         }
@@ -950,7 +917,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     /// Construction des vecteurs de projection b_face[ k ][ d ] pour chaque face k du maillage et chaque direction d
     /// -------------------------------------------------------------------------------------------------------------
 
-    cout << "Construction des vecteurs b_face" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des vecteurs b_face" << endl << endl;
 
     Vec< Vec< Vec<T> > > b_face; 
     b_face.resize( m.sub_mesh(Number<1>()).elem_list.size() );
@@ -968,8 +936,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     if ( debug_method ) {
         for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "dimension du vecteur b_face associe a la face " << k << " dans la direction " << d << " : " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << endl;
-                cout << "vecteur b_face associe a la face " << k << " dans la direction " << d << " :" << endl;
+                cout << "dimension du vecteur b_face associe a la face " << k << " dans la direction " << d << " = " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << endl;
+                cout << "vecteur b_face associe a la face " << k << " dans la direction " << d << " =" << endl;
                 cout << b_face[ k ][ d ] << endl << endl;
             }
         }
@@ -981,14 +949,15 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     /// ----------------------------------------------------------------------------------- ///
     /// Construction standard (de la partie standard si amelioration) des densites d'effort ///
     /// ----------------------------------------------------------------------------------- ///
-    cout << "-------------------------------------------" << endl;
+
     cout << "Construction standard des densites d'effort" << endl;
     cout << "-------------------------------------------" << endl << endl;
 
     /// Construction des matrices K_face[ k ][ d ] pour chaque face k du maillage et chaque direction d
     /// -----------------------------------------------------------------------------------------------
 
-    cout << "Construction des matrices K_face" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des matrices K_face" << endl << endl;
 
     Vec< Vec< Mat<T, Gen<>, SparseUMFPACK > > > K_face;
     K_face.resize( m.sub_mesh(Number<1>()).elem_list.size() );
@@ -1004,8 +973,8 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     if ( debug_method ) {
         for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "dimension de la matrice K_face associe a la face " << k << " dans la direction " << d << " : ( " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << ", " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << " )" << endl;
-                cout << "matrice K_face associe a la face " << k << " dans la direction " << d << " :" << endl;
+                cout << "dimension de la matrice K_face associe a la face " << k << " dans la direction " << d << " = ( " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << ", " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << " )" << endl;
+                cout << "matrice K_face associe a la face " << k << " dans la direction " << d << " =" << endl;
                 cout << K_face[ k ][ d ] << endl << endl;
             }
         }
@@ -1016,8 +985,10 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     /// Construction des matrices mat_force_fluxes[ k ] pour chaque face k du maillage
     /// ---------------------------------------------------------------------------------------------------------
 
-    cout << "Resolution des systemes lineaires K_face * vec_force_fluxes_std = b_face" << endl;
-    cout << "Construction des vecteurs vec_force_fluxes_std et des matrices mat_force_fluxes_std" << endl << endl;
+    if ( debug_method ) {
+        cout << "Resolution des systemes lineaires K_face * vec_force_fluxes_std = b_face" << endl;
+        cout << "Construction des vecteurs vec_force_fluxes_std et des matrices mat_force_fluxes_std" << endl << endl;
+    }
 
     vec_force_fluxes.resize( m.sub_mesh(Number<1>()).elem_list.size() );
 
@@ -1050,22 +1021,22 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     if ( debug_force_fluxes or debug_method ) {
         for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "dimension du vecteur des densites d'effort standard associe a la face " << k << " dans la direction " << d << " : " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << endl;
-                cout << "vecteur des densites d'effort standard associe a la face " << k << " dans la direction " << d << " :" << endl;
+                cout << "dimension du vecteur des densites d'effort standard associe a la face " << k << " dans la direction " << d << " = " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << endl;
+                cout << "vecteur des densites d'effort standard associe a la face " << k << " dans la direction " << d << " =" << endl;
                 cout << vec_force_fluxes[ k ][ d ] << endl << endl;
             }
         }
     }
     if ( debug_force_fluxes or debug_method ) {
         for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
-            cout << "dimension de la matrice des densites d'effort standard associee a la face " << k << " : ( " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << ", " << dim << " )" << endl;
-            cout << "matrice des densites d'effort standard associee a la face " << k << " :" << endl;
+            cout << "dimension de la matrice des densites d'effort standard associee a la face " << k << " = ( " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << ", " << dim << " )" << endl;
+            cout << "matrice des densites d'effort standard associee a la face " << k << " =" << endl;
             cout << mat_force_fluxes[ k ] << endl << endl;
         }
     }
 
-    t_construct_force_fluxes_std.stop();
-    cout << "Temps de calcul de la construction standard des densites d'effort pour la technique EET : " << t_construct_force_fluxes_std.res << endl << endl;
+    t_force_fluxes_std.stop();
+    cout << "Temps de calcul de la construction standard des densites d'effort = " << t_force_fluxes_std.res << endl << endl;
 
 }
 

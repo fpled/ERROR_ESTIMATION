@@ -27,10 +27,8 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale ///
     /// ------------------------------------------------------------------------------------------------------- ///
     
-    cout << "------------------------------------------------------------" << endl;
-    cout << "Construction d'un champ de contrainte admissible par element" << endl;
-    cout << "Calcul d'un estimateur d'erreur globale" << endl;
-    cout << "------------------------------------------------------------" << endl << endl;
+    cout << "Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale" << endl;
+    cout << "-------------------------------------------------------------------------------------------------------" << endl << endl;
 
     theta = 0.;
     theta_elem.resize( m.elem_list.size() );

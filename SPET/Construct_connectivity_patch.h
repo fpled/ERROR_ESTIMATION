@@ -30,11 +30,11 @@ void construct_connectivity_patch( const TM &m, const unsigned &nb_vertex_nodes,
     static const unsigned dim = TM::dim;
     typedef typename TM::TNode::T T;
     
-    cout << "--------------------------------------------------------" << endl;
-    cout << "Construction de la table de connectivite de chaque patch" << endl;
-    cout << "--------------------------------------------------------" << endl << endl;
+    if ( debug_method )
+        cout << "Construction de la table de connectivite de chaque patch" << endl << endl;
     
-    cout << "Construction de la liste des faces associees a chaque patch" << endl << endl;
+    if ( debug_method )
+        cout << "Construction de la liste des faces associees a chaque patch" << endl << endl;
     
     face_list_patch.resize( nb_vertex_nodes );
     
@@ -47,7 +47,8 @@ void construct_connectivity_patch( const TM &m, const unsigned &nb_vertex_nodes,
         remove_doubles( face_list_patch[ j ] );
     }
     
-    cout << "Construction du nombre d'inconnues associees a chaque element et a chaque face" << endl << endl;
+    if ( debug_method )
+        cout << "Construction du nombre d'inconnues associees a chaque element et a chaque face" << endl << endl;
     
     nb_points_elem.resize( m.elem_list.size(), 0 );
     
@@ -68,7 +69,8 @@ void construct_connectivity_patch( const TM &m, const unsigned &nb_vertex_nodes,
         cout << endl << endl;
     }
     
-    cout << "Reperage de la position des points de chaque element et chaque face" << endl << endl;
+    if ( debug_method )
+        cout << "Reperage de la position des points de chaque element et chaque face" << endl << endl;
     
     Vec< Vec< Vec<T> > > pos_elem;
     pos_elem.resize( m.elem_list.size() );
@@ -110,7 +112,8 @@ void construct_connectivity_patch( const TM &m, const unsigned &nb_vertex_nodes,
         cout << endl << endl;
     }
     
-    cout << "Reperage de la position des points de chaque patch" << endl << endl;
+    if ( debug_method )
+        cout << "Reperage de la position des points de chaque patch" << endl << endl;
     
     nb_points_patch.resize( nb_vertex_nodes, 0 );
     
@@ -136,7 +139,8 @@ void construct_connectivity_patch( const TM &m, const unsigned &nb_vertex_nodes,
         }
     }
     
-    cout << "Construction de la table de connectivite de chaque patch : patch_elem et patch_face" << endl << endl;
+    if ( debug_method )
+        cout << "Construction de la table de connectivite de chaque patch : patch_elem et patch_face" << endl << endl;
     
     patch_elem.resize( nb_vertex_nodes );
     

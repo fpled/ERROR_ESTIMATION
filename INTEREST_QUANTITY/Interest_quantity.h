@@ -344,7 +344,7 @@ void construct_center_length_domain( TM &m, const unsigned &deg_p, const string 
             /// circum_center[ n ] : position du centre du cercle/sphere circonscrit au n ieme element de la liste elem_list (elem_list[ n ])
             /// circum_radius[ n ] : rayon du cercle/sphere circonscrit au n ieme element de la liste elem_list (elem_list[ n ])
             /// -------------------------------------------------------------------------------------------------------------------------------
-            Vec< Vec<T> > circum_center;
+            Vec<Pvec> circum_center;
             circum_center.resize( elem_list.size() );
 
             for (unsigned n=0;n<elem_list.size();++n) {

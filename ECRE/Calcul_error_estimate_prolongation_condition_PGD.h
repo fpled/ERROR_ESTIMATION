@@ -31,27 +31,17 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale ///
     /// ------------------------------------------------------------------------------------------------------- ///
     
-    cout << "------------------------------------------------------------" << endl;
-    cout << "Construction d'un champ de contrainte admissible par element" << endl;
-    cout << "Calcul d'un estimateur d'erreur globale" << endl;
-    cout << "------------------------------------------------------------" << endl << endl;
+    cout << "Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale" << endl;
+    cout << "-------------------------------------------------------------------------------------------------------" << endl << endl;
 
     theta = 0.;
     theta_elem.resize( m.elem_list.size() );
     theta_elem.set( 0. );
 
-    Calc_Elem_Error_Estimate_EET_EESPT<T,TMAT> calc_elem_error_estimate_EET_EESPT;
+    Calc_Elem_Error_Estimate_EET_EESPT<T> calc_elem_error_estimate_EET_EESPT;
     calc_elem_error_estimate_EET_EESPT.dep_hat = &dep_hat;
     calc_elem_error_estimate_EET_EESPT.method = &method;
     calc_elem_error_estimate_EET_EESPT.theta_elem = &theta_elem;
-    calc_elem_error_estimate_EET_EESPT.dep_psi = &dep_psi;
-    calc_elem_error_estimate_EET_EESPT.dep_lambda = &dep_lambda;
-    calc_elem_error_estimate_EET_EESPT.dep_part = &dep_part;
-    calc_elem_error_estimate_EET_EESPT.kappa = &kappa;
-    calc_elem_error_estimate_EET_EESPT.K_k_p = &K_k_p;
-    calc_elem_error_estimate_EET_EESPT.K_unk_p = K_unk_p;
-    calc_elem_error_estimate_EET_EESPT.elem_list_PGD_unknown_param = &elem_list_PGD_unknown_param;
-    calc_elem_error_estimate_EET_EESPT.nb_modes = &nb_modes;
 
     apply( m.elem_list, calc_elem_error_estimate_EET_EESPT, m, f, theta );
 
@@ -82,7 +72,7 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
         m.theta_EESPT = theta;
     }
     cout << "mesure globale de l'erreur en relation de comportement :" << endl;
-    cout << "ecre = " << ecre << endl << endl;
+    cout << "ecre = " << ecre << endl;
 
     cout << "estimateur d'erreur globale :" << endl;
     cout << "theta = " << theta << endl;
@@ -116,5 +106,6 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
         }
     }
 }
+/*
 
 #endif // Calcul_error_estimate_prolongation_condition_h

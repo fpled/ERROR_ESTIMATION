@@ -32,8 +32,8 @@ void construct_child( TM &m, Vec<unsigned> &child_cpt, Vec< Vec<unsigned> > &chi
     if ( debug_geometry ) {
         cout << "Compteur et liste des faces connectees aux elements du maillage" << endl << endl;
         for (unsigned n=0;n<m.elem_list.size();++n) {
-            cout << "nb de faces connectees a l'element " << n << " : " << child_cpt[ n ] << endl;
-            cout << "liste des faces connectees a l'element " << n << " : " << child_list[ n ] << endl << endl;
+            cout << "nb de faces connectees a l'element " << n << " = " << child_cpt[ n ] << endl;
+            cout << "liste des faces connectees a l'element " << n << " = " << child_list[ n ] << endl << endl;
         }
     }
 }
@@ -52,8 +52,8 @@ void construct_elems_connected_to_node( const TM &m, Vec<unsigned> &elem_cpt_nod
     if ( debug_geometry ) {
         cout << "Compteur et liste des elements connectes aux noeuds du maillage" << endl << endl;
         for (unsigned i=0;i<m.node_list.size();++i) {
-            cout << "nb d'elements connectes au noeud " << i << " : " << elem_cpt_node[ i ] << endl;
-            cout << "liste des elements connectes au noeud " << i << " : " << elem_list_node[ i ] << endl << endl;
+            cout << "nb d'elements connectes au noeud " << i << " = " << elem_cpt_node[ i ] << endl;
+            cout << "liste des elements connectes au noeud " << i << " = " << elem_list_node[ i ] << endl << endl;
         }
     }
 }
@@ -73,8 +73,8 @@ void construct_faces_connected_to_node( TM &m, Vec<unsigned> &face_cpt_node, Vec
     if ( debug_geometry ) {
         cout << "Compteur et liste des faces connectees aux noeuds du maillage" << endl << endl;
         for (unsigned i=0;i<m.node_list.size();++i) {
-            cout << "nb de faces connectees au noeud " << i << " : " << face_cpt_node[ i ] << endl;
-            cout << "liste des faces connectees au noeud " << i << " : " << face_list_node[ i ] << endl << endl;
+            cout << "nb de faces connectees au noeud " << i << " = " << face_cpt_node[ i ] << endl;
+            cout << "liste des faces connectees au noeud " << i << " = " << face_list_node[ i ] << endl << endl;
         }
     }
 }
@@ -93,8 +93,8 @@ void construct_nodes_connected_to_elem( const TM &m, Vec<unsigned> &node_cpt_ele
     if ( debug_geometry ) {
         cout << "Compteur et liste des noeuds connectes aux elements du maillage" << endl << endl;
         for (unsigned n=0;n<m.elem_list.size();++n) {
-            cout << "nb de noeuds connectes a l'element " << n << " : " << node_cpt_elem[ n ] << endl;
-            cout << "liste des noeuds connectes a l'element " << n << " : " << node_list_elem[ n ] << endl << endl;
+            cout << "nb de noeuds connectes a l'element " << n << " = " << node_cpt_elem[ n ] << endl;
+            cout << "liste des noeuds connectes a l'element " << n << " = " << node_list_elem[ n ] << endl << endl;
         }
     }
 }
@@ -114,8 +114,8 @@ void construct_nodes_connected_to_face( TM &m, Vec<unsigned> &node_cpt_face, Vec
     if ( debug_geometry ) {
         cout << "Compteur et liste des noeuds connectes aux faces du maillage" << endl << endl;
         for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
-            cout << "nb de noeuds connectes a la face " << k << " : " << node_cpt_face[ k ] << endl;
-            cout << "liste des noeuds connectes a la face " << k << " : " << node_list_face[ k ] << endl << endl;
+            cout << "nb de noeuds connectes a la face " << k << " = " << node_cpt_face[ k ] << endl;
+            cout << "liste des noeuds connectes a la face " << k << " = " << node_list_face[ k ] << endl << endl;
         }
     }
 }
@@ -141,8 +141,8 @@ unsigned match_node_to_vertex_node( const TM &m, Vec<bool> &correspondance_node_
 
     if ( debug_geometry ) {
         cout << "Correspondance entre noeuds et noeuds sommets du maillage" << endl << endl;
-        cout << "nombre de noeuds sommets dans le maillage : " << nb_vertex_nodes << endl;
-        cout << "correspondance entre noeuds et noeuds sommets du maillage : " << connect_node_to_vertex_node << endl << endl;
+        cout << "nombre de noeuds sommets dans le maillage = " << nb_vertex_nodes << endl;
+        cout << "correspondance entre noeuds et noeuds sommets du maillage = " << connect_node_to_vertex_node << endl << endl;
     }
     return nb_vertex_nodes;
 }
@@ -164,8 +164,8 @@ void construct_elems_connected_to_vertex_node( const TM &m, const unsigned &nb_v
     if ( debug_geometry ) {
         cout << "Compteur et liste des elements connectes aux noeuds sommets du maillage" << endl << endl;
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
-            cout << "nb d'elements connectes au noeud sommet " << j << " : " << elem_cpt_vertex_node[ j ] << endl;
-            cout << "liste des elements connectes au noeud sommet " << j << " : " << elem_list_vertex_node[ j ] << endl << endl;
+            cout << "nb d'elements connectes au noeud sommet " << j << " = " << elem_cpt_vertex_node[ j ] << endl;
+            cout << "liste des elements connectes au noeud sommet " << j << " = " << elem_list_vertex_node[ j ] << endl << endl;
         }
     }
 }
@@ -188,8 +188,8 @@ void construct_faces_connected_to_vertex_node( TM &m, const unsigned &nb_vertex_
     if ( debug_geometry ) {
         cout << "Compteur et liste des faces connectees aux noeuds sommets du maillage" << endl << endl;
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
-            cout << "nb de faces connectees au noeud sommet " << j << " : " << face_cpt_vertex_node[ j ] << endl;
-            cout << "liste des faces connectees au noeud sommet " << j << " : " << face_list_vertex_node[ j ] << endl << endl;
+            cout << "nb de faces connectees au noeud sommet " << j << " = " << face_cpt_vertex_node[ j ] << endl;
+            cout << "liste des faces connectees au noeud sommet " << j << " = " << face_list_vertex_node[ j ] << endl << endl;
         }
     }
 }
@@ -211,8 +211,8 @@ void construct_vertex_nodes_connected_to_elem( const TM &m, const Vec<bool> &cor
     if ( debug_geometry ) {
         cout << "Compteur et liste des noeuds sommets connectes aux elements du maillage" << endl << endl;
         for (unsigned n=0;n<m.elem_list.size();++n) {
-            cout << "nb de noeuds sommets connectes a l'element " << n << " : " << vertex_node_cpt_elem[ n ] << endl;
-            cout << "liste des noeuds sommets connectes a l'element " << n << " : " << vertex_node_list_elem[ n ] << endl << endl;
+            cout << "nb de noeuds sommets connectes a l'element " << n << " = " << vertex_node_cpt_elem[ n ] << endl;
+            cout << "liste des noeuds sommets connectes a l'element " << n << " = " << vertex_node_list_elem[ n ] << endl << endl;
         }
     }
 }
@@ -235,8 +235,8 @@ void construct_vertex_nodes_connected_to_face( TM &m, const Vec<bool> &correspon
     if ( debug_geometry ) {
         cout << "Compteur et liste des noeuds sommets connectes aux faces du maillage" << endl << endl;
         for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
-            cout << "nb de noeuds sommets connectes a la face " << k << " : " << vertex_node_cpt_face[ k ] << endl;
-            cout << "liste des noeuds sommets connectes a la face " << k << " : " << vertex_node_list_face[ k ] << endl << endl;
+            cout << "nb de noeuds sommets connectes a la face " << k << " = " << vertex_node_cpt_face[ k ] << endl;
+            cout << "liste des noeuds sommets connectes a la face " << k << " = " << vertex_node_list_face[ k ] << endl << endl;
         }
     }
 }
@@ -265,7 +265,7 @@ void construct_face_type( TM &m, const TF &f, Vec< Vec<unsigned> > &face_type, c
         cout << "Construction du vecteur de vecteurs face_type" << endl << endl;
         for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "type de la face " << k << " dans la direction " << d << " : " << face_type[ k ][ d ] << endl;
+                cout << "type de la face " << k << " dans la direction " << d << " = " << face_type[ k ][ d ] << endl;
             }
             cout << endl << endl;
         }
@@ -305,7 +305,7 @@ void construct_node_type( TM &m, const TF &f, const Vec< Vec<unsigned> > &face_t
         cout << "Construction du vecteur de vecteurs node_type" << endl << endl;
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "type du noeud " << i << " dans la direction " << d << " : " << node_type[ i ][ d ] << endl;
+                cout << "type du noeud " << i << " dans la direction " << d << " = " << node_type[ i ][ d ] << endl;
             }
             cout << endl << endl;
         }
@@ -369,7 +369,7 @@ void calcul_display_geometry( TM &m, const TF &f, const bool debug_geometry = fa
         Vec< Vec<unsigned> > node_type; // node_type[ i ][ d ] = 0 : noeud i interieur au domaine Omega dans la direction d
                                         // node_type[ i ][ d ] = 1 : noeud i sur un bord de Dirichlet delta_1_Omega dans la direction d
                                         // node_type[ i ][ d ] = 2 : noeud i sur un bord de Neumann delta_2_Omega dans la direction d
-                                        // node_type[ i ][ d ] = 12 : noeud i a la separation entre delta_1_Omega et delat_2_Omega dans la direction d
+                                        // node_type[ i ][ d ] = 12 : noeud i au bord entre delta_1_Omega et delat_2_Omega dans la direction d
         construct_node_type( m, f, face_type, node_type, debug_geometry );
 
     }

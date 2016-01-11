@@ -487,7 +487,7 @@ def calc_skin_elem_vector_Q_p_1( list_f, rep )
                 face := child_cast( face_ )
                 face_node_numbers_to_vertex_node_numbers := face->node_numbers_to_vertex_node_numbers
                 eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)", tex_name = "\\eta" )
-                Pi_sigma := 1/eta * e->projection_on_child_elem( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ), face ) * face->normal
+                Pi_sigma := 1/eta * e->projection_on_child_elem( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), face ) * face->normal
                 Pi_sigma_N := 1/eta * child_cast(f)->f_surf.expr
                 Pi_sigma_handbook := 1/eta * e->projection_on_child_elem( child_cast(f)->sigma_handbook_PUM_zone_2.expr, face ) * face->normal
                 Pi_sigma_N_handbook := 1/eta *  e->projection_on_child_elem( child_cast(f)->sigma_handbook.expr, face ) * face->normal
@@ -534,7 +534,7 @@ def calc_skin_elem_vector_Q_p_1( list_f, rep )
                             file_ <<< "$(cw_0_handbook.to_string( 12 ))"
                             file_ <<< "        }"
                         file_ <<< "    }"
-                        file_ <<< "    else if ( face_type[ m.get_children_of(elem,Number<1>())[ $( face->num_child ) ]->number ][ $d ] ) {"
+                        file_ <<< "    else if ( face_type[ m.get_children_of(elem,Number<1>())[ $( face->num_child ) ]->number ][ $d ] == 1 ) {"
                         cw_1 := CodeWriterAlt( "T" )
                         cw_1.add( "Q[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ $( Pi_sigma_ind ) + ind_in_node_list_face[ 0 ] ]", Q[ i * e->dim + d ], add )
                         file_ <<< "$(cw_1.to_string( 8 ))"
@@ -612,7 +612,7 @@ def calc_vertex_nodal_vector_lambda_F_p_2( list_f, rep )
                 face := child_cast( face_ )
                 face_node_numbers_to_vertex_node_numbers := face->node_numbers_to_vertex_node_numbers
                 eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)", tex_name = "\\eta" )
-                Pi_sigma := 1/eta * e->projection_on_child_elem( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ), face ) * face->normal
+                Pi_sigma := 1/eta * e->projection_on_child_elem( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), face ) * face->normal
                 Pi_sigma_N := 1/eta * child_cast(f)->f_surf.expr
                 Pi_sigma_handbook := 1/eta * e->projection_on_child_elem( child_cast(f)->sigma_handbook_PUM_zone_2.expr, face ) * face->normal
                 Pi_sigma_N_handbook := 1/eta * e->projection_on_child_elem( child_cast(f)->sigma_handbook.expr, face ) * face->normal
@@ -638,7 +638,7 @@ def calc_vertex_nodal_vector_lambda_F_p_2( list_f, rep )
                             if degre_poly < 0
                                 e->assume_const_jac = true
                                 sigma_const_jac := sigma_hooke_iso( e->grad_sym( child_cast(f)->dep.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
-                                lambda_n_Pi_sigma_const_jac := lambda_n * e->projection_on_child_elem( ( sigma_const_jac - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ), face ) * face->normal
+                                lambda_n_Pi_sigma_const_jac := lambda_n * e->projection_on_child_elem( sigma_const_jac - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), face ) * face->normal
                                 e->assume_const_jac = hyp_const_jac
                                 degre_poly = ( lambda_n_Pi_sigma_const_jac[ d ] ).poly_deg( face->var_inter )
                             degre_poly_N := ( lambda_n_Pi_sigma_N[ d ] ).poly_deg( face->var_inter )
@@ -684,7 +684,7 @@ def calc_vertex_nodal_vector_lambda_F_p_2( list_f, rep )
                                     file_ <<< "$(cw_handbook.to_string( 8 ))"
                                     file_ <<< "    }"
                                     file_ <<< "    else {"
-                                file_ <<< "    if ( face_type[ m.get_children_of(elem,Number<1>())[ $( face->num_child ) ]->number ][ $d ] == 0 ) {" # si la face face est interieur a Omega
+                                file_ <<< "    if ( face_type[ m.get_children_of(elem,Number<1>())[ $( face->num_child ) ]->number ][ $d ] == 0 ) {" # si la face face est interieure a Omega
                                 cw_0 := CodeWriterAlt( "T" )
                                 cw_0.add( "lambda_F[ connect_node_to_vertex_node[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_n_in_node_list_face[ 0 ] )->number ] ][ $d ][ face_ind[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_n_in_list_vertex_nodes_face[ 0 ] ] + ind_i_in_node_list_face[ 0 ] ]", 1/2 * lambda_n_F[ i * e->dim + d ], add )
                                 file_ <<< "$(cw_0.to_string( 8 ))"
@@ -695,7 +695,7 @@ def calc_vertex_nodal_vector_lambda_F_p_2( list_f, rep )
                                     file_ <<< "$(cw_0_handbook.to_string( 12 ))"
                                     file_ <<< "        }"
                                 file_ <<< "    }"
-                                file_ <<< "    else if ( face_type[ m.get_children_of(elem,Number<1>())[ $( face->num_child ) ]->number ][ $d ] ) {" # si la face face appartient a delta_1_Omega
+                                file_ <<< "    else if ( face_type[ m.get_children_of(elem,Number<1>())[ $( face->num_child ) ]->number ][ $d ] == 1 ) {" # si la face face appartient a delta_1_Omega
                                 cw_1 := CodeWriterAlt( "T" )
                                 cw_1.add( "lambda_F[ connect_node_to_vertex_node[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_n_in_node_list_face[ 0 ] )->number ] ][ $d ][ face_ind[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_n_in_list_vertex_nodes_face[ 0 ] ] + ind_i_in_node_list_face[ 0 ] ]", lambda_n_F[ i * e->dim + d ], add )
                                 file_ <<< "$(cw_1.to_string( 8 ))"

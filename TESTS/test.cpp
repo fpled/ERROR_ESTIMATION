@@ -1,5 +1,5 @@
 #include "../build/problem_error_estimation/all_in_one.h" // sert a forcer le logiciel scons a generer le repertoire build et ses codes sources .h et .cpp correspondant a la formulation
-#include "../Structure.h"
+#include "../Mesh.h"
 #include "../Material_properties.h"
 #include "../Boundary_conditions.h"
 #include "../GEOMETRY/Calcul_geometry.h"
@@ -26,10 +26,12 @@ int main( int argc, char **argv ) {
     static const string boundary_condition_D = "penalty";
     static const bool display_constraints = 0;
 
+    display_pb( dim, structure, deg_p  );
+
+    /// Maillage du pb direct
+    /// ---------------------
     TM m; // declaration d'un maillage de type TM
-    TM m_ref;
-    create_structure( m, m_ref, "direct", structure, mesh_size, loading, deg_p );
-    display_structure( m, m_ref, "direct", structure, deg_p );
+    set_mesh( m, structure, mesh_size, loading, deg_p );
 
     /// Formulation du pb direct
     /// ------------------------
@@ -47,11 +49,24 @@ int main( int argc, char **argv ) {
 
     /// Resolution du pb direct
     /// -----------------------
+    cout << "Resolution du pb direct" << endl << endl;
     TicToc t;
     t.start();
     f.solve();
     t.stop();
-    cout << "Temps de calcul du pb direct : " << t.res << endl << endl;
+    cout << "Temps de calcul de la resolution du pb direct = " << t.res << endl << endl;
+
+//    f.allocate_matrices();
+//    f.shift();
+//    f.assemble();
+////    f.solve_system();
+//    f.get_initial_conditions();
+//    f.update_variables();
+//    f.call_after_solve();
+
+    /// Verification de l'equilibre du pb direct
+    /// ----------------------------------------
+    check_equilibrium( f, "direct" );
 
     cout << m.type_elements() << endl;
 

@@ -26,12 +26,10 @@ using namespace std;
 template<class TM, class TF, class T>
 void calcul_standard_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, const TF &f_adjoint, const string &method, const T &theta, const T &theta_adjoint, const Vec<T> &theta_adjoint_elem, const Vec<unsigned> &correspondance_elem_m_adjoint_to_elem_m, const Vec< Vec<T> > &dep_hat, const T &I_h, const T &I_hh, const bool want_introduction_sigma_hat_m = true ) {
     if ( want_introduction_sigma_hat_m == 0 ) {
-        cout << "-------------------------------------------------------------------------------------------------------" << endl;
         cout << "Calcul standard des bornes d'erreur sur la quantite d'interet locale (sans introduction de sigma_hat_m)" << endl;
         cout << "-------------------------------------------------------------------------------------------------------" << endl << endl;
     }
     else {
-        cout << "-------------------------------------------------------------------------------------------------------" << endl;
         cout << "Calcul standard des bornes d'erreur sur la quantite d'interet locale (avec introduction de sigma_hat_m)" << endl;
         cout << "-------------------------------------------------------------------------------------------------------" << endl << endl;
     }
@@ -71,7 +69,7 @@ void calcul_standard_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
     
     if ( want_introduction_sigma_hat_m == 0 ) {
         cout << "somme des contributions elementaires aux estimateurs d'erreur globale :" << endl;
-        cout << "sum( (theta_elem_proj_on_adjoint^2 * theta_adjoint_elem^2)^1/2 ) = " << sum_theta_direct_adjoint << endl << endl;
+        cout << "sum( sqrt( theta_elem_proj_on_adjoint^2 * theta_adjoint_elem^2 ) ) = " << sum_theta_direct_adjoint << endl << endl;
         
         xi_inf = I_h + I_hh - theta * theta_adjoint;
         xi_sup = I_h + I_hh + theta * theta_adjoint;
@@ -86,7 +84,7 @@ void calcul_standard_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
     }
     else {
         cout << "somme des contributions elementaires aux estimateurs d'erreur globale :" << endl;
-        cout << "1/2 * sum( (theta_elem_proj_on_adjoint^2 * theta_adjoint_elem^2)^1/2 ) = " << sum_theta_direct_adjoint / 2 << endl << endl;
+        cout << "1/2 * sum( sqrt( theta_elem_proj_on_adjoint^2 * theta_adjoint_elem^2 ) ) = " << sum_theta_direct_adjoint / 2 << endl << endl;
         
         xi_inf = I_h + I_hh - theta * theta_adjoint / 2;
         xi_sup = I_h + I_hh + theta * theta_adjoint / 2;
@@ -137,9 +135,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
     
     T h = 0.;
     if ( want_solve_eig_local_improvement == 0 ) {
-        cout << "-------------------------------------------------------" << endl;
-        cout << "Calcul analytique de la constante h dans l'amelioration" << endl;
-        cout << "-------------------------------------------------------" << endl << endl;
+        cout << "Calcul analytique de la constante h dans l'amelioration" << endl << endl;
         
         if ( local_improvement == "steklov" ) {
             calcul_h_alternativeontype( m, Number< AreSameType< typename ExtractDM<la_DM>::ReturnType<TM>::T, void >::res >(), Number< AreSameType< typename ExtractDM<mu_DM>::ReturnType<TM>::T, void >::res >(), h, shape );
@@ -158,9 +154,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
         cout << "h = " << h << endl << endl;
     }
     else {
-        cout << "------------------------------------------------------" << endl;
-        cout << "Calcul numerique de la constante h dans l'amelioration" << endl;
-        cout << "------------------------------------------------------" << endl << endl;
+        cout << "Calcul numerique de la constante h dans l'amelioration" << endl << endl;
         
         if ( use_mask_eig_local_improvement ) {
             
@@ -205,16 +199,14 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
                 
 //                 display( m_mask, shape );
                 
-                cout << "--------------------------------------------------------------------------------------------------" << endl;
-                cout << "Construction de la solution numerique du pb aux valeurs propres generalisees a l'iteration " << nb_iterations << endl;
-                cout << "--------------------------------------------------------------------------------------------------" << endl << endl;
+                cout << "Construction de la solution numerique du pb aux valeurs propres generalisees a l'iteration " << endl << endl;
                 
                 if ( m_mask.node_list.size() ) {
                     if ( remove_lonely_nodes( m_mask ) )
                         cerr << "Des noeuds seuls ont ete retires du maillage associe au pb aux valeurs propres generalisees..." << endl << endl;
-                    cout << "nb de ddl du pb aux valeurs propres generalisees : " << m_mask.node_list.size() * dim << endl << endl;
-                    cout << "nb de noeuds du pb aux valeurs propres generalisees : " << m_mask.node_list.size() << endl << endl;
-                    cout << "nb d'elements du pb aux valeurs propres generalisees : " << m_mask.elem_list.size() << endl << endl;
+                    cout << "nb de ddl du pb aux valeurs propres generalisees = " << m_mask.node_list.size() * dim << endl;
+                    cout << "nb de noeuds du pb aux valeurs propres generalisees = " << m_mask.node_list.size() << endl;
+                    cout << "nb d'elements du pb aux valeurs propres generalisees = " << m_mask.elem_list.size() << endl << endl;
                 }
                 
                 TF f_mask( m_mask );
@@ -271,7 +263,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
                 cout << generalized_eig_val << endl << endl;
                 
                 t_eig_gen.stop();
-                cout << "Temps de calcul du pb aux valeurs propres generalisees : " << t_eig_gen.res << endl << endl;
+                cout << "Temps de calcul de la resolution du pb aux valeurs propres generalisees = " << t_eig_gen.res << endl << endl;
                 
                 T generalized_eig_val_eq = generalized_eig_val[ 0 ];
                 residual = norm_2( C * generalized_eig_vec.row( 0 ) );
@@ -372,9 +364,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
             
             display( m_mask, shape );
             
-            cout << "----------------------------------------------------------------------------" << endl;
-            cout << "Construction de la solution numerique du pb aux valeurs propres generalisees" << endl;
-            cout << "----------------------------------------------------------------------------" << endl << endl;
+            cout << "Construction de la solution numerique du pb aux valeurs propres generalisees" << endl << endl;
             
             if ( m_mask.node_list.size() ) {
                 if ( remove_lonely_nodes( m_mask ) )
@@ -440,7 +430,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
             cout << generalized_eig_val << endl << endl;
             
             t_eig_gen.stop();
-            cout << "Temps de calcul du pb aux valeurs propres generalisees : " << t_eig_gen.res << endl << endl;
+            cout << "Temps de calcul de la resolution du pb aux valeurs propres generalisees = " << t_eig_gen.res << endl << endl;
             
             T generalized_eig_val_eq = generalized_eig_val[ 0 ];
             T residual = norm_2( C * generalized_eig_vec.row( 0 ) );
@@ -473,18 +463,18 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
     /// Maillages extraits du maillage direct autour de la quantite d'interet
     /// ---------------------------------------------------------------------
     if ( local_improvement == "steklov" ) {
-        create_structure_cut( m, m_lambda_min, deg_p, shape, k_min, domain_length, domain_center, spread_cut );
-        create_structure_cut( m, m_lambda_max, deg_p, shape, k_max, domain_length, domain_center, spread_cut );
+        set_mesh_cut( m_lambda_min, m, shape, k_min, domain_length, domain_center, spread_cut );
+        set_mesh_cut( m_lambda_max, m, shape, k_max, domain_length, domain_center, spread_cut );
     }
     else if ( local_improvement == "rayleigh" )
-        create_structure_cut( m, m_lambda_opt, deg_p, shape, k_opt, domain_length, domain_center, spread_cut );
+        set_mesh_cut( m_lambda_opt, m, shape, k_opt, domain_length, domain_center, spread_cut );
     
     /// Maillages extraits du maillage adjoint autour de la quantite d'interet
     /// ----------------------------------------------------------------------
     if ( local_improvement == "steklov" )
-        create_structure_cut( m_adjoint, m_adjoint_lambda_min, deg_p, shape, k_min, domain_length, domain_center, spread_cut );
+        set_mesh_cut( m_adjoint_lambda_min, m_adjoint, shape, k_min, domain_length, domain_center, spread_cut );
     else if ( local_improvement == "rayleigh" )
-        create_structure_cut( m_adjoint, m_adjoint_lambda_opt, deg_p, shape, k_opt, domain_length, domain_center, spread_cut );
+        set_mesh_cut( m_adjoint_lambda_opt, m_adjoint, shape, k_opt, domain_length, domain_center, spread_cut );
 
     /// Formulation des pbs extraits associes aux pbs direct/adjoint
     /// ------------------------------------------------------------
@@ -499,13 +489,12 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
     /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe aux maillages extraits des pbs direct/adjoint ///
     /// --------------------------------------------------------------------------------------------------------------------------------------------------///
     
-    cout << "-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-        cout << "Construction d'un champ de contrainte admissible par element" << endl;
+    cout << "Construction d'un champ de contrainte admissible par element" << endl;
     if ( local_improvement == "steklov" )
         cout << "Calcul d'un estimateur d'erreur globale sur les structures extraites associees aux pbs direct/adjoint de type " << shape << " pour le parametre min lambda_min = " << k_min << " et le parametre max lambda_max = " << k_max << endl;
     else if ( local_improvement == "rayleigh" )
         cout << "Calcul d'un estimateur d'erreur globale sur la structure extraite associee aux pbs direct/adjoint de type " << shape << " pour le parametre lambda = " << k_opt << endl;
-    cout << "-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl << endl;
+    cout << endl;
     
     T theta_lambda_min = 0.;
     T theta_lambda_max = 0.;

@@ -63,7 +63,8 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     /// Construction des contraintes cinematiques pour chaque noeud sommet j du maillage et chaque direction d
     /// ------------------------------------------------------------------------------------------------------
     
-    cout << "Construction des contraintes cinematiques" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des contraintes cinematiques" << endl << endl;
     
     Vec< Vec< Vec<unsigned> > > constrained_points_list_patch;
     constrained_points_list_patch.resize( nb_vertex_nodes );
@@ -90,10 +91,9 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "liste des points bloques dans le patch associe au noeud sommet " << j << " dans la direction " << d << " : " << constrained_points_list_patch[ j ][ d ] << endl;
+                cout << "liste des points bloques dans le patch associe au noeud sommet " << j << " dans la direction " << d << " = " << constrained_points_list_patch[ j ][ d ] << endl;
             }
-            cout << "nb de contraintes sur le patch associe au noeud sommet " << j << " : " << nb_constraints_patch[ j ] << endl;
-            cout << endl;
+            cout << "nb de contraintes sur le patch associe au noeud sommet " << j << " = " << nb_constraints_patch[ j ] << endl << endl;
         }
     }
     
@@ -105,7 +105,8 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     /// Construction des matrices K[ j ] pour chaque noeud sommet j du maillage
     /// -----------------------------------------------------------------------
     
-    cout << "Construction des matrices K" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des matrices K" << endl << endl;
     
     Vec< Mat<T, Sym<> > > K; 
     K.resize( nb_vertex_nodes );
@@ -143,12 +144,13 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     }
     
     t_construct_K.stop();
-    cout << "Temps de calcul de remplissage des matrices K associees aux problemes locaux pour la technique SPET : " << t_construct_K.res << endl << endl;
+    if ( debug_method )
+        cout << "Temps de calcul du remplissage des matrices associees aux pbs locaux auto-equilibres par patch = " << t_construct_K.res << endl << endl;
     
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
-            cout << "dimension de la matrice K associee au noeud sommet " << j << " : ( " << nb_points_patch[ j ] * dim << ", " << nb_points_patch[ j ] * dim << " )" << endl;
-            cout << "matrice K associee au noeud sommet " << j << " :" << endl;
+            cout << "dimension de la matrice K associee au noeud sommet " << j << " = ( " << nb_points_patch[ j ] * dim << ", " << nb_points_patch[ j ] * dim << " )" << endl;
+            cout << "matrice K associee au noeud sommet " << j << " =" << endl;
             cout << K[ j ] << endl << endl;
         }
     }
@@ -156,7 +158,8 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     /// Construction des vecteurs F[ j ] pour chaque noeud sommet j du maillage
     /// -----------------------------------------------------------------------
     
-    cout << "Construction des vecteurs F" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des vecteurs F" << endl << endl;
     
     Vec< Vec<T> > F;
     F.resize( nb_vertex_nodes );
@@ -191,24 +194,25 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
-            cout << "dimension du vecteur F associe au noeud sommet " << j << " : " << nb_points_patch[ j ] * dim << endl;
-            cout << "vecteur F associe au noeud sommet " << j << " :" << endl;
+            cout << "dimension du vecteur F associe au noeud sommet " << j << " = " << nb_points_patch[ j ] * dim << endl;
+            cout << "vecteur F associe au noeud sommet " << j << " =" << endl;
             cout << F[ j ] << endl << endl;
         }
     }
     
     constrained_points_list_patch.free();
     
-    cout << "---------------------------------------------------------" << endl;
-    cout << "Resolution des problemes locaux auto-equilibres par patch" << endl;
-    cout << "---------------------------------------------------------" << endl << endl;
+    cout << "Resolution des pbs locaux auto-equilibres par patch" << endl;
+    cout << "---------------------------------------------------" << endl << endl;
     
     /// Resolution des problemes locaux K[ j ] * U[ j ] = F[ j ] pour chaque noeud sommet j du maillage
     /// Construction des vecteurs U[ j ] pour chaque noeud sommet j du maillage
     /// -------------------------------------------------------------------------------------------------
     
-    cout << "Resolution des problemes locaux K * U = F" << endl;
-    cout << "Construction des vecteurs U" << endl << endl;
+    if ( debug_method ) {
+        cout << "Resolution des pbs locaux K * U = F" << endl;
+        cout << "Construction des vecteurs U" << endl << endl;
+    }
     
     Vec< Vec<T> > U;
     U.resize( nb_vertex_nodes );
@@ -274,7 +278,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
             K_sym.clear();
         }
         else {
-            cerr << "Bing. Error : solveur " << solver << " pour la resolution des problemes locaux non implemente" << endl << endl;
+            cerr << "Bing. Error : solveur " << solver << " pour la resolution des pbs locaux non implemente" << endl << endl;
         }
         if ( debug_method == 0 and verif_solver == 0 ) {
             K[ j ].clear();
@@ -283,25 +287,26 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     }
     
     t_solve_local_SPET.stop();
-    cout << "Temps de calcul de la resolution des problemes locaux pour la technique SPET : " << t_solve_local_SPET.res << endl << endl;
+    cout << "Temps de calcul de la resolution des pbs locaux auto-equilibres par patch = " << t_solve_local_SPET.res << endl << endl;
     
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
-            cout << "dimension du vecteur U associee au noeud sommet " << j << " : " << nb_points_patch[ j ] * dim << endl;
-            cout << "vecteur U associe au noeud sommet " << j << " :" << endl;
+            cout << "dimension du vecteur U associee au noeud sommet " << j << " = " << nb_points_patch[ j ] * dim << endl;
+            cout << "vecteur U associe au noeud sommet " << j << " =" << endl;
             cout << U[ j ] << endl << endl;
         }
     }
      if ( verif_solver ) {
-         cout << "Verification de la resolution des problemes locaux auto-equilibres par patch : tolerance = " << tol_solver << endl << endl;
+         if ( debug_method )
+             cout << "Verification de la resolution des problemes locaux auto-equilibres par patch : tolerance = " << tol_solver << endl << endl;
          for (unsigned j=0;j<nb_vertex_nodes;++j) {
              T residual = norm_2( K[ j ] * U[ j ] - F[ j ] );
              T b = norm_2( F[ j ] );
             if ( residual / b > tol_solver ) {
                 cout << "residu associe au noeud sommet " << j << " :" << endl;
 //                cout << "K * U - F =" << endl;
-//                cout << K[ j ] * U[ j ] - F[ j ] << endl << endl;
-                cout << "norme du residu = " << residual << endl << endl;
+//                cout << K[ j ] * U[ j ] - F[ j ] << endl;
+                cout << "norme du residu = " << residual << endl;
                 cout << "norme du residu relatif =" << residual / b << endl << endl;
             }
         }
@@ -314,7 +319,8 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     /// Construction des vecteurs E[ n ] pour chaque element n du maillage
     /// ------------------------------------------------------------------
     
-    cout << "Construction des vecteurs E" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des vecteurs E" << endl << endl;
     
     E.resize( m.elem_list.size() );
     
@@ -332,8 +338,8 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     
     if ( debug_method ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
-            cout << "dimension du vecteur E associe a l'element " << n << " : " << nb_points_elem[ n ] * dim << endl;
-            cout << "vecteur E associe a l'element " << n << " :" << endl;
+            cout << "dimension du vecteur E associe a l'element " << n << " = " << nb_points_elem[ n ] * dim << endl;
+            cout << "vecteur E associe a l'element " << n << " =" << endl;
             cout << E[ n ] << endl << endl;
         }
     }
@@ -348,10 +354,8 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale ///
     /// ------------------------------------------------------------------------------------------------------- ///
     
-    cout << "------------------------------------------------------------" << endl;
-    cout << "Construction d'un champ de contrainte admissible par element" << endl;
-    cout << "Calcul d'un estimateur d'erreur globale" << endl;
-    cout << "------------------------------------------------------------" << endl << endl;
+    cout << "Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale" << endl;
+    cout << "-------------------------------------------------------------------------------------------------------" << endl << endl;
     
     theta = 0.;
     

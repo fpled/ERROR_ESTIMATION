@@ -21,8 +21,6 @@ using namespace std;
 /// ------------------------------------------------
 template<class TF>
 void check_equilibrium( TF &f, const string &pb ) {
-//    TicToc t_eq;
-//    t_eq.start();
     typedef typename TF::ScalarType T;
     Mat<T,Sym<>,SparseCholMod > *ptr_mat;
     f.get_mat( ptr_mat );
@@ -32,13 +30,11 @@ void check_equilibrium( TF &f, const string &pb ) {
     Vec<T> &U = f.get_result( 0 ); // f.vectors[0]
     Vec<T> &F = f.get_sollicitation(); // f.sollicitation
     T residual = norm_2( K * U - F );
-    cout << "Verification de l'equilibre global du pb " << pb << " :" << endl;
-//    cout << "residu K * U - F :" << endl;
+    cout << "Verification de l'equilibre global du pb " << pb << endl << endl;
+//    cout << "residu K * U - F =" << endl;
 //    cout << K * U - F << endl << endl;
     cout << "norme du residu = " << residual << endl;
     cout << "norme du residu relatif = " << residual / norm_2( F ) << endl << endl;
-//    t_eq.stop();
-//    cout << "Temps de calcul du residu du pb " << pb << " : " << t_eq.res << endl << endl;
 }
 
 /// Construction du vecteur de vecteurs residual_force_fluxes
@@ -76,6 +72,8 @@ void check_equilibrium_force_fluxes( TM &m, const TF &f, const string pb, const 
 
     elem_list_node.free();
 
+    cout << "Verification de l'equilibre des densites d'effort : tolerance = " << tol_eq_force_fluxes << endl << endl;
+
     Vec< Vec<T> > residual_force_fluxes;
     residual_force_fluxes.resize( m.elem_list.size() );
 
@@ -100,10 +98,6 @@ void check_equilibrium_force_fluxes( TM &m, const TF &f, const string pb, const 
     check_elem_eq_force_fluxes.want_local_enrichment = &want_local_enrichment;
 
     apply( m.elem_list, check_elem_eq_force_fluxes, m, f, residual_force_fluxes );
-
-    cout << "--------------------------------------------------------------------------------------------------------------------------" << endl;
-    cout << "Verification de l'equilibre des densites d'effort en resultante et en moment sur chaque element : tolerance = " << tol_eq_force_fluxes << endl;
-    cout << "--------------------------------------------------------------------------------------------------------------------------" << endl << endl;
 
     for (unsigned n=0;n<m.elem_list.size();++n) {
         for (unsigned d=0;d<dim;++d) {

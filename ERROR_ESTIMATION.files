@@ -63,6 +63,7 @@ generated/BarGeneric[Int32]_n_8.1.met
 generated/BarGeneric[Int32]_n_9.1.met
 generated/Hexa.3.met
 generated/Hexa_20.3.met
+generated/Hexa_27.3.met
 generated/NodalElement.1.met
 generated/NodalElement.2.met
 generated/NodalElement.3.met
@@ -71,6 +72,7 @@ generated/Quad.3.met
 generated/Quad_8.2.met
 generated/Quad_8.3.met
 generated/Quad_9.2.met
+generated/Quad_9.3.met
 generated/QuadGeneric[Int32]_n_1.2.met
 generated/QuadGeneric[Int32]_n_2.2.met
 generated/QuadGeneric[Int32]_n_3.2.met
@@ -86,6 +88,7 @@ generated/Triangle_15.2.met
 generated/Triangle_15_.2.met
 generated/Triangle_18.2.met
 generated/Triangle_21.2.met
+generated/Triangle_28.2.met
 generated/Triangle_6.2.met
 generated/Triangle_6.3.met
 generated/Triangle_9.2.met
@@ -917,7 +920,11 @@ MESH_AVS/TEST_SPECIMEN_2D/test_specimen_coarse_Triangle.avs
 MESH_AVS/TEST_SPECIMEN_2D/test_specimen_coarse_Triangle_direct_global_local_discretization_error.vtu
 MESH_AVS/TEST_SPECIMEN_2D/test_specimen_fine_Triangle.avs
 MESH_AVS/TEST_SPECIMEN_2D/test_specimen_very_fine_Triangle.avs
-MESH_AVS/TEST_SPECIMEN_3D/test_specimen_Hexa.inp
+MESH_AVS/TEST_SPECIMEN_3D/test_specimen_10_Hexa.inp
+MESH_AVS/TEST_SPECIMEN_3D/test_specimen_15_Hexa.inp
+MESH_AVS/TEST_SPECIMEN_3D/test_specimen_20_Hexa.inp
+MESH_AVS/TEST_SPECIMEN_3D/test_specimen_25_Hexa.inp
+MESH_AVS/TEST_SPECIMEN_3D/test_specimen_5_Hexa.inp
 MESH_GMSH/BEAM_HOLE_3D/beam_hole_coarse_Tetra.msh
 MESH_GMSH/BEAM_HOLE_3D/beam_hole_coarse_Tetra_direct_global_local_discretization_error_ref_1.vtu
 MESH_GMSH/BEAM_HOLE_3D/beam_hole_coarse_Tetra_direct_global_local_discretization_error_ref_2.vtu
@@ -1879,7 +1886,7 @@ Makefile
 Material_properties.h
 Material_properties.met
 Material_properties_homog.h
+Mesh.h
 SConstruct
 SConstruct_homog
 SConstruct_pgd
-Structure.h

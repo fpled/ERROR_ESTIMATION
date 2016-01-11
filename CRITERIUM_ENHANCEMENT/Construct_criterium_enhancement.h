@@ -26,23 +26,22 @@ template<class TM, class T>
 void construct_geometric_criterium( TM &m, const string &geometric_criterium, Vec<T> &geometric_ratio, const bool debug_criterium_enhancement = false ) {
 
     static const unsigned dim = TM::dim;
+    typedef typename TM::Pvec Pvec;
 
     cout << "--------------------------------------------------" << endl;
     cout << "Construction du critere d'amelioration geometrique" << endl;
     cout << "--------------------------------------------------" << endl << endl;
 
     /// Construction du vecteur de vecteurs circum_center et du vecteur circum_radius
-    /// circum_center[ n ] : position du centre du cercle/sphere circonscrit a l'element n
-    /// circum_radius[ n ] : rayon du cercle/sphere circonscrit a l'element n
-    /// ----------------------------------------------------------------------------------
+    /// circum_center[ n ] : position du centre du cercle/sphere circonscrit(e) a l'element n
+    /// circum_radius[ n ] : rayon du cercle/sphere circonscrit(e) a l'element n
+    /// -------------------------------------------------------------------------------------
 
-//     Vec< Vec<T> > circum_center;
+//     Vec<Pvec> circum_center;
 //     circum_center.resize( m.elem_list.size() );
 // 
-//     for (unsigned n=0;n<m.elem_list.size();++n) {
-//         circum_center[ n ].resize( dim );
+//     for (unsigned n=0;n<m.elem_list.size();++n)
 //         circum_center[ n ].set( 0. );
-//     }
 // 
 //     Vec<T> circum_radius;
 //     circum_radius.resize( m.elem_list.size() );
@@ -66,17 +65,15 @@ void construct_geometric_criterium( TM &m, const string &geometric_criterium, Ve
 //     }
 
     /// Construction du vecteur de vecteurs in_center et du vecteur in_radius
-    /// in_center[ n ] : position du centre du cercle/sphere inscrit dans l'element n
-    /// in_radius[ n ] : rayon du cercle/sphere inscrit dans l'element n
-    /// -----------------------------------------------------------------------------
+    /// in_center[ n ] : position du centre du cercle/sphere inscrit(e) dans l'element n
+    /// in_radius[ n ] : rayon du cercle/sphere inscrit(e) dans l'element n
+    /// --------------------------------------------------------------------------------
 
-//     Vec< Vec<T> > in_center;
+//     Vec<Pvec> in_center;
 //     in_center.resize( m.elem_list.size() );
 // 
-//     for (unsigned n=0;n<m.elem_list.size();++n) {
-//         in_center[ n ].resize( dim );
+//     for (unsigned n=0;n<m.elem_list.size();++n)
 //         in_center[ n ].set( 0. );
-//     }
 // 
 //     Vec<T> in_radius;
 //     in_radius.resize( m.elem_list.size() );
@@ -100,8 +97,8 @@ void construct_geometric_criterium( TM &m, const string &geometric_criterium, Ve
 //     }
 
     /// Construction du vecteur radius_ratio
-    /// radius_ratio[ n ] : rapport du rayon du cercle/sphere circonscrit sur le rayon du cercle/sphere inscrit pour l'element n
-    /// ------------------------------------------------------------------------------------------------------------------------
+    /// radius_ratio[ n ] : rapport du rayon du cercle/sphere circonscrit(e) sur le rayon du cercle/sphere inscrit(e) pour l'element n
+    /// ------------------------------------------------------------------------------------------------------------------------------
 
 //     Vec<T> radius_ratio;
 //     radius_ratio.resize( m.elem_list.size() );
@@ -123,7 +120,7 @@ void construct_geometric_criterium( TM &m, const string &geometric_criterium, Ve
 //     }
 
     /// Construction du vecteur edge_ratio
-    /// edge_ratio[ n ] : rapport de la face la plus petite sur la face la plus grande pour l'element n
+    /// edge_ratio[ n ] : rapport du plus petit  sur la face la plus grande pour l'element n
     /// -----------------------------------------------------------------------------------------------
 
 //     Vec<T> edge_ratio;

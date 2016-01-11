@@ -32,14 +32,14 @@ template<class TE, class TTVV, class TTV>
 void update_circum_center( const TE &e, TTVV &circum_center, TTV &circum_radius ) {}
 
 struct Calcul_Circum_Center_Radius {
-    template<class TE, class T> void operator()( const TE &elem, Vec< Vec<T> > &circum_center, Vec<T> &circum_radius ) const {
+    template<class TE, class Pvec, class T> void operator()( const TE &elem, Vec<Pvec> &circum_center, Vec<T> &circum_radius ) const {
         update_circum_center( elem, circum_center[ elem.number ], circum_radius[ elem.number ] );
     }
 };
 
 struct Construct_Circum_Center_Radius_Elem_List {
     const Vec<unsigned>* elem_list;
-    template<class TE, class T> void operator()( const TE &elem, Vec< Vec<T> > &circum_center, Vec<T> &circum_radius ) const {
+    template<class TE, class Pvec, class T> void operator()( const TE &elem, Vec<Pvec> &circum_center, Vec<T> &circum_radius ) const {
         if ( find( *elem_list, _1 == elem.number ) ) {
             Vec<unsigned> ind_in_elem_list = find_with_index( *elem_list == elem.number );
             update_circum_center( elem, circum_center[ ind_in_elem_list[ 0 ] ], circum_radius[ ind_in_elem_list[ 0 ] ] );
@@ -53,7 +53,7 @@ template<class TE, class TTVV, class TTV>
 void update_in_center( const TE &e, TTVV &in_center, TTV &in_radius ) {}
 
 struct Calcul_In_Center_Radius {
-    template<class TE, class T> void operator()( const TE &elem, Vec< Vec<T> > &in_center, Vec<T> &in_radius ) const {
+    template<class TE, class Pvec, class T> void operator()( const TE &elem, Vec<Pvec> &in_center, Vec<T> &in_radius ) const {
         update_in_center( elem, in_center[ elem.number ], in_radius[ elem.number ] );
     }
 };

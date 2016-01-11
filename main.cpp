@@ -10,7 +10,7 @@
 //
 //
 #include "build/problem_error_estimation/all_in_one.h" // sert a forcer le logiciel scons a generer le repertoire build et ses codes sources .h et .cpp correspondant a la formulation
-#include "Structure.h"
+#include "Mesh.h"
 #include "Material_properties.h"
 #include "Boundary_conditions.h"
 #include "GEOMETRY/Calcul_geometry.h"
@@ -36,43 +36,43 @@ using namespace std;
 int main( int argc, char **argv ) {
     TicToc t_total;
     t_total.start();
-    static const unsigned dim = 3;
+    static const unsigned dim = 2;
     static const bool wont_add_nz = true;
     typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "test_specimen_5"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes, square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
+    static const string structure = "weight_sensor"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes, square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
                                                      // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes, test_specimen_n (n=5,10,15,20,25)
     static const string mesh_size = "fine"; // taille du maillage pour les structures plate_hole (2D ou 3D), plate_crack, structure_crack, test_specimen (2D), weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
-    static const string loading = "Step-2"; // chargement
+    static const string loading = "pull"; // chargement
                                           // pour la structure spot_weld (3D) : pull, shear, peeling
                                           // pour la structure plate_crack (2D) : pull, shear
                                           // pour la structure test_specimen_n (3D) : Step-1, ..., Step-9
     static const unsigned deg_p = 1; // degre de l'analyse elements finis : 1, 2, ...
-    static const unsigned deg_k = 2; // degre supplementaire : 1, 2, 3, ...
+    static const unsigned deg_k = 3; // degre supplementaire : 1, 2, 3, ...
     static const string boundary_condition_D = "penalty"; // methode de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalty
     static const bool display_constraints = 0; // affichage des contraintes cinematiques
     
     /// Global discretization error
     /// ---------------------------
-    static const bool want_global_discretization_error = 0; // calcul de l'erreur de discretisation globale du pb direct
-    static const bool want_local_discretization_error = 0; // calcul de l'erreur de discretisation locale du pb direct
+    static const bool want_global_discretization_error = 1; // calcul de l'erreur de discretisation globale du pb direct
+    static const bool want_local_discretization_error = 1; // calcul de l'erreur de discretisation locale du pb direct
     static const bool want_solve_ref = 0; // calcul d'une solution de reference sur un maillage de reference (tres fin)
-    static const unsigned refinement_degree_ref = 2; // degre du h-refinement pour la construction du maillage de reference du pb de reference :
-                                                     // 1 -> sous-decoupage en 4/8 elements en 2D/3D
-                                                     // 2 -> sous-decoupage en 16/64 elements en 2D/3D
-                                                     // 3 -> sous-decoupage en 64/512 elements en 2D/3D
-                                                     // 4 -> sous-decoupage en 256/4096 elements en 2D/3D
-                                                     // 5 -> sous-decoupage en 1024/32768 elements en 2D/3D
-                                                     // 6 -> sous-decoupage en 4096/32768 elements en 2D/3D
-                                                     // 7 -> sous-decoupage en 16384/262144 elements en 2D/3D
-                                                     // 8 -> sous-decoupage en 65536/2097152 elements en 2D/3D
+    static const unsigned refinement_level_ref = 2; // degre du h-refinement pour la construction du maillage de reference du pb direct :
+                                                    // 1 -> sous-decoupage en 4/8 elements en 2D/3D
+                                                    // 2 -> sous-decoupage en 16/64 elements en 2D/3D
+                                                    // 3 -> sous-decoupage en 64/512 elements en 2D/3D
+                                                    // 4 -> sous-decoupage en 256/4096 elements en 2D/3D
+                                                    // 5 -> sous-decoupage en 1024/32768 elements en 2D/3D
+                                                    // 6 -> sous-decoupage en 4096/32768 elements en 2D/3D
+                                                    // 7 -> sous-decoupage en 16384/262144 elements en 2D/3D
+                                                    // 8 -> sous-decoupage en 65536/2097152 elements en 2D/3D
 
     /// Global error estimation method
     /// ------------------------------
     static const bool want_global_estimation = 1; // calcul d'un estimateur d'erreur globale (au sens de la norme energetique)
-    static const string method = "EET"; //methode de construction de champs admissibles pour le pb direct : EET, SPET, EESPT
+    static const string method = "EET_SPET_EESPT"; //methode de construction de champs admissibles pour le pb direct : EET, SPET, EESPT
     static const string method_adjoint = "EET"; // methode de construction de champs admissibles pour le pb adjoint : EET, SPET, EESPT
 
     static const unsigned cost_function = 0; // fonction-cout pour les methodes EET, EESPT :
@@ -80,8 +80,8 @@ int main( int argc, char **argv ) {
                                              // 1 : norme matricielle avec coeff de ponderation (en 1/mes(face)^2)
                                              // 2 : norme energetique
     static const T penalty_val_N = 1e6; // coefficient de penalisation pour la prise en compte des conditions aux limites de Neumann (en effort) (methode EESPT)
-    static const string solver = "LDL"; // solveur pour la resolution des problemes locaux avec blocage auto du noyau : CholMod (sym, def, pos), LDL (sym) // types de solveur sans blocage auto du noyau (-> ne marche pas!) : CholFactorize (sym, def, pos), LUFactorize, Inv, UMFPACK
-    static const string solver_minimisation = "UMFPACK"; // solveur pour la resolution des problemes de minimisation : LDL (sym), UMFPACK, LUFactorize, Inv
+    static const string solver = "LDL"; // solveur pour la resolution des pbs locaux avec blocage auto du noyau : CholMod (sym, def, pos), LDL (sym) // types de solveur sans blocage auto du noyau (-> ne marche pas!) : CholFactorize (sym, def, pos), LUFactorize, Inv, UMFPACK
+    static const string solver_minimisation = "UMFPACK"; // solveur pour la resolution des pbs de minimisation : LDL (sym), UMFPACK, LUFactorize, Inv
     
     /// Enhanced technique
     /// ------------------
@@ -160,14 +160,14 @@ int main( int argc, char **argv ) {
     static const bool verif_eq_force_fluxes = 1; // verification de l'equilibre des densites d'effort (methodes EET, EESPT)
     static const T tol_eq_force_fluxes = 1e-6; // tolerance pour la verification de l'equilibre des densites d'effort (methodes EET, EESPT)
 
-    static const bool verif_solver = 1; // verification de la resolution des problemes locaux (methodes EET, SPET, EESPT)
-    static const T tol_solver = 1e-6; // tolerance pour la verification de la resolution des problemes locaux (methodes EET, SPET, EESPT)
-    static const bool verif_solver_enhancement = 0; // verification de la resolution des problemes locaux (amelioration des methodes EET, EESPT)
-    static const T tol_solver_enhancement = 1e-6; // tolerance pour la verification de la resolution des problemes locaux (amelioration des methodes EET EESPT)
-    static const bool verif_solver_minimisation = 1; // verification de la resolution des problemes de minimisation (methodes EET, EESPT)
-    static const T tol_solver_minimisation = 1e-6; // tolerance pour la verification de la resolution des problemes de minimisation (methodes EET, EESPT)
-    static const bool verif_solver_minimisation_enhancement = 0; // verification de la resolution des problemes de minimisation (amelioration des methodes EET, EESPT)
-    static const T tol_solver_minimisation_enhancement = 1e-6; // tolerance pour la verification de la resolution des problemes de minimisation (amelioration des methodes EET, EESPT)
+    static const bool verif_solver = 1; // verification de la resolution des pbs locaux (methodes EET, SPET, EESPT)
+    static const T tol_solver = 1e-6; // tolerance pour la verification de la resolution des pbs locaux (methodes EET, SPET, EESPT)
+    static const bool verif_solver_enhancement = 1; // verification de la resolution des pbs locaux (amelioration des methodes EET, EESPT)
+    static const T tol_solver_enhancement = 1e-6; // tolerance pour la verification de la resolution des pbs locaux (amelioration des methodes EET EESPT)
+    static const bool verif_solver_minimisation = 1; // verification de la resolution des pbs de minimisation (methodes EET, EESPT)
+    static const T tol_solver_minimisation = 1e-6; // tolerance pour la verification de la resolution des pbs de minimisation (methodes EET, EESPT)
+    static const bool verif_solver_minimisation_enhancement = 1; // verification de la resolution des pbs de minimisation (amelioration des methodes EET, EESPT)
+    static const T tol_solver_minimisation_enhancement = 1e-6; // tolerance pour la verification de la resolution des pbs de minimisation (amelioration des methodes EET, EESPT)
     
     /// Debug
     /// -----
@@ -194,7 +194,7 @@ int main( int argc, char **argv ) {
     static const bool save_vtu = 1;
     static const bool save_pvd = 0;
     static const bool save_vtu_ref = 0;
-    static const bool display_vtu = 0;
+    static const bool display_vtu = 1;
     static const bool display_pvd = 0;
     static const bool display_vtu_ref = 0;
     
@@ -212,31 +212,26 @@ int main( int argc, char **argv ) {
     
     static const bool save_vtu_crown = 1;
     static const bool display_vtu_crown = 0;
-    
+
     /// ------------------------------------------------------- ///
     /// Construction de la solution elements finis du pb direct ///
     /// ------------------------------------------------------- ///
     
+    display_pb( dim, structure, deg_p  );
+
     /// Maillage du pb direct
     /// ---------------------
     TM m; // declaration d'un maillage de type TM
-    TM m_ref;
-    create_structure( m, m_ref, "direct", structure, mesh_size, loading, deg_p, refinement_degree_ref, want_global_discretization_error, want_local_discretization_error, want_solve_ref );
-    display_structure( m, m_ref, "direct", structure, deg_p, want_solve_ref );
+    set_mesh( m, structure, mesh_size, loading, deg_p, refinement_level_ref, want_global_discretization_error, want_local_discretization_error );
     
     /// Formulation du pb direct
     /// ------------------------
     TF f( m ); // creation d'une formulation du type TF avec le maillage m
-    TF f_ref( m_ref );
     
     /// Proprietes materiaux et Conditions aux limites du pb direct
     /// -----------------------------------------------------------
     set_material_properties( f, m, structure );
     set_boundary_conditions( f, m, boundary_condition_D, "direct", structure, loading, mesh_size );
-    if ( want_solve_ref ) {
-        set_material_properties( f_ref, m_ref, structure );
-        set_boundary_conditions( f_ref, m_ref, boundary_condition_D, "direct", structure, loading, mesh_size );
-    }
     
     /// Verification des contraintes cinematiques
     /// -----------------------------------------
@@ -245,6 +240,8 @@ int main( int argc, char **argv ) {
     
     /// Resolution du pb direct
     /// -----------------------
+    cout << "Resolution du pb direct" << endl;
+    cout << "-----------------------" << endl << endl;
     TicToc t;
     t.start();
     if ( want_iterative_solver == 0 )
@@ -252,7 +249,7 @@ int main( int argc, char **argv ) {
     else
         f.solve( iterative_criterium );
     t.stop();
-    cout << "Temps de calcul du pb direct : " << t.res << endl << endl;
+    cout << "Temps de calcul de la resolution du pb direct = " << t.res << endl << endl;
 
 //    f.allocate_matrices();
 //    f.shift();
@@ -271,9 +268,28 @@ int main( int argc, char **argv ) {
     /// ----------------------------------------------------------------
     calcul_norm_dep( m, f, "direct", want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation );
     
+    /// Maillage du pb de reference associe au pb direct
+    /// ------------------------------------------------
+    TM m_ref;
+    if ( want_solve_ref )
+        set_mesh_ref( m_ref, m, structure, deg_p, refinement_level_ref );
+
+    /// Formulation du pb de reference associe au pb direct
+    /// ---------------------------------------------------
+    TF f_ref( m_ref );
+
     if ( want_solve_ref ) {
+        /// Proprietes materiaux et Conditions aux limites du pb direct
+        /// -----------------------------------------------------------
+        set_material_properties( f_ref, m_ref, structure );
+        f_ref.erase_constraints();
+        reset_load_conditions( f_ref, m_ref, debug_geometry );
+        set_boundary_conditions( f_ref, m_ref, boundary_condition_D, "direct", structure, loading, mesh_size );
+
         /// Resolution du pb de reference associe au pb direct
         /// --------------------------------------------------
+        cout << "Resolution du pb de reference associe au pb direct" << endl;
+        cout << "--------------------------------------------------" << endl << endl;
         TicToc t_ref;
         t_ref.start();
         if ( want_iterative_solver_ref == 0 )
@@ -281,7 +297,7 @@ int main( int argc, char **argv ) {
         else
             f_ref.solve( iterative_criterium_ref );
         t_ref.stop();
-        cout << "Temps de calcul du pb de reference associe au pb direct : " << t_ref.res << endl << endl;
+        cout << "Temps de calcul de la resolution du pb de reference associe au pb direct = " << t_ref.res << endl << endl;
         
         /// Verification de l'equilibre du pb de reference associe au pb direct
         /// -------------------------------------------------------------------
@@ -320,7 +336,7 @@ int main( int argc, char **argv ) {
     if ( want_local_estimation ) {
         
         /// ------------------------------------- ///
-        /// Construction de la quantite d'interet ///
+        /// Calcul d'un estimateur d'erreur globale associe pb direct de la quantite d'interet ///
         /// ------------------------------------- ///
         
         display_interest_quantity( interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re );
@@ -328,7 +344,7 @@ int main( int argc, char **argv ) {
         /// Definition de l'extracteur
         /// --------------------------
         if ( interest_quantity == "SIF" or interest_quantity == "stress_intensity_factor" )
-            create_structure_crown( m, m_crown, pos_crack_tip, radius_Ri, radius_Re, spread_cut );
+            set_mesh_crown( m_crown, m, pos_crack_tip, radius_Ri, radius_Re, spread_cut );
         TF f_crown( m_crown );
         define_extractor( m, m_crown, f, f_crown, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, want_local_enrichment );
         
@@ -345,11 +361,10 @@ int main( int argc, char **argv ) {
         
         T I_ex = 0.;
         if ( want_solve_local_ref ) {
-            create_structure( m_local_ref, m_local_ref, "direct", structure, mesh_size, loading, deg_p );
             
             Vec<unsigned> elem_list_local_ref_interest_quantity;
             unsigned node_local_ref_interest_quantity;
-            create_structure_local_ref( m, m_local_ref, deg_p, refinement_degree_ref, interest_quantity, elem_list_interest_quantity, elem_list_local_ref_interest_quantity, node_interest_quantity, node_local_ref_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut );
+            set_mesh_local_ref( m_local_ref, m, refinement_level_ref, interest_quantity, elem_list_interest_quantity, elem_list_local_ref_interest_quantity, node_interest_quantity, node_local_ref_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut );
             
             /// Formulation du pb de reference local
             /// ------------------------------------
@@ -358,10 +373,14 @@ int main( int argc, char **argv ) {
             /// Proprietes materiaux et Conditions aux limites du pb de reference local
             /// -----------------------------------------------------------------------
             set_material_properties( f_local_ref, m_local_ref, structure );
+            f_local_ref.erase_constraints();
+            reset_load_conditions( f_local_ref, m_local_ref, debug_geometry );
             set_boundary_conditions( f_local_ref, m_local_ref, boundary_condition_D, "direct", structure, loading, mesh_size );
             
             /// Resolution du pb de reference local
             /// -----------------------------------
+            cout << "Resolution du pb de reference local associe au pb direct" << endl;
+            cout << "--------------------------------------------------------" << endl << endl;
             TicToc t_local_ref;
             t_local_ref.start();
             if ( want_iterative_solver_ref == 0 )
@@ -369,7 +388,7 @@ int main( int argc, char **argv ) {
             else
                 f_local_ref.solve( iterative_criterium_ref );
             t_local_ref.stop();
-            cout << "Temps de calcul du pb de reference local associe au pb direct : " << t_local_ref.res << endl << endl;
+            cout << "Temps de calcul de la resolution du pb de reference local associe au pb direct = " << t_local_ref.res << endl << endl;
             
             /// Verification de l'equilibre du pb de reference local associe au pb direct
             /// -------------------------------------------------------------------------
@@ -380,7 +399,7 @@ int main( int argc, char **argv ) {
             /// ---------------------------------------------------
             TM m_crown_ref;
             if ( interest_quantity == "SIF" or interest_quantity == "stress_intensity_factor" )
-                create_structure_crown( m_local_ref, m_crown_ref, pos_crack_tip, radius_Ri, radius_Re, spread_cut );
+                set_mesh_crown( m_crown_ref, m_local_ref, pos_crack_tip, radius_Ri, radius_Re, spread_cut );
             TF f_crown_ref( m_crown_ref );
             define_extractor( m_local_ref, m_crown_ref, f_local_ref, f_crown_ref, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_local_ref_interest_quantity, node_local_ref_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, want_local_enrichment );
             
@@ -404,10 +423,8 @@ int main( int argc, char **argv ) {
             
             /// Maillage du pb adjoint
             /// ----------------------
-            create_structure( m_adjoint, m_local_ref, "adjoint", structure, mesh_size, loading, deg_p, refinement_degree_ref );
-            create_structure_adjoint( m, m_adjoint, deg_p, interest_quantity, direction_extractor, want_local_refinement, l_min_refinement, k_refinement, pointwise_interest_quantity, elem_list_interest_quantity, elem_list_adjoint_interest_quantity, node_interest_quantity, node_adjoint_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, elem_list_adjoint_enrichment_zone_1, elem_list_adjoint_enrichment_zone_2, face_list_adjoint_enrichment_zone_12, node_list_adjoint_enrichment, debug_geometry, debug_geometry_adjoint );
+            set_mesh_adjoint( m_adjoint, m, interest_quantity, direction_extractor, want_local_refinement, l_min_refinement, k_refinement, pointwise_interest_quantity, elem_list_interest_quantity, elem_list_adjoint_interest_quantity, node_interest_quantity, node_adjoint_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, elem_list_adjoint_enrichment_zone_1, elem_list_adjoint_enrichment_zone_2, face_list_adjoint_enrichment_zone_12, node_list_adjoint_enrichment, debug_geometry, debug_geometry_adjoint );
             
-            display_structure( m_adjoint, m_local_ref, "adjoint", structure, deg_p, want_solve_local_ref );
             display_params_adjoint( want_local_refinement, l_min_refinement, k_refinement, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, elem_list_adjoint_enrichment_zone_1, elem_list_adjoint_enrichment_zone_2, face_list_adjoint_enrichment_zone_12, node_list_adjoint_enrichment, want_local_improvement, local_improvement, shape, k_min, k_max, k_opt );
             
             /// Formulation du pb adjoint
@@ -417,6 +434,8 @@ int main( int argc, char **argv ) {
             /// Proprietes materiaux et Conditions aux limites du pb adjoint
             /// ------------------------------------------------------------
             set_material_properties( f_adjoint, m_adjoint, structure );
+            f_adjoint.erase_constraints();
+            reset_load_conditions( f_adjoint, m_adjoint, debug_geometry );
             set_boundary_conditions( f_adjoint, m_adjoint, boundary_condition_D, "adjoint", structure, loading, mesh_size );
             set_load_conditions( m_adjoint, f_adjoint, m, m_crown, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, interest_quantity, direction_extractor, pointwise_interest_quantity, want_local_enrichment );
             
@@ -427,6 +446,8 @@ int main( int argc, char **argv ) {
             
             /// Resolution du pb adjoint
             /// ------------------------
+            cout << "Resolution du pb adjoint" << endl;
+            cout << "------------------------" << endl << endl;
             TicToc t_adjoint;
             t_adjoint.start();
             if ( want_iterative_solver_adjoint == 0 )
@@ -434,7 +455,7 @@ int main( int argc, char **argv ) {
             else
                 f_adjoint.solve( iterative_criterium_adjoint );
             t_adjoint.stop();
-            cout << "Temps de calcul du pb adjoint : " << t_adjoint.res << endl << endl;
+            cout << "Temps de calcul de la resolution du pb adjoint = " << t_adjoint.res << endl << endl;
             
             if ( want_local_enrichment )
                 calcul_dep_tot_after_solve( m_adjoint );
@@ -498,15 +519,15 @@ int main( int argc, char **argv ) {
     }
     
     t_total.stop();
-    cout << "Temps de calcul total : " << t_total.res << endl << endl;
+    cout << "Temps de calcul total = " << t_total.res << endl << endl;
     
     /// --------- ///
     /// Affichage ///
     /// --------- ///
     
-    display_vtu_pvd( m, m_ref, m_lambda_min, m_lambda_max, m_lambda_opt, m_crown, "direct", method, structure, loading, mesh_size, cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, deg_k, refinement_degree_ref, want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation, want_local_improvement, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment, save_vtu, display_vtu, save_pvd, display_pvd, save_vtu_ref, display_vtu_ref, save_vtu_lambda, display_vtu_lambda, save_vtu_crown, display_vtu_crown );
+    display_vtu_pvd( m, m_ref, m_lambda_min, m_lambda_max, m_lambda_opt, m_crown, "direct", method, structure, loading, mesh_size, cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, deg_k, refinement_level_ref, want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation, want_local_improvement, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment, save_vtu, display_vtu, save_pvd, display_pvd, save_vtu_ref, display_vtu_ref, save_vtu_lambda, display_vtu_lambda, save_vtu_crown, display_vtu_crown );
     if ( want_local_estimation and want_interest_quantity_only == 0 ) {
-        display_vtu_pvd( m_adjoint, m_local_ref, m_adjoint_lambda_min, m_adjoint_lambda_max, m_adjoint_lambda_opt, m_crown, "adjoint", method_adjoint, structure, loading, mesh_size, cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, deg_k, refinement_degree_ref, false, false, want_global_estimation, want_local_estimation, want_local_improvement, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment, save_vtu_adjoint, display_vtu_adjoint, save_pvd_adjoint, display_pvd_adjoint, save_vtu_local_ref, display_vtu_local_ref, save_vtu_adjoint_lambda, display_vtu_adjoint_lambda );
+        display_vtu_pvd( m_adjoint, m_local_ref, m_adjoint_lambda_min, m_adjoint_lambda_max, m_adjoint_lambda_opt, m_crown, "adjoint", method_adjoint, structure, loading, mesh_size, cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, deg_k, refinement_level_ref, false, false, want_global_estimation, want_local_estimation, want_local_improvement, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment, save_vtu_adjoint, display_vtu_adjoint, save_pvd_adjoint, display_pvd_adjoint, save_vtu_local_ref, display_vtu_local_ref, save_vtu_adjoint_lambda, display_vtu_adjoint_lambda );
     }
     
 }

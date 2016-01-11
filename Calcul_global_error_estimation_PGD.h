@@ -105,12 +105,12 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// Resolution des problemes locaux associes aux densites d'effort standard
             /// -----------------------------------------------------------------------
             
-            construct_K_hat( m, f, "EET", K_hat, debug_method );
+            construct_K_hat( m, f, K_hat, debug_method );
             
             balancing = 0;
             construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes_standard, F_hat, want_local_enrichment, debug_method, debug_geometry );
             
-            construct_dep_hat( m, f, "EET", solver, K_hat, F_hat, dep_part_hat, verif_solver, tol_solver, debug_method );
+            construct_dep_hat( m, f, solver, K_hat, F_hat, dep_part_hat, verif_solver, tol_solver, debug_method );
             
             for (unsigned n=0;n<nb_modes;++n) {
                 
@@ -137,7 +137,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
                 balancing = 0;
                 construct_F_hat( m, f, pb, equilibrium, participation_elem_equilibrium, participation_elem_enhancement, vec_force_fluxes_standard_mode, F_hat, want_local_enrichment, debug_method, debug_geometry );
                 
-                construct_dep_hat( m, f, "EET", type_solver, K_hat, F_hat, dep_psi_hat[ n ], verif_solver, tol_solver, debug_method );
+                construct_dep_hat( m, f, type_solver, K_hat, F_hat, dep_psi_hat[ n ], verif_solver, tol_solver, debug_method );
             }
            
             /// Construction d'un champ de contrainte admissible par element, Calcul d'un estimateur d'erreur globale
@@ -178,12 +178,12 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// ----------------------------------------------------------------------------------------------------------------
             
             if ( enhancement_with_estimator_criterium == 0 )
-                construct_K_hat( m, f, "EET", K_hat, debug_method );
+                construct_K_hat( m, f, K_hat, debug_method );
             
             balancing = 1;
             construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes, F_hat, want_local_enrichment, debug_method, debug_geometry );
             
-            construct_dep_hat( m, f, "EET", solver, K_hat, F_hat, dep_hat, verif_solver, tol_solver, debug_method );
+            construct_dep_hat( m, f, solver, K_hat, F_hat, dep_hat, verif_solver, tol_solver, debug_method );
             
             /// Construction de la partie amelioree des densites d'effort
             /// ---------------------------------------------------------
@@ -201,7 +201,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             balancing = 0;
             construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes, F_hat, want_local_enrichment, debug_method_enhancement, debug_geometry );
             
-            construct_dep_hat( m, f, "EET", solver, K_hat, F_hat, dep_hat, verif_solver_enhancement, tol_solver_enhancement, debug_method_enhancement );
+            construct_dep_hat( m, f, solver, K_hat, F_hat, dep_hat, verif_solver_enhancement, tol_solver_enhancement, debug_method_enhancement );
             
             /// Construction d'un champ de contrainte admissible par element, Calcul d'un estimateur d'erreur globale
             /// -----------------------------------------------------------------------------------------------------
@@ -211,7 +211,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
         }
 */
         t_EET.stop();
-        cout << "Temps de calcul total pour la technique EET : " << t_EET.res << endl << endl;
+        cout << "Temps de calcul de la methode d'estimation d'erreur globale EET = " << t_EET.res << endl << endl;
         
     }
 /*
@@ -233,7 +233,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
         calcul_error_estimate_partition_unity( m, f, pb, solver, "SPET", theta, theta_elem, dep_hat, verif_solver, tol_solver, want_global_discretization_error, want_local_discretization_error, want_local_enrichment, debug_geometry, debug_error_estimate, debug_local_effectivity_index, debug_method );
         
         t_SPET.stop();
-        cout << "Temps de calcul total pour la technique SPET : " << t_SPET.res << endl << endl;
+        cout << "Temps de calcul de la methode d'estimation d'erreur globale SPET = " << t_SPET.res << endl << endl;
         
     }
     
@@ -299,11 +299,12 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// Resolution des problemes locaux associes aux densites d'effort standard
             /// -----------------------------------------------------------------------
             
-            construct_K_hat( m, f, "EESPT", K_hat, debug_method );
+            construct_K_hat( m, f, K_hat, debug_method );
+
             balancing = 0;
             construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes_standard, F_hat, want_local_enrichment, debug_method, debug_geometry );
             
-            construct_dep_hat( m, f, "EESPT", solver, K_hat, F_hat, dep_hat, verif_solver, tol_solver, debug_method );
+            construct_dep_hat( m, f, solver, K_hat, F_hat, dep_hat, verif_solver, tol_solver, debug_method );
             
             /// Construction d'un champ de contrainte admissible par element, Calcul d'un estimateur d'erreur globale
             /// -----------------------------------------------------------------------------------------------------
@@ -342,12 +343,12 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// ----------------------------------------------------------------------------------------------------------------
             
             if ( enhancement_with_estimator_criterium == 0 )
-                construct_K_hat( m, f, "EESPT", K_hat, debug_method );
+                construct_K_hat( m, f, K_hat, debug_method );
             
             balancing = 1;
             construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes, F_hat, want_local_enrichment, debug_method, debug_geometry );
             
-            construct_dep_hat( m, f, "EESPT", solver, K_hat, F_hat, dep_hat, verif_solver, tol_solver, debug_method );
+            construct_dep_hat( m, f, solver, K_hat, F_hat, dep_hat, verif_solver, tol_solver, debug_method );
             
             /// Construction de la partie amelioree des densites d'effort
             /// ---------------------------------------------------------
@@ -365,7 +366,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             balancing = 0;
             construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes, F_hat, want_local_enrichment, debug_method_enhancement, debug_geometry );
             
-            construct_dep_hat( m, f, "EESPT", solver, K_hat, F_hat, dep_hat, verif_solver_enhancement, tol_solver_enhancement, debug_method_enhancement );
+            construct_dep_hat( m, f, solver, K_hat, F_hat, dep_hat, verif_solver_enhancement, tol_solver_enhancement, debug_method_enhancement );
             
             /// Construction d'un champ de contrainte admissible par element, Calcul d'un estimateur d'erreur globale
             /// -----------------------------------------------------------------------------------------------------
@@ -375,7 +376,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
         }
         
         t_EESPT.stop();
-        cout << "Temps de calcul total pour la technique EESPT : " << t_EESPT.res << endl << endl;
+        cout << "Temps de calcul de la methode d'estimation d'erreur globale EESPT = " << t_EESPT.res << endl << endl;
         
     }
 */

@@ -21,13 +21,18 @@ using namespace std;
 /// Construction des vecteurs dep_hat[ n ] pour chaque element n du maillage
 /// ------------------------------------------------------------------------
 template<class TM, class TF, class T>
-void construct_dep_hat( const TM &m, const TF &f, const string &method, const string &solver, Vec< Mat<T, Sym<> > > &K_hat, Vec< Vec<T> > &F_hat, Vec< Vec<T> > &dep_hat, const bool verif_solver = false, const T tol_solver = 1e-6, const bool debug_method = false ) {
+void construct_dep_hat( const TM &m, const TF &f, const string &solver, Vec< Mat<T, Sym<> > > &K_hat, Vec< Vec<T> > &F_hat, Vec< Vec<T> > &dep_hat, const bool verif_solver = false, const T tol_solver = 1e-6, const bool debug_method = false ) {
 
-    cout << "Resolution des problemes locaux pour la technique " << method << endl;
-    cout << "Construction des vecteurs dep_hat" << endl << endl;
+    cout << "Resolution des pbs locaux par element" << endl;
+    cout << "-------------------------------------" << endl << endl;
 
-    TicToc t_solve_local_EET_EESPT;
-    t_solve_local_EET_EESPT.start();
+    if ( debug_method ) {
+        cout << "Resolution des pbs locaux K_hat * U_hat = F_hat" << endl;
+        cout << "Construction des vecteurs U_hat" << endl << endl;
+    }
+
+    TicToc t;
+    t.start();
 
     dep_hat.resize( m.elem_list.size() );
 
@@ -75,29 +80,29 @@ void construct_dep_hat( const TM &m, const TF &f, const string &method, const st
             dep_hat[ n ] = inv( K_hat_Inv ) * F_hat[ n ];
         }
         else {
-            cerr << "Bing. Error : solveur " << solver << " pour la resolution des problemes locaux non implemente" << endl << endl;
+            cerr << "Bing. Error : solveur " << solver << " pour la resolution des pbs locaux non implemente" << endl << endl;
         }
     }
 
-    t_solve_local_EET_EESPT.stop();
-    cout << "Temps de calcul de la resolution des problemes locaux pour la technique " << method << " : " << t_solve_local_EET_EESPT.res << endl << endl;
+    t.stop();
+    cout << "Temps de calcul de la resolution des pbs locaux par element = " << t.res << endl << endl;
 
     if ( debug_method ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
-            cout << "vecteur dep_hat de l'element " << n << " :" << endl;
+            cout << "vecteur U_hat de l'element " << n << " =" << endl;
             cout << dep_hat[ n ] << endl << endl;
         }
     }
     if ( verif_solver ) {
-        cout << "Verification de la resolution des problemes locaux pour la technique " << method << " : tolerance = " << tol_solver << endl << endl;
+        cout << "Verification de la resolution des pbs locaux par element : tolerance = " << tol_solver << endl << endl;
         for (unsigned n=0;n<m.elem_list.size();++n) {
             T residual = norm_2( K_hat[ n ] * dep_hat[ n ] - F_hat[ n ] );
             T b = norm_2( F_hat[ n ] );
             if ( residual / b > tol_solver ) {
                 cout << "residu associe a l'element " << n << " :" << endl;
-//                cout << "K_hat * dep_hat - F_hat = " << endl;
-//                cout << K_hat[ n ] * dep_hat[ n ] - F_hat[ n ] << endl << endl;
-                cout << "norme du residu = " << residual << endl << endl;
+//                cout << "K_hat * U_hat - F_hat = " << endl;
+//                cout << K_hat[ n ] * U_hat[ n ] - F_hat[ n ] << endl;
+                cout << "norme du residu = " << residual << endl;
                 cout << "norme du residu relatif = " << residual / b << endl << endl;
             }
         }

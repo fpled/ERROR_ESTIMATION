@@ -20,19 +20,20 @@ using namespace std;
 /// Construction des matrices K_hat[ n ] pour chaque element n du maillage
 /// ----------------------------------------------------------------------
 template<class TM, class TF, class T>
-void construct_K_hat( const TM &m, const TF &f, const string &method, Vec< Mat<T, Sym<> > > &K_hat, const bool debug_method = false ) {
+void construct_K_hat( const TM &m, const TF &f, Vec< Mat<T, Sym<> > > &K_hat, const bool debug_method = false ) {
 
-    cout << "Construction des matrices K_hat" << endl << endl;
+    if ( debug_method )
+        cout << "Construction des matrices K_hat" << endl << endl;
 
-    TicToc t_construct_K_hat;
-    t_construct_K_hat.start();
+    TicToc t;
+    t.start();
 
     K_hat.resize( m.elem_list.size() );
 
     apply( m.elem_list, Calcul_Elem_Matrix_K_hat(), m, f, K_hat );
 
-    t_construct_K_hat.stop();
-    cout << "Temps de calcul de remplissage des matrices K_hat associees aux problemes locaux pour la technique " << method << " : " << t_construct_K_hat.res << endl << endl;
+    t.stop();
+    cout << "Temps de calcul du remplissage des matrices associees aux pbs locaux par element = " << t.res << endl << endl;
 
     if ( debug_method ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
