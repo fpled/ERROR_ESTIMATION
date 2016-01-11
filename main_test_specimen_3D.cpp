@@ -239,6 +239,7 @@ int main( int argc, char **argv ) {
         /// -----------------------------------------------------------
         set_material_properties( f, m, structure );
         f.erase_constraints();
+        reset_load_conditions( f, m, debug_geometry );
         set_boundary_conditions( f, m, boundary_condition_D, "direct", structure, "Step-" + to_string(j+1), mesh_size );
 
         /// Verification des contraintes cinematiques
@@ -301,6 +302,7 @@ int main( int argc, char **argv ) {
         /// -----------------------------------------------------------
         set_material_properties( f_ref, m_ref, structure );
         f_ref.erase_constraints();
+        reset_load_conditions( f_ref, m_ref, debug_geometry );
         set_boundary_conditions( f_ref, m_ref, boundary_condition_D, "direct", structure, loading, mesh_size );
 
         /// Resolution du pb de reference associe au pb direct
@@ -391,6 +393,7 @@ int main( int argc, char **argv ) {
             /// -----------------------------------------------------------------------
             set_material_properties( f_local_ref, m_local_ref, structure );
             f_local_ref.erase_constraints();
+            reset_load_conditions( f_local_ref, m_local_ref, debug_geometry );
             set_boundary_conditions( f_local_ref, m_local_ref, boundary_condition_D, "direct", structure, loading, mesh_size );
             
             /// Resolution du pb de reference local
@@ -450,6 +453,7 @@ int main( int argc, char **argv ) {
             /// ------------------------------------------------------------
             set_material_properties( f_adjoint, m_adjoint, structure );
             f_adjoint.erase_constraints();
+            reset_load_conditions( f_adjoint, m_adjoint, debug_geometry );
             set_boundary_conditions( f_adjoint, m_adjoint, boundary_condition_D, "adjoint", structure, loading, mesh_size );
             set_load_conditions( m_adjoint, f_adjoint, m, m_crown, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, interest_quantity, direction_extractor, pointwise_interest_quantity, want_local_enrichment );
             
