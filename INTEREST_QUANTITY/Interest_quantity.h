@@ -13,7 +13,7 @@
 #ifndef Interest_quantity_h
 #define Interest_quantity_h
 
-#include "../GEOMETRY/Geometry.h"
+#include "../GEOMETRY/Connectivity.h"
 #include "../CRITERIUM_ENHANCEMENT/Criterium_enhancement.h"
 
 using namespace LMT;

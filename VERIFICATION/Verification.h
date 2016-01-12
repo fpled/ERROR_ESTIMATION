@@ -12,7 +12,7 @@
 #ifndef Verification_h
 #define Verification_h
 
-#include "../GEOMETRY/Calcul_geometry.h"
+#include "../GEOMETRY/Calcul_connectivity.h"
 
 using namespace LMT;
 using namespace std;
@@ -58,17 +58,17 @@ struct Check_Elem_Eq_Force_Fluxes {
 /// Verification de l'equilibre des densites d'effort pour les methodes EET et EESPT
 /// --------------------------------------------------------------------------------
 template<class TM, class TF, class T>
-void check_equilibrium_force_fluxes( TM &m, const TF &f, const string pb, const Vec< Vec< Vec<T> > > &vec_force_fluxes, const T tol_eq_force_fluxes = 1e-6, const bool want_local_enrichment = false, const bool debug_geometry = false ) {
+void check_equilibrium_force_fluxes( TM &m, const TF &f, const string pb, const Vec< Vec< Vec<T> > > &vec_force_fluxes, const T tol_eq_force_fluxes = 1e-6, const bool want_local_enrichment = false, const bool debug_mesh = false ) {
 
     static const unsigned dim = TM::dim;
 
     Vec<unsigned> node_cpt_face;
     Vec< Vec<unsigned> > node_list_face;
-    construct_nodes_connected_to_face( m, node_cpt_face, node_list_face, debug_geometry );
+    construct_nodes_connected_to_face( m, node_cpt_face, node_list_face, debug_mesh );
 
     Vec<unsigned> elem_cpt_node;
     Vec< Vec<unsigned> > elem_list_node;
-    construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node, debug_geometry );
+    construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node, debug_mesh );
 
     elem_list_node.free();
 

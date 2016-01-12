@@ -13,7 +13,7 @@
 #define Boundary_conditions_homog_h
 
 #include "INTEREST_QUANTITY/Interest_quantity.h"
-#include "GEOMETRY/Calcul_geometry.h"
+#include "GEOMETRY/Calcul_connectivity.h"
 
 using namespace LMT;
 using namespace std;

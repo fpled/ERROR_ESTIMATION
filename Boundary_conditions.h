@@ -14,7 +14,7 @@
 
 #include "LMT/include/mesh/ReaderINP.h"
 #include "INTEREST_QUANTITY/Interest_quantity.h"
-#include "GEOMETRY/Calcul_geometry.h"
+#include "GEOMETRY/Calcul_connectivity.h"
 
 using namespace LMT;
 using namespace std;
@@ -1028,13 +1028,13 @@ void check_constraints( const TF &f ) {
 /// Creation des conditions de chargement nul
 /// -----------------------------------------
 template<class TF, class TM>
-void reset_load_conditions( TF &f, TM &m, const bool debug_geometry = false ) {
+void reset_load_conditions( TF &f, TM &m, const bool debug_mesh = false ) {
     
     static const unsigned dim = TM::dim;
     typedef typename TM::TNode::T T;
     
     Vec< Vec<unsigned> > face_type;
-    construct_face_type( m, f, face_type, debug_geometry );
+    construct_face_type( m, f, face_type, debug_mesh );
     
     m.update_skin();
     

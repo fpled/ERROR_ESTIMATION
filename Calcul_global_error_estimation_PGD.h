@@ -32,7 +32,7 @@ using namespace std;
 /// Calcul d'un estimateur d'erreur globale
 /// ---------------------------------------
 template<class TF, class TM, class T, class TV, class TVV, class TTV, class TTVV, class TTVVV, class TMATV, class TMATVV>
-void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const string &method, const unsigned &cost_function, const T &penalty_val_N, const string &solver, const string &solver_minimisation, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const string &geometric_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, T &theta, Vec<T> &theta_elem, TTVV &dep_part_hat, const TTV &dep_part, const TTVV &kappa, TTVVV &dep_space_hat, const TTVV &dep_space, const TTVVV &dep_param, const unsigned &nb_modes, const TMATV &K_space, const TMATVV &K_param, const TV &F_space, const TVV &F_param, const Vec< Vec<unsigned> > &elem_group, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool verif_eq_force_fluxes = false, const T tol_eq_force_fluxes = 1e-6, const bool verif_solver = false, const T tol_solver = 1e-6, const bool verif_solver_enhancement = false, const T tol_solver_enhancement = 1e-6, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_solver_minimisation_enhancement = false, const T tol_solver_minimisation_enhancement = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const bool debug_geometry = false, const bool debug_force_fluxes = false, const bool debug_force_fluxes_enhancement = false, const bool debug_criterium_enhancement = false, const bool debug_error_estimate = false, const bool debug_local_effectivity_index = false, const bool debug_method = false, const bool debug_method_enhancement = false ) {
+void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const string &method, const unsigned &cost_function, const T &penalty_val_N, const string &solver, const string &solver_minimisation, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const string &geometric_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, T &theta, Vec<T> &theta_elem, TTVV &dep_part_hat, const TTV &dep_part, const TTVV &kappa, TTVVV &dep_space_hat, const TTVV &dep_space, const TTVVV &dep_param, const unsigned &nb_modes, const TMATV &K_space, const TMATVV &K_param, const TV &F_space, const TVV &F_param, const Vec< Vec<unsigned> > &elem_group, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool verif_eq_force_fluxes = false, const T tol_eq_force_fluxes = 1e-6, const bool verif_solver = false, const T tol_solver = 1e-6, const bool verif_solver_enhancement = false, const T tol_solver_enhancement = 1e-6, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_solver_minimisation_enhancement = false, const T tol_solver_minimisation_enhancement = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const bool debug_mesh = false, const bool debug_force_fluxes = false, const bool debug_force_fluxes_enhancement = false, const bool debug_criterium_enhancement = false, const bool debug_error_estimate = false, const bool debug_local_effectivity_index = false, const bool debug_method = false, const bool debug_method_enhancement = false ) {
     
     /// ----------- ///
     /// Methode EET ///
@@ -94,13 +94,13 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// -------------------------------------------
             
             Vec< Vec< Vec<T> > > vec_force_fluxes_standard;
-            construct_standard_force_fluxes_EET( m, f, pb, cost_function, enhancement, face_flag_enh, solver_minimisation, vec_force_fluxes_standard, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions, debug_geometry, debug_force_fluxes, debug_method );
+            construct_standard_force_fluxes_EET( m, f, pb, cost_function, enhancement, face_flag_enh, solver_minimisation, vec_force_fluxes_standard, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions, debug_mesh, debug_force_fluxes, debug_method );
             
             /// Verification de l'equilibre des densites d'effort standard
             /// ----------------------------------------------------------
             
             if ( verif_eq_force_fluxes )
-                check_equilibrium_force_fluxes( m, f, pb, vec_force_fluxes_standard, tol_eq_force_fluxes, want_local_enrichment, debug_geometry );
+                check_equilibrium_force_fluxes( m, f, pb, vec_force_fluxes_standard, tol_eq_force_fluxes, want_local_enrichment, debug_mesh );
             
             /// Resolution des problemes locaux associes aux densites d'effort standard
             /// -----------------------------------------------------------------------
@@ -108,7 +108,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             construct_K_hat( m, f, K_hat, debug_method );
             
             balancing = 0;
-            construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes_standard, F_hat, want_local_enrichment, debug_method, debug_geometry );
+            construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes_standard, F_hat, want_local_enrichment, debug_method, debug_mesh );
             
             construct_dep_hat( m, f, solver, K_hat, F_hat, dep_part_hat, verif_solver, tol_solver, debug_method );
             
@@ -118,24 +118,24 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
                 cout << "Construction d'un champ de contrainte admissible a 0 associe au mode " << n << endl;
                 cout << "-----------------------------------------------------------------------" << endl << endl;
                 
-                reset_load_conditions( f, m, debug_geometry );
+                reset_load_conditions( f, m, debug_mesh );
                 
                 /// Construction des densites d'effort standard
                 /// -------------------------------------------
                 
                 Vec< Vec< Vec<T> > > vec_force_fluxes_standard_mode;
-                construct_standard_force_fluxes_EET_PGD( m, f, pb, cost_function, enhancement, face_flag_enh, solver_minimisation, vec_force_fluxes_standard_mode, dep_space, dep_param, dep_part, kappa, K_param, elem_group, n, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions, debug_geometry, debug_force_fluxes, debug_method );
+                construct_standard_force_fluxes_EET_PGD( m, f, pb, cost_function, enhancement, face_flag_enh, solver_minimisation, vec_force_fluxes_standard_mode, dep_space, dep_param, dep_part, kappa, K_param, elem_group, n, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions, debug_mesh, debug_force_fluxes, debug_method );
                 
                 /// Verification de l'equilibre des densites d'effort standard
                 /// ----------------------------------------------------------
                 if ( verif_eq_force_fluxes )
-                    check_equilibrium_force_fluxes( m, f, pb, vec_force_fluxes_standard_mode, tol_eq_force_fluxes, want_local_enrichment, debug_geometry );
+                    check_equilibrium_force_fluxes( m, f, pb, vec_force_fluxes_standard_mode, tol_eq_force_fluxes, want_local_enrichment, debug_mesh );
                 
                 /// Resolution des problemes locaux associes aux densites d'effort standard
                 /// -----------------------------------------------------------------------
                 
                 balancing = 0;
-                construct_F_hat( m, f, pb, equilibrium, participation_elem_equilibrium, participation_elem_enhancement, vec_force_fluxes_standard_mode, F_hat, want_local_enrichment, debug_method, debug_geometry );
+                construct_F_hat( m, f, pb, equilibrium, participation_elem_equilibrium, participation_elem_enhancement, vec_force_fluxes_standard_mode, F_hat, want_local_enrichment, debug_method, debug_mesh );
                 
                 construct_dep_hat( m, f, type_solver, K_hat, F_hat, dep_psi_hat[ n ], verif_solver, tol_solver, debug_method );
             }
@@ -172,7 +172,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// Construction de la partie standard des densites d'effort
             /// --------------------------------------------------------
             
-            construct_standard_force_fluxes_EET( m, f, pb, cost_function, enhancement, face_flag_enh, solver_minimisation, vec_force_fluxes, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions, debug_geometry, debug_force_fluxes, debug_method );
+            construct_standard_force_fluxes_EET( m, f, pb, cost_function, enhancement, face_flag_enh, solver_minimisation, vec_force_fluxes, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions, debug_mesh, debug_force_fluxes, debug_method );
             
             /// Resolution des problemes locaux associes a la partie standard des densites d'effort avec procedure d'equilibrage
             /// ----------------------------------------------------------------------------------------------------------------
@@ -181,25 +181,25 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
                 construct_K_hat( m, f, K_hat, debug_method );
             
             balancing = 1;
-            construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes, F_hat, want_local_enrichment, debug_method, debug_geometry );
+            construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes, F_hat, want_local_enrichment, debug_method, debug_mesh );
             
             construct_dep_hat( m, f, solver, K_hat, F_hat, dep_hat, verif_solver, tol_solver, debug_method );
             
             /// Construction de la partie amelioree des densites d'effort
             /// ---------------------------------------------------------
             
-            construct_enhanced_force_fluxes_EET_EESPT( m, f, "EET", elem_flag_enh, face_flag_enh, elem_flag_bal, elem_list_enh, face_list_enh, elem_list_bal, K_hat, dep_hat, vec_force_fluxes, solver, solver_minimisation, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, debug_force_fluxes_enhancement, debug_method_enhancement, debug_geometry );
+            construct_enhanced_force_fluxes_EET_EESPT( m, f, "EET", elem_flag_enh, face_flag_enh, elem_flag_bal, elem_list_enh, face_list_enh, elem_list_bal, K_hat, dep_hat, vec_force_fluxes, solver, solver_minimisation, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, debug_force_fluxes_enhancement, debug_method_enhancement, debug_mesh );
             
             /// Verification de l'equilibre des densites d'effort standard + ameliorees
             /// ------------------------------------------------------------------------
             if ( verif_eq_force_fluxes )
-                check_equilibrium_force_fluxes( m, f, pb, vec_force_fluxes, tol_eq_force_fluxes, want_local_enrichment, debug_geometry );
+                check_equilibrium_force_fluxes( m, f, pb, vec_force_fluxes, tol_eq_force_fluxes, want_local_enrichment, debug_mesh );
             
             /// Resolution des problemes locaux associes aux densites d'effort standard + ameliorees sans procedure d'equilibrage
             /// -----------------------------------------------------------------------------------------------------------------
             
             balancing = 0;
-            construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes, F_hat, want_local_enrichment, debug_method_enhancement, debug_geometry );
+            construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes, F_hat, want_local_enrichment, debug_method_enhancement, debug_mesh );
             
             construct_dep_hat( m, f, solver, K_hat, F_hat, dep_hat, verif_solver_enhancement, tol_solver_enhancement, debug_method_enhancement );
             
@@ -230,7 +230,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
         /// ---------------------------------------
         
         theta = 0.;
-        calcul_error_estimate_partition_unity( m, f, pb, solver, "SPET", theta, theta_elem, dep_hat, verif_solver, tol_solver, want_global_discretization_error, want_local_discretization_error, want_local_enrichment, debug_geometry, debug_error_estimate, debug_local_effectivity_index, debug_method );
+        calcul_error_estimate_partition_unity( m, f, pb, solver, "SPET", theta, theta_elem, dep_hat, verif_solver, tol_solver, want_global_discretization_error, want_local_discretization_error, want_local_enrichment, debug_mesh, debug_error_estimate, debug_local_effectivity_index, debug_method );
         
         t_SPET.stop();
         cout << "Temps de calcul de la methode d'estimation d'erreur globale SPET = " << t_SPET.res << endl << endl;
@@ -289,12 +289,12 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// -------------------------------------------
             
             Vec< Vec< Vec<T> > > vec_force_fluxes_standard;
-            construct_standard_force_fluxes_EESPT( m, f, cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, pb, vec_force_fluxes_standard, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation,  debug_geometry, debug_force_fluxes, debug_method );
+            construct_standard_force_fluxes_EESPT( m, f, cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, pb, vec_force_fluxes_standard, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation,  debug_mesh, debug_force_fluxes, debug_method );
             
             /// Verification de l'equilibre des densites d'effort standard
             /// ----------------------------------------------------------
             if ( verif_eq_force_fluxes )
-                check_equilibrium_force_fluxes( m, f, pb, vec_force_fluxes_standard, tol_eq_force_fluxes, want_local_enrichment, debug_geometry );
+                check_equilibrium_force_fluxes( m, f, pb, vec_force_fluxes_standard, tol_eq_force_fluxes, want_local_enrichment, debug_mesh );
             
             /// Resolution des problemes locaux associes aux densites d'effort standard
             /// -----------------------------------------------------------------------
@@ -302,7 +302,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             construct_K_hat( m, f, K_hat, debug_method );
 
             balancing = 0;
-            construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes_standard, F_hat, want_local_enrichment, debug_method, debug_geometry );
+            construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes_standard, F_hat, want_local_enrichment, debug_method, debug_mesh );
             
             construct_dep_hat( m, f, solver, K_hat, F_hat, dep_hat, verif_solver, tol_solver, debug_method );
             
@@ -337,7 +337,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// Construction de la partie standard des densites d'effort
             /// --------------------------------------------------------
             
-            construct_standard_force_fluxes_EESPT( m, f, cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, pb, vec_force_fluxes, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, debug_geometry, debug_force_fluxes, debug_method );
+            construct_standard_force_fluxes_EESPT( m, f, cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, pb, vec_force_fluxes, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, debug_mesh, debug_force_fluxes, debug_method );
             
             /// Resolution des problemes locaux associes a la partie standard des densites d'effort avec procedure d'equilibrage
             /// ----------------------------------------------------------------------------------------------------------------
@@ -346,25 +346,25 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
                 construct_K_hat( m, f, K_hat, debug_method );
             
             balancing = 1;
-            construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes, F_hat, want_local_enrichment, debug_method, debug_geometry );
+            construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes, F_hat, want_local_enrichment, debug_method, debug_mesh );
             
             construct_dep_hat( m, f, solver, K_hat, F_hat, dep_hat, verif_solver, tol_solver, debug_method );
             
             /// Construction de la partie amelioree des densites d'effort
             /// ---------------------------------------------------------
             
-            construct_enhanced_force_fluxes_EET_EESPT( m, f, "EESPT", elem_flag_enh, face_flag_enh, elem_flag_bal, elem_list_enh, face_list_enh, elem_list_bal, K_hat, dep_hat, vec_force_fluxes, solver, solver_minimisation, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, debug_force_fluxes_enhancement, debug_method_enhancement, debug_geometry );
+            construct_enhanced_force_fluxes_EET_EESPT( m, f, "EESPT", elem_flag_enh, face_flag_enh, elem_flag_bal, elem_list_enh, face_list_enh, elem_list_bal, K_hat, dep_hat, vec_force_fluxes, solver, solver_minimisation, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, debug_force_fluxes_enhancement, debug_method_enhancement, debug_mesh );
             
             /// Verification de l'equilibre des densites d'effort standard + ameliorees
             /// ------------------------------------------------------------------------
             if ( verif_eq_force_fluxes )
-                check_equilibrium_force_fluxes( m, f, pb, vec_force_fluxes, tol_eq_force_fluxes, want_local_enrichment, debug_geometry );
+                check_equilibrium_force_fluxes( m, f, pb, vec_force_fluxes, tol_eq_force_fluxes, want_local_enrichment, debug_mesh );
             
             /// Resolution des problemes locaux associes aux densites d'effort standard + ameliorees sans procedure d'equilibrage
             /// -----------------------------------------------------------------------------------------------------------------
             
             balancing = 0;
-            construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes, F_hat, want_local_enrichment, debug_method_enhancement, debug_geometry );
+            construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, vec_force_fluxes, F_hat, want_local_enrichment, debug_method_enhancement, debug_mesh );
             
             construct_dep_hat( m, f, solver, K_hat, F_hat, dep_hat, verif_solver_enhancement, tol_solver_enhancement, debug_method_enhancement );
             

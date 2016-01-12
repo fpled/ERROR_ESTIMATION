@@ -13,8 +13,8 @@
 #include "Mesh.h"
 #include "Material_properties.h"
 #include "Boundary_conditions.h"
-#include "GEOMETRY/Calcul_geometry.h"
-#include "GEOMETRY/Geometry.h"
+#include "GEOMETRY/Calcul_connectivity.h"
+#include "GEOMETRY/Connectivity.h"
 #include "DISCRETIZATION_ERROR/Calcul_discretization_error.h"
 #include "Display.h"
 #include "Calcul_global_error_estimation.h"
@@ -36,16 +36,16 @@ using namespace std;
 int main( int argc, char **argv ) {
     TicToc t_total;
     t_total.start();
-    static const unsigned dim = 3;
+    static const unsigned dim = 2;
     static const bool wont_add_nz = true;
     typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "test_specimen_5"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes, square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
+    static const string structure = "plate_flexion"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes, square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
                                                      // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes, test_specimen_n (n=5,10,15,20,25)
     static const string mesh_size = "fine"; // taille du maillage pour les structures plate_hole (2D ou 3D), plate_crack, structure_crack, test_specimen (2D), weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
-    static const string loading = "pull"; // chargement
+    static const string loading = "Step-2"; // chargement
                                           // pour la structure spot_weld (3D) : pull, shear, peeling
                                           // pour la structure plate_crack (2D) : pull, shear
                                           // pour la structure test_specimen_n (3D) : Step-1, ..., Step-9
@@ -93,6 +93,12 @@ int main( int argc, char **argv ) {
     static const bool enhancement_with_estimator_criterium = 0; // amelioration de la construction des densites d'effort (methodes EET, EESPT) basee sur un critere sur l'estimateur d'erreur
     static const T val_estimator_criterium = 0.8; // valeur du critere d'amelioration sur l'estimateur d'erreur : rapport entre la contribution elementaire au carre a l'erreur estimee et la contribution elementaire maximale au carre
     
+    /// Adaptive remeshing (mesh refinement)
+    /// ------------------------------------
+    static const bool want_remeshing = 1; // remaillage adaptatif (raffinement du maillage)
+    static const T tol_remeshing = 1e-2; // tolerance prescrite : % d'erreur relative (rapport
+
+
     /// Goal-oriented error estimation method
     /// -------------------------------------
     static const bool want_local_estimation = 0; // calcul de l'erreur locale sur une quantite d'interet
@@ -171,14 +177,14 @@ int main( int argc, char **argv ) {
     
     /// Debug
     /// -----
+    static const bool debug_mesh = 0; // debug du maillage (pb direct)
+    static const bool debug_mesh_adjoint = 0; // debug du maillage (pb adjoint)
     static const bool debug_method = 0; // debug des methodes EET, SPET, EESPT (pb direct)
     static const bool debug_method_adjoint = 0; // debug des methodes EET, SPET, EESPT (pb adjoint)
     static const bool debug_method_enhancement = 0; // debug de l'amelioration des methodes EET, EESPT (pb direct)
     static const bool debug_method_enhancement_adjoint = 0; // debug de l'amelioration des methodes EET, EESPT (pb adjoint)
     static const bool debug_criterium_enhancement = 0; // debug du critere d'amelioration (pb direct)
     static const bool debug_criterium_enhancement_adjoint = 0; // debug du critere d'amelioration (pb adjoint)
-    static const bool debug_geometry = 0; // debug de la geometrie (pb direct)
-    static const bool debug_geometry_adjoint = 0; // debug de la geometrie (pb adjoint)
     static const bool debug_discretization_error = 0; // debug de l'erreur de discretisation (pb direct)
     static const bool debug_force_fluxes = 0; // debug des densites d'effort pour les methodes EET, EESPT (pb direct)
     static const bool debug_force_fluxes_adjoint = 0; // debug des densites d'effort pour les methodes EET, EESPT (pb adjoint)
@@ -283,7 +289,7 @@ int main( int argc, char **argv ) {
         /// -----------------------------------------------------------
         set_material_properties( f_ref, m_ref, structure );
         f_ref.erase_constraints();
-        reset_load_conditions( f_ref, m_ref, debug_geometry );
+        reset_load_conditions( f_ref, m_ref, debug_mesh );
         set_boundary_conditions( f_ref, m_ref, boundary_condition_D, "direct", structure, loading, mesh_size );
 
         /// Resolution du pb de reference associe au pb direct
@@ -305,11 +311,11 @@ int main( int argc, char **argv ) {
             check_equilibrium( f_ref, "de reference associe au pb direct" );
     }
     
-    /// ------------------------------------------------------------- ///
-    /// Calcul et Affichage des informations relatives a la geometrie ///
-    /// ------------------------------------------------------------- ///
+    /// ------------------------------------------------------------------ ///
+    /// Affichage des informations relatives a la connectivite du maillage ///
+    /// ------------------------------------------------------------------ ///
     
-    calcul_display_geometry( m, f, debug_geometry );
+    display_mesh_connectivity( m, f, debug_mesh );
     
     /// ------------------------------------------------------------------------- ///
     /// Mesure de l'erreur de discretisation globale et locale associee pb direct ///
@@ -327,7 +333,7 @@ int main( int argc, char **argv ) {
         /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe pb direct ///
         /// ------------------------------------------------------------------------------------------------------------- ///
         
-        calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment, debug_geometry, debug_force_fluxes, debug_force_fluxes_enhancement, debug_criterium_enhancement, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
+        calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment, debug_mesh, debug_force_fluxes, debug_force_fluxes_enhancement, debug_criterium_enhancement, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
         
     }
     
@@ -374,7 +380,7 @@ int main( int argc, char **argv ) {
             /// -----------------------------------------------------------------------
             set_material_properties( f_local_ref, m_local_ref, structure );
             f_local_ref.erase_constraints();
-            reset_load_conditions( f_local_ref, m_local_ref, debug_geometry );
+            reset_load_conditions( f_local_ref, m_local_ref, debug_mesh );
             set_boundary_conditions( f_local_ref, m_local_ref, boundary_condition_D, "direct", structure, loading, mesh_size );
             
             /// Resolution du pb de reference local
@@ -423,7 +429,7 @@ int main( int argc, char **argv ) {
             
             /// Maillage du pb adjoint
             /// ----------------------
-            set_mesh_adjoint( m_adjoint, m, interest_quantity, direction_extractor, want_local_refinement, l_min_refinement, k_refinement, pointwise_interest_quantity, elem_list_interest_quantity, elem_list_adjoint_interest_quantity, node_interest_quantity, node_adjoint_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, elem_list_adjoint_enrichment_zone_1, elem_list_adjoint_enrichment_zone_2, face_list_adjoint_enrichment_zone_12, node_list_adjoint_enrichment, debug_geometry, debug_geometry_adjoint );
+            set_mesh_adjoint( m_adjoint, m, interest_quantity, direction_extractor, want_local_refinement, l_min_refinement, k_refinement, pointwise_interest_quantity, elem_list_interest_quantity, elem_list_adjoint_interest_quantity, node_interest_quantity, node_adjoint_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, elem_list_adjoint_enrichment_zone_1, elem_list_adjoint_enrichment_zone_2, face_list_adjoint_enrichment_zone_12, node_list_adjoint_enrichment, debug_mesh, debug_mesh_adjoint );
             
             display_params_adjoint( want_local_refinement, l_min_refinement, k_refinement, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, elem_list_adjoint_enrichment_zone_1, elem_list_adjoint_enrichment_zone_2, face_list_adjoint_enrichment_zone_12, node_list_adjoint_enrichment, want_local_improvement, local_improvement, shape, k_min, k_max, k_opt );
             
@@ -435,7 +441,7 @@ int main( int argc, char **argv ) {
             /// ------------------------------------------------------------
             set_material_properties( f_adjoint, m_adjoint, structure );
             f_adjoint.erase_constraints();
-            reset_load_conditions( f_adjoint, m_adjoint, debug_geometry );
+            reset_load_conditions( f_adjoint, m_adjoint, debug_mesh );
             set_boundary_conditions( f_adjoint, m_adjoint, boundary_condition_D, "adjoint", structure, loading, mesh_size );
             set_load_conditions( m_adjoint, f_adjoint, m, m_crown, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, interest_quantity, direction_extractor, pointwise_interest_quantity, want_local_enrichment );
             
@@ -469,11 +475,11 @@ int main( int argc, char **argv ) {
             /// -----------------------------------------------------------------
             calcul_norm_dep( m_adjoint, f_adjoint, "adjoint", want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation );
             
-            /// --------------------------------------------------------------------------------- ///
-            /// Calcul et Affichage des informations relatives a la geometrie du maillage adjoint ///
-            /// --------------------------------------------------------------------------------- ///
+            /// -------------------------------------------------------------------------- ///
+            /// Affichage des informations relatives a la connectivite du maillage adjoint ///
+            /// -------------------------------------------------------------------------- ///
             
-            calcul_display_geometry( m_adjoint, f_adjoint, debug_geometry_adjoint );
+            display_mesh_connectivity( m_adjoint, f_adjoint, debug_mesh_adjoint );
             
             if ( want_handbook_only == 0 ) {
                 
@@ -484,7 +490,7 @@ int main( int argc, char **argv ) {
                 T theta_adjoint = 0.;
                 Vec<T> theta_adjoint_elem;
                 Vec< Vec<T> > dep_adjoint_hat;
-                calcul_global_error_estimation( f_adjoint, m_adjoint, "adjoint", method_adjoint, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta_adjoint, theta_adjoint_elem, dep_adjoint_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, false, false, want_local_enrichment, debug_geometry_adjoint, debug_force_fluxes_adjoint, debug_force_fluxes_enhancement_adjoint, debug_criterium_enhancement_adjoint, debug_error_estimate_adjoint, debug_local_effectivity_index_adjoint, debug_method_adjoint, debug_method_enhancement_adjoint );
+                calcul_global_error_estimation( f_adjoint, m_adjoint, "adjoint", method_adjoint, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta_adjoint, theta_adjoint_elem, dep_adjoint_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, false, false, want_local_enrichment, debug_mesh_adjoint, debug_force_fluxes_adjoint, debug_force_fluxes_enhancement_adjoint, debug_criterium_enhancement_adjoint, debug_error_estimate_adjoint, debug_local_effectivity_index_adjoint, debug_method_adjoint, debug_method_enhancement_adjoint );
                 
                 /// Construction de la correspondance entre maillages extraits et maillages initiaux direct/adjoint
                 /// -----------------------------------------------------------------------------------------------

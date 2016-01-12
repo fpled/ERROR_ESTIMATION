@@ -1,7 +1,7 @@
 #
-# Metil Interface: Geometry_met
+# Metil Interface: Connectivity_met
 #
-# Description: informations relatives a la geometrie
+# Description: informations relatives a la connectivite du maillage
 #
 #
 # Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2009

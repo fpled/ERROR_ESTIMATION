@@ -1,3 +1,6 @@
+CONNECTIVITY/Calcul_connectivity.h
+CONNECTIVITY/Connectivity.h
+CONNECTIVITY/Connectivity.met
 CRITERIUM_ENHANCEMENT/Construct_criterium_enhancement.h
 CRITERIUM_ENHANCEMENT/Criterium_enhancement.h
 DATA_HDF5/square-1024x1024.hdf5
@@ -98,9 +101,6 @@ generated/TriangleGeneric[Int32]_n_3.2.met
 generated/TriangleGeneric[Int32]_n_4.2.met
 generated/TriangleGeneric[Int32]_n_5.2.met
 generated/TriangleGeneric[Int32]_n_6.2.met
-GEOMETRY/Calcul_geometry.h
-GEOMETRY/Geometry.h
-GEOMETRY/Geometry.met
 INTEREST_QUANTITY/Calcul_interest_quantity.h
 INTEREST_QUANTITY/Interest_quantity.h
 INTEREST_QUANTITY/Interest_quantity.met

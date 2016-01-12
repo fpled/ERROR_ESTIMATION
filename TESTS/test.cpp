@@ -2,8 +2,8 @@
 #include "../Mesh.h"
 #include "../Material_properties.h"
 #include "../Boundary_conditions.h"
-#include "../GEOMETRY/Calcul_geometry.h"
-#include "../GEOMETRY/Geometry.h"
+#include "../GEOMETRY/Calcul_connectivity.h"
+#include "../GEOMETRY/Connectivity.h"
 #include "../Display.h"
 
 using namespace LMT;

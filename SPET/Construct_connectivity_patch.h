@@ -13,7 +13,7 @@
 #define Construct_connectivity_patch_h
 
 #include "SPET.h"
-#include "../GEOMETRY/Calcul_geometry.h"
+#include "../GEOMETRY/Calcul_connectivity.h"
 
 using namespace LMT;
 using namespace std;

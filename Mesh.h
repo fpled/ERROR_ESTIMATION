@@ -23,7 +23,7 @@
 #include "LMT/include/mesh/refinement.h" // sert a raffiner un maillage selon un critere donne
 #include "LMT/include/util/Hdf.h" // sert a lire des donnees a partir d'un fichier .h5 ou .hdf5
 #include "LMT/include/containers/Tens3.h"
-#include "GEOMETRY/Calcul_geometry.h"
+#include "GEOMETRY/Calcul_connectivity.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sstream>
@@ -843,8 +843,8 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
     }
 }
 
-/// Creation du maillage de reference
-/// ---------------------------------
+/// Creation du maillage de reference pour le calcul de la mesure de l'erreur de discretisation
+/// -------------------------------------------------------------------------------------------
 template<class TM>
 void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsigned &deg_p = 1, const unsigned &refinement_level_ref = 2 ) {
 
@@ -1127,7 +1127,7 @@ void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsign
 /// Creation du maillage adjoint
 /// ----------------------------
 template<class TM, class T, class Pvec>
-void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, const string &direction_extractor, const bool &want_local_refinement, const T &l_min, const T &k, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list, Vec<unsigned> &elem_list_adjoint, const unsigned &node, unsigned &node_adjoint, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool &spread_cut, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, Vec<unsigned> &elem_list_adjoint_enrichment_zone_1, Vec<unsigned> &elem_list_adjoint_enrichment_zone_2, Vec<unsigned> &face_list_adjoint_enrichment_zone_12, Vec<unsigned> &node_list_adjoint_enrichment, const bool debug_geometry = false, const bool debug_geometry_adjoint = false ) {
+void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, const string &direction_extractor, const bool &want_local_refinement, const T &l_min, const T &k, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list, Vec<unsigned> &elem_list_adjoint, const unsigned &node, unsigned &node_adjoint, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool &spread_cut, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, Vec<unsigned> &elem_list_adjoint_enrichment_zone_1, Vec<unsigned> &elem_list_adjoint_enrichment_zone_2, Vec<unsigned> &face_list_adjoint_enrichment_zone_12, Vec<unsigned> &node_list_adjoint_enrichment, const bool debug_mesh = false, const bool debug_mesh_adjoint = false ) {
 
     static const unsigned dim = TM::dim;
 
@@ -1153,7 +1153,6 @@ void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, co
     if ( want_local_refinement ) {
         if ( interest_quantity.find("mean") != string::npos ) {
             for (unsigned n=0;n<elem_list.size();++n) {
-//                divide_element( m_adjoint );
                 Local_refinement_point_id<T, Pvec> ref( l_min, k, center( *m.elem_list[ elem_list[ n ] ] ) );
                 while( refinement( m_adjoint, ref, spread_cut ) )
                     ref.id++;
@@ -1189,6 +1188,8 @@ void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, co
             while( refinement( m_adjoint, ref_circle_ext, spread_cut ) )
                 ref_circle_ext.id++;
         }
+        else
+            divide_element( m_adjoint );
     }
     
     /// Zone d'interet du maillage adjoint
@@ -1293,7 +1294,7 @@ void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, co
         /// -----------------------------------------------------------
         Vec<unsigned> child_cpt;
         Vec< Vec<unsigned> > child_list;
-        construct_child( m, child_cpt, child_list, debug_geometry );
+        construct_child( m, child_cpt, child_list, debug_mesh );
         Vec<unsigned> face_list_enrichment_zone_1;
         for (unsigned n=0;n<elem_list_enrichment_zone_1.size();++n) {
             for (unsigned k=0;k<child_cpt[ elem_list_enrichment_zone_1[ n ] ];++k) {
@@ -1341,7 +1342,7 @@ void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, co
         /// ------------------------------------------------------------
         Vec<unsigned> child_cpt_adjoint;
         Vec< Vec<unsigned> > child_list_adjoint;
-        construct_child( m_adjoint, child_cpt_adjoint, child_list_adjoint, debug_geometry_adjoint );
+        construct_child( m_adjoint, child_cpt_adjoint, child_list_adjoint, debug_mesh_adjoint );
         Vec<unsigned> face_list_adjoint_enrichment_zone_1;
         for (unsigned n=0;n<elem_list_adjoint_enrichment_zone_1.size();++n) {
             for (unsigned k=0;k<child_cpt_adjoint[ elem_list_adjoint_enrichment_zone_1[ n ] ];++k) {
@@ -1510,22 +1511,8 @@ void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, co
 
 }
 
-/// Creation du maillage de la couronne entourant la pointe de fissure pour la quantite d'interet SIF
-/// -------------------------------------------------------------------------------------------------
-template<class TM, class T, class Pvec>
-void set_mesh_crown( TM &m_crown, TM &m, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool spread_cut = false ) {
-    
-    for (unsigned i=0;i<m.node_list.size();++i) {
-        m.node_list[i].phi_SIF_crown_1 = length( m.node_list[ i ].pos - pos_crack_tip ) - radius_Ri;
-        m.node_list[i].phi_SIF_crown_2 = radius_Re - length( m.node_list[ i ].pos - pos_crack_tip );
-    }
-    m_crown = m;
-    if ( level_set_cut( m_crown, ExtractDM< phi_SIF_crown_1_DM >(), spread_cut ) and level_set_cut( m_crown, ExtractDM< phi_SIF_crown_2_DM >(), spread_cut ) )
-        remove_lonely_nodes( m_crown );
-}
-
-/// Creation du maillage de reference local
-/// ---------------------------------------
+/// Creation du maillage de reference pour le calcul de la quantite d'interet quasi-exacte
+/// --------------------------------------------------------------------------------------
 template<class TM, class T, class Pvec>
 void set_mesh_local_ref( TM &m_ref, TM &m, const unsigned &refinement_level_ref, const string &interest_quantity, const Vec<unsigned> &elem_list, Vec<unsigned> &elem_list_ref, const unsigned &node, unsigned &node_ref, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool spread_cut = false ) {
 
@@ -1590,8 +1577,8 @@ void set_mesh_local_ref( TM &m_ref, TM &m, const unsigned &refinement_level_ref,
         apply( m_ref.node_list, Construct_Node_Ref(), m, node, node_ref );
 }
 
-/// Decoupe du maillage autour de la quantite d'interet
-/// ---------------------------------------------------
+/// Decoupe du maillage autour d'un domaine repere par son centre domain_center et sa taille domain_length
+/// ------------------------------------------------------------------------------------------------------
 template<class TM, class T, class Pvec>
 void set_mesh_cut( TM &m_lambda, TM &m, const string &shape, const T &k, const Vec<T> &domain_length, const Pvec &domain_center, const bool spread_cut = false ) {
     

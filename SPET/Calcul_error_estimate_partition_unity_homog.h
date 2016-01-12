@@ -14,7 +14,7 @@
 
 #include "SPET.h"
 #include "Construct_connectivity_patch.h"
-#include "../GEOMETRY/Calcul_geometry.h"
+#include "../GEOMETRY/Calcul_connectivity.h"
 #include "../DISCRETIZATION_ERROR/Discretization_error.h"
 
 using namespace LMT;
@@ -23,26 +23,26 @@ using namespace std;
 /// Calcul d'un champ de contrainte admissible, calcul d'un estimateur theta de l'erreur globale pour la methode basee sur la partition de l'unite (SPET)
 /// -----------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T>
-void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb, const string &solver, const string &method, T &theta, T &theta_init, Vec<T> &theta_elem, Vec<T> &theta_elem_init, Vec< Vec<T> > &E, const bool verif_solver = false, const T tol_solver = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const bool debug_geometry = false, const bool debug_error_estimate = false, const bool debug_local_effectivity_index = false, const bool debug_method = false ) {
+void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb, const string &solver, const string &method, T &theta, T &theta_init, Vec<T> &theta_elem, Vec<T> &theta_elem_init, Vec< Vec<T> > &E, const bool verif_solver = false, const T tol_solver = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const bool debug_mesh = false, const bool debug_error_estimate = false, const bool debug_local_effectivity_index = false, const bool debug_method = false ) {
     
     static const unsigned dim = TM::dim;
     
     Vec<unsigned> child_cpt;
     Vec< Vec<unsigned> > child_list;
-    construct_child( m, child_cpt, child_list, debug_geometry );
+    construct_child( m, child_cpt, child_list, debug_mesh );
     
     Vec<bool> correspondance_node_to_vertex_node;
     Vec<unsigned> connect_node_to_vertex_node;
-    unsigned nb_vertex_nodes = match_node_to_vertex_node( m, correspondance_node_to_vertex_node, connect_node_to_vertex_node, debug_geometry );
+    unsigned nb_vertex_nodes = match_node_to_vertex_node( m, correspondance_node_to_vertex_node, connect_node_to_vertex_node, debug_mesh );
     
     Vec<unsigned> elem_cpt_vertex_node;
     Vec< Vec<unsigned> > elem_list_vertex_node;
-    construct_elems_connected_to_vertex_node( m, nb_vertex_nodes, correspondance_node_to_vertex_node, connect_node_to_vertex_node, elem_cpt_vertex_node, elem_list_vertex_node, debug_geometry );
+    construct_elems_connected_to_vertex_node( m, nb_vertex_nodes, correspondance_node_to_vertex_node, connect_node_to_vertex_node, elem_cpt_vertex_node, elem_list_vertex_node, debug_mesh );
     
     correspondance_node_to_vertex_node.free();
     
     Vec< Vec<unsigned> > face_type;
-    construct_face_type( m, f, face_type, debug_geometry );
+    construct_face_type( m, f, face_type, debug_mesh );
     
     /// Construction de la table de connectivite de chaque patch
     /// --------------------------------------------------------

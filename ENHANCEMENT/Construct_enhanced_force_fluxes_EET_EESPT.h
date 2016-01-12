@@ -13,7 +13,7 @@
 #define Construct_enhanced_force_fluxes_EET_EESPT_h
 
 #include "Enhancement_EET_EESPT.h"
-#include "../GEOMETRY/Calcul_geometry.h"
+#include "../GEOMETRY/Calcul_connectivity.h"
 #include "../TOOLS/Algebre.h"
 
 using namespace LMT;
@@ -22,7 +22,7 @@ using namespace std;
 /// Construction amelioree des densites d'effort par les methodes EET et EESPT
 /// --------------------------------------------------------------------------
 template<class TM, class TF, class T>
-void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string &method, const Vec<bool> &elem_flag_enh, const Vec<bool> &face_flag_enh, const Vec<bool> &elem_flag_bal, const Vec<unsigned> &elem_list_enh, const Vec<unsigned> &face_list_enh, const Vec<unsigned> &elem_list_bal, Vec< Mat<T, Sym<> > > &K_hat, const Vec< Vec<T> > &dep_hat, Vec< Vec< Vec<T> > > &vec_force_fluxes, const string &solver, const string &solver_minimisation, const bool verif_solver_enhancement = false, const T tol_solver_enhancement = 1e-6, const bool verif_solver_minimisation_enhancement = false, const T tol_solver_minimisation_enhancement = 1e-6, const bool debug_force_fluxes_enhancement = false, const bool debug_method_enhancement = false, const bool debug_geometry = false ) {
+void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string &method, const Vec<bool> &elem_flag_enh, const Vec<bool> &face_flag_enh, const Vec<bool> &elem_flag_bal, const Vec<unsigned> &elem_list_enh, const Vec<unsigned> &face_list_enh, const Vec<unsigned> &elem_list_bal, Vec< Mat<T, Sym<> > > &K_hat, const Vec< Vec<T> > &dep_hat, Vec< Vec< Vec<T> > > &vec_force_fluxes, const string &solver, const string &solver_minimisation, const bool verif_solver_enhancement = false, const T tol_solver_enhancement = 1e-6, const bool verif_solver_minimisation_enhancement = false, const T tol_solver_minimisation_enhancement = 1e-6, const bool debug_force_fluxes_enhancement = false, const bool debug_method_enhancement = false, const bool debug_mesh = false ) {
 
     static const unsigned dim = TM::dim;
 
@@ -31,22 +31,22 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
 
     Vec<unsigned> node_cpt_face;
     Vec< Vec<unsigned> > node_list_face;
-    construct_nodes_connected_to_face( m, node_cpt_face, node_list_face, debug_geometry );
+    construct_nodes_connected_to_face( m, node_cpt_face, node_list_face, debug_mesh );
 
     Vec<unsigned> elem_cpt_node;
     Vec< Vec<unsigned> > elem_list_node;
-    construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node, debug_geometry );
+    construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node, debug_mesh );
 
     elem_list_node.free();
 
     Vec<bool> correspondance_node_to_vertex_node;
     Vec<unsigned> connect_node_to_vertex_node;
-    unsigned nb_vertex_nodes = match_node_to_vertex_node( m, correspondance_node_to_vertex_node, connect_node_to_vertex_node, debug_geometry );
+    unsigned nb_vertex_nodes = match_node_to_vertex_node( m, correspondance_node_to_vertex_node, connect_node_to_vertex_node, debug_mesh );
 
     connect_node_to_vertex_node.free();
 
     Vec< Vec<unsigned> > face_type;
-    construct_face_type( m, f, face_type, debug_geometry );
+    construct_face_type( m, f, face_type, debug_mesh );
 
     cout << "Construction amelioree des densites d'effort" << endl;
     cout << "--------------------------------------------" << endl << endl;

@@ -13,7 +13,7 @@
 #define Construct_standard_force_fluxes_EET_h
 
 #include "EET.h"
-#include "../GEOMETRY/Calcul_geometry.h"
+#include "../GEOMETRY/Calcul_connectivity.h"
 #include "../LMT/include/containers/matumfpack.h"
 
 using namespace LMT;
@@ -22,7 +22,7 @@ using namespace std;
 /// Construction standard des densites d'effort par la methode EET
 /// --------------------------------------------------------------
 template<class TM, class TF, class T>
-void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, const unsigned &cost_function, const bool &enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, Vec< Vec< Vec<T> > > &vec_force_fluxes, const bool want_local_enrichment = false, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool debug_geometry = false, const bool debug_force_fluxes = false, const bool debug_method = false ) {
+void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, const unsigned &cost_function, const bool &enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, Vec< Vec< Vec<T> > > &vec_force_fluxes, const bool want_local_enrichment = false, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool debug_mesh = false, const bool debug_force_fluxes = false, const bool debug_method = false ) {
     
     static const unsigned dim = TM::dim;
     
@@ -31,31 +31,31 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     
     Vec<unsigned> elem_cpt_node;
     Vec< Vec<unsigned> > elem_list_node;
-    construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node, debug_geometry );
+    construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node, debug_mesh );
     
     elem_list_node.free();
     
     Vec<unsigned> face_cpt_node;
     Vec< Vec<unsigned> > face_list_node;
-    construct_faces_connected_to_node( m, face_cpt_node, face_list_node, debug_geometry );
+    construct_faces_connected_to_node( m, face_cpt_node, face_list_node, debug_mesh );
     
     Vec<unsigned> node_cpt_face;
     Vec< Vec<unsigned> > node_list_face;
-    construct_nodes_connected_to_face( m, node_cpt_face, node_list_face, debug_geometry );
+    construct_nodes_connected_to_face( m, node_cpt_face, node_list_face, debug_mesh );
 
     node_cpt_face.free();
 
     Vec<bool> correspondance_node_to_vertex_node;
     Vec<unsigned> connect_node_to_vertex_node;
-    unsigned nb_vertex_nodes = match_node_to_vertex_node( m, correspondance_node_to_vertex_node, connect_node_to_vertex_node, debug_geometry );
+    unsigned nb_vertex_nodes = match_node_to_vertex_node( m, correspondance_node_to_vertex_node, connect_node_to_vertex_node, debug_mesh );
 
     connect_node_to_vertex_node.free();
 
     Vec< Vec<unsigned> > face_type;
-    construct_face_type( m, f, face_type, debug_geometry );
+    construct_face_type( m, f, face_type, debug_mesh );
 
     Vec< Vec<unsigned> > node_type;
-    construct_node_type( m, f, face_type, node_type, debug_geometry );
+    construct_node_type( m, f, face_type, node_type, debug_mesh );
 
     /// -------------------------------------------------- ///
     /// Construction des projections des densites d'effort ///

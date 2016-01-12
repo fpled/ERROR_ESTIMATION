@@ -1,5 +1,5 @@
 import "LMT/LmtppFormulation.met"
-import "GEOMETRY/Geometry.met"
+import "CONNECTIVITY/Connectivity.met"
 import "Material_properties.met"
 import "EESPT/EESPT.met"
 import "SPET/SPET.met"
@@ -136,7 +136,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     pre_sigma := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\tilde{\\sigma}" )
     pre_sigma_ex := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\tilde{\\sigma}" )
 
-    tag_refinement := Variable[[dim]]( interpolation="nodal", interpolation_base=base, default_value=0, unit="", tex_name = "tag refinement" )
+    cuts_refinement := Variable[[dim]]( interpolation="nodal", interpolation_base=base, default_value=0, unit="", tex_name = "cuts" )
     phi_cut := Variable( interpolation="nodal", interpolation_base=base, default_value=0, unit="", tex_name = "\\phi_{\\text{cut}}" )
     phi_SIF_crown_1 := Variable( interpolation="nodal", interpolation_base=base, default_value=0, unit="", tex_name = "\\phi_{\\text{crown} 1}^{\\text{SIF}}" )
     phi_SIF_crown_2 := Variable( interpolation="nodal", interpolation_base=base, default_value=0, unit="", tex_name = "\\phi_{\\text{crown} 2}^{\\text{SIF}}" )

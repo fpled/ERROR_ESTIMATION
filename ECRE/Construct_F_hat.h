@@ -13,7 +13,7 @@
 #define Construct_F_hat_h
 
 #include "ECRE.h"
-#include "../GEOMETRY/Calcul_geometry.h"
+#include "../GEOMETRY/Calcul_connectivity.h"
 
 using namespace LMT;
 using namespace std;
@@ -21,7 +21,7 @@ using namespace std;
 /// Construction des vecteurs F_hat[ n ] pour chaque element n du maillage
 /// ----------------------------------------------------------------------
 template<class TM, class TF, class T>
-void construct_F_hat( TM &m, const TF &f, const string &pb, const bool &balancing, const Vec<bool> &elem_flag_bal, const Vec<bool> &elem_flag_enh, const Vec< Vec< Vec<T> > > &vec_force_fluxes, Vec< Vec<T> > &F_hat, const bool want_local_enrichment = false, const bool debug_method = false, const bool debug_geometry = false ) {
+void construct_F_hat( TM &m, const TF &f, const string &pb, const bool &balancing, const Vec<bool> &elem_flag_bal, const Vec<bool> &elem_flag_enh, const Vec< Vec< Vec<T> > > &vec_force_fluxes, Vec< Vec<T> > &F_hat, const bool want_local_enrichment = false, const bool debug_method = false, const bool debug_mesh = false ) {
 
 
     if ( debug_method ) {
@@ -33,11 +33,11 @@ void construct_F_hat( TM &m, const TF &f, const string &pb, const bool &balancin
 
     Vec<unsigned> node_cpt_face;
     Vec< Vec<unsigned> > node_list_face;
-    construct_nodes_connected_to_face( m, node_cpt_face, node_list_face, debug_geometry );
+    construct_nodes_connected_to_face( m, node_cpt_face, node_list_face, debug_mesh );
 
     Vec<unsigned> elem_cpt_node;
     Vec< Vec<unsigned> > elem_list_node;
-    construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node, debug_geometry );
+    construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node, debug_mesh );
 
     elem_list_node.free();
 
