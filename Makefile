@@ -115,14 +115,6 @@ clean_results:
 clean_all: clean clean_codegen clean_results
 	-find . -maxdepth 1 -name "*.o" -exec rm -fr {} \;
 
-clean_metil:
-	-rm -fr ../METIL
-	-rm -fr ../METIL-build
-	-rm -fr ../METIL-install
-
-clean_lmtpp:
-	-rm -fr ../LMTpp
-
 # Clean Cluster---------------------------
 clean_cluster:
 	ssh $(Cluster_Name) "cd $(Cluster_Dir)/ERROR_ESTIMATION_$(Cluster_Id_Computation)/; make clean"
