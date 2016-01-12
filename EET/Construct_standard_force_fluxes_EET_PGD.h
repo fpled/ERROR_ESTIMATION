@@ -14,7 +14,7 @@
 #define Construct_standard_force_fluxes_EET_PGD_h
 
 #include "EET.h"
-#include "../GEOMETRY/Calcul_connectivity.h"
+#include "../CONNECTIVITY/Calcul_connectivity.h"
 #include "../LMT/include/containers/matumfpack.h"
 
 using namespace LMT;

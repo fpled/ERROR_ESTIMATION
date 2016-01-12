@@ -14,7 +14,7 @@
 
 #include "SPET.h"
 #include "Construct_connectivity_patch.h"
-#include "../GEOMETRY/Calcul_connectivity.h"
+#include "../CONNECTIVITY/Calcul_connectivity.h"
 #include "../DISCRETIZATION_ERROR/Discretization_error.h"
 
 using namespace LMT;

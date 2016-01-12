@@ -23,7 +23,7 @@
 #include "LMT/include/mesh/refinement.h" // sert a raffiner un maillage selon un critere donne
 #include "LMT/include/util/Hdf.h" // sert a lire des donnees a partir d'un fichier .h5 ou .hdf5
 #include "LMT/include/containers/Tens3.h"
-#include "GEOMETRY/Calcul_connectivity.h"
+#include "CONNECTIVITY/Calcul_connectivity.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sstream>
@@ -1591,8 +1591,22 @@ void set_mesh_cut( TM &m_lambda, TM &m, const string &shape, const T &k, const V
     }
 }
 
-/// Creation de la structure parametrique
-/// -------------------------------------
+/// Creation du maillage de la couronne entourant la pointe de fissure pour la quantite d'interet SIF
+/// -------------------------------------------------------------------------------------------------
+template<class TM, class T, class Pvec>
+void set_mesh_crown( TM &m_crown, TM &m, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool spread_cut = false ) {
+
+    for (unsigned i=0;i<m.node_list.size();++i) {
+        m.node_list[i].phi_SIF_crown_1 = length( m.node_list[ i ].pos - pos_crack_tip ) - radius_Ri;
+        m.node_list[i].phi_SIF_crown_2 = radius_Re - length( m.node_list[ i ].pos - pos_crack_tip );
+    }
+    m_crown = m;
+    if ( level_set_cut( m_crown, ExtractDM< phi_SIF_crown_1_DM >(), spread_cut ) and level_set_cut( m_crown, ExtractDM< phi_SIF_crown_2_DM >(), spread_cut ) )
+        remove_lonely_nodes( m_crown );
+}
+
+/// Creation du maillage parametrique
+/// ---------------------------------
 template<class TM_param, class T, class TT>
 void set_mesh_param( TM_param &m_param, const T &min_param, const T &max_param, const TT &nb_points ) {
     typedef typename TM_param::Pvec Pvec_param;

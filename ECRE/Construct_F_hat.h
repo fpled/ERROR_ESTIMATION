@@ -13,7 +13,7 @@
 #define Construct_F_hat_h
 
 #include "ECRE.h"
-#include "../GEOMETRY/Calcul_connectivity.h"
+#include "../CONNECTIVITY/Calcul_connectivity.h"
 
 using namespace LMT;
 using namespace std;

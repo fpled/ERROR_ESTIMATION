@@ -15,7 +15,7 @@
 #include "Interest_quantity.h"
 #include "../LMT/include/containers/apply_ij.h"
 #include "../Mesh.h"
-#include "../GEOMETRY/Calcul_connectivity.h"
+#include "../CONNECTIVITY/Calcul_connectivity.h"
 #include "../Display.h"
 #include "../LMT/include/mesh/gauss_point_for_Bar.h"
 #include "../LMT/include/mesh/gauss_point_for_simplex_Triangle.h"

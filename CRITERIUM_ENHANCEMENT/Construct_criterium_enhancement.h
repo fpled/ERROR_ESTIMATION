@@ -14,7 +14,7 @@
 #ifndef Construction_criterium_enhnacement_h
 #define Construction_criterium_enhnacement_h
 
-#include "../GEOMETRY/Connectivity.h"
+#include "../CONNECTIVITY/Connectivity.h"
 #include "Criterium_enhancement.h"
 
 using namespace LMT;

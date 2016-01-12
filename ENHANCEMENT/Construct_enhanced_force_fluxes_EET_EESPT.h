@@ -13,7 +13,7 @@
 #define Construct_enhanced_force_fluxes_EET_EESPT_h
 
 #include "Enhancement_EET_EESPT.h"
-#include "../GEOMETRY/Calcul_connectivity.h"
+#include "../CONNECTIVITY/Calcul_connectivity.h"
 #include "../TOOLS/Algebre.h"
 
 using namespace LMT;
