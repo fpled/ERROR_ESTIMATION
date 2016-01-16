@@ -242,6 +242,12 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
             /// champ de deplacement applique a tous les noeuds
             /// ---------------------------------------------------------------
             else if ( structure.find("square") != string::npos ) {
+                size_t offset = structure.rfind( "_" )+1;
+                string str = structure.substr( offset );
+                istringstream buffer(str);
+                int N;
+                buffer >> N;
+
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 1e-6 ) {
                         for (unsigned j=0;j<m.node_list.size();++j) {
@@ -261,9 +267,18 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                             }
                         }
                     }
-                    else if ( 0.25 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.25 + 1e-6 and 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) {
-                        for (unsigned d=0;d<dim;++d) {
-                            f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
+                    if ( structure.find("init") != string::npos and N == 32 ) {
+                        if ( m.node_list[i].pos[0] < 1e-6 and m.node_list[i].pos[1] < 1e-6 ) {
+                            for (unsigned d=0;d<dim;++d) {
+                                f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
+                            }
+                        }
+                    }
+                    else {
+                        if ( 0.25 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.25 + 1e-6 and 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) {
+                            for (unsigned d=0;d<dim;++d) {
+                                f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
+                            }
                         }
                     }
                 }
@@ -282,12 +297,16 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
 //                    f.add_constraint( txt_mean_constraint, penalty_val );
 //                }
 
-                size_t offset = structure.rfind( "_" )+1;
-                string str = structure.substr( offset );
-                istringstream buffer(str);
-                int N;
-                buffer >> N;
-                Hdf hdf("DATA_HDF5/square-" + str + "x" + str + ".hdf5");
+//                size_t offset = structure.rfind( "_" )+1;
+//                string str = structure.substr( offset );
+//                istringstream buffer(str);
+//                int N;
+//                buffer >> N;
+                Hdf hdf;
+                if ( structure.find("init") != string::npos and N == 32 )
+                    hdf.open("DATA_HDF5/square-init-" + str + "x" + str + ".hdf5");
+                else
+                    hdf.open("DATA_HDF5/square-" + str + "x" + str + ".hdf5");
 
                 Vec<int> s;
                 hdf.read_size( "/u", s );
@@ -440,7 +459,7 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
                     if ( structure.find("init") != string::npos ) {
                         Vec<T,unsigned(dim*(dim+1)/2) >  pre_eps;
                         pre_eps.set( 0, 0. );
-                        pre_eps.set( 1, -1./2 );
+                        pre_eps.set( 1, -1/sqrt(2.) );
                         pre_eps.set( 2, 0. );
                         for (unsigned n=0;n<m.elem_list.size();++n)
                             m.elem_list[n]->set_field( "pre_epsilon", pre_eps );
@@ -462,8 +481,8 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
 
                         Vec<T,unsigned(dim*(dim+1)/2) > pre_sig;
                         for (unsigned n=0;n<m.elem_list.size();++n) {
-                            int i = int(center( *m.elem_list[n] )[0]*N-1./2);
-                            int j = int(center( *m.elem_list[n] )[1]*N-1./2);
+                            int i = int(center( *m.elem_list[n] )[0]*N-1/2);
+                            int j = int(center( *m.elem_list[n] )[1]*N-1/2);
                             pre_sig[ 0 ] = -tau( 0, j, i );
                             pre_sig[ 1 ] = -tau( 2, j, i )/sqrt(2.);
                             pre_sig[ 2 ] = -tau( 1, j, i );

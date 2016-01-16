@@ -1,9 +1,34 @@
+//
+// C++ Implementation: test_cpp
+//
+// Description: Test
+//
+//
+// Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2009
+//
+// Copyright: See COPYING file that comes with this distribution
+//
+//
 #include "../build/problem_error_estimation/all_in_one.h" // sert a forcer le logiciel scons a generer le repertoire build et ses codes sources .h et .cpp correspondant a la formulation
 #include "../Mesh.h"
 #include "../Material_properties.h"
 #include "../Boundary_conditions.h"
-#include "../CONNECTIVITY/Calcul_connectivity.h"
 #include "../Display.h"
+#include "../CONNECTIVITY/Calcul_connectivity.h"
+#include "../VERIFICATION/Verification.h"
+//#include "../DISCRETIZATION_ERROR/Calcul_discretization_error.h"
+//#include "../Calcul_global_error_estimation.h"
+//#include "../Calcul_goal_oriented_error_estimation.h"
+
+#include "LMT/include/containers/gnuplot.h"
+#include "LMT/include/containers/matlabplot.h"
+#include "LMT/include/containers/matcholamd.h"
+#include "LMT/include/containers/conjugate_gradient.h"
+#include "LMT/include/containers/MatWithTinyBlocks.h"
+
+#include "LMT/include/util/MKL_direct_solver.h"
+#include "LMT/include/util/MKL_iterative_solver.h"
+#include "LMT/include/util/MUMPS_solver.h"
 
 using namespace LMT;
 using namespace std;

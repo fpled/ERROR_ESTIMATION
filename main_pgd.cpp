@@ -1,7 +1,7 @@
 //
-// C++ Implementation: main_cpp
+// C++ Implementation: main_pgd_cpp
 //
-// Description: Global/Goal-oriented error estimation methods
+// Description: Global/Goal-oriented error estimation methods for PGD
 //
 //
 // Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2009
@@ -14,9 +14,10 @@
 #include "Mesh.h"
 #include "Material_properties.h"
 #include "Boundary_conditions.h"
+#include "Display.h"
+#include "VERIFICATION/Verification.h"
 #include "CONNECTIVITY/Calcul_connectivity.h"
 #include "DISCRETIZATION_ERROR/Calcul_discretization_error.h"
-#include "Display.h"
 #include "Calcul_global_error_estimation_PGD.h"
 #include "Calcul_goal_oriented_error_estimation.h"
 #include "PGD/PGD.h"

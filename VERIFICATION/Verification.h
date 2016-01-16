@@ -30,6 +30,7 @@ void check_equilibrium( TF &f, const string &pb ) {
     Vec<T> &U = f.get_result( 0 ); // f.vectors[0]
     Vec<T> &F = f.get_sollicitation(); // f.sollicitation
     T residual = norm_2( K * U - F );
+
     cout << "Verification de l'equilibre global du pb " << pb << endl << endl;
 //    cout << "residu K * U - F =" << endl;
 //    cout << K * U - F << endl << endl;

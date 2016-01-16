@@ -41,7 +41,7 @@ void set_boundary_conditions_init( TF &f, TM &m, const string &boundary_conditio
             if ( structure.find("square") != string::npos ) {
                 Vec<T,unsigned(dim*(dim+1)/2) >  pre_eps_init;
                 pre_eps_init.set( 0, 0. );
-                pre_eps_init.set( 1, -1./2 );
+                pre_eps_init.set( 1, -1/sqrt(2.) );
                 pre_eps_init.set( 2, 0. );
                 for (unsigned n=0;n<m.elem_list.size();++n)
                     m.elem_list[n]->set_field( "pre_epsilon_init", pre_eps_init );

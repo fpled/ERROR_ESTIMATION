@@ -158,7 +158,7 @@ struct Eta {
 //     cout << f.matrices(Number<0>()).size() << endl << endl;
 //     cout << f.sollicitation.size() << endl << endl;
 //     cout << f.vectors[0].size() << endl << endl;
-//     cout << sqrt( dot( f.matrices(Number<0>()) * f.vectors[0] - f.sollicitation, f.matrices(Number<0>()) * f.vectors[0] - f.sollicitation ) ) << endl << endl;
+//     cout << norm( f.matrices(Number<0>()) * f.vectors[0] - f.sollicitation ) << endl << endl;
 //     m.f_vol[1] = -0.01;
 //     cout << m.node_list[0].dep << endl; // valeur du deplacement du noeud 0 du maillage
 

@@ -13,9 +13,10 @@
 #include "Mesh.h"
 #include "Material_properties.h"
 #include "Boundary_conditions.h"
-#include "CONNECTIVITY/Calcul_connectivity.h"
-#include "DISCRETIZATION_ERROR/Calcul_discretization_error.h"
 #include "Display.h"
+#include "CONNECTIVITY/Calcul_connectivity.h"
+#include "VERIFICATION/Verification.h"
+#include "DISCRETIZATION_ERROR/Calcul_discretization_error.h"
 #include "Calcul_global_error_estimation.h"
 #include "Calcul_goal_oriented_error_estimation.h"
 
@@ -41,7 +42,7 @@ int main( int argc, char **argv ) {
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "plate_flexion"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes, square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
+    static const string structure = "square_init_32"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes, square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
                                                      // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes, test_specimen_n (n=5,10,15,20,25)
     static const string mesh_size = "fine"; // taille du maillage pour les structures plate_hole (2D ou 3D), plate_crack, structure_crack, test_specimen (2D), weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
     static const string loading = "Step-2"; // chargement
@@ -247,22 +248,22 @@ int main( int argc, char **argv ) {
     /// -----------------------
     cout << "Resolution du pb direct" << endl;
     cout << "-----------------------" << endl << endl;
-    TicToc t;
-    t.start();
-    if ( want_iterative_solver == 0 )
-        f.solve();
-    else
-        f.solve( iterative_criterium );
-    t.stop();
-    cout << "Temps de calcul de la resolution du pb direct = " << t.res << endl << endl;
+//    TicToc t;
+//    t.start();
+//    if ( want_iterative_solver == 0 )
+//        f.solve();
+//    else
+//        f.solve( iterative_criterium );
+//    t.stop();
+//    cout << "Temps de calcul de la resolution du pb direct = " << t.res << endl << endl;
 
-//    f.allocate_matrices();
-//    f.shift();
-//    f.assemble();
-////    f.solve_system();
-//    f.get_initial_conditions();
-//    f.update_variables();
-//    f.call_after_solve();
+    f.allocate_matrices();
+    f.shift();
+    f.assemble();
+//    f.solve_system();
+    f.get_initial_conditions();
+    f.update_variables();
+    f.call_after_solve();
 
     /// Verification de l'equilibre du pb direct
     /// ----------------------------------------
