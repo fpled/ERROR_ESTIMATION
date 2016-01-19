@@ -36,13 +36,13 @@ using namespace std;
 int main( int argc, char **argv ) {
     TicToc t_total;
     t_total.start();
-    static const unsigned dim = 2;
+    static const unsigned dim = 3;
     static const bool wont_add_nz = true;
     typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "square_32"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes, square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
+    static const string structure = "test_specimen_5"; // structure 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes, square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
                                                      // structure 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes, test_specimen_n (n=5,10,15,20,25)
     static const string mesh_size = "fine"; // taille du maillage pour les structures plate_hole (2D ou 3D), plate_crack, structure_crack, test_specimen (2D), weigth_sensor, spot_weld (3D), reactor_head (3D) : coarse, fine
     static const string loading = "Step-2"; // chargement
@@ -212,13 +212,13 @@ int main( int argc, char **argv ) {
     static const bool display_vtu_local_ref = 0;
     
     static const bool save_vtu_lambda = 1;
-    static const bool save_vtu_adjoint_lambda = 0;
+    static const bool save_vtu_adjoint_lambda = 1;
     static const bool display_vtu_lambda = 0;
     static const bool display_vtu_adjoint_lambda = 0;
     
     static const bool save_vtu_crown = 1;
     static const bool display_vtu_crown = 0;
-
+    
     /// ------------------------------------------------------- ///
     /// Construction de la solution elements finis du pb direct ///
     /// ------------------------------------------------------- ///
@@ -248,14 +248,14 @@ int main( int argc, char **argv ) {
     /// -----------------------
     cout << "Resolution du pb direct" << endl;
     cout << "-----------------------" << endl << endl;
-//    TicToc t;
-//    t.start();
-//    if ( want_iterative_solver == 0 )
-//        f.solve();
-//    else
-//        f.solve( iterative_criterium );
-//    t.stop();
-//    cout << "Temps de calcul de la resolution du pb direct = " << t.res << endl << endl;
+    TicToc t;
+    t.start();
+    if ( want_iterative_solver == 0 )
+        f.solve();
+    else
+        f.solve( iterative_criterium );
+    t.stop();
+    cout << "Temps de calcul de la resolution du pb direct = " << t.res << endl << endl;
 
     f.allocate_matrices();
     f.shift();
@@ -342,7 +342,7 @@ int main( int argc, char **argv ) {
     if ( want_local_estimation ) {
         
         /// ------------------------------------- ///
-        /// Calcul d'un estimateur d'erreur globale associe pb direct de la quantite d'interet ///
+        /// Construction de la quantite d'interet ///
         /// ------------------------------------- ///
         
         display_interest_quantity( interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re );
@@ -430,7 +430,6 @@ int main( int argc, char **argv ) {
             /// Maillage du pb adjoint
             /// ----------------------
             set_mesh_adjoint( m_adjoint, m, interest_quantity, direction_extractor, want_local_refinement, l_min_refinement, k_refinement, pointwise_interest_quantity, elem_list_interest_quantity, elem_list_adjoint_interest_quantity, node_interest_quantity, node_adjoint_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, elem_list_adjoint_enrichment_zone_1, elem_list_adjoint_enrichment_zone_2, face_list_adjoint_enrichment_zone_12, node_list_adjoint_enrichment, debug_mesh, debug_mesh_adjoint );
-            
             display_params_adjoint( want_local_refinement, l_min_refinement, k_refinement, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, elem_list_adjoint_enrichment_zone_1, elem_list_adjoint_enrichment_zone_2, face_list_adjoint_enrichment_zone_12, node_list_adjoint_enrichment, want_local_improvement, local_improvement, shape, k_min, k_max, k_opt );
             
             /// Formulation du pb adjoint

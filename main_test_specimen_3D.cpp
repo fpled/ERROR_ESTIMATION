@@ -14,8 +14,8 @@
 #include "Material_properties.h"
 #include "Boundary_conditions.h"
 #include "Display.h"
-#include "VERIFICATION/Verification.h"
 #include "CONNECTIVITY/Calcul_connectivity.h"
+#include "VERIFICATION/Verification.h"
 #include "DISCRETIZATION_ERROR/Calcul_discretization_error.h"
 #include "Calcul_global_error_estimation.h"
 #include "Calcul_goal_oriented_error_estimation.h"
@@ -162,11 +162,11 @@ int main( int argc, char **argv ) {
 
     static const bool verif_solver = 1; // verification de la resolution des pbs locaux (methodes EET, SPET, EESPT)
     static const T tol_solver = 1e-6; // tolerance pour la verification de la resolution des pbs locaux (methodes EET, SPET, EESPT)
-    static const bool verif_solver_enhancement = 0; // verification de la resolution des pbs locaux (amelioration des methodes EET, EESPT)
+    static const bool verif_solver_enhancement = 1; // verification de la resolution des pbs locaux (amelioration des methodes EET, EESPT)
     static const T tol_solver_enhancement = 1e-6; // tolerance pour la verification de la resolution des pbs locaux (amelioration des methodes EET EESPT)
     static const bool verif_solver_minimisation = 1; // verification de la resolution des pbs de minimisation (methodes EET, EESPT)
     static const T tol_solver_minimisation = 1e-6; // tolerance pour la verification de la resolution des pbs de minimisation (methodes EET, EESPT)
-    static const bool verif_solver_minimisation_enhancement = 0; // verification de la resolution des pbs de minimisation (amelioration des methodes EET, EESPT)
+    static const bool verif_solver_minimisation_enhancement = 1; // verification de la resolution des pbs de minimisation (amelioration des methodes EET, EESPT)
     static const T tol_solver_minimisation_enhancement = 1e-6; // tolerance pour la verification de la resolution des pbs de minimisation (amelioration des methodes EET, EESPT)
     
     /// Debug
@@ -317,7 +317,7 @@ int main( int argc, char **argv ) {
             f_ref.solve( iterative_criterium_ref );
         t_ref.stop();
         cout << "Temps de calcul de la resolution du pb de reference associe au pb direct = " << t_ref.res << endl << endl;
-
+        
         /// Verification de l'equilibre du pb de reference associe au pb direct
         /// -------------------------------------------------------------------
         if ( verif_eq )

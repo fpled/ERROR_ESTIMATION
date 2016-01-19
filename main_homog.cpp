@@ -16,8 +16,8 @@
 #include "Boundary_conditions.h"
 #include "Boundary_conditions_homog.h"
 #include "Display.h"
-#include "VERIFICATION/Verification.h"
 #include "CONNECTIVITY/Calcul_connectivity.h"
+#include "VERIFICATION/Verification.h"
 #include "DISCRETIZATION_ERROR/Calcul_discretization_error.h"
 #include "Calcul_global_error_estimation_homog.h"
 #include "Calcul_goal_oriented_error_estimation.h"
@@ -164,11 +164,11 @@ int main( int argc, char **argv ) {
 
     static const bool verif_solver = 1; // verification de la resolution des pbs locaux (methodes EET, SPET, EESPT)
     static const T tol_solver = 1e-6; // tolerance pour la verification de la resolution des pbs locaux (methodes EET, SPET, EESPT)
-    static const bool verif_solver_enhancement = 0; // verification de la resolution des pbs locaux (amelioration des methodes EET, EESPT)
+    static const bool verif_solver_enhancement = 1; // verification de la resolution des pbs locaux (amelioration des methodes EET, EESPT)
     static const T tol_solver_enhancement = 1e-6; // tolerance pour la verification de la resolution des pbs locaux (amelioration des methodes EET EESPT)
     static const bool verif_solver_minimisation = 1; // verification de la resolution des pbs de minimisation (methodes EET, EESPT)
     static const T tol_solver_minimisation = 1e-6; // tolerance pour la verification de la resolution des pbs de minimisation (methodes EET, EESPT)
-    static const bool verif_solver_minimisation_enhancement = 0; // verification de la resolution des pbs de minimisation (amelioration des methodes EET, EESPT)
+    static const bool verif_solver_minimisation_enhancement = 1; // verification de la resolution des pbs de minimisation (amelioration des methodes EET, EESPT)
     static const T tol_solver_minimisation_enhancement = 1e-6; // tolerance pour la verification de la resolution des pbs de minimisation (amelioration des methodes EET, EESPT)
     
     /// Debug
@@ -225,7 +225,7 @@ int main( int argc, char **argv ) {
     /// ---------------------
     TM m; // declaration d'un maillage de type TM
     set_mesh( m, structure, mesh_size, loading, deg_p, refinement_level_ref, want_global_discretization_error, want_local_discretization_error );
-
+    
     /// Formulation du pb direct
     /// ------------------------
     TF f( m ); // creation d'une formulation du type TF avec le maillage m
@@ -303,7 +303,7 @@ int main( int argc, char **argv ) {
             f_ref.solve( iterative_criterium_ref );
         t_ref.stop();
         cout << "Temps de calcul de la resolution du pb de reference associe au pb direct = " << t_ref.res << endl << endl;
-
+        
         /// Verification de l'equilibre du pb de reference associe au pb direct
         /// -------------------------------------------------------------------
         if ( verif_eq )
@@ -431,7 +431,6 @@ int main( int argc, char **argv ) {
             /// Maillage du pb adjoint
             /// ----------------------
             set_mesh_adjoint( m_adjoint, m, interest_quantity, direction_extractor, want_local_refinement, l_min_refinement, k_refinement, pointwise_interest_quantity, elem_list_interest_quantity, elem_list_adjoint_interest_quantity, node_interest_quantity, node_adjoint_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, elem_list_adjoint_enrichment_zone_1, elem_list_adjoint_enrichment_zone_2, face_list_adjoint_enrichment_zone_12, node_list_adjoint_enrichment, debug_mesh, debug_mesh_adjoint );
-            
             display_params_adjoint( want_local_refinement, l_min_refinement, k_refinement, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, elem_list_adjoint_enrichment_zone_1, elem_list_adjoint_enrichment_zone_2, face_list_adjoint_enrichment_zone_12, node_list_adjoint_enrichment, want_local_improvement, local_improvement, shape, k_min, k_max, k_opt );
             
             /// Formulation du pb adjoint
