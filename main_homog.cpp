@@ -226,16 +226,6 @@ int main( int argc, char **argv ) {
     TM m; // declaration d'un maillage de type TM
     set_mesh( m, structure, mesh_size, loading, deg_p, refinement_level_ref, want_global_discretization_error, want_local_discretization_error );
 
-//    TM m_init;
-//    size_t offset = structure.rfind( "_" )+1;
-//    const string str = structure.substr( offset );
-//    const string vtu_name = "./square_init_" + str + "_Quad_direct_EET_k_3_J0.vtu";
-//    read_vtu( m_init, vtu_name.c_str() );
-//    for (unsigned i=0;i<m.node_list.size();++i) {
-//        for (unsigned d=0;d<dim;++d)
-//            m.node_list[i].dep_init[ d ] = m_init.node_list[i].dep[ d ];
-//    }
-
     /// Formulation du pb direct
     /// ------------------------
     TF f( m ); // creation d'une formulation du type TF avec le maillage m

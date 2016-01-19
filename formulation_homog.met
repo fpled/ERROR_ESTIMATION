@@ -134,8 +134,6 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     pre_f_vol := Variable[[dim]]( interpolation="elementary", default_value=0, unit="N/m^3", tex_name = "\\tilde{F}_v" )
     pre_epsilon := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="1", tex_name = "\\tilde{\\epsilon}" )
     pre_sigma := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\tilde{\\sigma}" )
-    pre_sigma_ex1 := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\tilde{\\sigma}" )
-    pre_sigma_ex2 := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\tilde{\\sigma}" )
 
     cuts_refinement := Variable[[dim]]( interpolation="nodal", interpolation_base=base, default_value=0, unit="", tex_name = "cuts" )
     phi_cut := Variable( interpolation="nodal", interpolation_base=base, default_value=0, unit="", tex_name = "\\phi_{\\text{cut}}" )
@@ -168,7 +166,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     sigma_hat_tot_SPET := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{tot}}" )
     sigma_hat_tot_EESPT := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{tot}}" )
 
-    pre_epsilon_init := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="1", tex_name = "\\tilde{\\epsilon}" )
+    pre_epsilon_init := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="1", tex_name = "\\tilde{\\epsilon}_{\\text{init}}" )
     young_init := Variable( interpolation="elementary", default_value=1, unit="N/m^2", tex_name = "E_{\\text{init}}" )
     poisson_init := Variable( interpolation="elementary", default_value=0.3, unit="1", tex_name = "\\nu_{\\text{init}}" )
     la_init := Variable( interpolation="elementary", default_value=lame_coeff_lambda( young_init.default_value, poisson_init.default_value, dim, type_stress_2D ), unit="N/m^2", tex_name = "\\lambda_{\\text{init}}" )
@@ -255,11 +253,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
         sigma_tot = sigma.expr + sigma_handbook_PUM.expr
 
         sigma_init = hooke_iso( young_init.expr, poisson_init.expr, dim, type_stress_2D ) : epsilon.expr
-        #sigma_init = hooke_iso( young_init.expr, poisson_init.expr, dim, type_stress_2D ) : ( epsilon.expr - pre_epsilon_init.expr )
         sigma_von_mises_init = von_mises( sigma_init.expr )
-
-        pre_sigma_ex1 = hooke_iso( young.expr, poisson.expr, dim, type_stress_2D ) : epsilon.expr - hooke_iso( young_init.expr, poisson_init.expr, dim, type_stress_2D ) : ( epsilon.expr - pre_epsilon_init.expr )
-        pre_sigma_ex2 = hooke_iso( young.expr, poisson.expr, dim, type_stress_2D ) : ( epsilon.expr - pre_epsilon_init.expr ) - hooke_iso( young_init.expr, poisson_init.expr, dim, type_stress_2D ) : ( epsilon.expr - pre_epsilon_init.expr )
 
         residual := sigma.expr : epsilon.test * dV - dot( f_vol.expr, dep.test ) * dV - dot( f_surf.expr, dep.test ) * dS - dot( f_nodal.expr, dep.test ) * dN
 
