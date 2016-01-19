@@ -746,8 +746,10 @@ void set_boundary_conditions( TF &f, TM &m, const string &boundary_condition_D, 
             /// -----------------------------------------------------------------------------------------------------
             else if ( structure.find("test_specimen") != string::npos ) {
                 TM mesh;
-                size_t off = structure.rfind( "_" );
-                string str = structure.substr( off+1 );
+//                size_t off = structure.rfind( "_" );
+//                string str = structure.substr( off+1 );
+                string str = structure.substr( 14 );
+                cout << str << endl;
                 string filename = "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_" + str + "_Hexa.inp";
                 ReaderINP<TM> RI( mesh, filename.c_str() );
                 RI.set_constraint_by_step( f, loading, penalty_val );

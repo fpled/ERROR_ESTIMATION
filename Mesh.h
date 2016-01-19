@@ -765,8 +765,9 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         /// Eprouvette 3D
         /// -------------
         else if ( structure.find("test_specimen") != string::npos ) {
-            size_t off = structure.rfind( "_" );
-            string str = structure.substr( off+1 );
+//            size_t off = structure.rfind( "_" );
+//            string str = structure.substr( off+1 );
+            string str = structure.substr( 14 );
             string filename = "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_" + str + "_Hexa.inp";
 //            read_inp( m, filename );
             ReaderINP<TM> RI( m, filename.c_str() );
