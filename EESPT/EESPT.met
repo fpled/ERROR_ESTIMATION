@@ -271,7 +271,7 @@ def calc_vertex_nodal_vector_R( list_f, rep )
                 file_ <<< "        {"
                 file_ <<< "        typedef typename TM::template SubMesh<1>::T TSubMesh;"
                 file_ <<< "        typedef typename TSubMesh::template TElem<typename TypeChildrenElement<typename Element<$(e->name),TN,TNG,TD,NET>::NE,1,$( face->num_child )>::T>::TE TCH;"
-                file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem,Number<1>())[ $( face->num_child ) ] ) );"
+                file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem, Number<1>())[ $( face->num_child ) ] ) );"
                 file_ <<< "        if ( skin_elem.phi_surf_handbook_zone_12 and elem.phi_elem_handbook_zone_1 ) {"
                 f_surf_handbook_face := e->projection_on_child_elem( child_cast(f)->sigma_handbook.expr, face ) * face->normal
                 f_surf_handbook_linear_part_face := e->projection_on_shape_functions_with_equilibrium( f_surf_handbook_face, degre_poly_handbook, face, force_fluxes_base )
@@ -512,7 +512,7 @@ def calc_skin_elem_vector_Q_p_1( list_f, rep )
                 file_ <<< "    {"
                 file_ <<< "    typedef typename TM::template SubMesh<1>::T TSubMesh;"
                 file_ <<< "    typedef typename TSubMesh::template TElem<typename TypeChildrenElement<typename Element<$(e->name),TN,TNG,TD,NET>::NE,1,$( face->num_child )>::T>::TE TCH;"
-                file_ <<< "    TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem,Number<1>())[ $( face->num_child ) ] ) );"
+                file_ <<< "    TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem, Number<1>())[ $( face->num_child ) ] ) );"
                 for i in 0 .. face->nb_nodes
                     file_ <<< "    ind_in_node_list_face = find_with_index( node_list_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ] == elem.node( $( face->node_numbers_to_node_numbers_in_parent_cpp[ i ] ) )->number );"
                     for d in 0 .. face->dim
@@ -523,7 +523,7 @@ def calc_skin_elem_vector_Q_p_1( list_f, rep )
                             file_ <<< "$(cw_handbook.to_string( 8 ))"
                             file_ <<< "    }"
                             file_ <<< "    else {"
-                        file_ <<< "    if ( face_type[ m.get_children_of(elem,Number<1>())[ $( face->num_child ) ]->number ][ $d ] == 0 ) {"
+                        file_ <<< "    if ( face_type[ m.get_children_of(elem, Number<1>())[ $( face->num_child ) ]->number ][ $d ] == 0 ) {"
                         cw_0 := CodeWriterAlt( "T" )
                         cw_0.add( "Q[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ $( Pi_sigma_ind ) + ind_in_node_list_face[ 0 ] ]", 1/2 * Q[ i * e->dim + d ], add )
                         file_ <<< "$(cw_0.to_string( 8 ))"
@@ -534,7 +534,7 @@ def calc_skin_elem_vector_Q_p_1( list_f, rep )
                             file_ <<< "$(cw_0_handbook.to_string( 12 ))"
                             file_ <<< "        }"
                         file_ <<< "    }"
-                        file_ <<< "    else if ( face_type[ m.get_children_of(elem,Number<1>())[ $( face->num_child ) ]->number ][ $d ] == 1 ) {"
+                        file_ <<< "    else if ( face_type[ m.get_children_of(elem, Number<1>())[ $( face->num_child ) ]->number ][ $d ] == 1 ) {"
                         cw_1 := CodeWriterAlt( "T" )
                         cw_1.add( "Q[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ $( Pi_sigma_ind ) + ind_in_node_list_face[ 0 ] ]", Q[ i * e->dim + d ], add )
                         file_ <<< "$(cw_1.to_string( 8 ))"
@@ -545,7 +545,7 @@ def calc_skin_elem_vector_Q_p_1( list_f, rep )
                             file_ <<< "$(cw_1_handbook.to_string( 12 ))"
                             file_ <<< "        }"
                         file_ <<< "    }"
-                        file_ <<< "    else if ( face_type[ m.get_children_of(elem,Number<1>())[ $( face->num_child ) ]->number ][ $d ] == 2 ) {"
+                        file_ <<< "    else if ( face_type[ m.get_children_of(elem, Number<1>())[ $( face->num_child ) ]->number ][ $d ] == 2 ) {"
                         cw_2 := CodeWriterAlt( "T" )
                         cw_2.add( "Q[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ $( Pi_sigma_ind ) + ind_in_node_list_face[ 0 ] ]", Q_N[ i * e->dim + d ], add )
                         file_ <<< "$(cw_2.to_string( 8 ))"
@@ -620,7 +620,7 @@ def calc_vertex_nodal_vector_lambda_F_p_2( list_f, rep )
                 file_ <<< "    {"
                 file_ <<< "    typedef typename TM::template SubMesh<1>::T TSubMesh;"
                 file_ <<< "    typedef typename TSubMesh::template TElem<typename TypeChildrenElement<typename Element<$(e->name),TN,TNG,TD,NET>::NE,1,$( face->num_child )>::T>::TE TCH;"
-                file_ <<< "    TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem,Number<1>())[ $( face->num_child ) ] ) );"
+                file_ <<< "    TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem, Number<1>())[ $( face->num_child ) ] ) );"
                 for n in 0 .. face->nb_nodes
                     if face->node_number_is_a_vertex( n )
                         lambda_n := face->shape_functions_vertex[ face_node_numbers_to_vertex_node_numbers[ n ] ]
@@ -684,7 +684,7 @@ def calc_vertex_nodal_vector_lambda_F_p_2( list_f, rep )
                                     file_ <<< "$(cw_handbook.to_string( 8 ))"
                                     file_ <<< "    }"
                                     file_ <<< "    else {"
-                                file_ <<< "    if ( face_type[ m.get_children_of(elem,Number<1>())[ $( face->num_child ) ]->number ][ $d ] == 0 ) {" # si la face face est interieure a Omega
+                                file_ <<< "    if ( face_type[ m.get_children_of(elem, Number<1>())[ $( face->num_child ) ]->number ][ $d ] == 0 ) {" # si la face face est interieure a Omega
                                 cw_0 := CodeWriterAlt( "T" )
                                 cw_0.add( "lambda_F[ connect_node_to_vertex_node[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_n_in_node_list_face[ 0 ] )->number ] ][ $d ][ face_ind[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_n_in_list_vertex_nodes_face[ 0 ] ] + ind_i_in_node_list_face[ 0 ] ]", 1/2 * lambda_n_F[ i * e->dim + d ], add )
                                 file_ <<< "$(cw_0.to_string( 8 ))"
@@ -695,7 +695,7 @@ def calc_vertex_nodal_vector_lambda_F_p_2( list_f, rep )
                                     file_ <<< "$(cw_0_handbook.to_string( 12 ))"
                                     file_ <<< "        }"
                                 file_ <<< "    }"
-                                file_ <<< "    else if ( face_type[ m.get_children_of(elem,Number<1>())[ $( face->num_child ) ]->number ][ $d ] == 1 ) {" # si la face face appartient a delta_1_Omega
+                                file_ <<< "    else if ( face_type[ m.get_children_of(elem, Number<1>())[ $( face->num_child ) ]->number ][ $d ] == 1 ) {" # si la face face appartient a delta_1_Omega
                                 cw_1 := CodeWriterAlt( "T" )
                                 cw_1.add( "lambda_F[ connect_node_to_vertex_node[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_n_in_node_list_face[ 0 ] )->number ] ][ $d ][ face_ind[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_n_in_list_vertex_nodes_face[ 0 ] ] + ind_i_in_node_list_face[ 0 ] ]", lambda_n_F[ i * e->dim + d ], add )
                                 file_ <<< "$(cw_1.to_string( 8 ))"
@@ -706,7 +706,7 @@ def calc_vertex_nodal_vector_lambda_F_p_2( list_f, rep )
                                     file_ <<< "$(cw_1_handbook.to_string(128 ))"
                                     file_ <<< "        }"
                                 file_ <<< "    }"
-                                file_ <<< "    else if ( face_type[ m.get_children_of(elem,Number<1>())[ $( face->num_child ) ]->number ][ $d ] == 2 ) {" # si la face face appartient a delta_2_Omega
+                                file_ <<< "    else if ( face_type[ m.get_children_of(elem, Number<1>())[ $( face->num_child ) ]->number ][ $d ] == 2 ) {" # si la face face appartient a delta_2_Omega
                                 cw_2 := CodeWriterAlt( "T" )
                                 cw_2.add( "lambda_F[ connect_node_to_vertex_node[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->node_virtual( ind_n_in_node_list_face[ 0 ] )->number ] ][ $d ][ face_ind[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_n_in_list_vertex_nodes_face[ 0 ] ] + ind_i_in_node_list_face[ 0 ] ]", lambda_n_F_N[ i * e->dim + d ], add )
                                 file_ <<< "$(cw_2.to_string( 8 ))"

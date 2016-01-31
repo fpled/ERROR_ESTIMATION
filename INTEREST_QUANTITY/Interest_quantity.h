@@ -143,7 +143,7 @@ struct Calcul_Interest_Quantity_Pointwise_Dep_Node {
                 if ( direction_extractor == "x" )
                     I += node.dep[0];
                 else {
-                    std::cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << *interest_quantity << " en dimension " << TN::dim << " n'est pas implementee..." << std::endl << std::endl;
+                    cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << *interest_quantity << " en dimension " << TN::dim << " n'est pas implementee..." << endl << endl;
                     throw "Anguille sous coquille...";
                 }
             }
@@ -153,7 +153,7 @@ struct Calcul_Interest_Quantity_Pointwise_Dep_Node {
                 else if ( direction_extractor == "y" )
                     I += node.dep[1];
                 else {
-                    std::cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << *interest_quantity << " en dimension " << TN::dim << " n'est pas implementee..." << std::endl << std::endl;
+                    cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << *interest_quantity << " en dimension " << TN::dim << " n'est pas implementee..." << endl << endl;
                     throw "Anguille sous coquille...";
                 }
             }
@@ -165,7 +165,7 @@ struct Calcul_Interest_Quantity_Pointwise_Dep_Node {
                 else if ( direction_extractor == "z" )
                     I += node.dep[2];
                 else {
-                    std::cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << *interest_quantity << " en dimension " << TN::dim << " n'est pas implementee..." << std::endl << std::endl;
+                    cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << *interest_quantity << " en dimension " << TN::dim << " n'est pas implementee..." << endl << endl;
                     throw "Anguille sous coquille...";
                 }
             }

@@ -38,7 +38,7 @@ void construct_K_hat( const TM &m, const TF &f, Vec< Mat<T, Sym<> > > &K_hat, co
     if ( debug_method ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
             cout << "matrice K_hat de l'element " << n << " :" << endl;
-            cout << K_hat[ n ] << endl << endl;
+            cout << K_hat[ n ] << endl;
         }
     }
 }

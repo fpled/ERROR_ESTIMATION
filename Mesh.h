@@ -34,6 +34,16 @@
 using namespace LMT;
 using namespace std;
 
+/// Affichage des paramètre d'un maillage
+/// -------------------------------------
+template<class TM>
+void display_mesh_carac( const TM &m ) {
+    static const unsigned dim = TM::dim;
+    cout << "nb de ddl     = " << m.node_list.size() * dim << endl;
+    cout << "nb de noeuds  = " << m.node_list.size() << endl;
+    cout << "nb d'elements = " << m.elem_list.size() << endl << endl;
+}
+
 /// Creation du maillage
 /// --------------------
 template<class TM>
@@ -834,9 +844,7 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
             cerr << "Arret brutal, car il n'y a aucun element dans le maillage du pb direct..." << endl << endl;
             throw "Baleinou sous caillou...";
         }
-        cout << "nb de ddl     = " << m.node_list.size() * dim << endl;
-        cout << "nb de noeuds  = " << m.node_list.size() << endl;
-        cout << "nb d'elements = " << m.elem_list.size() << endl << endl;
+        display_mesh_carac( m );
     }
     else {
         cerr << "Arret brutal, car il n'y a aucun noeud dans le maillage du pb direct..." << endl << endl;
@@ -954,21 +962,21 @@ void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsign
         else if ( structure == "circular_inclusions" ) {
             m_ref = m;
             for (unsigned n=0;n<refinement_level_ref;++n)
-                divide_element( m_ref );
+                divide( m_ref );
         }
         /// Trous circulaires 2D
         /// --------------------
         else if ( structure == "circular_holes" ) {
             m_ref = m;
             for (unsigned n=0;n<refinement_level_ref;++n)
-                divide_element( m_ref );
+                divide( m_ref );
         }
         /// Carre 2D
         /// --------
         else if ( structure.find("square") != string::npos ) {
             m_ref = m;
             for (unsigned n=0;n<refinement_level_ref;++n)
-                divide_element( m_ref );
+                divide( m_ref );
         }
         else
             cerr << "structure " << structure << " not implemented..." << endl << endl;
@@ -1000,91 +1008,91 @@ void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsign
         else if ( structure == "beam_hole" ) {
             m_ref = m;
             for (unsigned n=0;n<refinement_level_ref;++n)
-                divide_element( m_ref );
+                divide( m_ref );
         }
         /// Quart de plaque rectangulaire trouee 3D
         /// ---------------------------------------
         else if ( structure == "plate_hole" ) {
             m_ref = m;
             for (unsigned n=0;n<refinement_level_ref;++n)
-                divide_element( m_ref );
+                divide( m_ref );
         }
         /// Plaque rectangulaire trouee complete 3D
         /// ---------------------------------------
         else if ( structure == "plate_hole_full" ) {
             m_ref = m;
             for (unsigned n=0;n<refinement_level_ref;++n)
-                divide_element( m_ref );
+                divide( m_ref );
         }
         /// Moyeu-rotor 3D de l'helicoptere NH90B
         /// -------------------------------------
         else if ( structure == "hub_rotor_helico" ) {
             m_ref = m;
             for (unsigned n=0;n<refinement_level_ref;++n)
-                divide_element( m_ref );
+                divide( m_ref );
         }
         /// Quart de tete de reacteur nucleaire 3D
         /// --------------------------------------
         else if ( structure == "reactor_head" ) {
             m_ref = m;
             for (unsigned n=0;n<refinement_level_ref;++n)
-                divide_element( m_ref );
+                divide( m_ref );
         }
         /// Joint de porte 3D de vehicule auto
         /// ----------------------------------
         else if ( structure == "door_seal" ) {
             m_ref = m;
             for (unsigned n=0;n<refinement_level_ref;++n)
-                divide_element( m_ref );
+                divide( m_ref );
         }
         /// Point de soudure 3D
         /// -------------------
         else if ( structure == "spot_weld" ) {
             m_ref = m;
             for (unsigned n=0;n<refinement_level_ref;++n)
-                divide_element( m_ref );
+                divide( m_ref );
         }
         /// Ailette 3D
         /// ----------
         else if ( structure == "blade" ) {
             m_ref = m;
             for (unsigned n=0;n<refinement_level_ref;++n)
-                divide_element( m_ref );
+                divide( m_ref );
         }
         /// Quart de conduite 3D
         /// --------------------
         else if ( structure == "pipe" ) {
             m_ref = m;
             for (unsigned n=0;n<refinement_level_ref;++n)
-                divide_element( m_ref );
+                divide( m_ref );
         }
         /// SAP 3D
         /// ------
         else if ( structure == "SAP" ) {
             m_ref = m;
             for (unsigned n=0;n<refinement_level_ref;++n)
-                divide_element( m_ref );
+                divide( m_ref );
         }
         /// Inclusions sphériques 3D
         /// ------------------------
         else if ( structure == "spherical_inclusions" ) {
             m_ref = m;
             for (unsigned n=0;n<refinement_level_ref;++n)
-                divide_element( m_ref );
+                divide( m_ref );
         }
         /// Trous sphériques 3D
         /// -------------------
         else if ( structure == "spherical_holes" ) {
             m_ref = m;
             for (unsigned n=0;n<refinement_level_ref;++n)
-                divide_element( m_ref );
+                divide( m_ref );
         }
         /// Eprouvette 3D
         /// -------------
         else if ( structure.find("test_specimen") != string::npos ) {
             m_ref = m;
             for (unsigned n=0;n<refinement_level_ref;++n)
-                divide_element( m_ref );
+                divide( m_ref );
         }
         /// Sphere 3D avec noeud au centre
         /// ------------------------------
@@ -1114,9 +1122,7 @@ void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsign
             cerr << "Arret brutal, car il n'y a aucun element dans le maillage de reference du pb direct..." << endl << endl;
             throw "Baleinou sous caillou...";
         }
-        cout << "nb de ddl     = " << m_ref.node_list.size() * dim << endl;
-        cout << "nb de noeuds  = " << m_ref.node_list.size() << endl;
-        cout << "nb d'elements = " << m_ref.elem_list.size() << endl << endl;
+        display_mesh_carac( m_ref );
     }
     else {
         cerr << "Arret brutal, car il n'y a aucun noeud dans le maillage de reference du pb direct..." << endl << endl;
@@ -1154,13 +1160,9 @@ void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, co
     if ( want_local_refinement ) {
         if ( interest_quantity.find("mean") != string::npos ) {
             for (unsigned n=0;n<elem_list.size();++n) {
-                Local_refinement_point_id<T, Pvec> ref( l_min, k, center( *m.elem_list[ elem_list[ n ] ] ) );
-                while( refinement( m_adjoint, ref, spread_cut ) )
-                    ref.id++;
+                while( refinement_point( m_adjoint, l_min, k, center( *m.elem_list[ elem_list[ n ] ] ), spread_cut ) );
                 for (unsigned i=0;i<(m.elem_list[ elem_list[ n ] ]->nb_nodes_virtual());++i) {
-                    Local_refinement_point_id<T, Pvec> ref( l_min, k, m.elem_list[ elem_list[ n ] ]->node_virtual(i)->pos );
-                    while( refinement( m_adjoint, ref, spread_cut ) )
-                        ref.id++;
+                    while( refinement_point( m_adjoint, l_min, k, m.elem_list[ elem_list[ n ] ]->node_virtual(i)->pos, spread_cut ) );
                 }
             }
         }
@@ -1174,23 +1176,13 @@ void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, co
                 cerr << "Arret brutal, car la definition de la quantite d'interet ponctuelle " << interest_quantity << " n'est pas implementee..." << endl << endl;
                 throw "Ourson sous gravillon...";
             }
-            Local_refinement_point_id<T, Pvec> ref( l_min, k, pos );
-            while( refinement( m_adjoint, ref, spread_cut ) )
-                ref.id++;
+            while( refinement_point( m_adjoint, l_min, k, pos, spread_cut ) );
         }
         else if ( interest_quantity == "SIF" or interest_quantity == "stress_intensity_factor" ) {
-            Local_refinement_point_id<T, Pvec> ref_crack_tip( l_min, k, pos_crack_tip );
-            while( refinement( m_adjoint, ref_crack_tip, spread_cut ) )
-                ref_crack_tip.id++;
-            Local_refinement_circle_id<T, Pvec> ref_circle_int( l_min, k, pos_crack_tip, radius_Ri );
-            while( refinement( m_adjoint, ref_circle_int, spread_cut ) )
-                ref_circle_int.id++;
-            Local_refinement_circle_id<T, Pvec> ref_circle_ext( l_min, k, pos_crack_tip, radius_Re );
-            while( refinement( m_adjoint, ref_circle_ext, spread_cut ) )
-                ref_circle_ext.id++;
+            while( refinement_point( m_adjoint, l_min, k, pos_crack_tip, spread_cut ) or refinement_circle( m_adjoint, l_min, k, pos_crack_tip, radius_Ri, spread_cut ) or refinement_circle( m_adjoint, l_min, k, pos_crack_tip, radius_Re, spread_cut ) );
         }
         else
-            divide_element( m_adjoint );
+            divide( m_adjoint );
     }
     
     /// Zone d'interet du maillage adjoint
@@ -1501,9 +1493,7 @@ void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, co
             cerr << "Arret brutal, car il n'y a aucun element dans le maillage du pb adjoint..." << endl << endl;
             throw "Baleinou sous caillou...";
         }
-        cout << "nb de ddl     = " << m_adjoint.node_list.size() * dim << endl;
-        cout << "nb de noeuds  = " << m_adjoint.node_list.size() << endl;
-        cout << "nb d'elements = " << m_adjoint.elem_list.size() << endl << endl;
+        display_mesh_carac( m_adjoint );
     }
     else {
         cerr << "Arret brutal, car il n'y a aucun noeud dans le maillage du pb adjoint..." << endl << endl;
@@ -1525,35 +1515,21 @@ void set_mesh_local_ref( TM &m_ref, TM &m, const unsigned &refinement_level_ref,
     m_ref = m;
 
     for (unsigned n=0;n<refinement_level_ref;++n)
-        divide_element( m_ref );
+        divide( m_ref );
 
 //    if ( interest_quantity.find("mean") != string::npos ) {
 //        for (unsigned n=0;n<elem_list.size();++n) {
-//            Local_refinement_point_id<T, Pvec> ref( 0.05, 0.05, center( *m.elem_list[ elem_list[ n ] ] ) );
-//            while( refinement( m_ref, ref, spread_cut ) )
-//                ref.id++;
+//            while( refinement_point( m_ref, 0.05, 0.05, center( *m.elem_list[ elem_list[ n ] ] ), spread_cut ) );
 //            for (unsigned i=0;i<(m.elem_list[ elem_list[ n ] ]->nb_nodes_virtual());++i) {
-//                Local_refinement_point_id<T, Pvec> ref( 0.05, 0.05, m.elem_list[ elem_list[ n ] ]->node_virtual(i)->pos );
-//                while( refinement( m_ref, ref, spread_cut ) )
-//                    ref.id++;
+//                while( refinement_point( m_ref, 0.05, 0.05, m.elem_list[ elem_list[ n ] ]->node_virtual(i)->pos, spread_cut ) );
 //            }
 //        }
 //    }
 //    else if ( interest_quantity.find("pointwise") != string::npos ) {
-//        Local_refinement_point_id<T, Pvec> ref( 0.5, 0.5, m.node_list[ node ].pos );
-//        while( refinement( m_ref, ref, spread_cut ) )
-//            ref.id++;
+//        while( refinement_point( m_ref, 0.5, 0.5, m.node_list[ node ].pos, spread_cut ) );
 //    }
 //    else if ( interest_quantity == "SIF" or interest_quantity == "stress_intensity_factor" ) {
-//        Local_refinement_point_id<T, Pvec> ref_crack_tip( 0.2, 0.2, pos_crack_tip );
-//        while( refinement( m_ref, ref_crack_tip, spread_cut ) )
-//            ref_crack_tip.id++;
-//        Local_refinement_circle_id<T, Pvec> ref_circle_int( 0.2, 0.2, pos_crack_tip, radius_Ri );
-//        while( refinement( m_ref, ref_circle_int, spread_cut ) )
-//            ref_circle_int.id++;
-//        Local_refinement_circle_id<T, Pvec> ref_circle_ext( 0.2, 0.2, pos_crack_tip, radius_Re );
-//        while( refinement( m_ref, ref_circle_ext, spread_cut ) )
-//            ref_circle_ext.id++;
+//        while( refinement_point( m_ref, 0.2, 0.2, pos_crack_tip, spread_cut ) or refinement_circle( m_ref, 0.2, 0.2, pos_crack_tip, radius_Ri, spread_cut ) or refinement_circle( m_ref, 0.2, 0.2, pos_crack_tip, radius_Re, spread_cut )  );
 //    }
 
     if ( m_ref.node_list.size() ) {
@@ -1563,9 +1539,7 @@ void set_mesh_local_ref( TM &m_ref, TM &m, const unsigned &refinement_level_ref,
             cerr << "Arret brutal, car il n'y a aucun element dans le maillage de reference du pb direct..." << endl << endl;
             throw "Baleinou sous caillou...";
         }
-        cout << "nb de ddl     = " << m_ref.node_list.size() * dim << endl;
-        cout << "nb de noeuds  = " << m_ref.node_list.size() << endl;
-        cout << "nb d'elements = " << m_ref.elem_list.size() << endl << endl;
+        display_mesh_carac( m_ref );
     }
     else {
         cerr << "Arret brutal, car il n'y a aucun noeud dans le maillage de reference du pb direct..." << endl << endl;
@@ -1581,14 +1555,14 @@ void set_mesh_local_ref( TM &m_ref, TM &m, const unsigned &refinement_level_ref,
 /// Decoupe du maillage autour d'un domaine repere par son centre domain_center et sa taille domain_length
 /// ------------------------------------------------------------------------------------------------------
 template<class TM, class T, class Pvec>
-void set_mesh_cut( TM &m_lambda, TM &m, const string &shape, const T &k, const Vec<T> &domain_length, const Pvec &domain_center, const bool spread_cut = false ) {
+void set_mesh_domain( TM &m_domain, TM &m, const string &shape, const T &k, const Vec<T> &domain_length, const Pvec &domain_center, const bool spread_cut = false ) {
     
     if ( shape.find("circle") != string::npos or shape.find("sphere") != string::npos ) {
         for (unsigned i=0;i<m.node_list.size();++i)
-            m.node_list[i].phi_cut = k * domain_length[ 0 ] - length( m.node_list[ i ].pos - domain_center );
-        m_lambda = m;
-        if ( level_set_cut( m_lambda, ExtractDM< phi_cut_DM >(), spread_cut ) )
-            remove_lonely_nodes( m_lambda );
+            m.node_list[i].phi_domain = k * domain_length[ 0 ] - length( m.node_list[ i ].pos - domain_center );
+        m_domain = m;
+        if ( level_set_cut( m_domain, ExtractDM< phi_domain_DM >(), spread_cut ) )
+            remove_lonely_nodes( m_domain );
     }
 }
 
@@ -1598,11 +1572,11 @@ template<class TM, class T, class Pvec>
 void set_mesh_crown( TM &m_crown, TM &m, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool spread_cut = false ) {
 
     for (unsigned i=0;i<m.node_list.size();++i) {
-        m.node_list[i].phi_SIF_crown_1 = length( m.node_list[ i ].pos - pos_crack_tip ) - radius_Ri;
-        m.node_list[i].phi_SIF_crown_2 = radius_Re - length( m.node_list[ i ].pos - pos_crack_tip );
+        m.node_list[i].phi_crown_int = length( m.node_list[ i ].pos - pos_crack_tip ) - radius_Ri;
+        m.node_list[i].phi_crown_ext = radius_Re - length( m.node_list[ i ].pos - pos_crack_tip );
     }
     m_crown = m;
-    if ( level_set_cut( m_crown, ExtractDM< phi_SIF_crown_1_DM >(), spread_cut ) and level_set_cut( m_crown, ExtractDM< phi_SIF_crown_2_DM >(), spread_cut ) )
+    if ( level_set_cut( m_crown, ExtractDM< phi_crown_int_DM >(), spread_cut ) or level_set_cut( m_crown, ExtractDM< phi_crown_ext_DM >(), spread_cut ) )
         remove_lonely_nodes( m_crown );
 }
 

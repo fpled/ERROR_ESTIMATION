@@ -271,7 +271,7 @@ def calc_elem_vector_F_hat( list_f, rep )
                     file_ <<< "    if ( ( balancing == 0 or ( balancing and elem_flag_bal[ elem.number ] == 0 and elem_flag_enh[ elem.number ] == 0 ) ) and pb == \"adjoint\" and want_local_enrichment ) {"
                     file_ <<< "        typedef typename TM::template SubMesh<1>::T TSubMesh;"
                     file_ <<< "        typedef typename TSubMesh::template TElem<typename TypeChildrenElement<typename Element<$(e->name),TN,TNG,TD,NET>::NE,1,$( face->num_child )>::T>::TE TCH;"
-                    file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem,Number<1>())[ $( face->num_child ) ] ) );"
+                    file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem, Number<1>())[ $( face->num_child ) ] ) );"
                     file_ <<< "        if ( skin_elem.phi_surf_handbook_zone_12 and elem.phi_elem_handbook_zone_1 ) {"
                     file_ <<< "            gauss_points( $(face->name_for_gauss_point)(), $(degre_poly_handbook), poids_face, valeurs_face );"
                     file_ <<< "            for (unsigned n=0; n<poids_face.size(); ++n) {"
@@ -292,7 +292,7 @@ def calc_elem_vector_F_hat( list_f, rep )
                     file_ <<< "    if ( ( balancing == 0 or ( balancing and elem_flag_bal[ elem.number ] == 0 and elem_flag_enh[ elem.number ] == 0 ) ) and pb == \"adjoint\" and want_local_enrichment ) {"
                     file_ <<< "        typedef typename TM::template SubMesh<1>::T TSubMesh;"
                     file_ <<< "        typedef typename TSubMesh::template TElem<typename TypeChildrenElement<typename Element<$(e->name),TN,TNG,TD,NET>::NE,1,$( face->num_child )>::T>::TE TCH;"
-                    file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem,Number<1>())[ $( face->num_child ) ] ) );"
+                    file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem, Number<1>())[ $( face->num_child ) ] ) );"
                     file_ <<< "        if ( skin_elem.phi_surf_handbook_zone_12 and elem.phi_elem_handbook_zone_1 ) {"
                     F_hat_face_handbook := residual_face_handbook.diff( sym_dep_hat_test )
                     cw_handbook := CodeWriterAlt( "T" )

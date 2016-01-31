@@ -209,6 +209,8 @@ void apply_criterium_enhancement( TM &m, const string &method, const bool &enhan
     elem_flag_bal.resize( m.elem_list.size() );
     elem_flag_bal.set( 0 );
 	
+    m.update_elem_children();
+
     /// Construction des vecteurs elem_flag_enh, face_flag_enh, node_flag_enh
     /// Construction des vecteurs elem_list_enh, face_list_enh, node_list_enh
     /// ------------------------------------------------------------------------

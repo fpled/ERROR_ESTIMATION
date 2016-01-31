@@ -34,6 +34,8 @@ using namespace std;
 template<class TF, class TM, class T, class TV, class TVV, class TTV, class TTVV, class TTVVV, class TMATV, class TMATVV>
 void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const string &method, const unsigned &cost_function, const T &penalty_val_N, const string &solver, const string &solver_minimisation, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const string &geometric_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, T &theta, Vec<T> &theta_elem, TTVV &dep_part_hat, const TTV &dep_part, const TTVV &kappa, TTVVV &dep_space_hat, const TTVV &dep_space, const TTVVV &dep_param, const unsigned &nb_modes, const TMATV &K_space, const TMATVV &K_param, const TV &F_space, const TVV &F_param, const Vec< Vec<unsigned> > &elem_group, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool verif_eq_force_fluxes = false, const T tol_eq_force_fluxes = 1e-6, const bool verif_solver = false, const T tol_solver = 1e-6, const bool verif_solver_enhancement = false, const T tol_solver_enhancement = 1e-6, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_solver_minimisation_enhancement = false, const T tol_solver_minimisation_enhancement = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const bool debug_mesh = false, const bool debug_force_fluxes = false, const bool debug_force_fluxes_enhancement = false, const bool debug_criterium_enhancement = false, const bool debug_error_estimate = false, const bool debug_local_effectivity_index = false, const bool debug_method = false, const bool debug_method_enhancement = false ) {
     
+    theta = 0.;
+
     /// ----------- ///
     /// Methode EET ///
     /// ----------- ///
@@ -49,8 +51,6 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
         Vec< Mat<T, Sym<> > > K_hat;
         Vec< Vec<T> > F_hat;
         
-        theta = 0.;
-        
         Vec<bool> elem_flag_enh;
         Vec<bool> face_flag_enh;
         Vec<bool> elem_flag_bal;
@@ -61,9 +61,8 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
         bool enhancement = 0;
         bool balancing = 0;
         
-        /// --------------------------------------------------------------------------- ///
-        /// Critere d'amelioration geometrique de la construction des densites d'effort ///
-        /// --------------------------------------------------------------------------- ///
+        /// Critere d'amelioration geometrique de la construction des densites d'effort
+        /// ---------------------------------------------------------------------------
         
         Vec<T> geometric_ratio;
         
@@ -72,9 +71,8 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             construct_geometric_criterium( m, geometric_criterium, geometric_ratio, debug_criterium_enhancement );
         }
         
-        /// -------------------------------------------------------------------------------- ///
-        /// Critere d'amelioration sur l'estimateur de la construction des densites d'effort ///
-        /// -------------------------------------------------------------------------------- ///
+        /// Critere d'amelioration sur l'estimateur de la construction des densites d'effort
+        /// --------------------------------------------------------------------------------
         
         Vec<T> estimator_ratio;
         
@@ -118,7 +116,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
                 cout << "Construction d'un champ de contrainte admissible a 0 associe au mode " << n << endl;
                 cout << "-----------------------------------------------------------------------" << endl << endl;
                 
-                reset_load_conditions( f, m, debug_mesh );
+                reset_load_conditions( m );
                 
                 /// Construction des densites d'effort standard
                 /// -------------------------------------------
@@ -229,7 +227,6 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
         /// Calcul d'un estimateur d'erreur globale
         /// ---------------------------------------
         
-        theta = 0.;
         calcul_error_estimate_partition_unity( m, f, pb, solver, "SPET", theta, theta_elem, dep_hat, verif_solver, tol_solver, want_global_discretization_error, want_local_discretization_error, want_local_enrichment, debug_mesh, debug_error_estimate, debug_local_effectivity_index, debug_method );
         
         t_SPET.stop();
@@ -252,8 +249,6 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
         Vec< Mat<T, Sym<> > > K_hat;
         Vec< Vec<T> > F_hat;
         
-        theta = 0.;
-        
         Vec<bool> elem_flag_enh;
         Vec<bool> face_flag_enh;
         Vec<bool> elem_flag_bal;
@@ -264,9 +259,8 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
         bool enhancement = 0;
         bool balancing = 0;
         
-        /// --------------------------------------------------------------------------- ///
-        /// Critere d'amelioration geometrique de la construction des densites d'effort ///
-        /// --------------------------------------------------------------------------- ///
+        /// Critere d'amelioration geometrique de la construction des densites d'effort
+        /// ---------------------------------------------------------------------------
         
         Vec<T> geometric_ratio;
         
@@ -274,10 +268,9 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             enhancement = 1;
             construct_geometric_criterium( m, geometric_criterium, geometric_ratio, debug_criterium_enhancement );
         }
-        
-        /// -------------------------------------------------------------------------------- ///
-        /// Critere d'amelioration sur l'estimateur de la construction des densites d'effort ///
-        /// -------------------------------------------------------------------------------- ///
+
+        /// Critere d'amelioration sur l'estimateur de la construction des densites d'effort
+        /// --------------------------------------------------------------------------------
         
         Vec<T> estimator_ratio;
         

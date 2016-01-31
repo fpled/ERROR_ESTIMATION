@@ -3,7 +3,7 @@
 
 struct Eta {
     template<class TE,class TM> void operator()( const TE &elem, TM &m ) const {
-        for (unsigned i=0;i<3;++i) {
+        for (unsigned i=0;i<TE::nb_nodes;++i) {
             PRINT( elem );
             PRINT( i ); // 0, 1 ou 2 pour un Triangle
             m.update_elem_children();

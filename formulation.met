@@ -65,7 +65,7 @@ admissible_field_base := "lagrange"
 
 # Enrichissement du degre de l'analyse elements finis p -> p+k pour la resolution des problemes locaux elementaires/par patch
 #----------------------------------------------------------------------------------------------------------------------------
-deg_k := 2
+deg_k := 3
 
 # Choix de la technique d'integration : formal, gauss_num
 #--------------------------------------------------------
@@ -122,6 +122,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     theta_elem_EET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}}^2" )
     theta_elem_SPET := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}}^2" )
     theta_elem_EESPT := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}}^2" )
+    theta_nodal := Variable( interpolation="nodal", interpolation_base=base, default_value=0, unit="1", tex_name = "{\\theta^{\\text{nodal}}}^2" )
     discretization_error := Variable( interpolation="global", default_value=0, unit="1", tex_name = "e_{\\text{dis}}" )
     discretization_error_elem := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{e_{\\text{dis}}^{\\text{elem}}}^2" )
     eff_index_EET := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\eta" )
@@ -140,10 +141,9 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     pre_epsilon := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="1", tex_name = "\\tilde{\\epsilon}" )
     pre_sigma := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\tilde{\\sigma}" )
 
-    cuts_refinement := Variable[[dim]]( interpolation="nodal", interpolation_base=base, default_value=0, unit="", tex_name = "cuts" )
-    phi_cut := Variable( interpolation="nodal", interpolation_base=base, default_value=0, unit="", tex_name = "\\phi_{\\text{cut}}" )
-    phi_SIF_crown_1 := Variable( interpolation="nodal", interpolation_base=base, default_value=0, unit="", tex_name = "\\phi_{\\text{crown} 1}^{\\text{SIF}}" )
-    phi_SIF_crown_2 := Variable( interpolation="nodal", interpolation_base=base, default_value=0, unit="", tex_name = "\\phi_{\\text{crown} 2}^{\\text{SIF}}" )
+    phi_domain := Variable( interpolation="nodal", interpolation_base=base, default_value=0, unit="", tex_name = "\\phi_{\\text{domain}}" )
+    phi_crown_int := Variable( interpolation="nodal", interpolation_base=base, default_value=0, unit="", tex_name = "\\phi^{\\text{int}}_{\\text{crown}}" )
+    phi_crown_ext := Variable( interpolation="nodal", interpolation_base=base, default_value=0, unit="", tex_name = "\\phi^{\\text{ext}}_{\\text{crown}}" )
 
     phi_local_improvement_steklov := Variable( interpolation="global", default_value=0, unit="", tex_name = "\\phi_{\\text{steklov}}" )
     phi_local_improvement_rayleigh := Variable( interpolation="global", default_value=0, unit="", tex_name = "\\phi_{\\text{rayleigh}}" )
@@ -256,10 +256,10 @@ formList := [ FormulationElasticity ]
 # Liste d'elements
 #-----------------
 #elemList := [ Triangle ]
-#elemList := [ Triangle, Quad ]
+elemList := [ Triangle, Quad ]
 #elemList := [ Triangle, Tetra ]
 #elemList := [ Tetra ]
-elemList := [ Hexa ]
+#elemList := [ Tetra, Hexa ]
 
 # Liste de fonctions
 #-------------------

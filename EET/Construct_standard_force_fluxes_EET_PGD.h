@@ -92,16 +92,13 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     if ( debug_method ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "nb d'inconnues associees au noeud " << i << " dans la direction " << d << " = " << nb_unk[ i ][ d ] << endl;
+                cout << "nb d'inconnues associees au noeud " << i << " dans la direction " << d << " = " << nb_unk[ i ][ d ] << endl << endl;
             }
-            cout << endl << endl;
         }
-        cout << endl;
         for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "indice de debut de ligne de la face " << k << " dans la direction " << d << " dans les vecteurs b[ noeud connecte a la face " << k << " ][ " << d << " ] et de debut de colonne dans les matrices B[ noeud connecte a la face " << k << " ][ " << d << " ] = " << face_ind[ k ][ d ] << endl;
+                cout << "indice de debut de ligne de la face " << k << " dans la direction " << d << " dans les vecteurs b[ noeud connecte a la face " << k << " ][ " << d << " ] et de debut de colonne dans les matrices B[ noeud connecte a la face " << k << " ][ " << d << " ] = " << face_ind[ k ][ d ] << endl << endl;
             }
-            cout << endl << endl;
         }
     }
 
@@ -132,16 +129,13 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
     if ( debug_method ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "nb d'equations associees au noeud " << i << " dans la direction " << d << " = " << nb_eq[ i ][ d ] << endl;
+                cout << "nb d'equations associees au noeud " << i << " dans la direction " << d << " = " << nb_eq[ i ][ d ] << endl << endl;
             }
-            cout << endl << endl;
         }
-        cout << endl;
         for (unsigned n=0;n<m.elem_list.size();++n) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "indice de debut de ligne de l'element " << n << " dans la direction " << d << " dans les vecteurs r[ noeud connecte a l'element " << n << " ][ " << d << " ] et dans les matrices B[ noeud connecte a l'element " << n << " ][ " << d << " ] = " << elem_ind[ n ][ d ] << endl;
+                cout << "indice de debut de ligne de l'element " << n << " dans la direction " << d << " dans les vecteurs r[ noeud connecte a l'element " << n << " ][ " << d << " ] et dans les matrices B[ noeud connecte a l'element " << n << " ][ " << d << " ] = " << elem_ind[ n ][ d ] << endl << endl;
             }
-            cout << endl << endl;
         }
     }
 
@@ -173,7 +167,7 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
             for (unsigned d=0;d<dim;++d) {
                 cout << "dimension de la matrice B associe au noeud " << i << " dans la direction " << d << " = ( " << nb_eq[ i ][ d ] << ", " << nb_unk[ i ][ d ] << " )" << endl;
                 cout << "matrice B associe au noeud " << i << " dans la direction " << d << " =" << endl;
-                cout << B[ i ][ d ] << endl << endl;
+                cout << B[ i ][ d ] << endl;
             }
         }
     }
@@ -291,7 +285,7 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
                         }
                     }
                 }
-                cout << endl << endl;
+                cout << endl;
             }
         }
     }
@@ -326,7 +320,7 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
                 if ( node_type[ i ][ d ] == 2 or node_type[ i ][ d ] == 12 ) {
                     cout << "dimension de la matrice C associe au noeud " << i << " dans la direction " << d << " = ( " << nb_eq_imp[ i ][ d ] << ", " << nb_unk[ i ][ d ] << " )" << endl;
                     cout << "matrice C associe au noeud " << i << " dans la direction " << d << " =" << endl;
-                    cout << C[ i ][ d ] << endl << endl;
+                    cout << C[ i ][ d ] << endl;
                 }
             }
         }
@@ -541,7 +535,7 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
                 if ( minimisation[ i ][ d ] ) {
                     cout << "dimension de la matrice de minimisation M associee au noeud " << i << " dans la direction " << d << " = ( " << nb_unk[ i ][ d ] << ", " << nb_unk[ i ][ d ] << " )" << endl;
                     cout << "matrice M associe au noeud " << i << " dans la direction " << d << " =" << endl;
-                    cout << M[ i ][ d ] << endl << endl;
+                    cout << M[ i ][ d ] << endl;
                 }
             }
         }
@@ -749,7 +743,7 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
             for (unsigned d=0;d<dim;++d) {
                 cout << "dimension de la matrice K associee au noeud " << i << " dans la direction " << d << " = ( " << K[ i ][ d ].nb_rows() << ", " << K[ i ][ d ].nb_cols() << " ) "<< endl;
                 cout << "matrice K associe au noeud " << i << " dans la direction " << d << " =" << endl;
-                cout << K[ i ][ d ] << endl << endl;
+                cout << K[ i ][ d ] << endl;
             }
         }
         for (unsigned i=0;i<m.node_list.size();++i) {
@@ -975,7 +969,7 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
             for (unsigned d=0;d<dim;++d) {
                 cout << "dimension de la matrice K_face associe a la face " << k << " dans la direction " << d << " = ( " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << ", " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << " )" << endl;
                 cout << "matrice K_face associe a la face " << k << " dans la direction " << d << " =" << endl;
-                cout << K_face[ k ][ d ] << endl << endl;
+                cout << K_face[ k ][ d ] << endl;
             }
         }
     }
@@ -1031,7 +1025,7 @@ void construc_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, con
         for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
             cout << "dimension de la matrice des densites d'effort standard associee a la face " << k << " = ( " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << ", " << dim << " )" << endl;
             cout << "matrice des densites d'effort standard associee a la face " << k << " =" << endl;
-            cout << mat_force_fluxes[ k ] << endl << endl;
+            cout << mat_force_fluxes[ k ] << endl;
         }
     }
 

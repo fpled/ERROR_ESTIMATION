@@ -15,47 +15,67 @@
 using namespace LMT;
 using namespace std;
 
-template<class TM, unsigned n, class T,class DM> void set_field_alternativeontype( TM &m, const Number<n> &, const T &val, const DM &dm ) {}
+template<class TM, unsigned n, class T,class DM>
+void set_field_alternativeontype( TM &m, const Number<n> &, const T &val, const DM &dm ) {}
 
 /// Number<0> : champ global
 /// Number<1> : champ elementaire
 /// -----------------------------
-template<class TM, class T, class DM> void set_field_alternativeontype( TM &m, Number<0>, const T &val, const DM &dm ) {
+template<class TM, class T, class DM>
+void set_field_alternativeontype( TM &m, Number<0>, const T &val, const DM &dm ) {
     ExtractDM<DM> ed;
     ed( m ) = val;
 }
 
 template<class TM, class T, class DM> void set_field_alternativeontype( TM &m, Number<1>, const T &val, const DM &dm ) {
-    for (unsigned n=0;n<m.elem_list.size();++n) {
+    for (unsigned n=0;n<m.elem_list.size();++n)
         m.elem_list[n]->set_field( DM::name(), val );
-    }
 }
+
+//struct Set_Elem_Field {
+//    template<class TE, class T, class DM>
+//    void operator()( TE& elem, const T &val, const DM &dm ) const {
+//        ExtractDM<DM> ed;
+//        ed( elem ) = val;
+//    }
+//};
+
+//template<class TM, class T, class DM>
+//void set_field_alternativeontype( TM &m, Number<1>, const T &val, const DM &dm ) {
+//    apply( m.elem_list, Set_Elem_Field(), val, dm );
+//}
 
 /// Number<0> : champ global
 /// Number<1> : champ elementaire
 /// -----------------------------
-template<class TM, class TF, unsigned n1, unsigned n2> void calc_material_coefficients_alternativeontype( TM &m, TF &f, const Number<n1> &, const Number<n2> & );
+template<class TM, class TF, unsigned n1, unsigned n2>
+void calc_material_coefficients_alternativeontype( TM &m, TF &f, const Number<n1> &, const Number<n2> & );
 
-template<class TM, class TF> void calc_material_coefficients_alternativeontype( TM &m, TF &f, Number<0>, Number<0> ) {
+template<class TM, class TF>
+void calc_material_coefficients_alternativeontype( TM &m, TF &f, Number<0>, Number<0> ) {
     static const unsigned dim = TM::dim;
     calc_material_coefficients( m, f, Number<dim>() );
 }
 
 struct Calcul_Elem_Material_Coefficients {
-    template<class TE, class TM, class TF> void operator()( TE &elem, const TM &m, const TF &f ) const {
+    template<class TE, class TM, class TF>
+    void operator()( TE &elem, const TM &m, const TF &f ) const {
         calc_elem_material_coefficients( elem, m, f );
     }
 };
 
-template<class TM, class TF> void calc_material_coefficients_alternativeontype( TM &m, TF &f, Number<1>, Number<0> ) {
+template<class TM, class TF>
+void calc_material_coefficients_alternativeontype( TM &m, TF &f, Number<1>, Number<0> ) {
     apply( m.elem_list, Calcul_Elem_Material_Coefficients(), m, f );
 }
 
-template<class TM, class TF> void calc_material_coefficients_alternativeontype( TM &m, TF &f, Number<0>, Number<1> ) {
+template<class TM, class TF>
+void calc_material_coefficients_alternativeontype( TM &m, TF &f, Number<0>, Number<1> ) {
     apply( m.elem_list, Calcul_Elem_Material_Coefficients(), m, f );
 }
 
-template<class TM, class TF> void calc_material_coefficients_alternativeontype( TM &m, TF &f, Number<1>, Number<1> ) {
+template<class TM, class TF>
+void calc_material_coefficients_alternativeontype( TM &m, TF &f, Number<1>, Number<1> ) {
     apply( m.elem_list, Calcul_Elem_Material_Coefficients(), m, f );
 }
 
@@ -149,10 +169,8 @@ void set_material_properties( TF &f, TM &m, const string &structure ) {
 
         if ( structure.find("square") == string::npos or ( structure.find("square") != string::npos and structure.find("init") == string::npos ) ) {
             set_field_alternativeontype( m, Number< AreSameType< typename ExtractDM<young_DM>::ReturnType<TM>::T, void >::res >(), young, young_DM() );
-
             set_field_alternativeontype( m, Number< AreSameType< typename ExtractDM<poisson_DM>::ReturnType<TM>::T, void >::res >(), poisson, poisson_DM() );
         }
-
         calc_material_coefficients_alternativeontype( m, f, Number< AreSameType< typename ExtractDM<young_DM>::ReturnType<TM>::T, void >::res >(), Number< AreSameType< typename ExtractDM<poisson_DM>::ReturnType<TM>::T, void >::res >() );
 
         set_field_alternativeontype( m, Number< AreSameType< typename ExtractDM<density_DM>::ReturnType<TM>::T, void >::res >(), density, density_DM() );

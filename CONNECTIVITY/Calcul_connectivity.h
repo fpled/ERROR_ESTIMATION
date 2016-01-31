@@ -27,6 +27,7 @@ void construct_child( TM &m, Vec<unsigned> &child_cpt, Vec< Vec<unsigned> > &chi
     child_list.resize( m.elem_list.size() );
 
     m.update_skin();
+    m.update_elem_children();
     apply( m.elem_list, Counter_Child(), m, child_cpt, child_list ); // child_cpt[ n ] contient le nb de faces connectees a l'element n du maillage // child_list[ n ] contient le numero des faces connectees a l'element n du maillage
 
     if ( debug_mesh ) {
@@ -265,9 +266,8 @@ void construct_face_type( TM &m, const TF &f, Vec< Vec<unsigned> > &face_type, c
         cout << "Construction du vecteur de vecteurs face_type" << endl << endl;
         for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "type de la face " << k << " dans la direction " << d << " = " << face_type[ k ][ d ] << endl;
+                cout << "type de la face " << k << " dans la direction " << d << " = " << face_type[ k ][ d ] << endl << endl;
             }
-            cout << endl << endl;
         }
     }
 }
@@ -305,9 +305,8 @@ void construct_node_type( TM &m, const TF &f, const Vec< Vec<unsigned> > &face_t
         cout << "Construction du vecteur de vecteurs node_type" << endl << endl;
         for (unsigned i=0;i<m.node_list.size();++i) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "type du noeud " << i << " dans la direction " << d << " = " << node_type[ i ][ d ] << endl;
+                cout << "type du noeud " << i << " dans la direction " << d << " = " << node_type[ i ][ d ] << endl << endl;
             }
-            cout << endl << endl;
         }
     }
 }

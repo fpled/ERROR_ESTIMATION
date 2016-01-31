@@ -186,6 +186,7 @@ void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const strin
 /// ----------------------------------------
 template<class TM, class TF, class T, class Pvec>
 void calcul_interest_quantity( const TM &m, const TM &m_crown, const TF &f, const TF &f_crown, const string &pb, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re, T &I_h ) {
+
     I_h = 0.;
     
     static const unsigned dim = TM::dim;
@@ -261,6 +262,7 @@ void calcul_interest_quantity( const TM &m, const TM &m_crown, const TF &f, cons
 /// ----------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T, class TV, class TVV>
 void calcul_correction_interest_quantity( TM &m, TM &m_adjoint, const TF &f, const TF &f_adjoint, const string &interest_quantity, const string &method, const string &method_adjoint, const T &theta, const T &theta_adjoint, const TV &theta_elem_adjoint, const Vec<unsigned> &correspondance_elem_m_adjoint_to_elem_m, const TVV &dep_hat, const TVV &dep_adjoint_hat, const T &I_h, T &I_hh, const bool want_local_enrichment = false, const bool want_introduction_sigma_hat_m = true ) {
+
     I_hh = 0.;
     
     TicToc t;
@@ -534,7 +536,9 @@ void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF 
 /// ------------------------------------------------------------------
 template<class TM, class TF, class T, class Pvec>
 void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, const TF &f_adjoint, TF &f_adjoint_lambda_, const unsigned &deg_p, const string &method, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const T &theta_lambda_min, const T &theta_lambda_max, const T &h, const Pvec &domain_center, const Vec<T> &domain_length, const bool &spread_cut, const Vec< Vec<T> > &dep_hat, const Vec< Vec<T> > &dep_adjoint_hat, const string &integration_k, const unsigned &integration_nb_points, T &gamma, const bool debug_method = false, const bool debug_method_enhancement = false, const bool debug_error_estimate = false ) {
-    
+
+    gamma = 0.;
+
     static const unsigned dim = TM::dim;
     
     cout << "Calcul du terme gamma pour la technique " << local_improvement << endl << endl;
@@ -558,7 +562,7 @@ void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, cons
             for (unsigned i=0; i<integration_nb_points; ++i) {
                 T k = ( k_max - k_min ) * i / ( integration_nb_points - 1 ) + k_min;
                 TM m_lambda;
-                set_mesh_cut( m_lambda, m, shape, k, domain_length, domain_center, spread_cut );
+                set_mesh_domain( m_lambda, m, shape, k, domain_length, domain_center, spread_cut );
                 TF f_lambda( m_lambda );
                 T theta_k = 0.;
                 Vec< Vec<T> > dep_hat_lambda;
@@ -578,7 +582,7 @@ void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, cons
             for (unsigned n=0; n<poids.size(); ++n) {
                 T k = ( k_max - k_min ) * valeurs[ n ][ 0 ] + k_min;
                 TM m_lambda;
-                set_mesh_cut( m_lambda, m, shape, k, domain_length, domain_center, spread_cut );
+                set_mesh_domain( m_lambda, m, shape, k, domain_length, domain_center, spread_cut );
                 TF f_lambda( m_lambda );
                 T theta_k = 0.;
                 Vec< Vec<T> > dep_hat_lambda;
@@ -618,6 +622,7 @@ void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, cons
 /// -------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T>
 void calcul_correction_interest_quantity_lambda( const TM &m_lambda_min, const TM &m_adjoint_lambda_min, const TF &f_lambda_min, const TF &f_adjoint_lambda_min, const string &interest_quantity, const string &method, const string &method_adjoint, const Vec< Vec<T> > &dep_hat_lambda_min, const Vec< Vec<T> > &dep_adjoint_hat_lambda_min, T &I_hhh ) {
+
     I_hhh = 0.;
 
     cout << "----------------------------------------------------------------" << endl;

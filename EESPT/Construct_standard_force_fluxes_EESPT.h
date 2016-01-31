@@ -100,7 +100,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
                 cout << "indice de debut de ligne de la face " << k << " dans les matrices A[ noeud sommet connecte a la face " << k << " ] dans la direction " << d << " = " << face_ind[ k ][ d ] << endl;
             }
         }
-        cout << endl << endl;
+        cout << endl;
     }
 
     /// Reperage pour chaque element n et chaque direction d de l'indice de debut de colonne dans les matrices A[ j ][ d ] et de debut de ligne dans les vecteurs R[ j ][ d ] : vertex_nodal_ind[ n ][ d ]
@@ -128,16 +128,14 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     if ( debug_method ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "nb d'equations associees au noeud sommet " << j << " dans la direction " << d << " = " << nb_eq[ j ][ d ] << endl;
+                cout << "nb d'equations associees au noeud sommet " << j << " dans la direction " << d << " = " << nb_eq[ j ][ d ] << endl << endl;
             }
         }
-        cout << endl;
         for (unsigned n=0;n<m.elem_list.size();++n) {
             for (unsigned d=0;d<dim;++d) {
-                cout << "indice de debut de colonne de l'element " << n << " dans les matrices A[ noeud sommet connecte a l'element " << n << " dans la direction " << d << " ] = " << vertex_nodal_ind[ n ][ d ] << endl;
+                cout << "indice de debut de colonne de l'element " << n << " dans les matrices A[ noeud sommet connecte a l'element " << n << " dans la direction " << d << " ] = " << vertex_nodal_ind[ n ][ d ] << endl << endl;
             }
         }
-        cout << endl << endl;
     }
 
     /// Construction des matrices A[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
@@ -169,7 +167,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
             for (unsigned d=0;d<dim;++d) {
                 cout << "dimension de la matrice A associee au noeud sommet " << j << " dans la direction " << d << " = ( " << nb_unk[ j ][ d ] << ", " << nb_eq[ j ][ d ] << " )" << endl;
                 cout << "matrice A associee au noeud sommet " << j << " dans la direction " << d << " =" << endl;
-                cout << A[ j ][ d ] << endl << endl;
+                cout << A[ j ][ d ] << endl;
             }
         }
     }
@@ -355,7 +353,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
             for (unsigned d=0;d<dim;++d) {
                 cout << "dimension de la matrice A_tilde associee au noeud sommet " << j << " dans la direction " << d << " = ( " << nb_unk[ j ][ d ] << ", " << nb_eq_indep[ j ][ d ] << " )" << endl;
                 cout << "matrice A_tilde associee au noeud sommet " << j << " dans la direction " << d << " =" << endl;
-                cout << A_tilde[ j ][ d ] << endl << endl;
+                cout << A_tilde[ j ][ d ] << endl;
             }
         }
     }
@@ -466,7 +464,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
                 for (unsigned d=0;d<dim;++d) {
                     cout << "dimension de la matrice B associe a la face " << k << " dans la direction " << d << " = ( " << vertex_node_cpt_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << ", " << vertex_node_cpt_face[ k ] * m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << " )" << endl;
                     cout << "matrice B associe a la face " << k << " dans la direction " << d << " =" << endl;
-                    cout << B[ k ][ d ] << endl << endl;
+                    cout << B[ k ][ d ] << endl;
                 }
             }
         }
@@ -658,7 +656,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
                 if ( minimisation[ j ][ d ] ) {
                     cout << "dimension de la matrice de minimisation M associee au noeud sommet " << j << " dans la direction " << d << " = ( " << nb_unk[ j ][ d ] << ", " << nb_unk[ j ][ d ] << " )" << endl;
                     cout << "matrice M associe au noeud sommet " << j << " dans la direction " << d << " =" << endl;
-                    cout << M[ j ][ d ] << endl << endl;
+                    cout << M[ j ][ d ] << endl;
                 }
             }
         }
@@ -731,7 +729,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
             for (unsigned d=0;d<dim;++d) {
                 cout << "dimension de la matrice K associee au noeud sommet " << j << " dans la direction " << d << " = ( " << K[ j ][ d ].nb_rows() << ", " << K[ j ][ d ].nb_cols() << " ) "<< endl;
                 cout << "matrice K associe au noeud sommet " << j << " dans la direction " << d << " =" << endl;
-                cout << K[ j ][ d ] << endl << endl;
+                cout << K[ j ][ d ] << endl;
             }
         }
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
@@ -946,7 +944,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
             cout << "dimension de la matrice des densites d'effort associee a la face " << k << " = ( " << m.sub_mesh(Number<1>()).elem_list[k]->nb_nodes_virtual() << ", " << dim << " )" << endl;
             cout << "matrice des densites d'effort associee a la face " << k << " =" << endl;
-            cout << mat_force_fluxes[ k ] << endl << endl;
+            cout << mat_force_fluxes[ k ] << endl;
         }
     }
 

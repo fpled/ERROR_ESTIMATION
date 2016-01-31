@@ -131,7 +131,7 @@ def check_elem_eq_force_fluxes( list_f, rep )
                 file_ <<< "        {"
                 file_ <<< "        typedef typename TM::template SubMesh<1>::T TSubMesh;"
                 file_ <<< "        typedef typename TSubMesh::template TElem<typename TypeChildrenElement<typename Element<$(e->name),TN,TNG,TD,NET>::NE,1,$( face->num_child )>::T>::TE TCH;"
-                file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem,Number<1>())[ $( face->num_child ) ] ) );"
+                file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem, Number<1>())[ $( face->num_child ) ] ) );"
                 file_ <<< "        if ( skin_elem.phi_surf_handbook_zone_12 and elem.phi_elem_handbook_zone_1 ) {"
                 res_force_handbook := Vec[ Op, e->dim ]()
                 res_torque_handbook_dim_2 := Op( 0 )

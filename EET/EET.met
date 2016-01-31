@@ -162,7 +162,7 @@ def calc_nodal_vector_r( list_f, rep )
                 file_ <<< "        {"
                 file_ <<< "        typedef typename TM::template SubMesh<1>::T TSubMesh;"
                 file_ <<< "        typedef typename TSubMesh::template TElem<typename TypeChildrenElement<typename Element<$(e->name),TN,TNG,TD,NET>::NE,1,$( face->num_child )>::T>::TE TCH;"
-                file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem,Number<1>())[ $( face->num_child ) ] ) );"
+                file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem, Number<1>())[ $( face->num_child ) ] ) );"
                 file_ <<< "        if ( skin_elem.phi_surf_handbook_zone_12 and elem.phi_elem_handbook_zone_1 ) {"
                 f_surf_handbook := e->projection_on_child_elem( child_cast(f)->sigma_handbook.expr, face ) * face->normal
                 f_surf_handbook_linear_part := e->projection_on_shape_functions_with_equilibrium( f_surf_handbook, degre_poly_handbook, face, force_fluxes_base )
@@ -291,7 +291,7 @@ def calc_nodal_vector_q( list_f, rep )
                 file_ <<< "    if ( face_type[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ] == 2 ) {"
                 file_ <<< "        typedef typename TM::template SubMesh<1>::T TSubMesh;"
                 file_ <<< "        typedef typename TSubMesh::template TElem<typename TypeChildrenElement<typename Element<$(e->name),TN,TNG,TD,NET>::NE,1,$( face->num_child )>::T>::TE TCH;"
-                file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem,Number<1>())[ $( face->num_child ) ] ) );"
+                file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem, Number<1>())[ $( face->num_child ) ] ) );"
                 for n in 0 .. face->nb_nodes
                     file_ <<< "        ind_in_node_list_face = find_with_index( node_list_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ] == elem.node( $( face->node_numbers_to_node_numbers_in_parent_cpp[ n ] ) )->number );"
                     file_ <<< "        ind_in_face_list_node = find_with_index( face_list_node[ elem.node( $( face->node_numbers_to_node_numbers_in_parent_cpp[ n ] ) )->number ] == m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number );"
@@ -478,7 +478,7 @@ def calc_nodal_vector_b( list_f, rep )
                     # file_ <<< "        std::cout << \"type face direction \" << $d << \": \"<< face_type[ m.get_children_of( elem, Number<1>() )[ 2 ]->number ][ 1 ] << std::endl;"
                     file_ <<< "        typedef typename TM::template SubMesh<1>::T TSubMesh;"
                     file_ <<< "        typedef typename TSubMesh::template TElem<typename TypeChildrenElement<typename Element<$(e->name),TN,TNG,TD,NET>::NE,1,$( face->num_child )>::T>::TE TCH;"
-                    file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem,Number<1>())[ $( face->num_child ) ] ) );"
+                    file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem, Number<1>())[ $( face->num_child ) ] ) );"
                     if want_local_enrichment
                         file_ <<< "        if ( pb == \"adjoint\" and want_local_enrichment and skin_elem.phi_surf_handbook_zone_12 and elem.phi_elem_handbook_zone_1 ) {"
                         if integration_type == "gauss_num" and integration_lang == "cpp"

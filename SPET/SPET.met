@@ -338,7 +338,7 @@ def calc_vertex_nodal_vector_F( list_f, rep )
                     file_ <<< "    {"
                     file_ <<< "    typedef typename TM::template SubMesh<1>::T TSubMesh;"
                     file_ <<< "    typedef typename TSubMesh::template TElem<typename TypeChildrenElement<typename Element<$(e->name),TN,TNG,TD,NET>::NE,1,$( face->num_child )>::T>::TE TCH;"
-                    file_ <<< "    TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem,Number<1>())[ $( face->num_child ) ] ) );"
+                    file_ <<< "    TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem, Number<1>())[ $( face->num_child ) ] ) );"
                     f_surf_handbook_face := - e->projection_on_child_elem( child_cast(f)->sigma_handbook.expr, face ) * face->normal
                     for d in 0 .. face->dim
                         residual_face := Op( 0 )

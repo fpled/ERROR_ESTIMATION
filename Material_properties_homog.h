@@ -18,28 +18,34 @@ using namespace std;
 /// Number<0> : champ global
 /// Number<1> : champ elementaire
 /// -----------------------------
-template<class TM, class TF, unsigned n1, unsigned n2> void calc_material_coefficients_init_alternativeontype( TM &m, TF &f, const Number<n1> &, const Number<n2> & );
+template<class TM, class TF, unsigned n1, unsigned n2>
+void calc_material_coefficients_init_alternativeontype( TM &m, TF &f, const Number<n1> &, const Number<n2> & );
 
-template<class TM, class TF> void calc_material_coefficients_init_alternativeontype( TM &m, TF &f, Number<0>, Number<0> ) {
+template<class TM, class TF>
+void calc_material_coefficients_init_alternativeontype( TM &m, TF &f, Number<0>, Number<0> ) {
     static const unsigned dim = TM::dim;
     calc_material_coefficients_init( m, f, Number<dim>() );
 }
 
 struct Calcul_Elem_Material_Coefficients_Init {
-    template<class TE, class TM, class TF> void operator()( TE &elem, const TM &m, const TF &f ) const {
+    template<class TE, class TM, class TF>
+    void operator()( TE &elem, const TM &m, const TF &f ) const {
         calc_elem_material_coefficients_init( elem, m, f );
     }
 };
 
-template<class TM, class TF> void calc_material_coefficients_init_alternativeontype( TM &m, TF &f, Number<1>, Number<0> ) {
+template<class TM, class TF>
+void calc_material_coefficients_init_alternativeontype( TM &m, TF &f, Number<1>, Number<0> ) {
     apply( m.elem_list, Calcul_Elem_Material_Coefficients_Init(), m, f );
 }
 
-template<class TM, class TF> void calc_material_coefficients_init_alternativeontype( TM &m, TF &f, Number<0>, Number<1> ) {
+template<class TM, class TF>
+void calc_material_coefficients_init_alternativeontype( TM &m, TF &f, Number<0>, Number<1> ) {
     apply( m.elem_list, Calcul_Elem_Material_Coefficients_Init(), m, f );
 }
 
-template<class TM, class TF> void calc_material_coefficients_init_alternativeontype( TM &m, TF &f, Number<1>, Number<1> ) {
+template<class TM, class TF>
+void calc_material_coefficients_init_alternativeontype( TM &m, TF &f, Number<1>, Number<1> ) {
     apply( m.elem_list, Calcul_Elem_Material_Coefficients_Init(), m, f );
 }
 

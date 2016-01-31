@@ -80,7 +80,7 @@ void partition_elem_list( TM &m, const string &structure, Vec< Vec<unsigned> > &
 /// Construction et resolution du pb en espace
 /// ------------------------------------------
 template<class TM, class TF, class T, class TV, class TVV, class TMATVV, class TTVVV, class TTVV>
-void solve_space( TM &m, TF &f, const unsigned &n, const TV &F_space, const TVV &F_param, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVVV &dep_param, TTVV &dep_space, const bool want_iterative_solver = false, const T iterative_criterium = 1e-3, const bool want_normalization = false ) {
+void solve_space( TM &m, TF &f, const unsigned &n, const TV &F_space, const TVV &F_param, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVVV &dep_param, TTVV &dep_space, const bool want_normalization = false ) {
 
     /// Construction du pb en espace
     /// ----------------------------
@@ -118,10 +118,7 @@ void solve_space( TM &m, TF &f, const unsigned &n, const TV &F_space, const TVV 
     
     /// Resolution du pb en espace
     /// --------------------------
-    if ( want_iterative_solver == 0 )
-        f.solve_system();
-    else
-        f.solve_system( iterative_criterium );
+    f.solve_system();
     f.update_variables();
     f.call_after_solve();
     
@@ -341,7 +338,7 @@ struct Construct_Space_Pb {
 /// Verification de la solution PGD pour un jeu connu de parametres
 /// ---------------------------------------------------------------
 template<class TM_param, class TM, class TF, class T, class TVV, class TTVVV, class TTVV>
-void check_PGD( TM_param &m_param, TM &m, TF &f,  const string &pb, const string &structure, const string &loading, const string &mesh_size, const Vec< Vec<unsigned> > &elem_group, const unsigned &nb_vals, const TVV &vals_param, const unsigned &nb_modes, const TTVV &dep_space, const TTVVV &dep_param, const bool want_iterative_solver = false, const T iterative_criterium = 1e-3, const bool display_pvd = false, const bool save_pvd = false ) {
+void check_PGD( TM_param &m_param, TM &m, TF &f,  const string &pb, const string &structure, const string &loading, const string &mesh_size, const Vec< Vec<unsigned> > &elem_group, const unsigned &nb_vals, const TVV &vals_param, const unsigned &nb_modes, const TTVV &dep_space, const TTVVV &dep_param, const bool display_pvd = false, const bool save_pvd = false ) {
 
     string prefix = define_prefix( m, pb, structure, loading, mesh_size );
 
@@ -362,10 +359,9 @@ void check_PGD( TM_param &m_param, TM &m, TF &f,  const string &pb, const string
         }
         for (unsigned j=0;j<elem_group.back().size();++j)
             m.elem_list[ elem_group.back()[j] ]->set_field( "alpha", 1. );
-        if ( want_iterative_solver == 0 )
-            f.solve();
-        else
-            f.solve( iterative_criterium );
+
+        f.solve();
+
         if ( display_pvd or save_pvd ) {
             string prefix_ = prefix + "_space_verif_REF";
             for (unsigned p=0;p<elem_group.size()-1;++p)

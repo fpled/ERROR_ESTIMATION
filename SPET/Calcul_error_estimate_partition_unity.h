@@ -151,7 +151,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
             cout << "dimension de la matrice K associee au noeud sommet " << j << " = ( " << nb_points_patch[ j ] * dim << ", " << nb_points_patch[ j ] * dim << " )" << endl;
             cout << "matrice K associee au noeud sommet " << j << " =" << endl;
-            cout << K[ j ] << endl << endl;
+            cout << K[ j ] << endl;
         }
     }
     

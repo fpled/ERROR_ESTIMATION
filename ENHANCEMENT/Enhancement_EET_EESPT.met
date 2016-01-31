@@ -701,7 +701,7 @@ def calc_glob_vector_q_enh( list_f, rep )
                 file_ <<< "        if ( face_type[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ] == 2 ) {"
                 file_ <<< "            typedef typename TM::template SubMesh<1>::T TSubMesh;"
                 file_ <<< "            typedef typename TSubMesh::template TElem<typename TypeChildrenElement<typename Element<$(e->name),TN,TNG,TD,NET>::NE,1,$( face->num_child )>::T>::TE TCH;"
-                file_ <<< "            TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem,Number<1>())[ $( face->num_child ) ] ) );"
+                file_ <<< "            TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem, Number<1>())[ $( face->num_child ) ] ) );"
                 f_surf := child_cast(f)->f_surf.expr[ d ]
                 cw := CodeWriterAlt( "T" )
                 for n in 0 .. face->nb_nodes

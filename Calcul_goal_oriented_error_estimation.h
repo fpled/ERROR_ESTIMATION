@@ -463,18 +463,18 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
     /// Maillages extraits du maillage direct autour de la quantite d'interet
     /// ---------------------------------------------------------------------
     if ( local_improvement == "steklov" ) {
-        set_mesh_cut( m_lambda_min, m, shape, k_min, domain_length, domain_center, spread_cut );
-        set_mesh_cut( m_lambda_max, m, shape, k_max, domain_length, domain_center, spread_cut );
+        set_mesh_domain( m_lambda_min, m, shape, k_min, domain_length, domain_center, spread_cut );
+        set_mesh_domain( m_lambda_max, m, shape, k_max, domain_length, domain_center, spread_cut );
     }
     else if ( local_improvement == "rayleigh" )
-        set_mesh_cut( m_lambda_opt, m, shape, k_opt, domain_length, domain_center, spread_cut );
+        set_mesh_domain( m_lambda_opt, m, shape, k_opt, domain_length, domain_center, spread_cut );
     
     /// Maillages extraits du maillage adjoint autour de la quantite d'interet
     /// ----------------------------------------------------------------------
     if ( local_improvement == "steklov" )
-        set_mesh_cut( m_adjoint_lambda_min, m_adjoint, shape, k_min, domain_length, domain_center, spread_cut );
+        set_mesh_domain( m_adjoint_lambda_min, m_adjoint, shape, k_min, domain_length, domain_center, spread_cut );
     else if ( local_improvement == "rayleigh" )
-        set_mesh_cut( m_adjoint_lambda_opt, m_adjoint, shape, k_opt, domain_length, domain_center, spread_cut );
+        set_mesh_domain( m_adjoint_lambda_opt, m_adjoint, shape, k_opt, domain_length, domain_center, spread_cut );
 
     /// Formulation des pbs extraits associes aux pbs direct/adjoint
     /// ------------------------------------------------------------
@@ -496,17 +496,11 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
         cout << "Calcul d'un estimateur d'erreur globale sur la structure extraite associee aux pbs direct/adjoint de type " << shape << " pour le parametre lambda = " << k_opt << endl;
     cout << endl;
     
-    T theta_lambda_min = 0.;
-    T theta_lambda_max = 0.;
-    T theta_adjoint_lambda_min = 0.;
-
-    T theta_lambda_opt = 0.;
-    T theta_adjoint_lambda_opt = 0.;
+    T theta_lambda_min, theta_lambda_max, theta_adjoint_lambda_min;
+    T theta_lambda_opt, theta_adjoint_lambda_opt;
     
     const bool want_display_theta_lambda = 1;
-    Vec< Vec<T> > dep_hat_lambda_min;
-    Vec< Vec<T> > dep_hat_lambda_max;
-    Vec< Vec<T> > dep_hat_lambda_opt;
+    Vec< Vec<T> > dep_hat_lambda_min, dep_hat_lambda_max, dep_hat_lambda_opt;
     
     if ( local_improvement == "steklov" ) {
         dep_hat_lambda_min.resize( m_lambda_min.elem_list.size() );
@@ -519,8 +513,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
         calcul_error_estimate_lambda( m, m_lambda_opt, f, f_lambda_opt, "direct", method, shape, k_opt, theta_lambda_opt, dep_hat, dep_hat_lambda_opt, want_display_theta_lambda, debug_error_estimate, debug_method, debug_method_enhancement );
     }
     
-    Vec< Vec<T> > dep_adjoint_hat_lambda_min;
-    Vec< Vec<T> > dep_adjoint_hat_lambda_opt;
+    Vec< Vec<T> > dep_adjoint_hat_lambda_min, dep_adjoint_hat_lambda_opt;
 
     if ( local_improvement == "steklov" ) {
         dep_adjoint_hat_lambda_min.resize( m_adjoint_lambda_min.elem_list.size() );
@@ -531,10 +524,10 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
         calcul_error_estimate_lambda( m_adjoint, m_adjoint_lambda_opt, f_adjoint, f_adjoint_lambda_opt, "adjoint", method, shape, k_opt, theta_adjoint_lambda_opt, dep_adjoint_hat, dep_adjoint_hat_lambda_opt, want_display_theta_lambda, debug_error_estimate, debug_method, debug_method_enhancement );
     }
     
-    T gamma = 0.;
+    T gamma;
     calcul_gamma( m, m_adjoint, m_adjoint_lambda_opt, f, f_adjoint, f_adjoint_lambda_opt, deg_p, method, local_improvement, shape, k_min, k_max, k_opt, theta_lambda_min, theta_lambda_max, h, domain_center, domain_length, spread_cut, dep_hat, dep_adjoint_hat, integration_k, integration_nb_points, gamma, debug_method, debug_method_enhancement, debug_error_estimate );
     
-    T I_hhh = 0.;
+    T I_hhh;
     if ( local_improvement == "steklov" ) {
         calcul_correction_interest_quantity_lambda( m_lambda_min, m_adjoint_lambda_min, f_lambda_min, f_adjoint_lambda_min, interest_quantity, method, method_adjoint, dep_hat_lambda_min, dep_adjoint_hat_lambda_min, I_hhh );
         if ( want_introduction_sigma_hat_m == 0 )
@@ -554,9 +547,9 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
             cout << "    = " << chi << endl << endl;
         }
         else {
-            chi = theta_adjoint_lambda_min * sqrt( pow( k_min / k_max, 1/h ) * pow( theta + theta_lambda_max, 2 ) / 4 + gamma ) + theta / 2 * sqrt( pow( theta_adjoint, 2 ) - pow( theta_adjoint_lambda_min, 2 ) );
-            cout << "chi = " << theta_adjoint_lambda_min << " * ( " << pow( k_min / k_max, 1/h ) * pow( theta + theta_lambda_max, 2 ) / 4 << " + " << gamma << " )^1/2 + " << theta / 2 << " * ( " << sqrt( pow( theta_adjoint, 2 ) - pow( theta_adjoint_lambda_min, 2 ) ) << " )" << endl;
-            cout << "    = " << theta_adjoint_lambda_min * sqrt( pow( k_min / k_max, 1/h ) * pow( theta + theta_lambda_max, 2 ) / 4 + gamma ) << " + " << theta / 2 * sqrt( pow( theta_adjoint, 2 ) - pow( theta_adjoint_lambda_min, 2 ) ) << endl;
+            chi = theta_adjoint_lambda_min * sqrt( pow( k_min / k_max, 1/h ) * pow( theta + theta_lambda_max, 2 ) / 4 + gamma ) + theta * sqrt( pow( theta_adjoint, 2 ) - pow( theta_adjoint_lambda_min, 2 ) ) / 2;
+            cout << "chi = " << theta_adjoint_lambda_min << " * ( " << pow( k_min / k_max, 1/h ) * pow( theta + theta_lambda_max, 2 ) / 4 << " + " << gamma << " )^1/2 + 1/2 * " << theta << " * ( " << sqrt( pow( theta_adjoint, 2 ) - pow( theta_adjoint_lambda_min, 2 ) ) << " )" << endl;
+            cout << "    = " << theta_adjoint_lambda_min * sqrt( pow( k_min / k_max, 1/h ) * pow( theta + theta_lambda_max, 2 ) / 4 + gamma ) << " + " << theta * sqrt( pow( theta_adjoint, 2 ) - pow( theta_adjoint_lambda_min, 2 ) ) / 2 << endl;
             cout << "    = " << chi << endl << endl;
         }
         T chi_inf = I_h + I_hh + I_hhh - chi;
@@ -577,6 +570,9 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
             cout << "zeta = " << theta / 2 << " * ( " << pow( gamma, 2 ) << " + " << pow( theta_adjoint, 2 ) - pow( theta_adjoint_lambda_opt, 2 ) << " )^1/2 + " << theta_lambda_opt / 2 << " * ( " << gamma << " + " << theta_adjoint_lambda_opt << " )" << endl;
             cout << "     = " << theta / 2 * sqrt( pow( gamma, 2 ) + pow( theta_adjoint, 2 ) - pow( theta_adjoint_lambda_opt, 2 ) ) << " + " << theta_lambda_opt / 2 * ( gamma + theta_adjoint_lambda_opt ) << endl;
             cout << "     = "<< zeta << endl << endl;
+        }
+        else {
+            cerr << "TODO..." << endl << endl;
         }
         T zeta_inf = I_h + I_hh - zeta;
         T zeta_sup = I_h + I_hh + zeta;
