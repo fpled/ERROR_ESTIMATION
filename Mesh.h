@@ -21,6 +21,9 @@
 #include "LMT/include/mesh/read_vtk.h" // sert a definir la fonction read_vtk() pour charger un maillage a partir d'un fichier .vtk
 #include "LMT/include/mesh/remove_lonely_nodes.h" // sert a retirer les noeuds seuls d'un maillage
 #include "LMT/include/mesh/refinement.h" // sert a raffiner un maillage selon un critere donne
+#include "LMT/include/mesh/replace_Quad_by_Triangle.h" // sert a retirer tous les Quad d'un maillage et les remplacer par des Triangle
+#include "LMT/include/mesh/replace_Hexa_by_Tetra.h" // sert a retirer tous les Hexa d'un maillage et les remplacer par des Tetra
+#include "LMT/include/mesh/replace_Wedge_by_Tetra.h" // sert a retirer tous les Wedge d'un maillage et les remplacer par des Tetra
 #include "LMT/include/util/Hdf.h" // sert a lire des donnees a partir d'un fichier .h5 ou .hdf5
 #include "LMT/include/containers/Tens3.h"
 #include "CONNECTIVITY/Calcul_connectivity.h"
@@ -95,8 +98,8 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
                 }
                 else if ( mesh_size == "fine" ) {
                     if ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) {
-                        read_msh_2( m, "MESH_GMSH/PLATE_HOLE_2D/plate_hole_fine_Triangle.msh" );
-//                        read_avs( m, "MESH_AVS/PLATE_HOLE_2D/plate_hole_fine_Triangle_Quad.avs" );
+//                        read_msh_2( m, "MESH_GMSH/PLATE_HOLE_2D/plate_hole_fine_Triangle.msh" );
+                        read_avs( m, "MESH_AVS/PLATE_HOLE_2D/plate_hole_fine_Triangle_Quad.avs" );
                     }
                     else {
                         read_vtu( m, "MESH_GMSH/PLATE_HOLE_2D/plate_hole_fine_Triangle_direct_global_local_discretization_error.vtu" );

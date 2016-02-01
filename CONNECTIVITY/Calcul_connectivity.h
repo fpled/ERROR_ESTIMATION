@@ -316,62 +316,60 @@ void construct_node_type( TM &m, const TF &f, const Vec< Vec<unsigned> > &face_t
 template<class TM, class TF>
 void display_mesh_connectivity( TM &m, const TF &f, const bool debug_mesh = false ) {
 
-    if ( debug_mesh ) {
-        cout << "----------------------------------------------------" << endl;
-        cout << "Informations relatives a la connectivite du maillage" << endl;
-        cout << "----------------------------------------------------" << endl << endl;
-        Vec<unsigned> child_cpt;
-        Vec< Vec<unsigned> > child_list;
-        construct_child( m, child_cpt, child_list, debug_mesh );
+    cout << "----------------------------------------------------" << endl;
+    cout << "Informations relatives a la connectivite du maillage" << endl;
+    cout << "----------------------------------------------------" << endl << endl;
+    Vec<unsigned> child_cpt;
+    Vec< Vec<unsigned> > child_list;
+    construct_child( m, child_cpt, child_list, debug_mesh );
 
-        Vec<unsigned> elem_cpt_node;
-        Vec< Vec<unsigned> > elem_list_node;
-        construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node, debug_mesh );
+    Vec<unsigned> elem_cpt_node;
+    Vec< Vec<unsigned> > elem_list_node;
+    construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node, debug_mesh );
 
-        Vec<unsigned> face_cpt_node;
-        Vec< Vec<unsigned> > face_list_node;
-        construct_faces_connected_to_node( m, face_cpt_node, face_list_node, debug_mesh );
+    Vec<unsigned> face_cpt_node;
+    Vec< Vec<unsigned> > face_list_node;
+    construct_faces_connected_to_node( m, face_cpt_node, face_list_node, debug_mesh );
 
-        Vec<unsigned> node_cpt_elem;
-        Vec< Vec<unsigned> > node_list_elem;
-        construct_nodes_connected_to_elem( m, node_cpt_elem, node_list_elem, debug_mesh );
+    Vec<unsigned> node_cpt_elem;
+    Vec< Vec<unsigned> > node_list_elem;
+    construct_nodes_connected_to_elem( m, node_cpt_elem, node_list_elem, debug_mesh );
 
-        Vec<unsigned> node_cpt_face;
-        Vec< Vec<unsigned> > node_list_face;
-        construct_nodes_connected_to_face( m, node_cpt_face, node_list_face, debug_mesh );
+    Vec<unsigned> node_cpt_face;
+    Vec< Vec<unsigned> > node_list_face;
+    construct_nodes_connected_to_face( m, node_cpt_face, node_list_face, debug_mesh );
 
-        Vec<bool> correspondance_node_to_vertex_node;
-        Vec<unsigned> connect_node_to_vertex_node;
-        unsigned nb_vertex_nodes = match_node_to_vertex_node( m, correspondance_node_to_vertex_node, connect_node_to_vertex_node, debug_mesh );
+    Vec<bool> correspondance_node_to_vertex_node;
+    Vec<unsigned> connect_node_to_vertex_node;
+    unsigned nb_vertex_nodes = match_node_to_vertex_node( m, correspondance_node_to_vertex_node, connect_node_to_vertex_node, debug_mesh );
 
-        Vec<unsigned> elem_cpt_vertex_node;
-        Vec< Vec<unsigned> > elem_list_vertex_node;
-        construct_elems_connected_to_vertex_node( m, nb_vertex_nodes, correspondance_node_to_vertex_node, connect_node_to_vertex_node, elem_cpt_vertex_node, elem_list_vertex_node, debug_mesh );
+    Vec<unsigned> elem_cpt_vertex_node;
+    Vec< Vec<unsigned> > elem_list_vertex_node;
+    construct_elems_connected_to_vertex_node( m, nb_vertex_nodes, correspondance_node_to_vertex_node, connect_node_to_vertex_node, elem_cpt_vertex_node, elem_list_vertex_node, debug_mesh );
 
-        Vec<unsigned> face_cpt_vertex_node;
-        Vec< Vec<unsigned> > face_list_vertex_node;
-        construct_faces_connected_to_vertex_node( m, nb_vertex_nodes, correspondance_node_to_vertex_node, connect_node_to_vertex_node, face_cpt_vertex_node, face_list_vertex_node, debug_mesh );
+    Vec<unsigned> face_cpt_vertex_node;
+    Vec< Vec<unsigned> > face_list_vertex_node;
+    construct_faces_connected_to_vertex_node( m, nb_vertex_nodes, correspondance_node_to_vertex_node, connect_node_to_vertex_node, face_cpt_vertex_node, face_list_vertex_node, debug_mesh );
 
-        Vec<unsigned> vertex_node_cpt_elem;
-        Vec< Vec<unsigned> > vertex_node_list_elem;
-        construct_vertex_nodes_connected_to_elem( m, correspondance_node_to_vertex_node, connect_node_to_vertex_node, vertex_node_cpt_elem, vertex_node_list_elem, debug_mesh );
+    Vec<unsigned> vertex_node_cpt_elem;
+    Vec< Vec<unsigned> > vertex_node_list_elem;
+    construct_vertex_nodes_connected_to_elem( m, correspondance_node_to_vertex_node, connect_node_to_vertex_node, vertex_node_cpt_elem, vertex_node_list_elem, debug_mesh );
 
-        Vec<unsigned> vertex_node_cpt_face;
-        Vec< Vec<unsigned> > vertex_node_list_face;
-        construct_vertex_nodes_connected_to_face( m, correspondance_node_to_vertex_node, connect_node_to_vertex_node, vertex_node_cpt_face, vertex_node_list_face, debug_mesh );
+    Vec<unsigned> vertex_node_cpt_face;
+    Vec< Vec<unsigned> > vertex_node_list_face;
+    construct_vertex_nodes_connected_to_face( m, correspondance_node_to_vertex_node, connect_node_to_vertex_node, vertex_node_cpt_face, vertex_node_list_face, debug_mesh );
 
-        Vec< Vec<unsigned> > face_type; // face_type[ k ][ d ] = 0 : face k interieur au domaine Omega dans la direction d
-                                        // face_type[ k ][ d ] = 1 : face k appartenant a un bord de Dirichlet delta_1_Omega dans la direction d
-                                        // face_type_dim[ k ][ d ] = 2 : face k appartenant a un bord de Neumann delta_2_Omega dans la direction d
-        construct_face_type( m, f, face_type, debug_mesh );
+    Vec< Vec<unsigned> > face_type; // face_type[ k ][ d ] = 0 : face k interieur au domaine Omega dans la direction d
+    // face_type[ k ][ d ] = 1 : face k appartenant a un bord de Dirichlet delta_1_Omega dans la direction d
+    // face_type_dim[ k ][ d ] = 2 : face k appartenant a un bord de Neumann delta_2_Omega dans la direction d
+    construct_face_type( m, f, face_type, debug_mesh );
 
-        Vec< Vec<unsigned> > node_type; // node_type[ i ][ d ] = 0 : noeud i interieur au domaine Omega dans la direction d
-                                        // node_type[ i ][ d ] = 1 : noeud i sur un bord de Dirichlet delta_1_Omega dans la direction d
-                                        // node_type[ i ][ d ] = 2 : noeud i sur un bord de Neumann delta_2_Omega dans la direction d
-                                        // node_type[ i ][ d ] = 12 : noeud i au bord entre delta_1_Omega et delat_2_Omega dans la direction d
-        construct_node_type( m, f, face_type, node_type, debug_mesh );
+    Vec< Vec<unsigned> > node_type; // node_type[ i ][ d ] = 0 : noeud i interieur au domaine Omega dans la direction d
+    // node_type[ i ][ d ] = 1 : noeud i sur un bord de Dirichlet delta_1_Omega dans la direction d
+    // node_type[ i ][ d ] = 2 : noeud i sur un bord de Neumann delta_2_Omega dans la direction d
+    // node_type[ i ][ d ] = 12 : noeud i au bord entre delta_1_Omega et delat_2_Omega dans la direction d
+    construct_node_type( m, f, face_type, node_type, debug_mesh );
 
-    }
 }
 
 #endif // Calcul_geometry_h

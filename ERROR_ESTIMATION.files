@@ -738,6 +738,7 @@ LMT/include/mesh/refinementdelaunay.h
 LMT/include/mesh/remove_doubles.h
 LMT/include/mesh/remove_lonely_nodes.h
 LMT/include/mesh/replace_Hexa_by_Tetra.h
+LMT/include/mesh/replace_Quad_by_Triangle.h
 LMT/include/mesh/replace_Wedge_by_Tetra.h
 LMT/include/mesh/sep_mesh.h
 LMT/include/mesh/SkinMeshCarac.h
@@ -1682,6 +1683,7 @@ TESTS/LMT/include/mesh/refinementdelaunay.h
 TESTS/LMT/include/mesh/remove_doubles.h
 TESTS/LMT/include/mesh/remove_lonely_nodes.h
 TESTS/LMT/include/mesh/replace_Hexa_by_Tetra.h
+TESTS/LMT/include/mesh/replace_Quad_by_Triangle.h
 TESTS/LMT/include/mesh/replace_Wedge_by_Tetra.h
 TESTS/LMT/include/mesh/sep_mesh.h
 TESTS/LMT/include/mesh/SkinMeshCarac.h
@@ -1800,9 +1802,6 @@ Material_properties.h
 Material_properties.met
 Material_properties_homog.h
 Mesh.h
-paraview.pvd
-paraview.vtu
-paraview_0_0.vtu
 SConstruct
 SConstruct_homog
 SConstruct_pgd

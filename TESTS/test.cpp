@@ -95,18 +95,6 @@ using namespace std;
 
 ////    cout << m.type_elements() << endl;
 
-//    TM m_ref = m;
-
-//    divide( m_ref );
-
-////    TF f_ref( m_ref );
-////    set_material_properties( f_ref, m_ref, structure );
-////    set_constraints( f_ref, m_ref, boundary_condition_D, "direct", structure, loading );
-////    set_load_conditions( m_ref, structure, loading, mesh_size );
-////    f_ref.solve();
-
-//    display( m_ref );
-
 //}
 
 /// ---------- ///
@@ -120,11 +108,14 @@ int main( int argc, char **argv ) {
     typedef TM::TNode::T T;
 
     TM m;
-//    m.add_node( TM::Pvec( 0, 1 ) );
+//    make_rect( m, Triangle(), Pvec( 0, 0 ), Pvec( 1., 1. ), Pvec( 20, 20 ) );
+//    make_rect( m, Quad(), Pvec( 0, 0 ), Pvec( 1., 1. ), Pvec( 20, 20 ) );
+//    make_rect( m, Tetra(), Pvec( 0, 0 ), Pvec( 1., 1. ), Pvec( 20, 20 ) );
+    make_rect( m, Hexa(), Pvec( 0, 0 ), Pvec( 1., 1. ), Pvec( 20, 20 ) );
+
 //    PRINT( generate( m.node_list, ExtractDM<pos_DM>() ) );
 //    PRINT( generate( m.node_list, ExtractDMi<pos_DM>( 0 ) ) );
 //    PRINT( generate( m.node_list, ExtractDMi<pos_DM>( 1 ) ) );
-    make_rect( m, Quad(), Pvec( 0, 0 ), Pvec( 1., 1. ), Pvec( 20, 20 ) );
 
     bool spread_cut = false;
 
@@ -146,9 +137,9 @@ int main( int argc, char **argv ) {
 //        m.node_list[i].theta_nodal = sin( std::sqrt( i ) * 5. );
 //    refinement_if_nodal_field_sup( m, ExtractDM< theta_nodal_DM >(), 0.75, spread_cut );
 
-    for( unsigned n = 0 ; n < m.elem_list.size(); ++n )
-        m.elem_list[n]->set_field( "theta_elem_EET", sin( std::sqrt( n ) * 5. ) );
-    refinement_if_elem_field_sup( m, ExtractDM< theta_elem_EET_DM >(), 0.75, spread_cut );
+//    for( unsigned n = 0 ; n < m.elem_list.size(); ++n )
+//        m.elem_list[n]->set_field( "theta_elem_EET", sin( std::sqrt( n ) * 5. ) );
+//    refinement_if_elem_field_sup( m, ExtractDM< theta_elem_EET_DM >(), 0.75, spread_cut );
 
 //    for( unsigned n = 0 ; n < m.elem_list.size(); ++n )
 //        m.elem_list[n]->set_field( "theta_elem_EET", sin( std::sqrt( n ) * 5. ) );
@@ -158,6 +149,10 @@ int main( int argc, char **argv ) {
 //    divide( m );
 
 //    divide_element( m, Vec<unsigned>( 5, 50, 80, 100, 200 ) );
+
+//    replace_Quad_by_Triangle( m );
+    replace_Hexa_by_Tetra( m );
+//    replace_Wedge_by_Tetra( m );
 
     display_mesh( m );
 

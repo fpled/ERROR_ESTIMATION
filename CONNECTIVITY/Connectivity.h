@@ -29,12 +29,12 @@ using namespace std;
 /// ------------------------------------------------------------------
 struct Counter_Child {
     template<class TE, class TM> void operator()( const TE &elem, const TM &m, Vec<unsigned> &cpt, Vec< Vec<unsigned> > &list ) const {
+//        PRINT( elem );
+//        PRINT( elem.number );
+//        PRINT( elem.num_in_elem_list );
+//        unsigned nb_children = NbChildrenElement<typename TE::NE,1>::res;
+//        PRINT( nb_children );
         cpt[ elem.number ] = NbChildrenElement<typename TE::NE,1>::res;
-        PRINT( elem );
-        PRINT( elem.number );
-        PRINT( elem.num_in_elem_list );
-        unsigned nb_children = NbChildrenElement<typename TE::NE,1>::res;
-        PRINT( nb_children );
         for (unsigned k=0;k<NbChildrenElement<typename TE::NE,1>::res;++k) {
             list[ elem.number ].push_back( m.get_children_of( elem, Number<1>() )[ k ]->number );
         }
