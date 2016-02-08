@@ -330,6 +330,7 @@ struct Construct_Elem_List_Ref {
 /// -------------------------------------------------------------------------------------------------
 struct Construct_Node_Ref {
     template<class TN, class TM> void operator()( const TN &node, TM &m, const unsigned &node_number, unsigned &node_number_ref ) const {
+//        node_number_ref = m.poin( node.pos );
         if ( node.pos == m.node_list[ node_number ].pos ) {
             node_number_ref = node.number ;
         }

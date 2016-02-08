@@ -68,8 +68,8 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         if ( structure == "plate_traction" or structure == "plate_flexion" ) {
             switch ( deg_p ) {
             case 1 :
-//                make_rect( m, Triangle(), Pvec( 0., 0. ), Pvec( 2., 1. ), Pvec( 3, 3 ) );
-                make_rect( m, Quad(), Pvec( 0., 0. ), Pvec( 2. , 1. ), Pvec( 3, 3 ) );
+                make_rect( m, Triangle(), Pvec( 0., 0. ), Pvec( 2., 1. ), Pvec( 3, 3 ) );
+//                make_rect( m, Quad(), Pvec( 0., 0. ), Pvec( 2. , 1. ), Pvec( 3, 3 ) );
                 break;
             case 2 :
                 make_rect( m, Triangle_6(), Pvec( 0., 0. ), Pvec( 2., 1. ), Pvec( 3, 3 ) );
@@ -98,8 +98,8 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
                 }
                 else if ( mesh_size == "fine" ) {
                     if ( want_global_discretization_error == 0 and want_local_discretization_error == 0 ) {
-//                        read_msh_2( m, "MESH_GMSH/PLATE_HOLE_2D/plate_hole_fine_Triangle.msh" );
-                        read_avs( m, "MESH_AVS/PLATE_HOLE_2D/plate_hole_fine_Triangle_Quad.avs" );
+                        read_msh_2( m, "MESH_GMSH/PLATE_HOLE_2D/plate_hole_fine_Triangle.msh" );
+//                        read_avs( m, "MESH_AVS/PLATE_HOLE_2D/plate_hole_fine_Triangle_Quad.avs" );
                     }
                     else {
                         read_vtu( m, "MESH_GMSH/PLATE_HOLE_2D/plate_hole_fine_Triangle_direct_global_local_discretization_error.vtu" );
@@ -778,29 +778,10 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         /// Eprouvette 3D
         /// -------------
         else if ( structure.find("test_specimen") != string::npos ) {
-//            size_t off = structure.rfind( "_" );
-//            string str = structure.substr( off+1 );
-            string str = structure.substr( 14 );
-            string filename = "MESH_AVS/TEST_SPECIMEN_3D/test_specimen_" + str + "_Hexa.inp";
+            string filename = "MESH_AVS/TEST_SPECIMEN_3D/" + structure + "_Hexa.inp";
 //            read_inp( m, filename );
             ReaderINP<TM> RI( m, filename.c_str() );
-//            RI.display_map_node();
-//            cout << "Number of nodes = " << m.node_list.size() << endl;
-//            for (unsigned i=0;i<m.node_list.size();++i) {
-//                cout << " node " << i << " at position ";
-//                for (unsigned d=0;d<dim;++d)
-//                    cout << m.node_list[i].pos[d] << " ";
-//                cout << endl;
-//            }
-//            RI.display_map_element();
-//            RI.display_match_inode_inp_lmtpp();
-//            RI.display_map_node_set( true );
-//            RI.display_map_element_set( true );
-//            RI.display_map_orientation();
-//            RI.display_map_solid_section();
-//            RI.display_map_material();
-//            RI.display_map_step();
-//            RI.display_map_surface( true );
+            replace_Hexa_by_Tetra( m );
         }
         /// Sphere 3D avec noeud au centre
         /// ------------------------------

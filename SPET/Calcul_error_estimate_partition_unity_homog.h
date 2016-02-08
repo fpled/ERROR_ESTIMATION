@@ -77,7 +77,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
         constrained_points_list_patch[ j ].resize( dim );
         for (unsigned d=0;d<dim;++d) {
             for (unsigned k=0;k<face_list_patch[ j ].size();++k) {
-                if ( face_type[ face_list_patch[ j ][ k ] ][ d ] == 1 ) { // si face_list_patch[ j ][ k ] (k eme face connectee au patch associe au noeud sommet j) est une face de type Dirichlet (en deplacement) dans la direction d
+                if ( face_type[ face_list_patch[ j ][ k ] ][ d ] == 1 ) { // si face_list_patch[ j ][ k ] (k eme face connectee au patch associe au noeud sommet j) est une face de Dirichlet (en deplacement) dans la direction d
                     for (unsigned p=0;p<nb_points_face[ face_list_patch[ j ][ k ] ];++p) {
                         constrained_points_list_patch[ j ][ d ].push_back( patch_face[ j ][ k ][ p ] );
                     }

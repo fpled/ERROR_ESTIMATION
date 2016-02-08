@@ -20,8 +20,8 @@ using namespace std;
 void display_pb( const unsigned &dim, const string &structure, const unsigned &deg_p  ) {
 
     cout << "----------------------------------------------------" << endl;
-    cout << "Dimension = " << dim << endl;
-    cout << "Structure = " << structure << endl;
+    cout << "dimension = " << dim << endl;
+    cout << "structure = " << structure << endl;
     cout << "degre p   = " << deg_p << endl;
     cout << "----------------------------------------------------" << endl << endl;
     
@@ -144,15 +144,15 @@ string define_prefix( TM &m, const string &pb, const string &structure, const st
 }
 
 template<class TM, class T, class Pvec>
-void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &m_lambda_opt, TM &m_crown, const string &pb, const string &method, const string &structure, const string &loading, const string &mesh_size, const unsigned &cost_function, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, const string &geometric_criterium, const unsigned &deg_k, const unsigned &refinement_level_ref, const bool &want_global_discretization_error, const bool &want_local_discretization_error, const bool &want_global_estimation, const bool &want_local_estimation, const bool &want_local_improvement, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, const bool save_vtu = true, const bool display_vtu = false, const bool save_pvd = false, const bool display_pvd = false, const bool save_vtu_ref = false, const bool display_vtu_ref = false, const bool save_vtu_lambda = true, const bool display_vtu_lambda = false, const bool save_vtu_crown = true, const bool display_vtu_crown = false ) {
+void display_vtu_pvd( TM &m, TM &m_ref, TM &m_lambda_min, TM &m_lambda_max, TM &m_lambda_opt, TM &m_crown, const string &pb, const string &method, const string &structure, const string &loading, const string &mesh_size, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, const string &geometric_criterium, const unsigned &refinement_level_ref, const bool &want_global_discretization_error, const bool &want_local_discretization_error, const bool &want_global_estimation, const bool &want_local_estimation, const bool &want_local_improvement, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, const bool save_vtu = true, const bool display_vtu = false, const bool save_pvd = false, const bool display_pvd = false, const bool save_vtu_ref = false, const bool display_vtu_ref = false, const bool save_vtu_lambda = true, const bool display_vtu_lambda = false, const bool save_vtu_crown = true, const bool display_vtu_crown = false ) {
     
     static const unsigned dim = TM::dim;
     
     string prefix = define_prefix( m, pb, structure, loading, mesh_size );
     string prefix_ref = define_prefix( m_ref, pb, structure, loading, mesh_size );
     
-    if ( ( want_global_estimation or want_local_estimation ) and ( method.find("EET") != string::npos or method.find("SPET") != string::npos or method.find("EESPT") != string::npos ) ) {
-        prefix += "_" + method + "_k_" + to_string( deg_k ) + "_J" + to_string( cost_function );
+    if ( want_global_estimation or want_local_estimation ) {
+        prefix += "_" + method;
         if ( ( enhancement_with_geometric_criterium or enhancement_with_estimator_criterium ) and ( method.find("EET") != string::npos or method.find("EESPT") != string::npos ) ) {
             prefix += "_enhancement";
             if ( enhancement_with_estimator_criterium )

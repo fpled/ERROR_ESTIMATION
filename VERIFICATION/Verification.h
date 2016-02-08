@@ -22,11 +22,15 @@ using namespace std;
 template<class TF>
 void check_equilibrium( TF &f, const string &pb ) {
     typedef typename TF::ScalarType T;
+    #ifdef WITH_CHOLMOD
     Mat<T,Sym<>,SparseCholMod > *ptr_mat;
     f.get_mat( ptr_mat );
 //    PRINTN( *ptr_mat );
 //    display_structure( *ptr_mat, "stiffness_matrix" );
     Mat<T,Sym<>,SparseLine<> > K = *ptr_mat; // f.matrices(Number<0>())
+    #else
+    Mat<T,Sym<>,SparseLine<> > K = f.matrices(Number<0>());
+    #endif
     Vec<T> &U = f.get_result( 0 ); // f.vectors[0]
     Vec<T> &F = f.get_sollicitation(); // f.sollicitation
     T residual = norm_2( K * U - F );

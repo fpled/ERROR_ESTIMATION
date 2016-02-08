@@ -39,16 +39,15 @@ using namespace std;
 //    TicToc t_total;
 //    t_total.start();
 //    static const unsigned dim = 2;
-//    static const bool wont_add_nz = true;
+//    static const bool wont_add_nz = false;
 //    typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
 //    typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
 //    typedef TM::Pvec Pvec;
 //    typedef TM::TNode::T T;
-//    static const string structure = "structure_crack";
-//    static const string mesh_size = "coarse";
+//    static const string structure = "plate_flexion";
+//    static const string mesh_size = "fine";
 //    static const string loading = "pull";
 //    static const unsigned deg_p = 1;
-//    static const unsigned deg_k = 3;
 //    static const string boundary_condition_D = "penalty";
 
 //    display_pb( dim, structure, deg_p  );
@@ -56,7 +55,14 @@ using namespace std;
 //    /// Maillage du pb direct
 //    /// ---------------------
 //    TM m; // declaration d'un maillage de type TM
-//    set_mesh( m, structure, mesh_size, loading, deg_p );
+////    set_mesh( m, structure, mesh_size, loading, deg_p );
+//    read_vtu( m, "/Users/Op/Documents/Recherche/LMT/Code_Cpp_FEM_Error_Estimation/ERROR_ESTIMATION/weight_sensor_coarse_Triangle_Quad_direct_30.vtu" );
+
+//    bool spread_cut = true;
+//    refinement_if_nodal_field_sup( m, ExtractDM< theta_nodal_DM >(), 0.75, spread_cut );
+
+//    PRINT( remove_lonely_nodes( m ) );
+//    display_mesh_carac( m );
 
 //    /// Formulation du pb direct
 //    /// ------------------------
@@ -93,6 +99,10 @@ using namespace std;
 //    /// ----------------------------------------
 //    check_equilibrium( f, "direct" );
 
+//    /// Affichage
+//    /// ---------
+//    display( m, "test" );
+
 ////    cout << m.type_elements() << endl;
 
 //}
@@ -102,22 +112,43 @@ using namespace std;
 /// ---------- ///
 int main( int argc, char **argv ) {
     static const unsigned dim = 2;
+    static const bool wont_add_nz = true;
 //    typedef Mesh<MeshCaracStd<dim,2> > TM;
     typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
+//    typedef Formulation<TM,elasticity_iso> TF;
+    typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
 
     TM m;
-//    make_rect( m, Triangle(), Pvec( 0, 0 ), Pvec( 1., 1. ), Pvec( 20, 20 ) );
-//    make_rect( m, Quad(), Pvec( 0, 0 ), Pvec( 1., 1. ), Pvec( 20, 20 ) );
-//    make_rect( m, Tetra(), Pvec( 0, 0 ), Pvec( 1., 1. ), Pvec( 20, 20 ) );
-    make_rect( m, Hexa(), Pvec( 0, 0 ), Pvec( 1., 1. ), Pvec( 20, 20 ) );
+    T lx = 1., ly = 1., lz = 1.;
+    make_rect( m, Triangle(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 20, 20 ) );
+//    make_rect( m, Quad(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 20, 20 ) );
+//    make_rect( m, Tetra(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 20, 20, 20 ) );
+//    make_rect( m, Hexa(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 20, 20, 20 ) );
+//    make_rect( m, Tetra(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 21, 5 ) );
+//    make_rect( m, Tetra(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 21, 5, 5 ) );
+
+    TF f( m );
+
+    for(unsigned i = 0; i < m.node_list.size(); ++i ) {
+        if ( ( m.node_list[ i ].pos[ 0 ] < 1e-6 ) or ( m.node_list[ i ].pos[ 0 ] > lx - 1e-6 ) ) {
+            for( int d = 0; d < dim; ++d )
+                f.add_constraint( "sin( node[" + to_string( i ) + "].dep[" + to_string( d ) + "] ) - " + to_string( 0.1 * m.node_list[ i ].pos[ 0 ] * ( d == 0 ) ), 1e5 );
+        }
+    }
+
+    f.solve();
+
+    display_mesh( m );
 
 //    PRINT( generate( m.node_list, ExtractDM<pos_DM>() ) );
 //    PRINT( generate( m.node_list, ExtractDMi<pos_DM>( 0 ) ) );
 //    PRINT( generate( m.node_list, ExtractDMi<pos_DM>( 1 ) ) );
 
     bool spread_cut = false;
+
+//    refinement_if_constraints( m, f, spread_cut );
 
 //    while ( refinement_if_length_sup( m, 0.05, spread_cut ) );
 
@@ -137,9 +168,13 @@ int main( int argc, char **argv ) {
 //        m.node_list[i].theta_nodal = sin( std::sqrt( i ) * 5. );
 //    refinement_if_nodal_field_sup( m, ExtractDM< theta_nodal_DM >(), 0.75, spread_cut );
 
-//    for( unsigned n = 0 ; n < m.elem_list.size(); ++n )
-//        m.elem_list[n]->set_field( "theta_elem_EET", sin( std::sqrt( n ) * 5. ) );
-//    refinement_if_elem_field_sup( m, ExtractDM< theta_elem_EET_DM >(), 0.75, spread_cut );
+//    for( unsigned i = 0 ; i < m.node_list.size(); ++i )
+//        m.node_list[i].theta_nodal = sin( std::sqrt( i ) * 5. );
+//    refinement_if_constraints_or_nodal_field_sup( m, f, ExtractDM< theta_nodal_DM >(), 0.75, spread_cut );
+
+    for( unsigned n = 0 ; n < m.elem_list.size(); ++n )
+        m.elem_list[n]->set_field( "theta_elem_EET", sin( std::sqrt( n ) * 5. ) );
+    refinement_if_elem_field_sup( m, ExtractDM< theta_elem_EET_DM >(), 0.75, spread_cut );
 
 //    for( unsigned n = 0 ; n < m.elem_list.size(); ++n )
 //        m.elem_list[n]->set_field( "theta_elem_EET", sin( std::sqrt( n ) * 5. ) );
@@ -151,7 +186,7 @@ int main( int argc, char **argv ) {
 //    divide_element( m, Vec<unsigned>( 5, 50, 80, 100, 200 ) );
 
 //    replace_Quad_by_Triangle( m );
-    replace_Hexa_by_Tetra( m );
+//    replace_Hexa_by_Tetra( m );
 //    replace_Wedge_by_Tetra( m );
 
     display_mesh( m );

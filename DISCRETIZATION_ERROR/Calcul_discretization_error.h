@@ -138,7 +138,7 @@ void calcul_discretization_error( TM &m, TM &m_ref, const TF &f, const TF &f_ref
                 }
                 else {
                     all_Dirichlet_boundary_conditions_equal_to_zero = 0;
-                    cerr << "Presence de conditions aux limites de type Dirichlet non imposees a 0..." << endl << endl;
+                    cerr << "Presence de conditions aux limites de Dirichlet non imposees a 0..." << endl << endl;
                     break;
                 }
             }
