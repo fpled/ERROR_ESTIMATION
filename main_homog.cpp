@@ -167,20 +167,21 @@ int main( int argc, char **argv ) {
     static const bool display_vtu_lambda = 0;
     static const bool display_vtu_adjoint_lambda = 0;
     static const bool display_vtu_crown = 0;
-    DisplayParaview dp;
-    string prefix = define_prefix( m, "direct", structure, loading, mesh_size, method, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, want_local_improvement, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment );
-    Vec<std::string> lp("all");
 
     /// ------------------------------------------------------- ///
     /// Construction de la solution elements finis du pb direct ///
     /// ------------------------------------------------------- ///
     
+    DisplayParaview dp;
+    Vec<std::string> lp("all");
+
     display_pb( dim, structure, deg_p  );
 
     /// Maillage du pb direct
     /// ---------------------
     TM m;
     set_mesh( m, structure, mesh_size, loading, deg_p, refinement_level_ref, want_global_discretization_error, want_local_discretization_error );
+    string prefix = define_prefix( m, "direct", structure, loading, mesh_size, method, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, want_local_improvement, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment );
 
     /// Maillage du pb de reference associe au pb direct
     /// ------------------------------------------------
@@ -323,7 +324,7 @@ int main( int argc, char **argv ) {
             /// Conditions aux limites du pb de reference local
             /// -----------------------------------------------
             set_constraints( f_local_ref, m_local_ref, boundary_condition_D, "direct", structure, loading );
-            set_load_conditions( m_local_ref, , structure, loading, mesh_size );
+            set_load_conditions( m_local_ref, structure, loading, mesh_size );
 
             /// Resolution du pb de reference local
             /// -----------------------------------
@@ -368,7 +369,6 @@ int main( int argc, char **argv ) {
         /// ----------------------
         TM m_adjoint;
         set_mesh_adjoint( m_adjoint, m, interest_quantity, direction_extractor, want_local_refinement, l_min_refinement, k_refinement, pointwise_interest_quantity, elem_list_interest_quantity, elem_list_adjoint_interest_quantity, node_interest_quantity, node_adjoint_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, elem_list_adjoint_enrichment_zone_1, elem_list_adjoint_enrichment_zone_2, face_list_adjoint_enrichment_zone_12, node_list_adjoint_enrichment );
-
         string prefix_adjoint = define_prefix( m_adjoint, "adjoint", structure, loading, mesh_size, method, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, want_local_improvement, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment );
 
         /// Formulation du pb adjoint

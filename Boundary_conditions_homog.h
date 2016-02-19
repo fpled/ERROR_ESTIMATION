@@ -20,7 +20,7 @@ using namespace std;
 
 /// Creation des conditions aux limites
 /// -----------------------------------
-template<class TF, class TM>
+template<class TM>
 void set_load_conditions_init( TM &m, const string &structure ) {
 
     static const unsigned dim = TM::dim;

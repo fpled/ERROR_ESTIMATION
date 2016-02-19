@@ -211,6 +211,10 @@ int main( int argc, char **argv ) {
 
 ////    for( unsigned n = 0 ; n < m.elem_list.size(); ++n )
 ////        m.elem_list[n]->set_field( "theta_elem_EET", sin( std::sqrt( n ) * 5. ) );
+////    refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_EET_DM, 0.75, spread_cut );
+
+////    for( unsigned n = 0 ; n < m.elem_list.size(); ++n )
+////        m.elem_list[n]->set_field( "theta_elem_EET", sin( std::sqrt( n ) * 5. ) );
 ////    smoothing( m, ExtractDM< theta_nodal_DM >(), ExtractDM< theta_elem_EET_DM >() );
 ////    refinement_if_nodal_field_sup( m, ExtractDM< theta_nodal_DM >(), 0.75, spread_cut );
 

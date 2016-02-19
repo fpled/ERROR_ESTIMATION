@@ -200,7 +200,7 @@ struct Reset_Vertex_Nodal_Vector_lambda_F_hat {
 
 /// Construction des vecteurs force_fluxes[ k ] pour chaque face k du maillage
 /// --------------------------------------------------------------------------
-template<class TE, class TV, class TVVV, class TTVVV, class TTMV> 
+template<class TE, class TV, class TVVV, class TTVVV>
 void calc_skin_elem_force_fluxes( const TE &child_elem, const TV &connect_node_to_vertex_node, const TVVV &face_ind, const TTVVV &lambda_F_hat, TTVVV &force_fluxes ) {}
 
 struct Calcul_Skin_Elem_Force_Fluxes {
