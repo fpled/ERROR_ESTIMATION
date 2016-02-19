@@ -293,7 +293,7 @@ int main( int argc, char **argv ) {
 
         unsigned adapt = 0;
         if ( want_remesh )
-            dp.add_mesh_iter( m, prefix, lp, adapt );
+            dp.add_mesh_iter( m, prefix + "_adapt", lp, adapt );
 
         /// ------------------------------------------- ///
         /// Adaptation du maillage associe au pb direct ///
@@ -312,12 +312,18 @@ int main( int argc, char **argv ) {
 
 //            divide( m );
 //            refinement_if_nodal_field_sup( m, ExtractDM< theta_nodal_DM >(), k_remesh, spread_cut_remesh );
+//            if ( method.find("EET") != string::npos )
+//                refinement_if_elem_field_sup( m, theta_elem_EET_DM(), k_remesh, spread_cut_remesh );
+//            else if ( method.find("SPET") != string::npos )
+//                refinement_if_elem_field_sup( m, theta_elem_SPET_DM(), k_remesh, spread_cut_remesh );
+//            else if ( method.find("EESPT") != string::npos )
+//                refinement_if_elem_field_sup( m, theta_elem_EESPT_DM(), k_remesh, spread_cut_remesh );
             if ( method.find("EET") != string::npos )
-                refinement_if_elem_field_sup( m, theta_elem_EET_DM(), k_remesh, spread_cut_remesh );
+                refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_EET_DM(), k_remesh, spread_cut_remesh );
             else if ( method.find("SPET") != string::npos )
-                refinement_if_elem_field_sup( m, theta_elem_SPET_DM(), k_remesh, spread_cut_remesh );
+                refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_SPET_DM(), k_remesh, spread_cut_remesh );
             else if ( method.find("EESPT") != string::npos )
-                refinement_if_elem_field_sup( m, theta_elem_EESPT_DM(), k_remesh, spread_cut_remesh );
+                refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_EESPT_DM(), k_remesh, spread_cut_remesh );
 
             display_mesh_carac( m );
 
