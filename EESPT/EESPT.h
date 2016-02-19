@@ -198,16 +198,16 @@ struct Reset_Vertex_Nodal_Vector_lambda_F_hat {
     }
 };
 
-/// Construction des vecteurs vec_force_fluxes_EESPT[ k ] et des matrices mat_force_fluxes_EESPT[ k ] pour chaque face k du maillage
-/// --------------------------------------------------------------------------------------------------------------------------------
+/// Construction des vecteurs force_fluxes[ k ] pour chaque face k du maillage
+/// --------------------------------------------------------------------------
 template<class TE, class TV, class TVVV, class TTVVV, class TTMV> 
-void calc_skin_elem_force_fluxes( const TE &child_elem, const TV &connect_node_to_vertex_node, const TVVV &face_ind, const TTVVV &lambda_F_hat, TTVVV &vec_force_fluxes, TTMV &mat_force_fluxes ) {}
+void calc_skin_elem_force_fluxes( const TE &child_elem, const TV &connect_node_to_vertex_node, const TVVV &face_ind, const TTVVV &lambda_F_hat, TTVVV &force_fluxes ) {}
 
 struct Calcul_Skin_Elem_Force_Fluxes {
     const Vec<unsigned>* connect_node_to_vertex_node;
     const Vec< Vec< Vec<unsigned> > >* face_ind;
-    template<class TE, class T> void operator()( const TE &child_elem, const Vec< Vec< Vec<T> > > &lambda_F_hat, Vec< Vec< Vec<T> > > &vec_force_fluxes, Vec< Mat<T> > &mat_force_fluxes ) const {
-        calc_skin_elem_force_fluxes( child_elem, *connect_node_to_vertex_node, *face_ind, lambda_F_hat, vec_force_fluxes, mat_force_fluxes );
+    template<class TE, class T> void operator()( const TE &child_elem, const Vec< Vec< Vec<T> > > &lambda_F_hat, Vec< Vec< Vec<T> > > &force_fluxes ) const {
+        calc_skin_elem_force_fluxes( child_elem, *connect_node_to_vertex_node, *face_ind, lambda_F_hat, force_fluxes );
     }
 };
 

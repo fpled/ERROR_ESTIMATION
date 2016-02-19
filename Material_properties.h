@@ -29,7 +29,7 @@ void set_field_alternativeontype( TM &m, Number<0>, const T &val, const DM &dm )
 
 template<class TM, class T, class DM> void set_field_alternativeontype( TM &m, Number<1>, const T &val, const DM &dm ) {
     for (unsigned n=0;n<m.elem_list.size();++n)
-        m.elem_list[n]->set_field( DM::name(), val );
+        m.elem_list[n]->set_field( dm.name(), val ); // m.elem_list[n]->set_field( DM::name(), val );
 }
 
 //struct Set_Elem_Field {

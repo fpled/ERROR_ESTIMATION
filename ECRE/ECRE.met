@@ -103,7 +103,7 @@ def calc_elem_vector_F_hat( list_f, rep )
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
         file_ <<< "namespace LMT {"
         file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class S, class B, class T>"
-        file_ <<< "void calc_elem_vector_F_hat( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<unsigned> > &node_list_face, const Vec<unsigned> &elem_cpt_node, const B &balancing, const Vec<B> &elem_flag_bal, const Vec<B> &elem_flag_enh, const TTVV &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, const Vec< Vec< Vec<T> > > &vec_force_fluxes, Vec< Vec<T> > &F_hat ) {"
+        file_ <<< "void calc_elem_vector_F_hat( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<unsigned> > &node_list_face, const Vec<unsigned> &elem_cpt_node, const B &balancing, const Vec<B> &elem_flag_bal, const Vec<B> &elem_flag_enh, const TTVV &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, const Vec< Vec< Vec<T> > > &force_fluxes, Vec< Vec<T> > &F_hat ) {"
         file_ <<< "    #define PNODE(N) elem.node(N)"
         file_ <<<<
                 Vec< Vec< Vec<T> > > f_surf;
@@ -117,7 +117,7 @@ def calc_elem_vector_F_hat( list_f, rep )
                 file_ <<< "    f_surf[ $( face->num_child ) ][ $d ].resize( m.sub_mesh(Number<1>()).elem_list[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ]->nb_nodes_virtual(), 0. );"
                 for i in 0 .. face->nb_nodes
                     file_ <<< "    ind_in_node_list_face = find_with_index( node_list_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ] == elem.node( $( face->node_numbers_to_node_numbers_in_parent_cpp[ i ] ) )->number );"
-                    file_ <<< "    f_surf[ $( face->num_child ) ][ $d ][ $i ] += $( eta ) * vec_force_fluxes[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_node_list_face[ 0 ] ];"
+                    file_ <<< "    f_surf[ $( face->num_child ) ][ $d ][ $i ] += $( eta ) * force_fluxes[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_node_list_face[ 0 ] ];"
         deg_p := max( e->order_interpolation )
         f_vol_std := Vec[ Op, e->dim ]()
         sym_f_surf_std_e := Vec[ Op ]()
@@ -192,7 +192,7 @@ def calc_elem_vector_F_hat( list_f, rep )
             file_ <<< "    Vec<Vec<double, $(e->dim)> > valeurs;"
             file_ <<< "    Vec<double> poids_face;"
             file_ <<< "    Vec<Vec<double, $(e->dim)-1> > valeurs_face;"
-            file_ <<< "    if ( balancing == 0 or ( balancing and elem_flag_bal[ elem.number ] == 0 and elem_flag_enh[ elem.number ] == 0 ) ) {"
+            file_ <<< "    if ( not( balancing ) or ( balancing and not( elem_flag_bal[ elem.number ] ) and not( elem_flag_enh[ elem.number ] ) ) ) {"
             file_ <<< "        gauss_points( $(e->name_for_gauss_point)(), $(degre_poly_1), poids, valeurs );"
             file_ <<< "        for (unsigned n=0; n<poids.size(); ++n) {"
             file_ <<< "            Vec<double> var_inter( valeurs[ n ] );"
@@ -268,7 +268,7 @@ def calc_elem_vector_F_hat( list_f, rep )
                 file_ <<< "    }"
                 if want_local_enrichment
                     F_hat_face_handbook := residual_face_handbook.diff( sym_dep_hat_test )
-                    file_ <<< "    if ( ( balancing == 0 or ( balancing and elem_flag_bal[ elem.number ] == 0 and elem_flag_enh[ elem.number ] == 0 ) ) and pb == \"adjoint\" and want_local_enrichment ) {"
+                    file_ <<< "    if ( ( not( balancing ) or ( balancing and not( elem_flag_bal[ elem.number ] ) and not( elem_flag_enh[ elem.number ] ) ) ) and pb == \"adjoint\" and want_local_enrichment ) {"
                     file_ <<< "        typedef typename TM::template SubMesh<1>::T TSubMesh;"
                     file_ <<< "        typedef typename TSubMesh::template TElem<typename TypeChildrenElement<typename Element<$(e->name),TN,TNG,TD,NET>::NE,1,$( face->num_child )>::T>::TE TCH;"
                     file_ <<< "        TCH skin_elem = *( static_cast<TCH *>( f.m->get_children_of(elem, Number<1>())[ $( face->num_child ) ] ) );"
@@ -301,7 +301,7 @@ def calc_elem_vector_F_hat( list_f, rep )
                     file_ <<< "        }"
                     file_ <<< "    }"
         if integration_type != "gauss_num" or integration_lang != "cpp"
-            file_ <<< "    if ( balancing == 0 or ( balancing and elem_flag_bal[ elem.number ] == 0 and elem_flag_enh[ elem.number ] == 0 ) ) {"
+            file_ <<< "    if ( not( balancing ) or ( balancing and not( elem_flag_bal[ elem.number ] ) and not( elem_flag_enh[ elem.number ] ) ) ) {"
             F_hat := residual.diff( sym_dep_hat_test )
             cw := CodeWriterAlt( "T" )
             cw.add( "F_hat[ elem.number ]", F_hat, add )
@@ -324,7 +324,7 @@ def calc_elem_vector_F_hat( list_f, rep )
         for n in 0 .. e->nb_nodes
             nb_elems_node := symbol( "elem_cpt_node[ elem.node( $n )->number ]" )
             residual_nodal += dot( child_cast(f)->f_nodal.expr + child_cast(f)->pre_f_nodal.expr, dep_hat_test ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
-        file_ <<< "    if ( balancing == 0 or ( balancing and elem_flag_bal[ elem.number ] == 0 and elem_flag_enh[ elem.number ] == 0 ) ) {"
+        file_ <<< "    if ( not( balancing ) or ( balancing and not( elem_flag_bal[ elem.number ] ) and not( elem_flag_enh[ elem.number ] ) ) ) {"
         F_hat_nodal := residual_nodal.diff( sym_dep_hat_test )
         cw_nodal := CodeWriterAlt( "T" )
         cw_nodal.add( "F_hat[ elem.number ]", F_hat_nodal, add )

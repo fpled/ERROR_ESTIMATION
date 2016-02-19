@@ -21,10 +21,10 @@ using namespace std;
 /// Construction des vecteurs F_hat[ n ] pour chaque element n du maillage
 /// ----------------------------------------------------------------------
 template<class TM, class TF, class T>
-void construct_F_hat( TM &m, const TF &f, const string &pb, const bool &balancing, const Vec<bool> &elem_flag_bal, const Vec<bool> &elem_flag_enh, const Vec< Vec< Vec<T> > > &vec_force_fluxes, Vec< Vec<T> > &F_hat, const bool want_local_enrichment = false, const bool debug_method = false, const bool debug_mesh = false ) {
+void construct_F_hat( TM &m, const TF &f, const string &pb, const bool &balancing, const Vec<bool> &elem_flag_bal, const Vec<bool> &elem_flag_enh, const Vec< Vec< Vec<T> > > &force_fluxes, Vec< Vec<T> > &F_hat, const bool want_local_enrichment = false, const bool disp = false ) {
 
 
-    if ( debug_method ) {
+    if ( disp ) {
         cout << "Construction des vecteurs F_hat";
         if ( balancing )
             cout << " avec procedure d'equilibrage";
@@ -33,11 +33,11 @@ void construct_F_hat( TM &m, const TF &f, const string &pb, const bool &balancin
 
     Vec<unsigned> node_cpt_face;
     Vec< Vec<unsigned> > node_list_face;
-    construct_nodes_connected_to_face( m, node_cpt_face, node_list_face, debug_mesh );
+    construct_nodes_connected_to_face( m, node_cpt_face, node_list_face );
 
     Vec<unsigned> elem_cpt_node;
     Vec< Vec<unsigned> > elem_list_node;
-    construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node, debug_mesh );
+    construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node );
 
     elem_list_node.free();
 
@@ -51,11 +51,11 @@ void construct_F_hat( TM &m, const TF &f, const string &pb, const bool &balancin
     calcul_elem_vector_F_hat.elem_flag_enh = &elem_flag_enh;
     calcul_elem_vector_F_hat.pb = &pb;
     calcul_elem_vector_F_hat.want_local_enrichment = &want_local_enrichment;
-    calcul_elem_vector_F_hat.vec_force_fluxes = &vec_force_fluxes;
+    calcul_elem_vector_F_hat.force_fluxes = &force_fluxes;
 
     apply( m.elem_list, calcul_elem_vector_F_hat, m, f, F_hat );
 
-    if ( debug_method ) {
+    if ( disp ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
             cout << "vecteur F_hat de l'element " << n << " =" << endl;
             cout << F_hat[ n ] << endl << endl;

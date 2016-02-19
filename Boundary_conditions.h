@@ -1052,7 +1052,7 @@ void set_load_conditions_adjoint( TM &m_adjoint, const TF &f_adjoint, const TM &
     }
     
     if ( interest_quantity == "mean_sigma" ) {
-        if ( want_local_enrichment == 0 )
+        if ( not want_local_enrichment )
             apply( m_adjoint.elem_list, Construct_Extractor_Mean_Sigma(), m, elem_list_interest_quantity );
         else {
             cerr << "Arret brutal, car l'enrichissement local pour la quantite d'interet " << interest_quantity << " dans la direction " << direction_extractor << " n'est pas implementee..." << endl << endl;
@@ -1060,7 +1060,7 @@ void set_load_conditions_adjoint( TM &m_adjoint, const TF &f_adjoint, const TM &
         }
     }
     else if ( interest_quantity == "mean_epsilon" ) {
-        if ( want_local_enrichment == 0 )
+        if ( not want_local_enrichment )
             apply( m_adjoint.elem_list, Construct_Extractor_Mean_Epsilon(), m, elem_list_interest_quantity );
         else {
             cerr << "Arret brutal, car l'enrichissement local pour la quantite d'interet " << interest_quantity << " dans la direction " << direction_extractor << " n'est pas implementee..." << endl << endl;
@@ -1080,7 +1080,7 @@ void set_load_conditions_adjoint( TM &m_adjoint, const TF &f_adjoint, const TM &
         }
     }
     else if ( interest_quantity == "SIF" or interest_quantity == "stress_intensity_factor" ) {
-        if ( want_local_enrichment == 0 )
+        if ( not want_local_enrichment )
             apply( m_adjoint.elem_list, Construct_Extractor_SIF(), m_crown );
         else {
             cerr << "Arret brutal, car l'enrichissement local pour la quantite d'interet " << interest_quantity << " dans la direction " << direction_extractor << " n'est pas implementee..." << endl << endl;

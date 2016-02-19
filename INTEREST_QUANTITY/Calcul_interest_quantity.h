@@ -29,7 +29,7 @@ using namespace std;
 /// Definition de l'extracteur
 /// --------------------------
 template<class TM, class TF, class T, class Pvec>
-void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re, const bool want_local_enrichment = false ) {
+void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re, const bool want_local_enrichment = false, const bool display_vtu_crown = false, const string &prefix = "paraview" ) {
     
     static const unsigned dim = TM::dim;
     
@@ -42,23 +42,17 @@ void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const strin
         }
         for (unsigned n=0;n<m.elem_list.size();++n) {
             if ( find( elem_list_interest_quantity, _1 == n ) ) {
+                Vec<T,unsigned(dim*(dim+1)/2)> extractor;
+                extractor.set( 0. );
                 if ( dim == 1 ) {
-                    Vec<T,1> extractor;
-                    extractor.set( 0. );
                     if ( direction_extractor == "xx" )
                         extractor[0] = 1. / mes;
                     else {
                         cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << dim << " n'est pas implementee..." << endl << endl;
                         throw "Anguille sous coquille...";
                     }
-                    if ( interest_quantity == "mean_epsilon" )
-                        m.elem_list[n]->set_field( "pre_sigma", extractor );
-                    else if ( interest_quantity == "mean_sigma" )
-                        m.elem_list[n]->set_field( "pre_epsilon", extractor );
                 }
                 else if ( dim == 2 ) {
-                    Vec<T,3> extractor;
-                    extractor.set( 0. );
                     if ( direction_extractor == "xx" )
                         extractor[0] = 1. / mes;
                     else if ( direction_extractor == "xy" or direction_extractor == "yx" )
@@ -69,14 +63,8 @@ void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const strin
                         cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << dim << " n'est pas implementee..." << endl << endl;
                         throw "Anguille sous coquille...";
                     }
-                    if ( interest_quantity == "mean_epsilon" )
-                        m.elem_list[n]->set_field( "pre_sigma", extractor );
-                    else if ( interest_quantity == "mean_sigma" )
-                        m.elem_list[n]->set_field( "pre_epsilon", extractor );
                 }
                 else if ( dim == 3 ) {
-                    Vec<T,6> extractor;
-                    extractor.set( 0. );
                     if ( direction_extractor == "xx" )
                         extractor[0] = 1. / mes;
                     else if ( direction_extractor == "xy" or direction_extractor == "yx" )
@@ -93,15 +81,15 @@ void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const strin
                         cerr << "Arret brutal, car la direction " << direction_extractor << " pour la quantite d'interet " << interest_quantity << " en dimension " << dim << " n'est pas implementee..." << endl << endl;
                         throw "Anguille sous coquille...";
                     }
-                    if ( interest_quantity == "mean_epsilon" )
-                        m.elem_list[n]->set_field( "pre_sigma", extractor );
-                    else if ( interest_quantity == "mean_sigma" )
-                        m.elem_list[n]->set_field( "pre_epsilon", extractor );
                 }
                 else {
                     cerr << "Arret brutal, car la dimension " << dim << " pour la quantite d'interet " << interest_quantity << " n'est pas implementee..." << endl << endl;
                     throw "Anguille sous coquille...";
                 }
+                if ( interest_quantity == "mean_epsilon" )
+                    m.elem_list[n]->set_field( "pre_sigma", extractor );
+                else if ( interest_quantity == "mean_sigma" )
+                    m.elem_list[n]->set_field( "pre_epsilon", extractor );
 //                Mat<T,Sym<dim> > pre_eps = m.elem_list[n]->get_field( "pre_epsilon", StructForType<Mat<T,Sym<dim> > >() );
 //                cout << pre_eps << endl;
 //                Mat<T,Sym<dim> > pre_sig = m.elem_list[n]->get_field( "pre_sigma", StructForType<Mat<T,Sym<dim> > >() );
@@ -158,6 +146,12 @@ void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const strin
             define_extractor_SIF.radius_Re = &radius_Re;
             
             apply( m_crown.elem_list, define_extractor_SIF, m_crown, f_crown );
+
+            const string prefix_crown = prefix + "_crown";
+            if ( display_vtu_crown )
+                display( m_crown, prefix_crown );
+            else
+                save( m_crown, prefix_crown );
         }
         else {
             cerr << "Arret brutal, car la dimension " << dim << " pour la quantite d'interet " << interest_quantity << " n'est pas implementee..." << endl << endl;
@@ -185,19 +179,17 @@ void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const strin
 /// Calcul de la quantite d'interet locale I
 /// ----------------------------------------
 template<class TM, class TF, class T, class Pvec>
-void calcul_interest_quantity( const TM &m, const TM &m_crown, const TF &f, const TF &f_crown, const string &pb, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re, T &I_h ) {
+void calcul_interest_quantity( const TM &m, const TM &m_crown, const TF &f, const TF &f_crown, const string &pb, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re, T &I_h, const bool disp = false ) {
 
     I_h = 0.;
     
     static const unsigned dim = TM::dim;
     
-    if ( pb == "direct" ) {
-        cout << "Calcul de la quantite d'interet locale approchee I_h" << endl;
-        cout << "----------------------------------------------------" << endl << endl;
-    }
-    else if ( pb == "reference" ) {
-        cout << "Calcul de la quantite d'interet locale (quasi-)exacte I_ex" << endl;
-        cout << "----------------------------------------------------------" << endl << endl;
+    if ( disp ) {
+        if ( pb == "direct" )
+            cout << "Calcul de la quantite d'interet locale approchee I_h" << endl << endl;
+        else if ( pb == "reference" )
+            cout << "Calcul de la quantite d'interet locale (quasi-)exacte I_ex" << endl << endl;
     }
     
     TicToc t;
@@ -243,53 +235,39 @@ void calcul_interest_quantity( const TM &m, const TM &m_crown, const TF &f, cons
         cerr << "Arret brutal, car la quantite d'interet " << interest_quantity << " n'est pas implementee..." << endl << endl;
         throw "Anguille sous coquille...";
     }
-    
-    t.stop();
 
     if ( pb == "direct" ) {
         cout << "quantite d'interet locale approchee I_h :" << endl;
         cout << "I_h = " << I_h << endl << endl;
-        cout << "Temps de calcul de la quantite d'interet approchee I_h = " << t.res << endl << endl;
     }
     else if ( pb == "reference" ) {
         cout << "quantite d'interet locale (quasi-)exacte I_ex :" << endl;
         cout << "I_ex = " << I_h << endl << endl;
-        cout << "Temps de calcul de la quantite d'interet (quasi-)exacte I_ex = " << t.res << endl << endl;
+    }
+
+    t.stop();
+    if ( disp ) {
+        if ( pb == "direct" )
+            cout << "temps de calcul de la quantite d'interet approchee I_h = " << t.res << endl << endl;
+        else if ( pb == "reference" )
+            cout << "temps de calcul de la quantite d'interet (quasi-)exacte I_ex = " << t.res << endl << endl;
     }
 }
 
 /// Calcul de la correction I_hh sur la quantite d'interet locale I (avec ou sans introduction de sigma_hat_m)
 /// ----------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T, class TV, class TVV>
-void calcul_correction_interest_quantity( TM &m, TM &m_adjoint, const TF &f, const TF &f_adjoint, const string &interest_quantity, const string &method, const string &method_adjoint, const T &theta, const T &theta_adjoint, const TV &theta_elem_adjoint, const Vec<unsigned> &correspondance_elem_m_adjoint_to_elem_m, const TVV &dep_hat, const TVV &dep_adjoint_hat, const T &I_h, T &I_hh, const bool want_local_enrichment = false, const bool want_introduction_sigma_hat_m = true ) {
+void calcul_correction_interest_quantity( TM &m, TM &m_adjoint, const TF &f, const TF &f_adjoint, const string &interest_quantity, const string &method, const string &method_adjoint, const T &theta, const T &theta_adjoint, const TV &theta_elem_adjoint, const Vec<unsigned> &correspondance_elem_m_adjoint_to_elem_m, const TVV &dep_hat, const TVV &dep_adjoint_hat, const T &I_h, T &I_hh, const bool want_local_enrichment = false, const bool want_introduction_sigma_hat_m = true, const bool disp = false ) {
 
     I_hh = 0.;
+
+    if ( disp )
+        cout << "Calcul de la correction I_hh sur la quantite d'interet locale I" << endl << endl;
     
     TicToc t;
     t.start();
     
-    if ( want_introduction_sigma_hat_m == 0 ) {
-        cout << "Calcul de la correction I_hh sur la quantite d'interet locale I (sans introduction de sigma_hat_m)" << endl;
-        cout << "--------------------------------------------------------------------------------------------------" << endl << endl;
-        
-        Calcul_Correction_Interest_Quantity_wo_sigma_hat_m<TM, TF, T> calcul_correction_interest_quantity_wo_sigma_hat_m;
-        calcul_correction_interest_quantity_wo_sigma_hat_m.m = &m;
-        calcul_correction_interest_quantity_wo_sigma_hat_m.m_adjoint = &m_adjoint;
-        calcul_correction_interest_quantity_wo_sigma_hat_m.f = &f;
-        calcul_correction_interest_quantity_wo_sigma_hat_m.f_adjoint = &f_adjoint;
-        calcul_correction_interest_quantity_wo_sigma_hat_m.interest_quantity = &interest_quantity;
-        calcul_correction_interest_quantity_wo_sigma_hat_m.method = &method;
-        calcul_correction_interest_quantity_wo_sigma_hat_m.want_local_enrichment = &want_local_enrichment;
-        calcul_correction_interest_quantity_wo_sigma_hat_m.correspondance_elem_m_adjoint_to_elem_m = &correspondance_elem_m_adjoint_to_elem_m;
-        calcul_correction_interest_quantity_wo_sigma_hat_m.dep_hat = &dep_hat;
-        calcul_correction_interest_quantity_wo_sigma_hat_m.I_hh = &I_hh;
-        
-        apply( m_adjoint.elem_list, calcul_correction_interest_quantity_wo_sigma_hat_m );
-    }
-    else {
-        cout << "Calcul de la correction I_hh sur la quantite d'interet locale I (avec introduction de sigma_hat_m)" << endl;
-        cout << "--------------------------------------------------------------------------------------------------" << endl << endl;
-        
+    if ( not want_introduction_sigma_hat_m ) {
         Calcul_Correction_Interest_Quantity_w_sigma_hat_m<TM, TF, T> calcul_correction_interest_quantity_w_sigma_hat_m;
         calcul_correction_interest_quantity_w_sigma_hat_m.m = &m;
         calcul_correction_interest_quantity_w_sigma_hat_m.m_adjoint = &m_adjoint;
@@ -303,8 +281,23 @@ void calcul_correction_interest_quantity( TM &m, TM &m_adjoint, const TF &f, con
         calcul_correction_interest_quantity_w_sigma_hat_m.dep_hat = &dep_hat;
         calcul_correction_interest_quantity_w_sigma_hat_m.dep_adjoint_hat = &dep_adjoint_hat;
         calcul_correction_interest_quantity_w_sigma_hat_m.I_hh = &I_hh;
-        
+
         apply( m_adjoint.elem_list, calcul_correction_interest_quantity_w_sigma_hat_m );
+    }
+    else {
+        Calcul_Correction_Interest_Quantity_wo_sigma_hat_m<TM, TF, T> calcul_correction_interest_quantity_wo_sigma_hat_m;
+        calcul_correction_interest_quantity_wo_sigma_hat_m.m = &m;
+        calcul_correction_interest_quantity_wo_sigma_hat_m.m_adjoint = &m_adjoint;
+        calcul_correction_interest_quantity_wo_sigma_hat_m.f = &f;
+        calcul_correction_interest_quantity_wo_sigma_hat_m.f_adjoint = &f_adjoint;
+        calcul_correction_interest_quantity_wo_sigma_hat_m.interest_quantity = &interest_quantity;
+        calcul_correction_interest_quantity_wo_sigma_hat_m.method = &method;
+        calcul_correction_interest_quantity_wo_sigma_hat_m.want_local_enrichment = &want_local_enrichment;
+        calcul_correction_interest_quantity_wo_sigma_hat_m.correspondance_elem_m_adjoint_to_elem_m = &correspondance_elem_m_adjoint_to_elem_m;
+        calcul_correction_interest_quantity_wo_sigma_hat_m.dep_hat = &dep_hat;
+        calcul_correction_interest_quantity_wo_sigma_hat_m.I_hh = &I_hh;
+
+        apply( m_adjoint.elem_list, calcul_correction_interest_quantity_wo_sigma_hat_m );
     }
 
     cout << "correction I_hh sur la quantite d'interet :" << endl;
@@ -314,13 +307,14 @@ void calcul_correction_interest_quantity( TM &m, TM &m_adjoint, const TF &f, con
     cout << "I_h + I_hh = " << I_h + I_hh << endl << endl;
     
     t.stop();
-    cout << "Temps de calcul de la correction I_hh sur la quantite d'interet = " << t.res << endl << endl;
+    if ( disp )
+        cout << "temps de calcul de la correction I_hh sur la quantite d'interet = " << t.res << endl << endl;
 }
 
 /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale sur la structure extraite, Affichage de l'estimateur
 /// -------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T>
-void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const T &k, T &theta_lambda, const Vec< Vec<T> > &dep_hat, Vec< Vec<T> > &dep_hat_lambda, const bool want_display = false, const bool debug_error_estimate = false, const bool debug_method = false, const bool debug_method_enhancement = false ) {
+void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const T &k, T &theta_lambda, const Vec< Vec<T> > &dep_hat, Vec< Vec<T> > &dep_hat_lambda, const bool disp = false ) {
     
     /// --------------------------------------------------------------------------------------------------------------------------------- ///
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale sur la structure extraite ///
@@ -365,12 +359,10 @@ void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f
     
     apply( m_lambda.elem_list, calcul_error_estimate_lambda );
     
-    if ( debug_error_estimate or debug_method or debug_method_enhancement ) {
-        for (unsigned n=0;n<m_lambda.elem_list.size();++n) {
-            cout << "contribution a l'estimateur d'erreur globale au carre sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " de l'element " << n << " :" << endl;
-            cout << "theta_elem^2 = " << theta_lambda_elem[ n ] << endl;
-        }
-    }
+//    for (unsigned n=0;n<m_lambda.elem_list.size();++n) {
+//        cout << "contribution a l'estimateur d'erreur globale au carre sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " de l'element " << n << " :" << endl;
+//        cout << "theta_elem^2 = " << theta_lambda_elem[ n ] << endl;
+//    }
 
     theta_lambda = sqrt( theta_lambda );
     if ( method == "EET" ) {
@@ -385,21 +377,20 @@ void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f
         m_lambda.theta_SPET = theta_lambda;
     }
     
-    t.stop();
-    if ( want_display ) {
-        /// Affichage de l'estimateur d'erreur globale sur les maillages extraits des maillages initiaux direct/adjoint
-        /// -----------------------------------------------------------------------------------------------------------
+    if ( disp ) {
         cout << "estimateur d'erreur globale sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " :" << endl;
         cout << "theta = " << theta_lambda << endl << endl;
-        
-        cout << "Temps de calcul de l'estimateur d'erreur globale sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " = " << t.res << endl << endl;
     }
+
+    t.stop();
+    if ( disp )
+        cout << "temps de calcul de l'estimateur d'erreur globale sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " = " << t.res << endl << endl;
 }
 
 /// Calcul d'un estimateur pondere d'erreur globale weighted_theta
 /// --------------------------------------------------------------
 template<class TM, class TF, class T, class Pvec>
-void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const T &h, const Pvec &domain_center, const Vec<T> &domain_length, const T &k_min, T &weighted_theta_lambda, const Vec< Vec<T> > &dep_hat, const bool want_display = false, const bool debug_error_estimate = false, const bool debug_method = false, const bool debug_method_enhancement = false ) {
+void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const T &h, const Pvec &domain_center, const Vec<T> &domain_length, const T &k_min, T &weighted_theta_lambda, const Vec< Vec<T> > &dep_hat, const bool disp = false ) {
     
     /// ----------------------------------------------------------------------------------------------------------------------------------------- ///
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur pondere d'erreur globale sur la structure extraite ///
@@ -418,7 +409,7 @@ void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF 
     t.start();
     
     /// Calcul d'un estimateur pondere wieghted_theta de l'erreur globale sur les maillages extraits des maillages initiaux direct/adjoint
-    /// ----------------------------------------------------------------------------------------------------------------------------------------
+    /// ----------------------------------------------------------------------------------------------------------------------------------
     f_lambda.allocate_matrices();
     f_lambda.shift();
     f_lambda.assemble();
@@ -443,28 +434,26 @@ void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF 
     
     apply( m_lambda.elem_list, calcul_weighted_error_estimate_lambda );
     
-//    if ( debug_error_estimate or debug_method or debug_method_enhancement ) {
-//        for (unsigned n=0;n<m_lambda.elem_list.size();++n) {
-//            cout << "contribution a l'estimateur pondere d'erreur globale au carre sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k_min << " de l'element " <<  n << " :" << endl;
-//            cout << "weighted_theta_elem^2 = " << weighted_theta_lambda_elem[ n ] << endl;
-//        }
+//    for (unsigned n=0;n<m_lambda.elem_list.size();++n) {
+//        cout << "contribution a l'estimateur pondere d'erreur globale au carre sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k_min << " de l'element " <<  n << " :" << endl;
+//        cout << "weighted_theta_elem^2 = " << weighted_theta_lambda_elem[ n ] << endl;
 //    }
 
-    t.stop();
-    if ( want_display ) {
-        /// Affichage de l'estimateur pondere weighted_theta de l'erreur globale au carre sur les maillages extraits des maillages initiaux direct/adjoint
-        /// --------------------------------------------------------------------------------------------------------------------------------------------------
+
+    if ( disp ) {
         cout << "estimateur pondere d'erreur globale au carre sur la structure extraite associee au pb " << pb << " de type " << shape << " :" << endl;
         cout << "weighted_theta^2 = " << weighted_theta_lambda << endl << endl;
-        
-        cout << "Temps de calcul de l'estimateur pondere d'erreur globale au carre (technique " << method << ") sur la structure extraite associee au pb " << pb << " de type " << shape << " = " << t.res << endl << endl;
     }
+
+    t.stop();
+    if ( disp )
+        cout << "temps de calcul de l'estimateur pondere d'erreur globale au carre (technique " << method << ") sur la structure extraite associee au pb " << pb << " de type " << shape << " = " << t.res << endl << endl;
 }
 
 /// Construction d'un champ de contrainte admissible, Calcul d'un estimateur d'erreur globale sur le bord de la structure extraite, Affichage de l'estimateur
 /// ---------------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T, class Pvec>
-void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const Pvec &domain_center, const T &k, T &theta_lambda_boundary, const Vec< Vec<T> > &dep_hat, const bool want_display = false, const bool debug_error_estimate = false, const bool debug_method = false, const bool debug_method_enhancement = false ) {
+void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const Pvec &domain_center, const T &k, T &theta_lambda_boundary, const Vec< Vec<T> > &dep_hat, const bool disp = false ) {
     
     /// -------------------------------------------------------------------------------------------------------------------------------------------- ///
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale sur le bord de la structure extraite ///
@@ -508,51 +497,49 @@ void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF 
     m_lambda.update_skin();
     apply( m_lambda.elem_list, calcul_error_estimate_lambda_boundary );
     
-    if ( debug_error_estimate or debug_method or debug_method_enhancement ) {
-        unsigned cpt_face = 0;
-        for (unsigned n=0;n<m_lambda.sub_mesh(Number<1>()).elem_list.size();++n) {
-            if ( m_lambda.sub_mesh(Number<1>()).get_parents_of_EA( m_lambda.sub_mesh(Number<1>()).elem_list[ n ] ).size() == 1 ) {
-                cout << "contribution a l'estimateur d'erreur globale au carre sur le bord de la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " de la face " << m_lambda.sub_mesh(Number<1>()).elem_list[ n ]->number << " :" << endl;
-                cout << "theta_face^2 = " << theta_face_lambda_boundary[ cpt_face ] << endl;
-                cpt_face++;
-            }
-        }
-    }
+//    unsigned cpt_face = 0;
+//    for (unsigned n=0;n<m_lambda.sub_mesh(Number<1>()).elem_list.size();++n) {
+//        if ( m_lambda.sub_mesh(Number<1>()).get_parents_of_EA( m_lambda.sub_mesh(Number<1>()).elem_list[ n ] ).size() == 1 ) {
+//            cout << "contribution a l'estimateur d'erreur globale au carre sur le bord de la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " de la face " << m_lambda.sub_mesh(Number<1>()).elem_list[ n ]->number << " :" << endl;
+//            cout << "theta_face^2 = " << theta_face_lambda_boundary[ cpt_face ] << endl;
+//            cpt_face++;
+//        }
+//    }
     
     theta_lambda_boundary = sqrt( theta_lambda_boundary );
     
-    t.stop();
-    if ( want_display ) {
-        /// Affichage de l'estimateur d'erreur globale sur les maillages extraits des maillages initiaux direct/adjoint
-        /// -----------------------------------------------------------------------------------------------------------
+    if ( disp ) {
         cout << "estimateur d'erreur globale sur le bord de la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " :" << endl;
         cout << "theta = " << theta_lambda_boundary << endl << endl;
-        
-        cout << "Temps de calcul de l'estimateur d'erreur globale sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " = " << t.res << endl << endl;
     }
+
+    t.stop();
+    if ( disp )
+        cout << "temps de calcul de l'estimateur d'erreur globale sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " = " << t.res << endl << endl;
 }
 
 /// Calcul du terme gamma pour le calcul des bornes locales ameliorees
 /// ------------------------------------------------------------------
 template<class TM, class TF, class T, class Pvec>
-void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, const TF &f_adjoint, TF &f_adjoint_lambda_, const unsigned &deg_p, const string &method, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const T &theta_lambda_min, const T &theta_lambda_max, const T &h, const Pvec &domain_center, const Vec<T> &domain_length, const bool &spread_cut, const Vec< Vec<T> > &dep_hat, const Vec< Vec<T> > &dep_adjoint_hat, const string &integration_k, const unsigned &integration_nb_points, T &gamma, const bool debug_method = false, const bool debug_method_enhancement = false, const bool debug_error_estimate = false ) {
+void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, const TF &f_adjoint, TF &f_adjoint_lambda_, const string &method, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const T &theta_lambda_min, const T &theta_lambda_max, const T &h, const Pvec &domain_center, const Vec<T> &domain_length, const bool &spread_cut, const Vec< Vec<T> > &dep_hat, const Vec< Vec<T> > &dep_adjoint_hat, const string &integration_k, const unsigned &integration_nb_points, T &gamma, const bool disp = false ) {
 
     gamma = 0.;
 
     static const unsigned dim = TM::dim;
-    
-    cout << "Calcul du terme gamma pour la technique " << local_improvement << endl << endl;
+
+    if ( disp )
+        cout << "Calcul de la quantite gamma pour la technique " << local_improvement << endl << endl;
     
     TicToc t;
     t.start();
-    
-    cout << "Construction d'un champ de contrainte admissible par element" << endl;
-    if ( local_improvement == "steklov" )
-        cout << "Calcul d'un estimateur d'erreur globale sur un ensemble de structures extraites associees au pb direct de type " << shape << " pour un parametre lambda compris entre " << k_min << " et " << k_max << endl << endl;
-    else if ( local_improvement == "rayleigh" )
-        cout << "Calcul d'un estimateur d'erreur globale sur le bord d'un ensemble de structures extraites associees au pb adjoint de type " << shape << " pour un parametre lambda compris entre 0 et " << k_opt << endl << endl;
-    
-    const bool want_display_error_estimate_lambda = 0;
+
+//    if ( disp ) {
+//        cout << "Construction d'un champ de contrainte admissible par element" << endl;
+//        if ( local_improvement == "steklov" )
+//            cout << "Calcul d'un estimateur d'erreur globale sur un ensemble de structures extraites associees au pb direct de type " << shape << " pour un parametre lambda compris entre " << k_min << " et " << k_max << endl << endl;
+//        else if ( local_improvement == "rayleigh" )
+//            cout << "Calcul d'un estimateur d'erreur globale sur le bord d'un ensemble de structures extraites associees au pb adjoint de type " << shape << " pour un parametre lambda compris entre 0 et " << k_opt << endl << endl;
+//    }
     
     if ( local_improvement == "steklov" ) {
         Vec<T> theta_lambda;
@@ -567,7 +554,7 @@ void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, cons
                 T theta_k = 0.;
                 Vec< Vec<T> > dep_hat_lambda;
                 dep_hat_lambda.resize( m_lambda.elem_list.size() );
-                calcul_error_estimate_lambda( m, m_lambda, f, f_lambda, "direct", method, shape, k, theta_k, dep_hat, dep_hat_lambda, want_display_error_estimate_lambda, debug_method, debug_method_enhancement, debug_error_estimate );
+                calcul_error_estimate_lambda( m, m_lambda, f, f_lambda, "direct", method, shape, k, theta_k, dep_hat, dep_hat_lambda, disp );
                 theta_lambda.push_back( pow( theta_k, 2 ) );
                 func_lambda.push_back( pow( k / k_min, -1./h ) * pow( theta_k, 2 ) / ( h * k ) );
                 lambda.push_back( k );
@@ -587,7 +574,7 @@ void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, cons
                 T theta_k = 0.;
                 Vec< Vec<T> > dep_hat_lambda;
                 dep_hat_lambda.resize( m_lambda.elem_list.size() );
-                calcul_error_estimate_lambda( m, m_lambda, f, f_lambda, "direct", method, shape, k, theta_k, dep_hat, dep_hat_lambda, want_display_error_estimate_lambda, debug_method, debug_method_enhancement, debug_error_estimate );
+                calcul_error_estimate_lambda( m, m_lambda, f, f_lambda, "direct", method, shape, k, theta_k, dep_hat, dep_hat_lambda, disp );
                 theta_lambda.push_back( pow( theta_k, 2 ) );
                 func_lambda.push_back( pow( k / k_min, -1./h ) * pow( theta_k, 2 ) / ( h * k ) );
                 lambda.push_back( k );
@@ -601,33 +588,33 @@ void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, cons
             set_mesh_crown( m_crown_lambda, m, domain_center, lambda_min, lambda_max, spread_cut );
             TF f_crown_lambda( m_crown_lambda );
             T weighted_theta_crown_lambda_2 = 0.;
-            calcul_weighted_error_estimate_lambda( m, m_crown_lambda, f, f_crown_lambda, "direct", method, shape, h, domain_center, domain_length, k_min, weighted_theta_crown_lambda_2, dep_hat, want_display_error_estimate_lambda, debug_error_estimate, debug_method, debug_method_enhancement );
+            calcul_weighted_error_estimate_lambda( m, m_crown_lambda, f, f_crown_lambda, "direct", method, shape, h, domain_center, domain_length, k_min, weighted_theta_crown_lambda_2, dep_hat, disp );
             gamma = pow( theta_lambda_min, 2 ) - pow( k_min / k_max, 1./h ) * pow( theta_lambda_max, 2 ) + weighted_theta_crown_lambda_2;
         }
     }
     else if ( local_improvement == "rayleigh" ) {
         T theta_adjoint_lambda_boundary = 0.;
-        calcul_error_estimate_lambda_boundary( m_adjoint, m_adjoint_lambda_, f_adjoint, f_adjoint_lambda_, "adjoint", method, shape, domain_center, k_opt, theta_adjoint_lambda_boundary, dep_adjoint_hat, want_display_error_estimate_lambda, debug_error_estimate, debug_method, debug_method_enhancement );
+        calcul_error_estimate_lambda_boundary( m_adjoint, m_adjoint_lambda_, f_adjoint, f_adjoint_lambda_, "adjoint", method, shape, domain_center, k_opt, theta_adjoint_lambda_boundary, dep_adjoint_hat, disp );
         unsigned n = dim - 1;
         gamma = 2 * sqrt( h ) / ( h + n + 1 ) * theta_adjoint_lambda_boundary;
     }
 
-    cout << "gamma = " << gamma << endl;
+    cout << "gamma = " << gamma << endl << endl;
 
     t.stop();
-    cout << "Temps de calcul du terme gamma = " << t.res << endl << endl;
+    if ( disp )
+        cout << "temps de calcul de la quantite gamma = " << t.res << endl << endl;
 }
 
 /// Calcul de la correction I_hhh sur la quantite d'interet locale I pour le calcul des bornes locales ameliorees
 /// -------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T>
-void calcul_correction_interest_quantity_lambda( const TM &m_lambda_min, const TM &m_adjoint_lambda_min, const TF &f_lambda_min, const TF &f_adjoint_lambda_min, const string &interest_quantity, const string &method, const string &method_adjoint, const Vec< Vec<T> > &dep_hat_lambda_min, const Vec< Vec<T> > &dep_adjoint_hat_lambda_min, T &I_hhh ) {
+void calcul_correction_interest_quantity_lambda( const TM &m_lambda_min, const TM &m_adjoint_lambda_min, const TF &f_lambda_min, const TF &f_adjoint_lambda_min, const string &interest_quantity, const string &method, const string &method_adjoint, const Vec< Vec<T> > &dep_hat_lambda_min, const Vec< Vec<T> > &dep_adjoint_hat_lambda_min, T &I_hhh, const bool want_introduction_sigma_hat_m = true, const bool disp = false ) {
 
     I_hhh = 0.;
 
-    cout << "----------------------------------------------------------------" << endl;
-    cout << "Calcul de la correction I_hhh sur la quantite d'interet locale I" << endl;
-    cout << "----------------------------------------------------------------" << endl << endl;
+    if ( disp )
+        cout << "Calcul de la correction I_hhh sur la quantite d'interet locale I" << endl << endl;
 
     TicToc t;
     t.start();
@@ -646,11 +633,15 @@ void calcul_correction_interest_quantity_lambda( const TM &m_lambda_min, const T
     
     apply_ij( m_lambda_min.elem_list, m_adjoint_lambda_min.elem_list, calcul_correction_interest_quantity_lambda );
 
+    if ( not want_introduction_sigma_hat_m )
+        I_hhh *= 2;
+
     cout << "correction I_hhh sur la quantite d'interet :" << endl;
     cout << "I_hhh = " << I_hhh << endl;
 
     t.stop();
-    cout << "Temps de calcul de la correction I_hhh sur la quantite d'interet = " << t.res << endl << endl;
+    if ( disp )
+        cout << "temps de calcul de la correction I_hhh sur la quantite d'interet = " << t.res << endl << endl;
 }
 
 /// Calcul de la constante h pour le calcul des bornes locales ameliorees

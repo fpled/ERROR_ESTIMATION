@@ -31,7 +31,7 @@ struct Calcul_Elem_Matrix_K_hat {
 /// Construction des vecteurs F_hat[ n ] pour chaque element n du maillage
 /// ----------------------------------------------------------------------
 template<class TE, class TM, class TF, class TVV, class TV, class B, class BV, class TTWW, class S, class TTVVV, class TTVV>
-void calc_elem_vector_F_hat( TE &elem, const TM &m, const TF &f, const TVV &node_list_face, const TV &elem_cpt_node, const B &balancing, const BV &elem_flag_bal, const BV &elem_flag_enh, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, const TTVVV &vec_force_fluxes, TTVV &F_hat ) {}
+void calc_elem_vector_F_hat( TE &elem, const TM &m, const TF &f, const TVV &node_list_face, const TV &elem_cpt_node, const B &balancing, const BV &elem_flag_bal, const BV &elem_flag_enh, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, const TTVVV &force_fluxes, TTVV &F_hat ) {}
 
 template<class T>
 struct Calcul_Elem_Vector_F_hat {
@@ -42,10 +42,10 @@ struct Calcul_Elem_Vector_F_hat {
     const Vec<bool>* elem_flag_enh;
     const string* pb;
     const bool* want_local_enrichment;
-    const Vec< Vec< Vec<T> > >* vec_force_fluxes;
+    const Vec< Vec< Vec<T> > >* force_fluxes;
     template<class TE, class TM, class TF> void operator()( TE &elem, const TM &m, const TF &f, Vec< Vec<T> > &F_hat ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
-        calc_elem_vector_F_hat( elem, m, f, *node_list_face, *elem_cpt_node, *balancing, *elem_flag_bal, *elem_flag_enh, f.vectors, ind, *pb, *want_local_enrichment, *vec_force_fluxes, F_hat );
+        calc_elem_vector_F_hat( elem, m, f, *node_list_face, *elem_cpt_node, *balancing, *elem_flag_bal, *elem_flag_enh, f.vectors, ind, *pb, *want_local_enrichment, *force_fluxes, F_hat );
     }
 };
 

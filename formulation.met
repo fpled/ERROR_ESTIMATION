@@ -21,8 +21,8 @@ import "INTEREST_QUANTITY/Interest_quantity.met"
 #------------------------------------------------------------------------------------------------------------------------------------------------------------
 want_discretization_error := false
 want_method_EET := true
-want_method_SPET := false
-want_method_EESPT := false
+want_method_SPET := true
+want_method_EESPT := true
 want_enhancement := false
 want_local_estimation := false
 want_local_improvement_steklov := false
@@ -65,7 +65,7 @@ admissible_field_base := "lagrange"
 
 # Enrichissement du degre de l'analyse elements finis p -> p+k pour la resolution des problemes locaux elementaires/par patch
 #----------------------------------------------------------------------------------------------------------------------------
-deg_k := 3
+deg_k := 2
 
 # Choix de la technique d'integration : formal, gauss_num
 #--------------------------------------------------------
@@ -256,10 +256,10 @@ formList := [ FormulationElasticity ]
 # Liste d'elements
 #-----------------
 #elemList := [ Triangle ]
-elemList := [ Triangle, Quad ]
+#elemList := [ Triangle, Quad ]
 #elemList := [ Triangle, Tetra ]
 #elemList := [ Tetra ]
-#elemList := [ Tetra, Hexa ]
+elemList := [ Tetra, Hexa ]
 
 # Liste de fonctions
 #-------------------

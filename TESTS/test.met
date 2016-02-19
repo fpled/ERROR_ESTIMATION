@@ -549,7 +549,7 @@ e.pos_nodes[3] = [110 22] # 33
     # for i in 0 .. face->nb_nodes
         # for d in 0 .. face->dim
             # s := Op()
-            # s = symbol( "vec_force_fluxes_local[ $( face->num_child ) ][ $d ][ $i ]", tex_name = "F_s" )
+            # s = symbol( "force_fluxes_local[ $( face->num_child ) ][ $d ][ $i ]", tex_name = "F_s" )
             # sym_force_surf_enhanced_elem.push_back( s )
             # sym_force_surf_enhanced[ i ][ d ] = s
     # force_surf_enhanced := Vec[ Op, face->dim ]( face->interpolation( sym_force_surf_enhanced, force_fluxes_base ) )
@@ -614,7 +614,7 @@ e.pos_nodes[3] = [110 22] # 33
     # for i in 0 .. face->nb_nodes
         # for d in 0 .. face->dim
             # s := Op()
-            # s = symbol( "vec_force_fluxes_local[ $( face->num_child ) ][ $d ][ $i ]", tex_name = "F_s" )
+            # s = symbol( "force_fluxes_local[ $( face->num_child ) ][ $d ][ $i ]", tex_name = "F_s" )
             # sym_force_flux_enhanced.push_back(s)
             # sym_force_surf_enhanced[ i ][ d ] = s
     # sym_force_surf_enhanced_elem.display_tex( "f_surf_enhanced_" + cpt++ )

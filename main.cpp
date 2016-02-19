@@ -36,16 +36,16 @@ using namespace std;
 int main( int argc, char **argv ) {
     TicToc t_total;
     t_total.start();
-    static const unsigned dim = 2;
+    static const unsigned dim = 3;
     static const bool wont_add_nz = true;
     typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "weight_sensor"; // structure
+    static const string structure = "test_specimen_Q3_5"; // structure
     // 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes, square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
     // 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes, test_specimen_n (n=5,10,15,20,25,Q1_5,Q3_5,Q3_10,Q3_15,Q3_20,Q3_25,Q4_5,Q6_5,Q8_5)
-    static const string mesh_size = "coarse"; // taille du maillage : coarse, fine
+    static const string mesh_size = "fine"; // taille du maillage : coarse, fine
     // 2D : plate_hole, plate_crack, structure_crack, test_specimen, weigth_sensor
     // 3D : plate_hole, spot_weld, reactor_head
     static const string loading = "Step-2"; // chargement
@@ -97,14 +97,13 @@ int main( int argc, char **argv ) {
     /// ------------------------------------
     static const bool want_remesh = 1; // remaillage adaptatif (raffinement du maillage)
     static const T tol_remesh = 20e-2; // tolerance pour le critère d'arrêt de l'algorithme de remaillage
-    static const T k_remesh = 0.75; // rapport maximal la contribution élémentaire au carré à l'erreur estimée et la contribution élémentaire maximale au carré des barres qui ne seront pas divisées
+    static const unsigned max_iter_remesh = 4; // nb d'iterations max de l'algorithme de remaillage
+    static const T k_remesh = 0.60; // rapport maximal la contribution élémentaire au carré à l'erreur estimée et la contribution élémentaire maximale au carré des barres qui ne seront pas divisées
     static const bool spread_cut_remesh = true; // propagation du raffinement au reste du maillage (étendue de la coupe si l'arête coupée n'est pas la plus longue de l'élément)
 
     /// Goal-oriented error estimation method
     /// -------------------------------------
     static const bool want_local_estimation = 0; // calcul de l'erreur locale sur une quantite d'interet
-    static const bool want_interest_quantity_only = 0; // calcul de la quantite d'interet uniquement
-    static const bool want_handbook_only = 0; // calcul de la solution handbook uniquement
     static const bool want_introduction_sigma_hat_m = 1; // introduction de sigma_hat_m pour le calcul de l'erreur sur une quantite d'interet locale
     static const bool want_local_refinement = 1; // raffinement local du mailage adjoint
     static const bool want_local_enrichment = 0; // enrichissement local avec fonctions handbook
@@ -129,9 +128,8 @@ int main( int argc, char **argv ) {
     static const T radius_Ri = 6; // rayon du cercle interieur a la couronne omega entourant la pointe de fissure (quantite d'interet SIF) : 1.6 pour plate_crack et 6 pour structure_crack
     static const T radius_Re = 8; // rayon du cercle exterieur a la couronne omega entourant la pointe de fissure (quantite d'interet SIF) : 3.4 pour plate_crack et 8 pour structure_crack
     
-    /// Local refinement parameters for adjoint problem
-    /// -----------------------------------------------
-    // Decoupe du cote d'un element (Bar) si sa longueur est superieure à d * k + l_min ou d est la distance entre le milieu du cote et le centre
+    /// Local refinement for adjoint problem
+    /// ------------------------------------
     static const T l_min_refinement = 1.0; // longueur minimale des cotes des elements du maillage adjoint
     static const T k_refinement = 1.0; // coefficient d'augmentation de la longueur maximale des cotes des elements en fonction de la distance au point, au cercle, ... autour duquel on souhaite raffiner le maillage
     static const bool spread_cut = true; // propagation du raffinement au reste du maillage (étendue de la coupe si l'arête coupée n'est pas la plus longue de l'élément)
@@ -150,77 +148,46 @@ int main( int argc, char **argv ) {
     static const string integration_k = "trapeze"; // type d'integration sur le parametre k (amelioration steklov) : gauss, trapeze, IPP
     static const unsigned integration_nb_points = 1000; // nb d'intervalles pour l'integration type trapeze sur le parametre k (amelioration steklov)
     
-    /// Verification equilibre / solveur
-    /// --------------------------------
+    /// Verification equilibrium / solver
+    /// ---------------------------------
     static const bool verif_eq = 1; // verification de l'equilibre global elements finis
     static const bool verif_compatibility_conditions = 1; // verification des conditions de compatibilite (equilibre elements finis) (methode EET)
-    static const T tol_compatibility_conditions = 1e-6; // tolerance pour la verification des conditions de compatibilite (equilibre elements finis) (methode EET)
     static const bool verif_eq_force_fluxes = 1; // verification de l'equilibre des densites d'effort (methodes EET, EESPT)
+    static const T tol_compatibility_conditions = 1e-6; // tolerance pour la verification des conditions de compatibilite (equilibre elements finis) (methode EET)
     static const T tol_eq_force_fluxes = 1e-6; // tolerance pour la verification de l'equilibre des densites d'effort (methodes EET, EESPT)
 
     static const bool verif_solver = 1; // verification de la resolution des pbs locaux (methodes EET, SPET, EESPT)
-    static const T tol_solver = 1e-6; // tolerance pour la verification de la resolution des pbs locaux (methodes EET, SPET, EESPT)
-    static const bool verif_solver_enhancement = 1; // verification de la resolution des pbs locaux (amelioration des methodes EET, EESPT)
-    static const T tol_solver_enhancement = 1e-6; // tolerance pour la verification de la resolution des pbs locaux (amelioration des methodes EET EESPT)
     static const bool verif_solver_minimisation = 1; // verification de la resolution des pbs de minimisation (methodes EET, EESPT)
-    static const T tol_solver_minimisation = 1e-6; // tolerance pour la verification de la resolution des pbs de minimisation (methodes EET, EESPT)
+    static const bool verif_solver_enhancement = 1; // verification de la resolution des pbs locaux (amelioration des methodes EET, EESPT)
     static const bool verif_solver_minimisation_enhancement = 1; // verification de la resolution des pbs de minimisation (amelioration des methodes EET, EESPT)
+    static const T tol_solver = 1e-6; // tolerance pour la verification de la resolution des pbs locaux (methodes EET, SPET, EESPT)
+    static const T tol_solver_minimisation = 1e-6; // tolerance pour la verification de la resolution des pbs de minimisation (methodes EET, EESPT)
+    static const T tol_solver_enhancement = 1e-6; // tolerance pour la verification de la resolution des pbs locaux (amelioration des methodes EET EESPT)
     static const T tol_solver_minimisation_enhancement = 1e-6; // tolerance pour la verification de la resolution des pbs de minimisation (amelioration des methodes EET, EESPT)
     
-    /// Debug
-    /// -----
-    static const bool debug_mesh = 0; // debug du maillage (pb direct)
-    static const bool debug_mesh_adjoint = 0; // debug du maillage (pb adjoint)
-    static const bool debug_method = 0; // debug des methodes EET, SPET, EESPT (pb direct)
-    static const bool debug_method_adjoint = 0; // debug des methodes EET, SPET, EESPT (pb adjoint)
-    static const bool debug_method_enhancement = 0; // debug de l'amelioration des methodes EET, EESPT (pb direct)
-    static const bool debug_method_enhancement_adjoint = 0; // debug de l'amelioration des methodes EET, EESPT (pb adjoint)
-    static const bool debug_criterium_enhancement = 0; // debug du critere d'amelioration (pb direct)
-    static const bool debug_criterium_enhancement_adjoint = 0; // debug du critere d'amelioration (pb adjoint)
-    static const bool debug_discretization_error = 0; // debug de l'erreur de discretisation (pb direct)
-    static const bool debug_force_fluxes = 0; // debug des densites d'effort pour les methodes EET, EESPT (pb direct)
-    static const bool debug_force_fluxes_adjoint = 0; // debug des densites d'effort pour les methodes EET, EESPT (pb adjoint)
-    static const bool debug_force_fluxes_enhancement = 0; // debug de l'amelioration des densites d'effort pour les methodes EET, EESPT (pb direct)
-    static const bool debug_force_fluxes_enhancement_adjoint = 0; // debug de l'amelioration des densites d'effort pour les methodes EET, EESPT (pb adjoint)
-    static const bool debug_error_estimate = 0; // debug de l'estimateur d'erreur globale (pb direct)
-    static const bool debug_error_estimate_adjoint = 0; // debug de l'estimateur d'erreur globale (pb adjoint)
-    static const bool debug_local_effectivity_index = 0; // debug de l'indice d'efficacite local (pb direct)
-    static const bool debug_local_effectivity_index_adjoint = 0; // debug de l'indice d'efficacite local (pb adjoint)
-    
-    /// Sauvegarde / Affichage
-    /// ----------------------
-    static const bool save_vtu = 1;
-    static const bool save_pvd = 1;
-    static const bool save_vtu_ref = 0;
+    /// Display outputs
+    /// ---------------
     static const bool display_vtu = 0;
     static const bool display_pvd = 1;
-    static const bool display_vtu_ref = 0;
-    
-    static const bool save_vtu_adjoint = 1;
-    static const bool save_pvd_adjoint = 0;
-    static const bool save_vtu_local_ref = 0;
     static const bool display_vtu_adjoint = 0;
-    static const bool display_pvd_adjoint = 0;
-    static const bool display_vtu_local_ref = 0;
-    
-    static const bool save_vtu_lambda = 1;
-    static const bool save_vtu_adjoint_lambda = 1;
     static const bool display_vtu_lambda = 0;
     static const bool display_vtu_adjoint_lambda = 0;
-    
-    static const bool save_vtu_crown = 1;
     static const bool display_vtu_crown = 0;
-    
+
     /// ------------------------------------------------------- ///
     /// Construction de la solution elements finis du pb direct ///
     /// ------------------------------------------------------- ///
     
+    DisplayParaview dp;
+    Vec<std::string> lp("all");
+
     display_pb( dim, structure, deg_p  );
 
     /// Maillage du pb direct
     /// ---------------------
-    TM m; // declaration d'un maillage de type TM
+    TM m;
     set_mesh( m, structure, mesh_size, loading, deg_p, refinement_level_ref, want_global_discretization_error, want_local_discretization_error );
+    string prefix = define_prefix( m, "direct", structure, loading, mesh_size, method, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, want_local_improvement, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment );
     
     /// Maillage du pb de reference associe au pb direct
     /// ------------------------------------------------
@@ -250,7 +217,7 @@ int main( int argc, char **argv ) {
         t_ref.start();
         f_ref.solve();
         t_ref.stop();
-        cout << "Temps de calcul de la resolution du pb de reference associe au pb direct = " << t_ref.res << endl << endl;
+        cout << "temps de calcul de la resolution du pb de reference associe au pb direct = " << t_ref.res << endl << endl;
 
         /// Verification de l'equilibre du pb de reference associe au pb direct
         /// -------------------------------------------------------------------
@@ -260,7 +227,7 @@ int main( int argc, char **argv ) {
 
     /// Formulation du pb direct
     /// ------------------------
-    TF f( m ); // creation d'une formulation du type TF avec le maillage m
+    TF f( m );
 
     /// Proprietes materiaux du pb direct
     /// ---------------------------------
@@ -280,7 +247,7 @@ int main( int argc, char **argv ) {
     t.start();
     f.solve();
     t.stop();
-    cout << "Temps de calcul de la resolution du pb direct = " << t.res << endl << endl;
+    cout << "temps de calcul de la resolution du pb direct = " << t.res << endl << endl;
 
 //    f.allocate_matrices();
 //    f.shift();
@@ -297,25 +264,25 @@ int main( int argc, char **argv ) {
 
     /// Calcul de la norme du champ de deplacement approche du pb direct
     /// ----------------------------------------------------------------
-    calcul_norm_dep( m, f, "direct", want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation );
+    calcul_norm_dep( m, f, "direct" );
 
     /// ------------------------------------------------------------------------- ///
     /// Mesure de l'erreur de discretisation globale et locale associee pb direct ///
     /// ------------------------------------------------------------------------- ///
 
-    calcul_discretization_error( m, m_ref, f, f_ref, want_global_discretization_error, want_local_discretization_error, want_solve_ref, debug_discretization_error );
+    calcul_discretization_error( m, m_ref, f, f_ref, want_global_discretization_error, want_local_discretization_error, want_solve_ref );
 
     T theta;
     Vec<T> theta_elem;
     Vec< Vec<T> > dep_hat;
 
-    if ( want_global_estimation or ( want_local_estimation and want_handbook_only == 0 and want_interest_quantity_only == 0 ) ) {
+    if ( want_global_estimation or want_local_estimation ) {
 
         /// ------------------------------------------------------------------------------------------------------------- ///
         /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe pb direct ///
         /// ------------------------------------------------------------------------------------------------------------- ///
 
-        calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment, debug_mesh, debug_force_fluxes, debug_force_fluxes_enhancement, debug_criterium_enhancement, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
+        calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment );
 
         if ( method.find("EET") != string::npos )
             smoothing( m, ExtractDM< theta_nodal_DM >(), ExtractDM< theta_elem_EET_DM >() );
@@ -324,32 +291,35 @@ int main( int argc, char **argv ) {
         else if ( method.find("EESPT") != string::npos )
             smoothing( m, ExtractDM< theta_nodal_DM >(), ExtractDM< theta_elem_EESPT_DM >() );
 
-        string prefix = define_prefix( m, "direct", structure, loading, mesh_size );
-
-        DisplayParaview dp;
-        Vec<std::string> lp("dep","f_nodal","f_surf","f_vol","density","young","poisson","la","mu","epsilon","sigma","sigma_von_mises","norm_dep","norm_dep_elem","sigma_hat_EET","ecre_EET","ecre_elem_EET","theta_EET","theta_elem_EET","theta_nodal");
-        dp.add_mesh_iter( m, prefix, lp, 0 );
-//        display( m, prefix + "_adapt_0"  );
+        unsigned adapt = 0;
+        if ( want_remesh )
+            dp.add_mesh_iter( m, prefix, lp, adapt );
 
         /// ------------------------------------------- ///
         /// Adaptation du maillage associe au pb direct ///
         /// ------------------------------------------- ///
 
-        unsigned adapt = 0;
-
-//        while( want_remesh and refinement_if_constraints_or_nodal_field_sup( m, f, ExtractDM< theta_nodal_DM >(), k_remesh, spread_cut_remesh ) and theta / m.norm_dep > tol_remesh ) {
-        while( want_remesh and refinement_if_nodal_field_sup( m, ExtractDM< theta_nodal_DM >(), k_remesh, spread_cut_remesh ) and theta / m.norm_dep > tol_remesh ) {
-//        while( want_remesh and theta / m.norm_dep > tol_remesh ) { divide( m );
-
-            remove_lonely_nodes( m );
+        while( want_remesh and theta / m.norm_dep > tol_remesh ) {
 
             ++adapt;
 
-            cout << "Adaptation #" << adapt << " : Maillage du pb direct" << endl;
-            cout << "--------------------------------------" << endl << endl;
+            if ( adapt == max_iter_remesh )
+                break;
+
+            cout << "--------------------------" << endl << endl;
+            cout << "Adaptation de maillage #" << adapt << endl;
+            cout << "--------------------------" << endl << endl;
+
+//            divide( m );
+//            refinement_if_nodal_field_sup( m, ExtractDM< theta_nodal_DM >(), k_remesh, spread_cut_remesh );
+            if ( method.find("EET") != string::npos )
+                refinement_if_elem_field_sup( m, theta_elem_EET_DM(), k_remesh, spread_cut_remesh );
+            else if ( method.find("SPET") != string::npos )
+                refinement_if_elem_field_sup( m, theta_elem_SPET_DM(), k_remesh, spread_cut_remesh );
+            else if ( method.find("EESPT") != string::npos )
+                refinement_if_elem_field_sup( m, theta_elem_EESPT_DM(), k_remesh, spread_cut_remesh );
 
             display_mesh_carac( m );
-//            display( m, prefix + "_adapt_" + to_string( adapt )  );
 
             f.set_mesh( &m );
             f.init();
@@ -370,7 +340,7 @@ int main( int argc, char **argv ) {
             t.start();
             f.solve();
             t.stop();
-            cout << "Temps de calcul de la resolution du pb direct = " << t.res << endl << endl;
+            cout << "temps de calcul de la resolution du pb direct = " << t.res << endl << endl;
 
             /// Verification de l'equilibre du pb direct
             /// ----------------------------------------
@@ -379,19 +349,19 @@ int main( int argc, char **argv ) {
 
             /// Calcul de la norme du champ de deplacement approche du pb direct
             /// ----------------------------------------------------------------
-            calcul_norm_dep( m, f, "direct", want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation );
+            calcul_norm_dep( m, f, "direct" );
 
             /// ------------------------------------------------------------------------- ///
             /// Mesure de l'erreur de discretisation globale et locale associee pb direct ///
             /// ------------------------------------------------------------------------- ///
 
-            calcul_discretization_error( m, m_ref, f, f_ref, want_global_discretization_error, want_local_discretization_error, want_solve_ref, debug_discretization_error );
+            calcul_discretization_error( m, m_ref, f, f_ref, want_global_discretization_error, want_local_discretization_error, want_solve_ref );
 
             /// ------------------------------------------------------------------------------------------------------------- ///
             /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe pb direct ///
             /// ------------------------------------------------------------------------------------------------------------- ///
 
-            calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment, debug_mesh, debug_force_fluxes, debug_force_fluxes_enhancement, debug_criterium_enhancement, debug_error_estimate, debug_local_effectivity_index, debug_method, debug_method_enhancement );
+            calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment );
 
             if ( method.find("EET") != string::npos )
                 smoothing( m, ExtractDM< theta_nodal_DM >(), ExtractDM< theta_elem_EET_DM >() );
@@ -400,17 +370,22 @@ int main( int argc, char **argv ) {
             else if ( method.find("EESPT") != string::npos )
                 smoothing( m, ExtractDM< theta_nodal_DM >(), ExtractDM< theta_elem_EESPT_DM >() );
 
-            dp.add_mesh_iter( m, prefix, lp, adapt );
 //            display( m, prefix + "_adapt_" + to_string( adapt )  );
+            dp.add_mesh_iter( m, prefix + "_adapt", lp, adapt );
 
         }
-        if ( display_pvd )
-            dp.exec( prefix );
-        else if ( save_pvd )
-            dp.make_pvd_file( prefix );
+
+        /// ---------------------- ///
+        /// Sauvegarde / Affichage ///
+        /// ---------------------- ///
+
+        if ( want_remesh ) {
+            if ( display_pvd )
+                dp.exec( prefix + "adapt" );
+            else
+                dp.make_pvd_file( prefix + "adapt" );
+        }
     }
-    
-    TM m_adjoint, m_local_ref, m_lambda_min, m_lambda_max, m_lambda_opt, m_adjoint_lambda_min, m_adjoint_lambda_max, m_adjoint_lambda_opt, m_crown;
     
     if ( want_local_estimation ) {
         
@@ -418,10 +393,11 @@ int main( int argc, char **argv ) {
         
         /// Definition de l'extracteur
         /// --------------------------
+        TM m_crown;
         if ( interest_quantity == "SIF" or interest_quantity == "stress_intensity_factor" )
             set_mesh_crown( m_crown, m, pos_crack_tip, radius_Ri, radius_Re, spread_cut );
         TF f_crown( m_crown );
-        define_extractor( m, m_crown, f, f_crown, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, want_local_enrichment );
+        define_extractor( m, m_crown, f, f_crown, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, want_local_enrichment, display_vtu_crown, prefix );
         
         /// ---------------------------------------------------- ///
         /// Calcul de la quantite d'interet locale approchee I_h ///
@@ -437,6 +413,7 @@ int main( int argc, char **argv ) {
         T I_ex;
         if ( want_solve_local_ref ) {
             
+            TM m_local_ref;
             Vec<unsigned> elem_list_local_ref_interest_quantity;
             unsigned node_local_ref_interest_quantity;
             set_mesh_local_ref( m_local_ref, m, refinement_level_ref, interest_quantity, elem_list_interest_quantity, elem_list_local_ref_interest_quantity, node_interest_quantity, node_local_ref_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut );
@@ -463,7 +440,7 @@ int main( int argc, char **argv ) {
             t_local_ref.start();
             f_local_ref.solve();
             t_local_ref.stop();
-            cout << "Temps de calcul de la resolution du pb de reference local associe au pb direct = " << t_local_ref.res << endl << endl;
+            cout << "temps de calcul de la resolution du pb de reference local associe au pb direct = " << t_local_ref.res << endl << endl;
             
             /// Verification de l'equilibre du pb de reference local associe au pb direct
             /// -------------------------------------------------------------------------
@@ -483,113 +460,125 @@ int main( int argc, char **argv ) {
             calcul_interest_quantity( m_local_ref, m_crown_ref, f_local_ref, f_crown_ref, "reference", interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_local_ref_interest_quantity, node_local_ref_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, I_ex );
         }
         
-        if ( want_interest_quantity_only == 0 ) {
-            
-            /// ------------------------------------------------------- ///
-            /// Construction de la solution element finis du pb adjoint ///
-            /// ------------------------------------------------------- ///
-            
-            Vec<unsigned> elem_list_adjoint_interest_quantity;
-            Vec<unsigned> elem_list_adjoint_enrichment_zone_1;
-            Vec<unsigned> elem_list_adjoint_enrichment_zone_2;
-            Vec<unsigned> face_list_adjoint_enrichment_zone_12;
-            unsigned node_adjoint_interest_quantity;
-            Vec<unsigned> node_list_adjoint_enrichment;
-            
-            /// Maillage du pb adjoint
-            /// ----------------------
-            set_mesh_adjoint( m_adjoint, m, interest_quantity, direction_extractor, want_local_refinement, l_min_refinement, k_refinement, pointwise_interest_quantity, elem_list_interest_quantity, elem_list_adjoint_interest_quantity, node_interest_quantity, node_adjoint_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, elem_list_adjoint_enrichment_zone_1, elem_list_adjoint_enrichment_zone_2, face_list_adjoint_enrichment_zone_12, node_list_adjoint_enrichment, debug_mesh, debug_mesh_adjoint );
-            display_params_adjoint( want_local_refinement, l_min_refinement, k_refinement, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, elem_list_adjoint_enrichment_zone_1, elem_list_adjoint_enrichment_zone_2, face_list_adjoint_enrichment_zone_12, node_list_adjoint_enrichment, want_local_improvement, local_improvement, shape, k_min, k_max, k_opt );
-            
-            /// Formulation du pb adjoint
-            /// -------------------------
-            TF f_adjoint( m_adjoint );
-            
-            /// Proprietes materiaux du pb adjoint
-            /// ----------------------------------
-            set_material_properties( f_adjoint, m_adjoint, structure );
+        /// ------------------------------------------------------- ///
+        /// Construction de la solution element finis du pb adjoint ///
+        /// ------------------------------------------------------- ///
 
-            /// Conditions aux limites du pb adjoint
-            /// ------------------------------------
-            set_constraints( f_adjoint, m_adjoint, boundary_condition_D, "adjoint", structure, loading );
-            reset_load_conditions( m_adjoint );
-            set_load_conditions_adjoint( m_adjoint, f_adjoint, m, m_crown, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, interest_quantity, direction_extractor, pointwise_interest_quantity, want_local_enrichment );
-            
-            /// Resolution du pb adjoint
-            /// ------------------------
-            cout << "Resolution du pb adjoint" << endl;
-            cout << "------------------------" << endl << endl;
-            TicToc t_adjoint;
-            t_adjoint.start();
-            f_adjoint.solve();
-            t_adjoint.stop();
-            cout << "Temps de calcul de la resolution du pb adjoint = " << t_adjoint.res << endl << endl;
-            
-            if ( want_local_enrichment )
-                calcul_dep_tot_after_solve( m_adjoint );
-            
-            /// Verification de l'equilibre du pb adjoint
-            /// -----------------------------------------
-            if ( verif_eq )
-                check_equilibrium( f_adjoint, "adjoint" );
-            
-            /// Calcul de la norme du champ de deplacement approche du pb adjoint
-            /// -----------------------------------------------------------------
-            calcul_norm_dep( m_adjoint, f_adjoint, "adjoint", want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation );
-            
-            if ( want_handbook_only == 0 ) {
-                
-                /// ----------------------------------------------------------------------------------------------------------------- ///
-                /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe au pb adjoint ///
-                /// ----------------------------------------------------------------------------------------------------------------- ///
-                
-                T theta_adjoint;
-                Vec<T> theta_adjoint_elem;
-                Vec< Vec<T> > dep_adjoint_hat;
-                calcul_global_error_estimation( f_adjoint, m_adjoint, "adjoint", method_adjoint, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta_adjoint, theta_adjoint_elem, dep_adjoint_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, false, false, want_local_enrichment, debug_mesh_adjoint, debug_force_fluxes_adjoint, debug_force_fluxes_enhancement_adjoint, debug_criterium_enhancement_adjoint, debug_error_estimate_adjoint, debug_local_effectivity_index_adjoint, debug_method_adjoint, debug_method_enhancement_adjoint );
-                
-                /// Construction de la correspondance entre maillages extraits et maillages initiaux direct/adjoint
-                /// -----------------------------------------------------------------------------------------------
-                Vec<unsigned> correspondance_elem_m_adjoint_to_elem_m;
-                correspondance_elem_m_adjoint_to_elem_m.resize( m_adjoint.elem_list.size() );
-                
-                Construct_Correspondance_Elem_Mesh_Extracted_To_Elem_Mesh construct_correspondance_elem_m_adjoint_to_elem_m;
-                construct_correspondance_elem_m_adjoint_to_elem_m.correspondance_elem_m_extracted_to_elem_m = &correspondance_elem_m_adjoint_to_elem_m;
-                apply_ij( m_adjoint.elem_list, m.elem_list, construct_correspondance_elem_m_adjoint_to_elem_m );
-                
-                /// --------------------------------------------------------------------------------------------------- ///
-                /// Calcul de la correction I_hh (avec ou sans introduction de sigma_hat_m) sur la quantite d'interet I ///
-                /// --------------------------------------------------------------------------------------------------- ///
-                
-                T I_hh;
-                calcul_correction_interest_quantity( m, m_adjoint, f, f_adjoint, interest_quantity, method, method_adjoint, theta, theta_adjoint, theta_adjoint_elem, correspondance_elem_m_adjoint_to_elem_m, dep_hat, dep_adjoint_hat, I_h, I_hh, want_local_enrichment, want_introduction_sigma_hat_m );
-                
-                /// ---------------------------------------------------------------------- ///
-                /// Calcul standard des bornes d'erreur sur la quantite d'interet locale I ///
-                /// ---------------------------------------------------------------------- ///
-                
-                calcul_standard_local_error_bounds( m, m_adjoint, f, f_adjoint, method, theta, theta_adjoint, theta_adjoint_elem, correspondance_elem_m_adjoint_to_elem_m, dep_hat, I_h, I_hh, want_introduction_sigma_hat_m );
-                
-                /// ---------------------------------------------------------------------- ///
-                /// Calcul ameliore des bornes d'erreur sur la quantite d'interet locale I ///
-                /// ---------------------------------------------------------------------- ///
-                if ( want_local_improvement ) {
-                    calcul_enhanced_local_error_bounds( m, m_adjoint, f, f_adjoint, m_lambda_min, m_lambda_max, m_lambda_opt, m_adjoint_lambda_min, m_adjoint_lambda_opt, deg_p, method, method_adjoint, local_improvement, shape, k_min, k_max, k_opt, interest_quantity, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, theta, theta_adjoint, dep_hat, dep_adjoint_hat, I_h, I_hh, integration_k, integration_nb_points, debug_method_adjoint, debug_method_enhancement_adjoint, debug_error_estimate_adjoint, want_introduction_sigma_hat_m, want_solve_eig_local_improvement, use_mask_eig_local_improvement );
-                }
-            }
-        }
+        Vec<unsigned> elem_list_adjoint_interest_quantity;
+        Vec<unsigned> elem_list_adjoint_enrichment_zone_1;
+        Vec<unsigned> elem_list_adjoint_enrichment_zone_2;
+        Vec<unsigned> face_list_adjoint_enrichment_zone_12;
+        unsigned node_adjoint_interest_quantity;
+        Vec<unsigned> node_list_adjoint_enrichment;
+
+        /// Maillage du pb adjoint
+        /// ----------------------
+        TM m_adjoint;
+        set_mesh_adjoint( m_adjoint, m, interest_quantity, direction_extractor, want_local_refinement, l_min_refinement, k_refinement, pointwise_interest_quantity, elem_list_interest_quantity, elem_list_adjoint_interest_quantity, node_interest_quantity, node_adjoint_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, elem_list_adjoint_enrichment_zone_1, elem_list_adjoint_enrichment_zone_2, face_list_adjoint_enrichment_zone_12, node_list_adjoint_enrichment );
+
+        string prefix_adjoint = define_prefix( m_adjoint, "adjoint", structure, loading, mesh_size, method, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, want_local_improvement, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment );
+
+        /// Formulation du pb adjoint
+        /// -------------------------
+        TF f_adjoint( m_adjoint );
+
+        /// Proprietes materiaux du pb adjoint
+        /// ----------------------------------
+        set_material_properties( f_adjoint, m_adjoint, structure );
+
+        /// Conditions aux limites du pb adjoint
+        /// ------------------------------------
+        set_constraints( f_adjoint, m_adjoint, boundary_condition_D, "adjoint", structure, loading );
+//        check_constraints( f_adjoint );
+        reset_load_conditions( m_adjoint );
+        set_load_conditions_adjoint( m_adjoint, f_adjoint, m, m_crown, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, interest_quantity, direction_extractor, pointwise_interest_quantity, want_local_enrichment );
+
+        /// Resolution du pb adjoint
+        /// ------------------------
+        cout << "Resolution du pb adjoint" << endl;
+        cout << "------------------------" << endl << endl;
+        TicToc t_adjoint;
+        t_adjoint.start();
+        f_adjoint.solve();
+        t_adjoint.stop();
+        cout << "temps de calcul de la resolution du pb adjoint = " << t_adjoint.res << endl << endl;
+
+        if ( want_local_enrichment )
+            calcul_dep_tot_after_solve( m_adjoint );
+
+        /// Verification de l'equilibre du pb adjoint
+        /// -----------------------------------------
+        if ( verif_eq )
+            check_equilibrium( f_adjoint, "adjoint" );
+
+        /// Calcul de la norme du champ de deplacement approche du pb adjoint
+        /// -----------------------------------------------------------------
+        calcul_norm_dep( m_adjoint, f_adjoint, "adjoint" );
+
+        /// ----------------------------------------------------------------------------------------------------------------- ///
+        /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe au pb adjoint ///
+        /// ----------------------------------------------------------------------------------------------------------------- ///
+
+        T theta_adjoint;
+        Vec<T> theta_adjoint_elem;
+        Vec< Vec<T> > dep_adjoint_hat;
+        calcul_global_error_estimation( f_adjoint, m_adjoint, "adjoint", method_adjoint, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta_adjoint, theta_adjoint_elem, dep_adjoint_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, false, false, want_local_enrichment );
+
+        /// Construction de la correspondance entre maillages extraits et maillages initiaux direct/adjoint
+        /// -----------------------------------------------------------------------------------------------
+        Vec<unsigned> correspondance_elem_m_adjoint_to_elem_m;
+        correspondance_elem_m_adjoint_to_elem_m.resize( m_adjoint.elem_list.size() );
+
+        Construct_Correspondance_Elem_Mesh_Extracted_To_Elem_Mesh construct_correspondance_elem_m_adjoint_to_elem_m;
+        construct_correspondance_elem_m_adjoint_to_elem_m.correspondance_elem_m_extracted_to_elem_m = &correspondance_elem_m_adjoint_to_elem_m;
+        apply_ij( m_adjoint.elem_list, m.elem_list, construct_correspondance_elem_m_adjoint_to_elem_m );
+
+        /// --------------------------------------------------------------------------------------------------- ///
+        /// Calcul de la correction I_hh (avec ou sans introduction de sigma_hat_m) sur la quantite d'interet I ///
+        /// --------------------------------------------------------------------------------------------------- ///
+
+        T I_hh;
+        calcul_correction_interest_quantity( m, m_adjoint, f, f_adjoint, interest_quantity, method, method_adjoint, theta, theta_adjoint, theta_adjoint_elem, correspondance_elem_m_adjoint_to_elem_m, dep_hat, dep_adjoint_hat, I_h, I_hh, want_local_enrichment, want_introduction_sigma_hat_m );
+
+        /// ---------------------------------------------------------------------- ///
+        /// Calcul standard des bornes d'erreur sur la quantite d'interet locale I ///
+        /// ---------------------------------------------------------------------- ///
+
+        calcul_standard_local_error_bounds( m, m_adjoint, f, f_adjoint, method, theta, theta_adjoint, theta_adjoint_elem, correspondance_elem_m_adjoint_to_elem_m, dep_hat, I_h, I_hh, want_introduction_sigma_hat_m );
+
+        /// ---------------------------------------------------------------------- ///
+        /// Calcul ameliore des bornes d'erreur sur la quantite d'interet locale I ///
+        /// ---------------------------------------------------------------------- ///
+        if ( want_local_improvement )
+            calcul_enhanced_local_error_bounds( m, m_adjoint, f, f_adjoint, structure, deg_p, method, method_adjoint, local_improvement, shape, k_min, k_max, k_opt, interest_quantity, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, theta, theta_adjoint, dep_hat, dep_adjoint_hat, I_h, I_hh, integration_k, integration_nb_points, want_introduction_sigma_hat_m, want_solve_eig_local_improvement, use_mask_eig_local_improvement, display_vtu_lambda, display_vtu_adjoint_lambda, prefix, prefix_adjoint );
+
+        /// ---------------------- ///
+        /// Sauvegarde / Affichage ///
+        /// ---------------------- ///
+
+        if ( display_vtu )
+            display( m, prefix );
+        else
+            save( m, prefix );
+
+        if ( display_vtu_adjoint )
+            display( m_adjoint, prefix_adjoint );
+        else
+            save( m_adjoint, prefix_adjoint );
+
+    }
+    else {
+        /// ---------------------- ///
+        /// Sauvegarde / Affichage ///
+        /// ---------------------- ///
+
+        if ( display_vtu )
+            display( m, prefix );
+        else
+            save( m, prefix );
     }
     
     t_total.stop();
-    cout << "Temps de calcul total = " << t_total.res << endl << endl;
-    
-    /// --------- ///
-    /// Affichage ///
-    /// --------- ///
-    
-//    display_vtu_pvd( m, m_ref, m_lambda_min, m_lambda_max, m_lambda_opt, m_crown, "direct", method, structure, loading, mesh_size, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, refinement_level_ref, want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation, want_local_improvement, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment, save_vtu, display_vtu, save_pvd, display_pvd, save_vtu_ref, display_vtu_ref, save_vtu_lambda, display_vtu_lambda, save_vtu_crown, display_vtu_crown );
-//    if ( want_local_estimation and want_interest_quantity_only == 0 ) {
-//        display_vtu_pvd( m_adjoint, m_local_ref, m_adjoint_lambda_min, m_adjoint_lambda_max, m_adjoint_lambda_opt, m_crown, "adjoint", method_adjoint, structure, loading, mesh_size, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, refinement_level_ref, false, false, want_global_estimation, want_local_estimation, want_local_improvement, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment, save_vtu_adjoint, display_vtu_adjoint, save_pvd_adjoint, display_pvd_adjoint, save_vtu_local_ref, display_vtu_local_ref, save_vtu_adjoint_lambda, display_vtu_adjoint_lambda );
-//    }
+    cout << "temps de calcul total = " << t_total.res << endl << endl;
     
 }

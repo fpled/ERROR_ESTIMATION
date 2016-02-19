@@ -432,7 +432,7 @@ def calc_elem_vector_b_enh( list_f, rep )
         file_ <<< "#define calc_elem_vector_b_enh_$(f->name)_$(e->dim)_$(e->name)_h"
         file_ <<< "namespace LMT {"
         file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class T>"
-        file_ <<< "void calc_elem_vector_b_enh( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<unsigned> > &node_list_face, const Vec<unsigned> &elem_cpt_node, const Vec< Vec< Vec<T> > > &vec_force_fluxes, const Vec<bool> &elem_flag_bal, const Vec<unsigned> &elem_list_bal, Vec< Vec<T> > &b_local_enh ) {"
+        file_ <<< "void calc_elem_vector_b_enh( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<unsigned> > &node_list_face, const Vec<unsigned> &elem_cpt_node, const Vec< Vec< Vec<T> > > &force_fluxes, const Vec<bool> &elem_flag_bal, const Vec<unsigned> &elem_list_bal, Vec< Vec<T> > &b_local_enh ) {"
         file_ <<< "    #define PNODE(N) elem.node(N)"
         file_ <<< "    if ( elem_flag_bal[ elem.number ] ) {"
         file_ <<< "        Vec<unsigned> ind_in_elem_list_bal = find_with_index( elem_list_bal == elem.number );"
@@ -452,7 +452,7 @@ def calc_elem_vector_b_enh( list_f, rep )
                 file_ <<< "        f_surf[ $( face->num_child ) ][ $d ].resize( m.sub_mesh(Number<1>()).elem_list[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ]->nb_nodes_virtual(), 0. );"
                 for i in 0 .. face->nb_nodes
                     file_ <<< "        ind_in_node_list_face = find_with_index( node_list_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ] == elem.node( $( face->node_numbers_to_node_numbers_in_parent_cpp[ i ] ) )->number );"
-                    file_ <<< "        f_surf[ $( face->num_child ) ][ $d ][ $i ] += $( eta ) * vec_force_fluxes[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_node_list_face[ 0 ] ];"
+                    file_ <<< "        f_surf[ $( face->num_child ) ][ $d ][ $i ] += $( eta ) * force_fluxes[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_node_list_face[ 0 ] ];"
             for i in 0 .. face->nb_nodes
                 for d in 0 .. face->dim
                     s := Op()

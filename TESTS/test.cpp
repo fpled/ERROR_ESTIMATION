@@ -35,164 +35,197 @@
 using namespace LMT;
 using namespace std;
 
-//int main( int argc, char **argv ) {
-//    TicToc t_total;
-//    t_total.start();
-//    static const unsigned dim = 2;
-//    static const bool wont_add_nz = false;
-//    typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
-//    typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
-//    typedef TM::Pvec Pvec;
-//    typedef TM::TNode::T T;
-//    static const string structure = "plate_flexion";
-//    static const string mesh_size = "fine";
-//    static const string loading = "pull";
-//    static const unsigned deg_p = 1;
-//    static const string boundary_condition_D = "penalty";
+int main( int argc, char **argv ) {
+    TicToc t_total;
+    t_total.start();
+    static const unsigned dim = 2;
+    static const bool wont_add_nz = true;
+    typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
+    typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
+    typedef TM::Pvec Pvec;
+    typedef TM::TNode::T T;
+    static const string structure = "structure_crack";
+    static const string mesh_size = "fine";
+    static const string loading = "pull";
+    static const unsigned deg_p = 1;
+    static const string boundary_condition_D = "penalty";
 
-//    display_pb( dim, structure, deg_p  );
+    static const string method = "EET";
+    static const unsigned cost_function = 0;
+    static const T penalty_val_N = 1e6;
+    static const string solver = "LDL";
+    static const string solver_minimisation = "UMFPACK";
 
-//    /// Maillage du pb direct
-//    /// ---------------------
-//    TM m; // declaration d'un maillage de type TM
-////    set_mesh( m, structure, mesh_size, loading, deg_p );
-//    read_vtu( m, "/Users/Op/Documents/Recherche/LMT/Code_Cpp_FEM_Error_Estimation/ERROR_ESTIMATION/weight_sensor_coarse_Triangle_Quad_direct_30.vtu" );
+    static const bool enhancement_with_geometric_criterium = 0;
+    static const string geometric_criterium = "radius_ratio";
+    static const T val_geometric_criterium = 0.34;
+    static const bool enhancement_with_estimator_criterium = 0;
+    static const T val_estimator_criterium = 0.8;
 
-//    bool spread_cut = true;
-//    refinement_if_nodal_field_sup( m, ExtractDM< theta_nodal_DM >(), 0.75, spread_cut );
+    static const bool verif_eq = 1;
+    static const bool verif_compatibility_conditions = 1;
+    static const T tol_compatibility_conditions = 1e-6;
+    static const bool verif_eq_force_fluxes = 1;
+    static const T tol_eq_force_fluxes = 1e-6;
 
-//    PRINT( remove_lonely_nodes( m ) );
-//    display_mesh_carac( m );
+    static const bool verif_solver = 1;
+    static const T tol_solver = 1e-6;
+    static const bool verif_solver_enhancement = 1;
+    static const T tol_solver_enhancement = 1e-6;
+    static const bool verif_solver_minimisation = 1;
+    static const T tol_solver_minimisation = 1e-6;
+    static const bool verif_solver_minimisation_enhancement = 1;
+    static const T tol_solver_minimisation_enhancement = 1e-6;
 
-//    /// Formulation du pb direct
-//    /// ------------------------
-//    TF f( m ); // creation d'une formulation du type TF avec le maillage m
+    /// ------------------------------------------------------- ///
+    /// Construction de la solution elements finis du pb direct ///
+    /// ------------------------------------------------------- ///
 
-//    /// Proprietes materiaux du pb direct
-//    /// ---------------------------------
-//    set_material_properties( f, m, structure );
+    display_pb( dim, structure, deg_p  );
 
-//    /// Conditions aux limites du pb direct
-//    /// -----------------------------------
-//    set_constraints( f, m, boundary_condition_D, "direct", structure, loading );
-////    check_constraints( f );
-//    set_load_conditions( m, structure, loading, mesh_size );
+    /// Maillage du pb direct
+    /// ---------------------
+    TM m;
+    set_mesh( m, structure, mesh_size, loading, deg_p );
 
-//    /// Resolution du pb direct
-//    /// -----------------------
-//    cout << "Resolution du pb direct" << endl << endl;
-//    TicToc t;
-//    t.start();
-//    f.solve();
-//    t.stop();
-//    cout << "Temps de calcul de la resolution du pb direct = " << t.res << endl << endl;
+    display_mesh_carac( m );
 
-////    f.allocate_matrices();
-////    f.shift();
-////    f.assemble();
-//////    f.solve_system();
-////    f.get_initial_conditions();
-////    f.update_variables();
-////    f.call_after_solve();
+    /// Formulation du pb direct
+    /// ------------------------
+    TF f( m );
 
-//    /// Verification de l'equilibre du pb direct
-//    /// ----------------------------------------
-//    check_equilibrium( f, "direct" );
+    /// Proprietes materiaux du pb direct
+    /// ---------------------------------
+    set_material_properties( f, m, structure );
 
-//    /// Affichage
-//    /// ---------
-//    display( m, "test" );
+    f.allocate_matrices();
 
-////    cout << m.type_elements() << endl;
+    /// Conditions aux limites du pb direct
+    /// -----------------------------------
+    set_constraints( f, m, boundary_condition_D, "direct", structure, loading );
+//    check_constraints( f );
+    set_load_conditions( m, structure, loading, mesh_size );
 
-//}
+    /// Resolution du pb direct
+    /// -----------------------
+    cout << "Resolution du pb direct" << endl << endl;
+    TicToc t;
+    t.start();
+    f.solve();
+    t.stop();
+    cout << "temps de calcul de la resolution du pb direct = " << t.res << endl << endl;
+
+//    f.allocate_matrices();
+//    f.shift();
+//    f.assemble();
+////    f.solve_system();
+//    f.get_initial_conditions();
+//    f.update_variables();
+//    f.call_after_solve();
+
+    /// Verification de l'equilibre du pb direct
+    /// ----------------------------------------
+    if ( verif_eq )
+        check_equilibrium( f, "direct" );
+
+    /// Calcul de la norme du champ de deplacement approche du pb direct
+    /// ----------------------------------------------------------------
+    calcul_norm_dep( m, f, "direct" );
+
+    /// Affichage
+    /// ---------
+    display( m, "test" );
+
+//    cout << m.type_elements() << endl;
+
+}
 
 /// ---------- ///
 /// refinement ///
 /// ---------- ///
-int main( int argc, char **argv ) {
-    static const unsigned dim = 2;
-    static const bool wont_add_nz = true;
-//    typedef Mesh<MeshCaracStd<dim,2> > TM;
-    typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
-//    typedef Formulation<TM,elasticity_iso> TF;
-    typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
-    typedef TM::Pvec Pvec;
-    typedef TM::TNode::T T;
+//int main( int argc, char **argv ) {
+//    static const unsigned dim = 2;
+//    static const bool wont_add_nz = true;
+////    typedef Mesh<MeshCaracStd<dim,2> > TM;
+//    typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
+////    typedef Formulation<TM,elasticity_iso> TF;
+//    typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
+//    typedef TM::Pvec Pvec;
+//    typedef TM::TNode::T T;
 
-    TM m;
-    T lx = 1., ly = 1., lz = 1.;
-    make_rect( m, Triangle(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 20, 20 ) );
-//    make_rect( m, Quad(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 20, 20 ) );
-//    make_rect( m, Tetra(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 20, 20, 20 ) );
-//    make_rect( m, Hexa(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 20, 20, 20 ) );
-//    make_rect( m, Tetra(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 21, 5 ) );
-//    make_rect( m, Tetra(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 21, 5, 5 ) );
+//    TM m;
+//    T lx = 1., ly = 1., lz = 1.;
+//    make_rect( m, Triangle(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 20, 20 ) );
+////    make_rect( m, Quad(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 20, 20 ) );
+////    make_rect( m, Tetra(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 20, 20, 20 ) );
+////    make_rect( m, Hexa(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 20, 20, 20 ) );
+////    make_rect( m, Tetra(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 21, 5 ) );
+////    make_rect( m, Tetra(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 21, 5, 5 ) );
 
-    TF f( m );
+//    TF f( m );
 
-    for(unsigned i = 0; i < m.node_list.size(); ++i ) {
-        if ( ( m.node_list[ i ].pos[ 0 ] < 1e-6 ) or ( m.node_list[ i ].pos[ 0 ] > lx - 1e-6 ) ) {
-            for( int d = 0; d < dim; ++d )
-                f.add_constraint( "sin( node[" + to_string( i ) + "].dep[" + to_string( d ) + "] ) - " + to_string( 0.1 * m.node_list[ i ].pos[ 0 ] * ( d == 0 ) ), 1e5 );
-        }
-    }
+//    for(unsigned i = 0; i < m.node_list.size(); ++i ) {
+//        if ( ( m.node_list[ i ].pos[ 0 ] < 1e-6 ) or ( m.node_list[ i ].pos[ 0 ] > lx - 1e-6 ) ) {
+//            for( int d = 0; d < dim; ++d )
+//                f.add_constraint( "sin( node[" + to_string( i ) + "].dep[" + to_string( d ) + "] ) - " + to_string( 0.1 * m.node_list[ i ].pos[ 0 ] * ( d == 0 ) ), 1e5 );
+//        }
+//    }
 
-    f.solve();
+//    f.solve();
 
-    display_mesh( m );
+////    display_mesh( m );
 
-//    PRINT( generate( m.node_list, ExtractDM<pos_DM>() ) );
-//    PRINT( generate( m.node_list, ExtractDMi<pos_DM>( 0 ) ) );
-//    PRINT( generate( m.node_list, ExtractDMi<pos_DM>( 1 ) ) );
+////    PRINT( generate( m.node_list, ExtractDM<pos_DM>() ) );
+////    PRINT( generate( m.node_list, ExtractDMi<pos_DM>( 0 ) ) );
+////    PRINT( generate( m.node_list, ExtractDMi<pos_DM>( 1 ) ) );
 
-    bool spread_cut = false;
+//    bool spread_cut = true;
 
-//    refinement_if_constraints( m, f, spread_cut );
+////    refinement_if_constraints( m, f, spread_cut );
 
-//    while ( refinement_if_length_sup( m, 0.05, spread_cut ) );
+////    while ( refinement_if_length_sup( m, 0.05, spread_cut ) );
 
-//    while ( refinement_point( m, 0.01, 0.2, Pvec( 0.2, 0.5 ), spread_cut ) );
+////    while ( refinement_point( m, 0.01, 0.2, Pvec( 0.2, 0.5 ), spread_cut ) );
 
-//    while ( refinement_circle( m, 0.01, 0.2, Pvec( 0.3, 0.5 ), 0.1, spread_cut ) );
+////    while ( refinement_circle( m, 0.01, 0.2, Pvec( 0.3, 0.5 ), 0.1, spread_cut ) );
 
-//    for( unsigned i = 0 ; i < m.node_list.size(); ++i )
-//        m.node_list[i].phi_domain = sin( std::sqrt( i ) * 5. );
-//    level_set_refinement( m, ExtractDM< phi_domain_DM >(), spread_cut );
+////    for( unsigned i = 0 ; i < m.node_list.size(); ++i )
+////        m.node_list[i].phi_domain = sin( std::sqrt( i ) * 5. );
+////    level_set_refinement( m, ExtractDM< phi_domain_DM >(), spread_cut );
 
-//    for( unsigned i = 0 ; i < m.node_list.size(); ++i )
-//        m.node_list[i].phi_domain = sin( std::sqrt( i ) * 5. );
-//    level_set_cut( m, ExtractDM< phi_domain_DM >(), spread_cut );
+////    for( unsigned i = 0 ; i < m.node_list.size(); ++i )
+////        m.node_list[i].phi_domain = sin( std::sqrt( i ) * 5. );
+////    level_set_cut( m, ExtractDM< phi_domain_DM >(), spread_cut );
 
-//    for( unsigned i = 0 ; i < m.node_list.size(); ++i )
-//        m.node_list[i].theta_nodal = sin( std::sqrt( i ) * 5. );
-//    refinement_if_nodal_field_sup( m, ExtractDM< theta_nodal_DM >(), 0.75, spread_cut );
+////    for( unsigned i = 0 ; i < m.node_list.size(); ++i )
+////        m.node_list[i].theta_nodal = sin( std::sqrt( i ) * 5. );
+////    refinement_if_nodal_field_sup( m, ExtractDM< theta_nodal_DM >(), 0.75, spread_cut );
 
-//    for( unsigned i = 0 ; i < m.node_list.size(); ++i )
-//        m.node_list[i].theta_nodal = sin( std::sqrt( i ) * 5. );
-//    refinement_if_constraints_or_nodal_field_sup( m, f, ExtractDM< theta_nodal_DM >(), 0.75, spread_cut );
-
-    for( unsigned n = 0 ; n < m.elem_list.size(); ++n )
-        m.elem_list[n]->set_field( "theta_elem_EET", sin( std::sqrt( n ) * 5. ) );
-    refinement_if_elem_field_sup( m, ExtractDM< theta_elem_EET_DM >(), 0.75, spread_cut );
+////    for( unsigned i = 0 ; i < m.node_list.size(); ++i )
+////        m.node_list[i].theta_nodal = sin( std::sqrt( i ) * 5. );
+////    refinement_if_constraints_or_nodal_field_sup( m, f, ExtractDM< theta_nodal_DM >(), 0.75, spread_cut );
 
 //    for( unsigned n = 0 ; n < m.elem_list.size(); ++n )
 //        m.elem_list[n]->set_field( "theta_elem_EET", sin( std::sqrt( n ) * 5. ) );
-//    smoothing( m, ExtractDM< theta_nodal_DM >(), ExtractDM< theta_elem_EET_DM >() );
-//    refinement_if_nodal_field_sup( m, ExtractDM< theta_nodal_DM >(), 0.75, spread_cut );
+//    refinement_if_elem_field_sup( m, theta_elem_EET_DM(), 0.75, spread_cut );
 
-//    divide( m );
+////    for( unsigned n = 0 ; n < m.elem_list.size(); ++n )
+////        m.elem_list[n]->set_field( "theta_elem_EET", sin( std::sqrt( n ) * 5. ) );
+////    smoothing( m, ExtractDM< theta_nodal_DM >(), ExtractDM< theta_elem_EET_DM >() );
+////    refinement_if_nodal_field_sup( m, ExtractDM< theta_nodal_DM >(), 0.75, spread_cut );
 
-//    divide_element( m, Vec<unsigned>( 5, 50, 80, 100, 200 ) );
+////    divide( m );
 
-//    replace_Quad_by_Triangle( m );
-//    replace_Hexa_by_Tetra( m );
-//    replace_Wedge_by_Tetra( m );
+////    divide_element( m, Vec<unsigned>( 5, 50, 80, 100, 200 ) );
 
-    display_mesh( m );
+////    replace_Quad_by_Triangle( m );
+////    replace_Hexa_by_Tetra( m );
+////    replace_Wedge_by_Tetra( m );
 
-    return 0;
-}
+//    display_mesh( m );
+
+//    return 0;
+//}
 
 /// ---------- ///
 /// eig_lapack ///

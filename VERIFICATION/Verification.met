@@ -31,7 +31,7 @@ def check_elem_eq_force_fluxes( list_f, rep )
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
         file_ <<< "namespace LMT {"
         file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class S, class B, class T>"
-        file_ <<< "void check_elem_eq_force_fluxes( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<unsigned> > &node_list_face, const Vec<unsigned> &elem_cpt_node, const Vec< Vec< Vec<T> > > &vec_force_fluxes, const TTVV &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, Vec< Vec<T> > &residual_force_fluxes ) {"
+        file_ <<< "void check_elem_eq_force_fluxes( const Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const Vec< Vec<unsigned> > &node_list_face, const Vec<unsigned> &elem_cpt_node, const Vec< Vec< Vec<T> > > &force_fluxes, const TTVV &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, Vec< Vec<T> > &residual_force_fluxes ) {"
         file_ <<< "    #define PNODE(N) elem.node(N)"
         deg_p := max( e->order_interpolation )
         GM := e->pos - e->barycenter# ( e->pos ).subs( e->var_inter, e->get_center_of_var_inter() )
@@ -72,24 +72,24 @@ def check_elem_eq_force_fluxes( list_f, rep )
                     res_torque_dim_3[ d ] += ( GM_vect_prod_f_nodal[ d ] ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
         cw := CodeWriterAlt( "T" )
         file_ <<<<
-                Vec< Vec< Vec<T> > > vec_force_fluxes_local;
-                vec_force_fluxes_local.resize( $(e->children( 1 ).size) );
+                Vec< Vec< Vec<T> > > force_fluxes_local;
+                force_fluxes_local.resize( $(e->children( 1 ).size) );
                 Vec<unsigned> ind_in_node_list_face;
         for face_ in e->children( 1 )
             face := child_cast( face_ )
             deg_p := max( face->order_interpolation )
             eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)" )
             sym_f_surf := Vec[ Vec[ Op, face->dim ], face->nb_nodes ]()
-            file_ <<< "    vec_force_fluxes_local[ $( face->num_child ) ].resize( $(face->dim) );"
+            file_ <<< "    force_fluxes_local[ $( face->num_child ) ].resize( $(face->dim) );"
             for d in 0 .. face->dim
-                file_ <<< "    vec_force_fluxes_local[ $( face->num_child ) ][ $d ].resize( m.sub_mesh(Number<1>()).elem_list[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ]->nb_nodes_virtual(), 0. );"
+                file_ <<< "    force_fluxes_local[ $( face->num_child ) ][ $d ].resize( m.sub_mesh(Number<1>()).elem_list[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ]->nb_nodes_virtual(), 0. );"
                 for i in 0 .. face->nb_nodes
                     file_ <<< "    ind_in_node_list_face = find_with_index( node_list_face[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ] == elem.node( $( face->node_numbers_to_node_numbers_in_parent_cpp[ i ] ) )->number );"
-                    file_ <<< "    vec_force_fluxes_local[ $( face->num_child ) ][ $d ][ $i ] += $( eta ) * vec_force_fluxes[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_node_list_face[ 0 ] ];"
+                    file_ <<< "    force_fluxes_local[ $( face->num_child ) ][ $d ][ $i ] += $( eta ) * force_fluxes[ m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ]->number ][ $d ][ ind_in_node_list_face[ 0 ] ];"
             for i in 0 .. face->nb_nodes
                 for d in 0 .. face->dim
                     s := Op()
-                    s = symbol( "vec_force_fluxes_local[ $( face->num_child ) ][ $d ][ $i ]", tex_name = "F_s[ $( face->num_child ) ][ $d ][ $i ]" )
+                    s = symbol( "force_fluxes_local[ $( face->num_child ) ][ $d ][ $i ]", tex_name = "F_s[ $( face->num_child ) ][ $d ][ $i ]" )
                     sym_f_surf[ i ][ d ] = s
             f_surf := Vec[ Op, face->dim ]( face->interpolation( sym_f_surf, force_fluxes_base ) )
             for d in 0 .. e->dim

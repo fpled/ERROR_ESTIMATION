@@ -91,7 +91,7 @@ struct Calcul_Geometric_Ratio {
             update_edge_ratio( elem, m, geometric_ratio[ elem.number ] );
         }
         else {
-            std::cout << "type de critere geometrique pour l'amelioration non implemente..." << std::endl;
+            std::cerr << "type de critere geometrique pour l'amelioration non implemente..." << std::endl;
         }
     }
 };
@@ -126,7 +126,7 @@ struct Apply_Criterium_Enhancement {
     Vec<bool>* node_flag_enh;
     Vec<unsigned>* node_list_enh;
     template<class TE, class TM> void operator()( TE &elem, const TM &m, Vec<unsigned> &elem_list_enh, Vec<unsigned> &face_list_enh ) const {
-        if ( ( *enhancement_with_estimator_criterium and *enhancement_with_geometric_criterium == 0 and (*estimator_ratio)[ elem.number ] >= *val_estimator_criterium ) or ( *enhancement_with_estimator_criterium == 0 and *enhancement_with_geometric_criterium and (*geometric_ratio)[ elem.number ] <= *val_geometric_criterium ) or ( *enhancement_with_estimator_criterium and *enhancement_with_geometric_criterium and (*geometric_ratio)[ elem.number ] <= *val_geometric_criterium and (*estimator_ratio)[ elem.number ] >= *val_estimator_criterium ) ) {
+        if ( ( *enhancement_with_estimator_criterium and not( *enhancement_with_geometric_criterium ) and (*estimator_ratio)[ elem.number ] >= *val_estimator_criterium ) or ( not( *enhancement_with_estimator_criterium ) and *enhancement_with_geometric_criterium and (*geometric_ratio)[ elem.number ] <= *val_geometric_criterium ) or ( *enhancement_with_estimator_criterium and *enhancement_with_geometric_criterium and (*geometric_ratio)[ elem.number ] <= *val_geometric_criterium and (*estimator_ratio)[ elem.number ] >= *val_estimator_criterium ) ) {
             if ( *method == "EET" ) {
                 elem.enhancement_EET = 1;
             }

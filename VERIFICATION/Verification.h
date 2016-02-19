@@ -20,7 +20,7 @@ using namespace std;
 /// Verification de l'equilibre du pb direct/adjoint
 /// ------------------------------------------------
 template<class TF>
-void check_equilibrium( TF &f, const string &pb ) {
+void check_equilibrium( TF &f, const string &pb, const bool disp = false ) {
     typedef typename TF::ScalarType T;
     #ifdef WITH_CHOLMOD
     Mat<T,Sym<>,SparseCholMod > *ptr_mat;
@@ -35,7 +35,8 @@ void check_equilibrium( TF &f, const string &pb ) {
     Vec<T> &F = f.get_sollicitation(); // f.sollicitation
     T residual = norm_2( K * U - F );
 
-    cout << "Verification de l'equilibre global du pb " << pb << endl << endl;
+    if ( disp )
+        cout << "Verification de l'equilibre global du pb " << pb << endl << endl;
 //    cout << "residu K * U - F =" << endl;
 //    cout << K * U - F << endl << endl;
     cout << "norme du residu = " << residual << endl;
@@ -45,60 +46,53 @@ void check_equilibrium( TF &f, const string &pb ) {
 /// Construction du vecteur de vecteurs residual_force_fluxes
 /// ---------------------------------------------------------
 template<class TE, class TM, class TF, class TVV, class TV, class TTVVV, class TTWW, class S, class B, class TTVV>
-void check_elem_eq_force_fluxes( const TE &elem, const TM &m, const TF &f, const TVV &node_list_face, const TV &elem_cpt_node, const TTVVV &vec_force_fluxes, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, TTVV &residual_force_fluxes ) {}
+void check_elem_eq_force_fluxes( const TE &elem, const TM &m, const TF &f, const TVV &node_list_face, const TV &elem_cpt_node, const TTVVV &force_fluxes, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, TTVV &residual_force_fluxes ) {}
 
 template<class T>
 struct Check_Elem_Eq_Force_Fluxes {
     const Vec< Vec<unsigned> >* node_list_face;
     const Vec<unsigned>* elem_cpt_node;
-    const Vec< Vec< Vec<T> > >* vec_force_fluxes;
+    const Vec< Vec< Vec<T> > >* force_fluxes;
     const string* pb;
     const bool* want_local_enrichment;
     template<class TE, class TM, class TF> void operator()( const TE &elem, const TM &m, const TF &f, Vec< Vec<T> > &residual_force_fluxes ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
-        check_elem_eq_force_fluxes( elem, m, f, *node_list_face, *elem_cpt_node, *vec_force_fluxes, f.vectors, ind, *pb, *want_local_enrichment, residual_force_fluxes );
+        check_elem_eq_force_fluxes( elem, m, f, *node_list_face, *elem_cpt_node, *force_fluxes, f.vectors, ind, *pb, *want_local_enrichment, residual_force_fluxes );
     }
 };
 
 /// Verification de l'equilibre des densites d'effort pour les methodes EET et EESPT
 /// --------------------------------------------------------------------------------
 template<class TM, class TF, class T>
-void check_equilibrium_force_fluxes( TM &m, const TF &f, const string pb, const Vec< Vec< Vec<T> > > &vec_force_fluxes, const T tol_eq_force_fluxes = 1e-6, const bool want_local_enrichment = false, const bool debug_mesh = false ) {
+void check_equilibrium_force_fluxes( TM &m, const TF &f, const string pb, const Vec< Vec< Vec<T> > > &force_fluxes, const T tol_eq_force_fluxes = 1e-6, const bool want_local_enrichment = false, const bool disp = false ) {
 
     static const unsigned dim = TM::dim;
 
     Vec<unsigned> node_cpt_face;
     Vec< Vec<unsigned> > node_list_face;
-    construct_nodes_connected_to_face( m, node_cpt_face, node_list_face, debug_mesh );
+    construct_nodes_connected_to_face( m, node_cpt_face, node_list_face );
 
     Vec<unsigned> elem_cpt_node;
     Vec< Vec<unsigned> > elem_list_node;
-    construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node, debug_mesh );
+    construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node );
 
     elem_list_node.free();
 
-    cout << "Verification de l'equilibre des densites d'effort : tolerance = " << tol_eq_force_fluxes << endl << endl;
+    if ( disp )
+        cout << "Verification de l'equilibre des densites d'effort : tolerance = " << tol_eq_force_fluxes << endl << endl;
 
     Vec< Vec<T> > residual_force_fluxes;
     residual_force_fluxes.resize( m.elem_list.size() );
 
     for (unsigned n=0;n<m.elem_list.size();++n) {
-        if ( dim == 1 ) {
-            residual_force_fluxes[ n ].resize( dim );
-        }
-        else if ( dim == 2 ) {
-            residual_force_fluxes[ n ].resize( dim + 1 );
-        }
-        else if ( dim == 3 ) {
-            residual_force_fluxes[ n ].resize( 2 * dim );
-        }
+        residual_force_fluxes[ n ].resize( unsigned(dim*(dim+1)/2) );
         residual_force_fluxes[ n ].set( 0. );
     }
 
     Check_Elem_Eq_Force_Fluxes<T> check_elem_eq_force_fluxes;
     check_elem_eq_force_fluxes.node_list_face = &node_list_face;
     check_elem_eq_force_fluxes.elem_cpt_node = &elem_cpt_node;
-    check_elem_eq_force_fluxes.vec_force_fluxes = &vec_force_fluxes;
+    check_elem_eq_force_fluxes.force_fluxes = &force_fluxes;
     check_elem_eq_force_fluxes.pb = &pb;
     check_elem_eq_force_fluxes.want_local_enrichment = &want_local_enrichment;
 

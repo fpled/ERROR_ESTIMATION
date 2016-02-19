@@ -21,12 +21,14 @@ using namespace std;
 /// Construction des vecteurs dep_hat[ n ] pour chaque element n du maillage
 /// ------------------------------------------------------------------------
 template<class TM, class TF, class T>
-void construct_dep_hat( const TM &m, const TF &f, const string &solver, Vec< Mat<T, Sym<> > > &K_hat, Vec< Vec<T> > &F_hat, Vec< Vec<T> > &dep_hat, const bool verif_solver = false, const T tol_solver = 1e-6, const bool debug_method = false ) {
+void construct_dep_hat( const TM &m, const TF &f, const string &solver, Vec< Mat<T, Sym<> > > &K_hat, Vec< Vec<T> > &F_hat, Vec< Vec<T> > &dep_hat, const bool verif_solver = false, const T tol_solver = 1e-6, const bool disp = false ) {
 
-    cout << "Resolution des pbs locaux par element" << endl;
-    cout << "-------------------------------------" << endl << endl;
+    if ( disp ) {
+        cout << "Resolution des pbs locaux par element" << endl;
+        cout << "-------------------------------------" << endl << endl;
+    }
 
-    if ( debug_method ) {
+    if ( disp ) {
         cout << "Resolution des pbs locaux K_hat * U_hat = F_hat" << endl;
         cout << "Construction des vecteurs U_hat" << endl << endl;
     }
@@ -85,16 +87,17 @@ void construct_dep_hat( const TM &m, const TF &f, const string &solver, Vec< Mat
     }
 
     t.stop();
-    cout << "Temps de calcul de la resolution des pbs locaux par element = " << t.res << endl << endl;
+    cout << "temps de calcul de la resolution des pbs locaux par element = " << t.res << endl << endl;
 
-    if ( debug_method ) {
+    if ( disp ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
             cout << "vecteur U_hat de l'element " << n << " =" << endl;
             cout << dep_hat[ n ] << endl << endl;
         }
     }
     if ( verif_solver ) {
-        cout << "Verification de la resolution des pbs locaux par element : tolerance = " << tol_solver << endl << endl;
+        if ( disp )
+            cout << "Verification de la resolution des pbs locaux par element : tolerance = " << tol_solver << endl << endl;
         for (unsigned n=0;n<m.elem_list.size();++n) {
             T residual = norm_2( K_hat[ n ] * dep_hat[ n ] - F_hat[ n ] );
             T b = norm_2( F_hat[ n ] );

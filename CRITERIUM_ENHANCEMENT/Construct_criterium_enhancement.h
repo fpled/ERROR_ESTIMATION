@@ -23,14 +23,15 @@ using namespace std;
 /// Construction d'un critere geometrique pour le choix des elements dont les densites d'effort doivent etre ameliorees
 /// -------------------------------------------------------------------------------------------------------------------
 template<class TM, class T>
-void construct_geometric_criterium( TM &m, const string &geometric_criterium, Vec<T> &geometric_ratio, const bool debug_criterium_enhancement = false ) {
+void construct_geometric_criterium( TM &m, const string &geometric_criterium, Vec<T> &geometric_ratio, const bool disp = false ) {
 
     static const unsigned dim = TM::dim;
     typedef typename TM::Pvec Pvec;
 
-    cout << "--------------------------------------------------" << endl;
-    cout << "Construction du critere d'amelioration geometrique" << endl;
-    cout << "--------------------------------------------------" << endl << endl;
+    if ( disp ) {
+        cout << "Construction du critere d'amelioration geometrique" << endl;
+        cout << "--------------------------------------------------" << endl << endl;
+    }
 
     /// Construction du vecteur de vecteurs circum_center et du vecteur circum_radius
     /// circum_center[ n ] : position du centre du cercle/sphere circonscrit(e) a l'element n
@@ -49,7 +50,7 @@ void construct_geometric_criterium( TM &m, const string &geometric_criterium, Ve
 // 
 //     apply( m.elem_list, Calcul_Circum_Center_Radius(), circum_center, circum_radius );
 // 
-//     if ( debug_criterium_enhancement ) {
+//     if ( disp ) {
 //         cout << "Construction du vecteur de vecteurs circum_center et du vecteur circum_radius" << endl << endl;
 //         for (unsigned n=0;n<m.elem_list.size();++n) {
 //             if ( dim == 2 ) {
@@ -81,7 +82,7 @@ void construct_geometric_criterium( TM &m, const string &geometric_criterium, Ve
 // 
 //     apply( m.elem_list, Calcul_In_Center_Radius(), in_center, in_radius );
 // 
-//     if ( debug_criterium_enhancement ) {
+//     if ( disp ) {
 //         cout << "Construction du vecteur de vecteurs in_center et du vecteur in_radius" << endl << endl;
 //         for (unsigned n=0;n<m.elem_list.size();++n) {
 //             if ( dim == 2 ) {
@@ -106,7 +107,7 @@ void construct_geometric_criterium( TM &m, const string &geometric_criterium, Ve
 // 
 //     apply( m.elem_list, Calcul_Radius_Ratio(), radius_ratio );
 // 
-//     if ( debug_criterium_enhancement ) {
+//     if ( disp ) {
 //         cout << "Construction du vecteur radius_ratio" << endl << endl;
 //         for (unsigned n=0;n<m.elem_list.size();++n) {
 //             if ( dim == 2 ) {
@@ -129,7 +130,7 @@ void construct_geometric_criterium( TM &m, const string &geometric_criterium, Ve
 // 
 //     apply( m.elem_list, Calcul_Edge_Ratio(), m, edge_ratio );
 // 
-//     if ( debug_criterium_enhancement ) {
+//     if ( disp ) {
 //         cout << "Construction du vecteur edge_ratio" << endl << endl;
 //         for (unsigned n=0;n<m.elem_list.size();++n) {
 //             cout << "rapport de la face la plus petite sur la face la plus grande pour l'element " << n << " : " << edge_ratio[ n ] << endl << endl;
@@ -140,14 +141,15 @@ void construct_geometric_criterium( TM &m, const string &geometric_criterium, Ve
     /// geometric_ratio[ n ] : radius_ratio[ n ] ou edge_ratio[ n ] selon geometric_criterium pour l'element n
     /// ------------------------------------------------------------------------------------------------------
 
-    cout << "Construction du vecteur geometric_ratio" << endl << endl;
+    if ( disp )
+        cout << "Construction du vecteur geometric_ratio" << endl << endl;
 
     geometric_ratio.resize( m.elem_list.size() );
     geometric_ratio.set( 0. );
 
     apply( m.elem_list, Calcul_Geometric_Ratio(), m, geometric_criterium, geometric_ratio );
 	
-    if ( debug_criterium_enhancement ) {
+    if ( disp ) {
         cout << "Construction du vecteur geometric_ratio" << endl << endl;
         for (unsigned n=0;n<m.elem_list.size();++n) {
             cout << "rapport geometrique pour l'element " << n << " : " << geometric_ratio[ n ] << endl << endl;
@@ -163,23 +165,25 @@ void construct_geometric_criterium( TM &m, const string &geometric_criterium, Ve
 /// Construction d'un critere sur l'estimateur d'erreur theta pour le choix des elements dont les densites d'effort doivent etre ameliorees
 /// ---------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class T>
-void construct_estimator_criterium( TM &m, Vec<T> &estimator_ratio, const Vec<T> &theta_2_elem, const bool debug_criterium_enhancement = false ) {
+void construct_estimator_criterium( TM &m, Vec<T> &estimator_ratio, const Vec<T> &theta_2_elem, bool disp = false ) {
 
-    cout << "----------------------------------------------------------------" << endl;
-    cout << "Construction du critere d'amelioration sur l'estimateur d'erreur" << endl;
-    cout << "----------------------------------------------------------------" << endl << endl;
+    if ( disp ) {
+        cout << "Construction du critere d'amelioration sur l'estimateur d'erreur" << endl;
+        cout << "----------------------------------------------------------------" << endl << endl;
+    }
 
     /// Construction du vecteur estimator_ratio
     /// ---------------------------------------
 
-    cout << "Construction du vecteur estimator_ratio" << endl << endl;
+    if ( disp )
+        cout << "Construction du vecteur estimator_ratio" << endl << endl;
 
     estimator_ratio.resize( m.elem_list.size() );
     estimator_ratio.set( 0. );
 
     apply( m.elem_list, Calcul_Estimator_Ratio(), m, theta_2_elem, estimator_ratio );
 	
-    if ( debug_criterium_enhancement ) {
+    if ( disp ) {
         cout << "Construction du vecteur estimator_ratio" << endl << endl;
         for (unsigned n=0;n<m.elem_list.size();++n) {
             cout << "rapport sur l'estimateur d'erreur theta pour l'element " << n << " : " << estimator_ratio[ n ] << endl << endl;
@@ -195,7 +199,7 @@ void construct_estimator_criterium( TM &m, Vec<T> &estimator_ratio, const Vec<T>
 /// Application du critere d'amelioration geometrique et/ou sur l'estimateur d'erreur theta
 /// ---------------------------------------------------------------------------------------
 template<class TM, class T>
-void apply_criterium_enhancement( TM &m, const string &method, const bool &enhancement_with_estimator_criterium, const bool &enhancement_with_geometric_criterium, const Vec<T> &estimator_ratio, const Vec<T> &geometric_ratio, const T &val_estimator_criterium, const T &val_geometric_criterium, Vec<bool> &elem_flag_enh, Vec<bool> &face_flag_enh, Vec<bool> &elem_flag_bal, Vec<unsigned> &elem_list_enh, Vec<unsigned> &face_list_enh, Vec<unsigned> &elem_list_bal, const bool debug_criterium_enhancement = false ) {
+void apply_criterium_enhancement( TM &m, const string &method, const bool &enhancement_with_estimator_criterium, const bool &enhancement_with_geometric_criterium, const Vec<T> &estimator_ratio, const Vec<T> &geometric_ratio, const T &val_estimator_criterium, const T &val_geometric_criterium, Vec<bool> &elem_flag_enh, Vec<bool> &face_flag_enh, Vec<bool> &elem_flag_bal, Vec<unsigned> &elem_list_enh, Vec<unsigned> &face_list_enh, Vec<unsigned> &elem_list_bal, bool disp = false ) {
 	
     Vec<bool> node_flag_enh;
     Vec<unsigned> node_list_enh;
@@ -215,8 +219,10 @@ void apply_criterium_enhancement( TM &m, const string &method, const bool &enhan
     /// Construction des vecteurs elem_list_enh, face_list_enh, node_list_enh
     /// ------------------------------------------------------------------------
 
-    cout << "Construction des vecteurs elem_flag_enh, face_flag_enh et node_flag_enh" << endl;
-    cout << "Construction des vecteurs elem_list_enh, face_list_enh et node_list_enh" << endl << endl;
+    if ( disp ) {
+        cout << "Construction des vecteurs elem_flag_enh, face_flag_enh et node_flag_enh" << endl;
+        cout << "Construction des vecteurs elem_list_enh, face_list_enh et node_list_enh" << endl << endl;
+    }
 
     Apply_Criterium_Enhancement<T> apply_criterium_enhancement;
 	apply_criterium_enhancement.method = &method;
@@ -240,50 +246,51 @@ void apply_criterium_enhancement( TM &m, const string &method, const bool &enhan
     /// Construction du vecteur elem_list_bal
     /// --------------------------------------
 
-    cout << "Construction des vecteurs elem_flag_bal et elem_list_bal" << endl << endl;
+    if ( disp )
+        cout << "Construction des vecteurs elem_flag_bal et elem_list_bal" << endl << endl;
 
     Construct_Balancing construct_balancing;
     construct_balancing.face_flag_enh = &face_flag_enh;
 
     apply( m.elem_list, construct_balancing, m, elem_flag_bal, elem_list_bal );
 
-    if ( debug_criterium_enhancement ) {
+    if ( disp ) {
         cout << "Construction du vecteur elem_flag_enh" << endl << endl;
         for (unsigned n=0;n<m.elem_list.size();++n) {
-            cout << "participation de l'element " << n << " a l'amelioration : " << elem_flag_enh[ n ] << endl;
+            cout << "participation de l'element " << n << " a l'amelioration = " << elem_flag_enh[ n ] << endl;
         }
         cout << endl << endl;
         cout << "Construction du vecteur face_flag_enh" << endl << endl;
         for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
-            cout << "participation de la face " << k << " a l'amelioration : " << face_flag_enh[ k ] << endl;
+            cout << "participation de la face " << k << " a l'amelioration = " << face_flag_enh[ k ] << endl;
         }
         cout << endl << endl;
         cout << "Construction du vecteur node_flag_enh" << endl << endl;
         for (unsigned i=0;i<m.node_list.size();++i) {
-            cout << "participation du noeud " << i << " a l'amelioration : " << node_flag_enh[ i ] << endl;
+            cout << "participation du noeud " << i << " a l'amelioration = " << node_flag_enh[ i ] << endl;
         }
         cout << endl << endl;
         cout << "Construction du vecteur elem_flag_bal" << endl << endl;
         for (unsigned n=0;n<m.elem_list.size();++n) {
-            cout << "participation de l'element " << n << " a l'equilibrage des densites d'effort ameliorees : " << elem_flag_bal[ n ] << endl;
+            cout << "participation de l'element " << n << " a l'equilibrage des densites d'effort ameliorees = " << elem_flag_bal[ n ] << endl;
         }
         cout << endl << endl;
-        cout << "liste des elements participant a l'amelioration de la construction des densites d'effort : " << elem_list_enh << endl << endl;
-        cout << "liste des faces participant a l'amelioration de la construction des densites d'effort : " << face_list_enh << endl << endl;
-        cout << "liste des noeuds participant a l'amelioration de la construction des densites d'effort : " << node_list_enh << endl << endl;
-        cout << "liste des elements participant a l'equilibrage des densites d'effort ameliorees : " << elem_list_bal << endl << endl;
+        cout << "liste des elements participant a l'amelioration de la construction des densites d'effort = " << elem_list_enh << endl << endl;
+        cout << "liste des faces participant a l'amelioration de la construction des densites d'effort    = " << face_list_enh << endl << endl;
+        cout << "liste des noeuds participant a l'amelioration de la construction des densites d'effort   = " << node_list_enh << endl << endl;
+        cout << "liste des elements participant a l'equilibrage des densites d'effort ameliorees          = " << elem_list_bal << endl << endl;
     }
     
     if ( enhancement_with_estimator_criterium )
-        cout << "valeur du critere d'amelioration sur l'estimateur d'erreur : " << val_estimator_criterium << endl << endl;
+        cout << "valeur du critere d'amelioration sur l'estimateur d'erreur = " << val_estimator_criterium << endl;
     if ( enhancement_with_geometric_criterium )
-	    cout << "valeur du critere d'amelioration geometrique : " << val_geometric_criterium << endl << endl;
-    cout << "nb d'elements participant a l'amelioration de la construction des densites d'effort : " << elem_list_enh.size() << endl << endl;
-    cout << "nb de faces participant a l'amelioration de la construction des densites d'effort : " << face_list_enh.size() << endl << endl;
-    cout << "nb de noeuds participant a l'amelioration de la construction des densites d'effort : " << node_list_enh.size() << endl << endl;
-    cout << "nb d'elements participant a l'equilibrage des densites d'effort ameliorees : " << elem_list_bal.size() << endl << endl;
+        cout << "valeur du critere d'amelioration geometrique = " << val_geometric_criterium << endl;
+    cout << "nb d'elements participant a l'amelioration de la construction des densites d'effort = " << elem_list_enh.size() << endl;
+    cout << "nb de faces participant a l'amelioration de la construction des densites d'effort   = " << face_list_enh.size() << endl;
+    cout << "nb de noeuds participant a l'amelioration de la construction des densites d'effort  = " << node_list_enh.size() << endl;
+    cout << "nb d'elements participant a l'equilibrage des densites d'effort ameliorees          = " << elem_list_bal.size() << endl << endl;
 	
-    if (elem_list_enh.size() == 0) {
+    if ( not elem_list_enh.size() ) {
         cerr << "Arret brutal, car il n'y a aucune densite d'effort a ameliorer pour le critere choisi..." << endl << endl;
         throw "Baleinou sous caillou...";
     }

@@ -900,8 +900,8 @@ def reset_vertex_nodal_vector_lambda_F_hat( list_f, rep )
         file_ <<< "#endif"
     return file_names
 
-# Methode qui genere un fichier calc_skin_elem_force_fluxes_$(f->name).$(face.dim).$(face.name).h pour ajouter la contribution d'une face aux vecteurs vec_force_fluxes[ k ] et aux matrices mat_force_fluxes[ k ]
-#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Methode qui genere un fichier calc_skin_elem_force_fluxes_$(f->name).$(face.dim).$(face.name).h pour ajouter la contribution d'une face aux vecteurs force_fluxes[ k ]
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 def calc_skin_elem_force_fluxes( list_f, rep )
     file_names := Vec[String]()
     for f in list_f
@@ -915,14 +915,13 @@ def calc_skin_elem_force_fluxes( list_f, rep )
         file_ <<< "#define calc_skin_elem_force_fluxes_$(f->name)_$(face.dim)_$(face.name)_h"
         file_ <<< "namespace LMT {"
         file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class T>"
-        file_ <<< "void calc_skin_elem_force_fluxes( const Element<$(face.name),TN,TNG,TD,NET> &child_elem, const Vec<unsigned> &connect_node_to_vertex_node, const Vec< Vec< Vec<unsigned> > > &face_ind, const Vec< Vec< Vec<T> > > &lambda_F_hat, Vec< Vec< Vec<T> > > &vec_force_fluxes, Vec< Mat<T> > &mat_force_fluxes ) {"
+        file_ <<< "void calc_skin_elem_force_fluxes( const Element<$(face.name),TN,TNG,TD,NET> &child_elem, const Vec<unsigned> &connect_node_to_vertex_node, const Vec< Vec< Vec<unsigned> > > &face_ind, const Vec< Vec< Vec<T> > > &lambda_F_hat, Vec< Vec< Vec<T> > > &force_fluxes ) {"
         face_node_numbers_to_vertex_node_numbers := face.node_numbers_to_vertex_node_numbers
         for i in 0 .. face.nb_nodes
             if face.node_number_is_a_vertex( i )
                 for j in 0 .. face.nb_nodes
                     for d in 0 .. face.dim
-                        file_ <<< "    mat_force_fluxes[ child_elem.number ]( $j, $d ) += lambda_F_hat[ connect_node_to_vertex_node[ child_elem.node( $i )->number ] ][ $d ][ face_ind[ child_elem.number ][ $d ][ $( face_node_numbers_to_vertex_node_numbers[ i ] ) ]  + $j ];"
-                        file_ <<< "    vec_force_fluxes[ child_elem.number ][ $d ][ $j ] += lambda_F_hat[ connect_node_to_vertex_node[ child_elem.node( $i )->number ] ][ $d ][ face_ind[ child_elem.number ][ $d ][ $( face_node_numbers_to_vertex_node_numbers[ i ] ) ]  + $j ];"
+                        file_ <<< "    force_fluxes[ child_elem.number ][ $d ][ $j ] += lambda_F_hat[ connect_node_to_vertex_node[ child_elem.node( $i )->number ] ][ $d ][ face_ind[ child_elem.number ][ $d ][ $( face_node_numbers_to_vertex_node_numbers[ i ] ) ]  + $j ];"
         file_ <<< "}"
         file_ <<< "}"
         file_ <<< "#endif"

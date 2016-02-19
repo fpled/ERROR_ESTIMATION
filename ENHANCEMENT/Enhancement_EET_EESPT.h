@@ -82,17 +82,17 @@ struct Calcul_Elem_Matrix_L_enh {
 /// Construction des vecteurs b_local_enh[ n ] pour chaque element ameliore n du maillage
 /// -------------------------------------------------------------------------------------
 template<class TE, class TM, class TF, class TVV, class TTVVV, class BV, class TV, class TTVV>
-void calc_elem_vector_b_enh( const TE &elem , const TM &m, const TF &f, const TVV &node_list_face, const TV &elem_cpt_node, const TTVVV &vec_force_fluxes, const BV &elem_flag_bal, const TV &elem_list_bal, TTVV &b_local_enh ) {}
+void calc_elem_vector_b_enh( const TE &elem , const TM &m, const TF &f, const TVV &node_list_face, const TV &elem_cpt_node, const TTVVV &force_fluxes, const BV &elem_flag_bal, const TV &elem_list_bal, TTVV &b_local_enh ) {}
 
 template<class T>
 struct Calcul_Elem_Vector_b_enh {
     const Vec< Vec<unsigned> >* node_list_face;
     const Vec<unsigned>* elem_cpt_node;
-    const Vec< Vec< Vec<T> > >* vec_force_fluxes;
+    const Vec< Vec< Vec<T> > >* force_fluxes;
     const Vec<bool>* elem_flag_bal;
     const Vec<unsigned>* elem_list_bal;
     template<class TE, class TM, class TF> void operator()( const TE &elem, const TM &m, const TF &f, Vec< Vec<T> > &b_local_enh ) const {
-        calc_elem_vector_b_enh( elem, m, f, *node_list_face, *elem_cpt_node, *vec_force_fluxes, *elem_flag_bal, *elem_list_bal, b_local_enh );
+        calc_elem_vector_b_enh( elem, m, f, *node_list_face, *elem_cpt_node, *force_fluxes, *elem_flag_bal, *elem_list_bal, b_local_enh );
     }
 };
 

@@ -21,14 +21,16 @@ using namespace std;
 /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale pour les methodes basees sur la condition de prolongement (EET,EESPT)
 /// -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T>
-void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const string &pb, const string &method, T &theta, Vec<T> &theta_elem, const Vec< Vec<T> > &dep_hat, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool debug_error_estimate = false, const bool debug_local_effectivity_index = false, const bool debug_method = false, const bool debug_method_enhancement = false ) {
+void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const string &pb, const string &method, T &theta, Vec<T> &theta_elem, const Vec< Vec<T> > &dep_hat, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool disp = false ) {
     
     /// ------------------------------------------------------------------------------------------------------- ///
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale ///
     /// ------------------------------------------------------------------------------------------------------- ///
     
-    cout << "Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale" << endl;
-    cout << "-------------------------------------------------------------------------------------------------------" << endl << endl;
+    if ( disp ) {
+        cout << "Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale" << endl;
+        cout << "-------------------------------------------------------------------------------------------------------" << endl << endl;
+    }
 
     theta = 0.;
     theta_elem.resize( m.elem_list.size() );
@@ -41,7 +43,7 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
 
     apply( m.elem_list, calc_elem_error_estimate_EET_EESPT, m, f, theta );
 
-    if ( debug_error_estimate or debug_method or debug_method_enhancement ) {
+    if ( disp ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
             T ecre_elem = theta_elem[ n ] / 2.;
             cout << "contribution a la mesure globale de l'erreur en relation de comportement au carre de l'element " << n << " :" << endl;
@@ -72,7 +74,7 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
 
     cout << "estimateur d'erreur globale :" << endl;
     cout << "theta = " << theta << endl;
-    cout << "theta / ||u_h|| = " << theta / m.norm_dep * 100. << " %" << endl << endl;
+    cout << "theta / norm(u_h) = " << theta / m.norm_dep * 100. << " %" << endl << endl;
 
     if ( pb == "direct" and want_global_discretization_error ) {
         T eff_index = theta / m.discretization_error;
@@ -92,7 +94,7 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
 
         apply( m.elem_list, Calcul_Elem_Effectivity_Index(), method, eff_index_elem );
 
-        if ( debug_local_effectivity_index or debug_method or debug_method_enhancement ) {
+        if ( disp ) {
             for (unsigned n=0;n<m.elem_list.size();++n) {
                 cout << "indice d'efficacite local de l'element " << n << " :" << endl;
                 cout << "eta_elem = theta_elem / e_elem" << endl;
