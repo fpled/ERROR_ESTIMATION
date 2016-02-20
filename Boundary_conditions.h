@@ -19,6 +19,27 @@
 using namespace LMT;
 using namespace std;
 
+/// Affichage des contraintes cinematiques
+/// --------------------------------------
+template<class TF>
+void display_constraints( const TF &f ) {
+    cout << "nb de constraintes = " << f.nb_constraints() << endl;
+    cout << "nb de noeuds constraints = " << f.nb_constrained_nodes() << endl;
+    for (unsigned d=0;d<f.get_nb_nodal_unknowns();++d)
+        cout << "nb de noeuds constraints dans la direction " << d << " = " << f.nb_constrained_nodes_in_dim( d ) << endl;
+    for (unsigned nc=0;nc<f.constraints.size();++nc) { // f.nb_constraints() = f.constraints.size()
+        for (unsigned j=0;j<f.constraints[nc].coeffs.size();++j) {
+            if ( f.constraints[nc].coeffs[j].type_var == -1 )
+                cout << f.constraints[nc].coeffs[j].val << " * unk[ noeud " << f.constraints[nc].coeffs[j].num << ", direction " << f.constraints[nc].coeffs[j].num_in_vec << " ]";
+            else if ( f.constraints[nc].coeffs[j].type_var == -2 )
+                cout << f.constraints[nc].coeffs[j].val << " * unk[ global, direction " << f.constraints[nc].coeffs[j].num_in_vec << " ]";
+            cout << (j<f.constraints[nc].coeffs.size()-1 ? " + " : "" );
+        }
+        cout << " == " << f.constraints[nc].res << endl;
+    }
+    cout << endl;
+}
+
 //struct Set_Field_f_surf {
 //    template<class TE, class TM> void operator()( TE &elem, TM &m ) const {
 //        typedef typename TE::T T;
@@ -37,7 +58,7 @@ using namespace std;
 /// Creation des conditions aux limites de Dirichlet
 /// ------------------------------------------------
 template<class TF, class TM>
-void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const string &pb, const string &structure, const string &loading, const unsigned adapt = 0 ) {
+void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const string &pb, const string &structure, const string &loading, const unsigned adapt = 0, const bool disp = false ) {
 
     static const unsigned dim = TM::dim;
     typedef typename TM::TNode::T T;
@@ -576,18 +597,21 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
         /// loading Step-1, ..., Step-9 : champ de deplacement applique aux noeuds specifies dans le fichier .inp
         /// -----------------------------------------------------------------------------------------------------
         else if ( structure.find("test_specimen") != string::npos ) {
-//            TM m_Hexa;
-//            size_t off = structure.rfind( "_" );
-//            string str = structure.substr( off+1 );
-//            istringstream buffer(str);
-//            int N;
-//            buffer >> N;
-//            N += int(5*adapt);
-//            str = to_string( N );
-//            string structure_new = structure;
-//            structure_new = structure_new.replace( off+1, string::npos, str );
-//            string filename = "MESH_AVS/TEST_SPECIMEN_3D/" + structure_new + "_Hexa.inp";
-//            ReaderINP<TM> RI( m_Hexa, filename.c_str() );
+            TM m_Hexa;
+            string filename = "MESH_AVS/TEST_SPECIMEN_3D/" + structure + "_Hexa.inp";
+            if ( adapt ) {
+                size_t off = structure.rfind( "_" );
+                string str = structure.substr( off+1 );
+                istringstream buffer(str);
+                int N;
+                buffer >> N;
+                N *= int(2*min(adapt,2));
+                str = to_string( N );
+                string structure_adapt = structure;
+                structure_adapt = structure_adapt.replace( off+1, string::npos, str );
+                filename = "MESH_AVS/TEST_SPECIMEN_3D/" + structure_adapt + "_Hexa.inp";
+            }
+            ReaderINP<TM> RI( m_Hexa, filename.c_str() );
 
 //            cout << "Number of nodes = " << m_Hexa.node_list.size() << endl;
 //            for (unsigned i=0;i<m_Hexa.node_list.size();++i) {
@@ -604,51 +628,23 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
 //            RI.display_map_solid_section();
 //            RI.display_map_material();
 //            RI.display_map_step();
+//            RI.display_map_surface( true );
 
-////            RI.display_map_surface( true );
-//            for (unsigned i=1;i<RI.match_inode_inp_lmtpp.size()+1;++i) {
-//                if ( m_Hexa.node_list[ RI.match_inode_inp_lmtpp[ i ] ].pos[2] < 0.954 + 1e-6 or m_Hexa.node_list[ RI.match_inode_inp_lmtpp[ i ] ].pos[2] > 7.314 - 1e-6 ) {
-////                    cout << "Inp " <<  i << " -> Hexa " <<  RI.match_inode_inp_lmtpp[ i ] << " -> Tetra " << m.poin( m_Hexa.node_list[ RI.match_inode_inp_lmtpp[ i ] ].pos, 1e-2 ) << endl;
-//                    RI.match_inode_inp_lmtpp[ i ] = m.poin( m_Hexa.node_list[ RI.match_inode_inp_lmtpp[ i ] ].pos, 1e-2 );
-//                }
-//            }
-//            RI.display_match_inode_inp_lmtpp();
-//            RI.set_constraint_by_step( f, loading, penalty_val );
-
-            for (unsigned i=0;i<m.node_list.size();++i) {
-                if ( m.node_list[i].pos[2] < 0.954 + 1e-6 ) {
-                    for (unsigned d=0;d<dim;++d) {
-                        f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
-                    }
-                }
-                if ( m.node_list[i].pos[2] > 7.314 - 1e-6 ) {
-                    for (unsigned d=0;d<dim;++d) {
-                        f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"] - 1.", penalty_val );
-                    }
+            for (unsigned i=1;i<RI.match_inode_inp_lmtpp.size()+1;++i) {
+                if ( m_Hexa.node_list[ RI.match_inode_inp_lmtpp[ i ] ].pos[2] < 0.954 + 1e-6 or m_Hexa.node_list[ RI.match_inode_inp_lmtpp[ i ] ].pos[2] > 7.314 - 1e-6 ) {
+//                    cout << "Inp " <<  i << " -> Hexa " <<  RI.match_inode_inp_lmtpp[ i ] << " -> Tetra " << m.poin( m_Hexa.node_list[ RI.match_inode_inp_lmtpp[ i ] ].pos, 1e-2 ) << endl;
+                    RI.match_inode_inp_lmtpp[ i ] = m.poin( m_Hexa.node_list[ RI.match_inode_inp_lmtpp[ i ] ].pos, 1e-2 );
                 }
             }
+//            RI.display_match_inode_inp_lmtpp();
+            RI.set_constraint_by_step( f, loading, penalty_val );
         }
     }
-}
 
-/// Verification des contraintes cinematiques
-/// -----------------------------------------
-template<class TF>
-void check_constraints( const TF &f ) {
-    cout << "Verification des contraintes cinematiques" << endl << endl;
-
-    cout << "nb de constraintes : " << f.nb_constraints() << endl;
-    for (unsigned nc=0;nc<f.constraints.size();++nc) { // f.nb_constraints() = f.constraints.size()
-        for (unsigned j=0;j<f.constraints[nc].coeffs.size();++j) {
-            if ( f.constraints[nc].coeffs[j].type_var == -1 )
-                cout << f.constraints[nc].coeffs[j].val << " * unk[ noeud " << f.constraints[nc].coeffs[j].num << ", direction " << f.constraints[nc].coeffs[j].num_in_vec << " ]";
-            else if ( f.constraints[nc].coeffs[j].type_var == -2 )
-                cout << f.constraints[nc].coeffs[j].val << " * unk[ global, direction " << f.constraints[nc].coeffs[j].num_in_vec << " ]";
-            cout << (j<f.constraints[nc].coeffs.size()-1 ? " + " : "" );
-        }
-        cout << " == " << f.constraints[nc].res << endl;
+    if ( disp ) {
+        cout << "contraintes cinematiques :" << endl;
+        display_constraints( f );
     }
-    cout << endl;
 }
 
 /// Creation des conditions aux limites de Neumann

@@ -38,15 +38,15 @@ using namespace std;
 int main( int argc, char **argv ) {
     TicToc t_total;
     t_total.start();
-    static const unsigned dim = 2;
+    static const unsigned dim = 3;
     static const bool wont_add_nz = true;
     typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "structure_crack";
+    static const string structure = "test_specimen_Q3_5";
     static const string mesh_size = "fine";
-    static const string loading = "pull";
+    static const string loading = "Step-2";
     static const unsigned deg_p = 1;
     static const string boundary_condition_D = "penalty";
 
@@ -88,8 +88,6 @@ int main( int argc, char **argv ) {
     TM m;
     set_mesh( m, structure, mesh_size, loading, deg_p );
 
-    display_mesh_carac( m );
-
     /// Formulation du pb direct
     /// ------------------------
     TF f( m );
@@ -103,7 +101,6 @@ int main( int argc, char **argv ) {
     /// Conditions aux limites du pb direct
     /// -----------------------------------
     set_constraints( f, m, boundary_condition_D, "direct", structure, loading );
-//    check_constraints( f );
     set_load_conditions( m, structure, loading, mesh_size );
 
     /// Resolution du pb direct
@@ -161,6 +158,7 @@ int main( int argc, char **argv ) {
 ////    make_rect( m, Hexa(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 20, 20, 20 ) );
 ////    make_rect( m, Tetra(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 21, 5 ) );
 ////    make_rect( m, Tetra(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 21, 5, 5 ) );
+///   display_mesh_carac( m );
 
 //    TF f( m );
 
@@ -211,7 +209,7 @@ int main( int argc, char **argv ) {
 
 ////    for( unsigned n = 0 ; n < m.elem_list.size(); ++n )
 ////        m.elem_list[n]->set_field( "theta_elem_EET", sin( std::sqrt( n ) * 5. ) );
-////    refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_EET_DM, 0.75, spread_cut );
+////    refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_EET_DM(), 0.75, spread_cut );
 
 ////    for( unsigned n = 0 ; n < m.elem_list.size(); ++n )
 ////        m.elem_list[n]->set_field( "theta_elem_EET", sin( std::sqrt( n ) * 5. ) );

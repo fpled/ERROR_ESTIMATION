@@ -231,7 +231,6 @@ int main( int argc, char **argv ) {
     /// Conditions aux limites du pb direct
     /// -----------------------------------
     set_constraints( f, m, boundary_condition_D, "direct", structure, loading );
-//    check_constraints( f );
     set_load_conditions( m, structure, loading, mesh_size );
     set_load_conditions_init( m, structure );
 
@@ -382,7 +381,6 @@ int main( int argc, char **argv ) {
         /// Conditions aux limites du pb adjoint
         /// ------------------------------------
         set_constraints( f_adjoint, m_adjoint, boundary_condition_D, "adjoint", structure, loading );
-//        check_constraints( f_adjoint );
         reset_load_conditions( m_adjoint );
         set_load_conditions_adjoint( m_adjoint, f_adjoint, m, m_crown, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, interest_quantity, direction_extractor, pointwise_interest_quantity, want_local_enrichment );
 

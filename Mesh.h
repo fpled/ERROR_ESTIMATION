@@ -50,7 +50,7 @@ void display_mesh_carac( const TM &m ) {
 /// Creation du maillage
 /// --------------------
 template<class TM>
-void set_mesh( TM &m, const string &structure, const string &mesh_size, const string &loading, const unsigned &deg_p = 1, const unsigned &refinement_level_ref = 2, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false ) {
+void set_mesh( TM &m, const string &structure, const string &mesh_size, const string &loading, const unsigned &deg_p = 1, const unsigned &refinement_level_ref = 2, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool disp = true ) {
 
     static const unsigned dim = TM::dim;
     typedef typename TM::Pvec Pvec;
@@ -825,8 +825,10 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
             cerr << "Arret brutal, car il n'y a aucun element dans le maillage du pb direct..." << endl << endl;
             throw "Baleinou sous caillou...";
         }
-        cout << "maillage du pb direct :" << endl;
-        display_mesh_carac( m );
+        if ( disp ) {
+            cout << "maillage du pb direct :" << endl;
+            display_mesh_carac( m );
+        }
     }
     else {
         cerr << "Arret brutal, car il n'y a aucun noeud dans le maillage du pb direct..." << endl << endl;
@@ -837,14 +839,11 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
 /// Creation du maillage de reference pour le calcul de la mesure de l'erreur de discretisation
 /// -------------------------------------------------------------------------------------------
 template<class TM>
-void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsigned &deg_p = 1, const unsigned &refinement_level_ref = 2 ) {
+void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsigned &deg_p = 1, const unsigned &refinement_level_ref = 2, const bool disp = true ) {
 
     static const unsigned dim = TM::dim;
     typedef typename TM::Pvec Pvec;
     typedef typename TM::TNode::T T;
-
-    cout << "Maillage de reference du pb direct" << endl;
-    cout << "----------------------------------" << endl << endl;
 
     /// Dimension 2
     /// -----------
@@ -1104,8 +1103,10 @@ void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsign
             cerr << "Arret brutal, car il n'y a aucun element dans le maillage de reference du pb direct..." << endl << endl;
             throw "Baleinou sous caillou...";
         }
-        cout << "maillage de reference du pb direct :" << endl;
-        display_mesh_carac( m_ref );
+        if ( disp ) {
+            cout << "maillage de reference du pb direct :" << endl;
+            display_mesh_carac( m_ref );
+        }
     }
     else {
         cerr << "Arret brutal, car il n'y a aucun noeud dans le maillage de reference du pb direct..." << endl << endl;
@@ -1114,10 +1115,79 @@ void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsign
 
 }
 
+/// Adaptation du maillage
+/// ----------------------
+template<class TM,class TF,class T>
+bool adapt_mesh( TM &m, const TF &f, const string &structure, const string &method = "EET", const unsigned &adapt = 1, const T &k = 0.75, const bool spread_cut = false, const bool disp = true ) {
+
+    static const unsigned dim = TM::dim;
+    bool res = false;
+
+    if ( dim == 3 and structure.find("test_specimen") != string::npos ) {
+        if ( method.find("EET") != string::npos )
+            res = refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_EET_DM(), k, spread_cut );
+        else if ( method.find("SPET") != string::npos )
+            res = refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_SPET_DM(), k, spread_cut );
+        else if ( method.find("EESPT") != string::npos )
+            res = refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_EESPT_DM(), k, spread_cut );
+        if ( disp ) {
+            cout << "Adaptation de maillage #" << adapt << endl;
+            cout << "--------------------------" << endl << endl;
+            cout << "raffinement du maillage autour des noeuds contraints (appartenant a un bord de Dirichlet) :" << endl;
+            cout << "nb de noeuds constraints = " << f.nb_constrained_nodes() << endl;
+            cout << "raffinement du maillage autour des elements contribuant majoritairement a l'erreur estimee :" << endl;
+            cout << "rapport maximal entre la contribution elementaire au carre a l'erreur estimee et la contribution elementaire maximale au carre : k = " << k << endl;
+            cout << "propagation du raffinement au reste du maillage = " << spread_cut << endl << endl;
+        }
+
+//        res = refinement_if_constraints_or_nodal_field_sup( m, f, ExtractDM< theta_nodal_DM >(), k, spread_cut );
+//        if ( disp ) {
+//            cout << "Adaptation de maillage #" << adapt << endl;
+//            cout << "--------------------------" << endl << endl;
+//            cout << "raffinement du maillage autour des noeuds contraints (appartenant a un bord de Dirichlet) :" << endl;
+//            cout << "nb de noeuds constraints = " << f.nb_constrained_nodes() << endl;
+//            cout << "raffinement du maillage autour des noeuds contribuant majoritairement a l'erreur estimee lissee :" << endl;
+//            cout << "rapport maximal entre la contribution nodale au carre a l'erreur estimee et la contribution nodale maximale au carre : k = " << k << endl;
+//            cout << "propagation du raffinement au reste du maillage = " << spread_cut << endl << endl;
+//        }
+    }
+    else {
+        if ( method.find("EET") != string::npos )
+            res = refinement_if_elem_field_sup( m, theta_elem_EET_DM(), k, spread_cut );
+        else if ( method.find("SPET") != string::npos )
+            res = refinement_if_elem_field_sup( m, theta_elem_SPET_DM(), k, spread_cut );
+        else if ( method.find("EESPT") != string::npos )
+            res = refinement_if_elem_field_sup( m, theta_elem_EESPT_DM(), k, spread_cut );
+        if ( disp ) {
+            cout << "Adaptation de maillage #" << adapt << endl;
+            cout << "--------------------------" << endl << endl;
+            cout << "raffinement du maillage autour des elements contribuant majoritairement a l'erreur estimee :" << endl;
+            cout << "rapport maximal entre la contribution elementaire au carre a l'erreur estimee et la contribution elementaire maximale au carre : k = " << k << endl;
+            cout << "propagation du raffinement au reste du maillage = " << spread_cut << endl << endl;
+        }
+
+//        res = refinement_if_nodal_field_sup( m, ExtractDM< theta_nodal_DM >(), k, spread_cut );
+//        if ( disp ) {
+//            cout << "Adaptation de maillage #" << adapt << endl;
+//            cout << "--------------------------" << endl << endl;
+//            cout << "raffinement du maillage autour des noeuds contribuant majoritairement a l'erreur estimee lissee :" << endl;
+//            cout << "rapport maximal entre la contribution nodale au carre a l'erreur estimee et la contribution nodale maximale au carre : k = " << k << endl;
+//            cout << "propagation du raffinement au reste du maillage = " << spread_cut << endl << endl;
+//        }
+    }
+
+    if ( not res )
+        cerr << "Pas d'adaptation de maillage..." << endl << endl;
+    if ( disp )
+        display_mesh_carac( m );
+
+    return res;
+}
+
 /// Creation du maillage adjoint
 /// ----------------------------
 template<class TM, class T, class Pvec>
-void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, const string &direction_extractor, const bool &want_local_refinement, const T &l_min, const T &k, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list, Vec<unsigned> &elem_list_adjoint, const unsigned &node, unsigned &node_adjoint, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool &spread_cut, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, Vec<unsigned> &elem_list_adjoint_enrichment_zone_1, Vec<unsigned> &elem_list_adjoint_enrichment_zone_2, Vec<unsigned> &face_list_adjoint_enrichment_zone_12, Vec<unsigned> &node_list_adjoint_enrichment, const bool disp = false ) {
+void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, const string &direction_extractor, const bool &want_local_refinement, const T &l_min, const T &k, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list, Vec<unsigned> &elem_list_adjoint, const unsigned &node, unsigned &node_adjoint, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool &spread_cut, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, Vec<unsigned> &elem_list_adjoint_enrichment_zone_1, Vec<unsigned> &elem_list_adjoint_enrichment_zone_2, Vec<unsigned> &face_list_adjoint_enrichment_zone_12, Vec<unsigned> &node_list_adjoint_enrichment, const bool disp = true ) {
 
     static const unsigned dim = TM::dim;
 
@@ -1167,10 +1237,12 @@ void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, co
         else
             divide( m_adjoint );
 
-        cout << "raffinement local du maillage adjoint :" << endl;
-        cout << "longueur minimale des cotes des elements du maillage adjoint : l_min = " << l_min << endl;
-        cout << "coefficient d'augmentation de la longueur maximale des cotes des elements : k = " << k << endl;
-        cout << "propagation du raffinement au reste du maillage = " << spread_cut << endl << endl;
+        if ( disp ) {
+            cout << "raffinement local du maillage adjoint :" << endl;
+            cout << "longueur minimale des cotes des elements du maillage adjoint : l_min = " << l_min << endl;
+            cout << "coefficient d'augmentation de la longueur maximale des cotes des elements : k = " << k << endl;
+            cout << "propagation du raffinement au reste du maillage = " << spread_cut << endl << endl;
+        }
     }
     
     /// Zone d'interet du maillage adjoint
@@ -1470,16 +1542,18 @@ void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, co
         LMT::sort( elem_list_adjoint_enrichment_zone_2 );
         LMT::sort( face_list_adjoint_enrichment_zone_12 );
 
-        cout << "enrichissement local avec fonctions handbook : " << endl;
-        cout << "nb de couches/rangées de noeuds enrichis = " << nb_layers_nodes_enrichment << endl;
-        cout << "nb de noeuds enrichis = " << node_list_adjoint_enrichment.size() << endl;
-        cout << "nb d'elements enrichis dans Omega_1 = " << elem_list_adjoint_enrichment_zone_1.size() << endl;
-        cout << "nb d'elements enrichis dans Omega_2 = " << elem_list_adjoint_enrichment_zone_2.size() << endl;
-        cout << "nb de faces enrichies a l'interface entre Omega_1 et Omega_2 = " << face_list_adjoint_enrichment_zone_12.size() << endl;
-        cout << "liste des noeuds enrichis = " << node_list_adjoint_enrichment << endl;
-        cout << "liste des elements enrichis dans Omega_1 = " << elem_list_adjoint_enrichment_zone_1 << endl;
-        cout << "liste des elements enrichis dans Omega_2 = " << elem_list_adjoint_enrichment_zone_2 << endl;
-        cout << "liste des faces enrichies a l'interface entre Omega_1 et Omega_2 = " << face_list_adjoint_enrichment_zone_12 << endl << endl;
+        if ( disp ) {
+            cout << "enrichissement local avec fonctions handbook : " << endl;
+            cout << "nb de couches/rangées de noeuds enrichis = " << nb_layers_nodes_enrichment << endl;
+            cout << "nb de noeuds enrichis = " << node_list_adjoint_enrichment.size() << endl;
+            cout << "nb d'elements enrichis dans Omega_1 = " << elem_list_adjoint_enrichment_zone_1.size() << endl;
+            cout << "nb d'elements enrichis dans Omega_2 = " << elem_list_adjoint_enrichment_zone_2.size() << endl;
+            cout << "nb de faces enrichies a l'interface entre Omega_1 et Omega_2 = " << face_list_adjoint_enrichment_zone_12.size() << endl;
+            cout << "liste des noeuds enrichis = " << node_list_adjoint_enrichment << endl;
+            cout << "liste des elements enrichis dans Omega_1 = " << elem_list_adjoint_enrichment_zone_1 << endl;
+            cout << "liste des elements enrichis dans Omega_2 = " << elem_list_adjoint_enrichment_zone_2 << endl;
+            cout << "liste des faces enrichies a l'interface entre Omega_1 et Omega_2 = " << face_list_adjoint_enrichment_zone_12 << endl << endl;
+        }
     }
 
     if ( m_adjoint.node_list.size() ) {
@@ -1489,8 +1563,10 @@ void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, co
             cerr << "Arret brutal, car il n'y a aucun element dans le maillage du pb adjoint..." << endl << endl;
             throw "Baleinou sous caillou...";
         }
-        cout << "maillage du pb adjoint :" << endl;
-        display_mesh_carac( m_adjoint );
+        if ( disp ) {
+            cout << "maillage du pb adjoint :" << endl;
+            display_mesh_carac( m_adjoint );
+        }
     }
     else {
         cerr << "Arret brutal, car il n'y a aucun noeud dans le maillage du pb adjoint..." << endl << endl;
@@ -1502,7 +1578,7 @@ void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, co
 /// Creation du maillage de reference pour le calcul de la quantite d'interet quasi-exacte
 /// --------------------------------------------------------------------------------------
 template<class TM, class T, class Pvec>
-void set_mesh_local_ref( TM &m_ref, TM &m, const unsigned &refinement_level_ref, const string &interest_quantity, const Vec<unsigned> &elem_list, Vec<unsigned> &elem_list_ref, const unsigned &node, unsigned &node_ref, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool spread_cut = false ) {
+void set_mesh_local_ref( TM &m_ref, TM &m, const unsigned &refinement_level_ref, const string &interest_quantity, const Vec<unsigned> &elem_list, Vec<unsigned> &elem_list_ref, const unsigned &node, unsigned &node_ref, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool spread_cut = false, const bool disp = true ) {
 
     static const unsigned dim = TM::dim;
 
@@ -1533,8 +1609,10 @@ void set_mesh_local_ref( TM &m_ref, TM &m, const unsigned &refinement_level_ref,
             cerr << "Arret brutal, car il n'y a aucun element dans le maillage de reference du pb direct..." << endl << endl;
             throw "Baleinou sous caillou...";
         }
-        cout << "maillage de reference du pb direct :" << endl;
-        display_mesh_carac( m_ref );
+        if ( disp ) {
+            cout << "maillage de reference du pb direct :" << endl;
+            display_mesh_carac( m_ref );
+        }
     }
     else {
         cerr << "Arret brutal, car il n'y a aucun noeud dans le maillage de reference du pb direct..." << endl << endl;
@@ -1550,7 +1628,7 @@ void set_mesh_local_ref( TM &m_ref, TM &m, const unsigned &refinement_level_ref,
 /// Decoupe du maillage autour d'un domaine repere par son centre domain_center et sa taille domain_length
 /// ------------------------------------------------------------------------------------------------------
 template<class TM, class T, class Pvec>
-void set_mesh_domain( TM &m_domain, TM &m, const string &shape, const T &k, const Vec<T> &domain_length, const Pvec &domain_center, const bool spread_cut = false ) {
+void set_mesh_domain( TM &m_domain, TM &m, const string &shape, const T &k, const Vec<T> &domain_length, const Pvec &domain_center, const bool spread_cut = false, const bool disp = false ) {
     
     if ( shape.find("circle") != string::npos or shape.find("sphere") != string::npos ) {
         for (unsigned i=0;i<m.node_list.size();++i)
@@ -1558,12 +1636,16 @@ void set_mesh_domain( TM &m_domain, TM &m, const string &shape, const T &k, cons
         m_domain = m;
         level_set_cut( m_domain, ExtractDM< phi_domain_DM >(), spread_cut );
     }
+    if ( disp ) {
+        cout << "maillage du sous-domaine :" << endl;
+        display_mesh_carac( m_domain );
+    }
 }
 
 /// Creation du maillage de la couronne entourant la pointe de fissure pour la quantite d'interet SIF
 /// -------------------------------------------------------------------------------------------------
 template<class TM, class T, class Pvec>
-void set_mesh_crown( TM &m_crown, TM &m, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool spread_cut = false ) {
+void set_mesh_crown( TM &m_crown, TM &m, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool spread_cut = false, const bool disp = false ) {
 
     for (unsigned i=0;i<m.node_list.size();++i) {
         m.node_list[i].phi_crown_int = length( m.node_list[ i ].pos - pos_crack_tip ) - radius_Ri;
@@ -1572,14 +1654,22 @@ void set_mesh_crown( TM &m_crown, TM &m, const Pvec &pos_crack_tip, const T &rad
     m_crown = m;
     level_set_cut( m_crown, ExtractDM< phi_crown_int_DM >(), spread_cut );
     level_set_cut( m_crown, ExtractDM< phi_crown_ext_DM >(), spread_cut );
+    if ( disp ) {
+        cout << "maillage de la couronne entourant la pointe de fissure :" << endl;
+        display_mesh_carac( m_crown );
+    }
 }
 
 /// Creation du maillage parametrique
 /// ---------------------------------
 template<class TM_param, class T, class TT>
-void set_mesh_param( TM_param &m_param, const T &min_param, const T &max_param, const TT &nb_points ) {
+void set_mesh_param( TM_param &m_param, const T &min_param, const T &max_param, const TT &nb_points, const bool disp = false ) {
     typedef typename TM_param::Pvec Pvec_param;
     make_rect( m_param, Bar(), Pvec_param( min_param ), Pvec_param( max_param ), Pvec_param( nb_points ) );
+    if ( disp ) {
+        cout << "maillage du pb en paramètre :" << endl;
+        display_mesh_carac( m_param );
+    }
 }
 
 #endif // Mesh_h

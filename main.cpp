@@ -42,7 +42,7 @@ int main( int argc, char **argv ) {
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "test_specimen_Q3_5"; // structure
+    static const string structure = "plate_hole"; // structure
     // 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes, square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
     // 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes, test_specimen_n (n=5,10,15,20,25,Q1_5,Q3_5,Q3_10,Q3_15,Q3_20,Q3_25,Q4_5,Q6_5,Q8_5)
     static const string mesh_size = "fine"; // taille du maillage : coarse, fine
@@ -97,8 +97,8 @@ int main( int argc, char **argv ) {
     /// ------------------------------------
     static const bool want_remesh = 1; // remaillage adaptatif (raffinement du maillage)
     static const T tol_remesh = 20e-2; // tolerance pour le critère d'arrêt de l'algorithme de remaillage
-    static const unsigned max_iter_remesh = 4; // nb d'iterations max de l'algorithme de remaillage
-    static const T k_remesh = 0.60; // rapport maximal la contribution élémentaire au carré à l'erreur estimée et la contribution élémentaire maximale au carré des barres qui ne seront pas divisées
+    static const unsigned max_iter_remesh = 10; // nb d'iterations max de l'algorithme de remaillage
+    static const T k_remesh = 0.75; // rapport maximal entre la contribution élémentaire au carré à l'erreur estimée et la contribution élémentaire maximale au carré des barres qui ne seront pas divisées
     static const bool spread_cut_remesh = true; // propagation du raffinement au reste du maillage (étendue de la coupe si l'arête coupée n'est pas la plus longue de l'élément)
 
     /// Goal-oriented error estimation method
@@ -236,7 +236,6 @@ int main( int argc, char **argv ) {
     /// Conditions aux limites du pb direct
     /// -----------------------------------
     set_constraints( f, m, boundary_condition_D, "direct", structure, loading );
-//    check_constraints( f );
     set_load_conditions( m, structure, loading, mesh_size );
 
     /// Resolution du pb direct
@@ -299,33 +298,10 @@ int main( int argc, char **argv ) {
         /// Adaptation du maillage associe au pb direct ///
         /// ------------------------------------------- ///
 
-        while( want_remesh and theta / m.norm_dep > tol_remesh ) {
+        while( want_remesh and theta / m.norm_dep > tol_remesh and ++adapt <= max_iter_remesh ) {
 
-            ++adapt;
-
-            if ( adapt == max_iter_remesh )
+            if ( not adapt_mesh( m, f, structure, method, adapt, k_remesh, spread_cut_remesh ) )
                 break;
-
-            cout << "--------------------------" << endl << endl;
-            cout << "Adaptation de maillage #" << adapt << endl;
-            cout << "--------------------------" << endl << endl;
-
-//            divide( m );
-//            refinement_if_nodal_field_sup( m, ExtractDM< theta_nodal_DM >(), k_remesh, spread_cut_remesh );
-//            if ( method.find("EET") != string::npos )
-//                refinement_if_elem_field_sup( m, theta_elem_EET_DM(), k_remesh, spread_cut_remesh );
-//            else if ( method.find("SPET") != string::npos )
-//                refinement_if_elem_field_sup( m, theta_elem_SPET_DM(), k_remesh, spread_cut_remesh );
-//            else if ( method.find("EESPT") != string::npos )
-//                refinement_if_elem_field_sup( m, theta_elem_EESPT_DM(), k_remesh, spread_cut_remesh );
-            if ( method.find("EET") != string::npos )
-                refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_EET_DM(), k_remesh, spread_cut_remesh );
-            else if ( method.find("SPET") != string::npos )
-                refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_SPET_DM(), k_remesh, spread_cut_remesh );
-            else if ( method.find("EESPT") != string::npos )
-                refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_EESPT_DM(), k_remesh, spread_cut_remesh );
-
-            display_mesh_carac( m );
 
             f.set_mesh( &m );
             f.init();
@@ -334,7 +310,6 @@ int main( int argc, char **argv ) {
             /// -----------------------------------
             f.erase_constraints();
             set_constraints( f, m, boundary_condition_D, "direct", structure, loading, adapt );
-//            check_constraints( f );
             reset_load_conditions( m );
             set_load_conditions( m, structure, loading, mesh_size );
 
@@ -387,9 +362,9 @@ int main( int argc, char **argv ) {
 
         if ( want_remesh ) {
             if ( display_pvd )
-                dp.exec( prefix + "adapt" );
+                dp.exec( prefix + "_adapt" );
             else
-                dp.make_pvd_file( prefix + "adapt" );
+                dp.make_pvd_file( prefix + "_adapt" );
         }
     }
     
@@ -494,7 +469,6 @@ int main( int argc, char **argv ) {
         /// Conditions aux limites du pb adjoint
         /// ------------------------------------
         set_constraints( f_adjoint, m_adjoint, boundary_condition_D, "adjoint", structure, loading );
-//        check_constraints( f_adjoint );
         reset_load_conditions( m_adjoint );
         set_load_conditions_adjoint( m_adjoint, f_adjoint, m, m_crown, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, interest_quantity, direction_extractor, pointwise_interest_quantity, want_local_enrichment );
 

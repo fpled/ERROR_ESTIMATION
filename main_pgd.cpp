@@ -213,7 +213,6 @@ int main( int argc, char **argv ) {
     /// Conditions aux limites du pb direct
     /// -----------------------------------
     set_constraints( f, m, boundary_condition_D, "direct", structure, loading );
-//    check_constraints( f );
     set_load_conditions( m, structure, loading, mesh_size );
 
     /// Partition des elements du maillage en espace du pb direct
