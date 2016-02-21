@@ -19,14 +19,22 @@
 #include "LMT/include/mesh/ReaderINP.h" // sert a definir la fonction parse() pour charger un maillage et lire des donnees a partir d'un fichier .inp
 #include "LMT/include/mesh/read_vtu.h" // sert a definir la fonction read_vtu() pour charger un maillage a partir d'un fichier .vtu
 #include "LMT/include/mesh/read_vtk.h" // sert a definir la fonction read_vtk() pour charger un maillage a partir d'un fichier .vtk
+
+#include "LMT/include/mesh/displayparaview.h" // sert a lire ou ecrire un maillage dans un fichier .vtk (.vti, .vtu, .vtr, .vts, .vtu) ou .pvd (collection de .vtu)
+#include "LMT/include/mesh/write_avs.h" // sert a definir la fonction write_avs() pour ecrire un maillage dans un fichier .avs
+
 #include "LMT/include/mesh/remove_lonely_nodes.h" // sert a retirer les noeuds seuls d'un maillage
 #include "LMT/include/mesh/refinement.h" // sert a raffiner un maillage selon un critere donne
+#include "LMT/include/mesh/sep_mesh.h" // sert a redefinir la peau d'un maillage selon un critere donne
 #include "LMT/include/mesh/replace_Quad_by_Triangle.h" // sert a retirer tous les Quad d'un maillage et les remplacer par des Triangle
 #include "LMT/include/mesh/replace_Hexa_by_Tetra.h" // sert a retirer tous les Hexa d'un maillage et les remplacer par des Tetra
 #include "LMT/include/mesh/replace_Wedge_by_Tetra.h" // sert a retirer tous les Wedge d'un maillage et les remplacer par des Tetra
+
 #include "LMT/include/util/Hdf.h" // sert a lire des donnees a partir d'un fichier .h5 ou .hdf5
 #include "LMT/include/containers/Tens3.h"
+
 #include "CONNECTIVITY/Calcul_connectivity.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sstream>
@@ -1118,31 +1126,51 @@ void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsign
 /// Adaptation du maillage
 /// ----------------------
 template<class TM,class TF,class T>
-bool adapt_mesh( TM &m, const TF &f, const string &structure, const string &method = "EET", const unsigned &adapt = 1, const T &k = 0.75, const bool spread_cut = false, const bool disp = true ) {
+bool adapt_mesh( TM &m, const TF &f, const string &structure, const string &method = "EET", unsigned &iter = 1, const unsigned &max_iter = 10, const T &k = 0.75, const bool spread_cut = false, const bool disp = true ) {
 
     static const unsigned dim = TM::dim;
-    bool res = false;
 
+    if ( iter > max_iter )
+        return 1;
+
+    bool res = 0;
     if ( dim == 3 and structure.find("test_specimen") != string::npos ) {
-        if ( method.find("EET") != string::npos )
-            res = refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_EET_DM(), k, spread_cut );
-        else if ( method.find("SPET") != string::npos )
-            res = refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_SPET_DM(), k, spread_cut );
-        else if ( method.find("EESPT") != string::npos )
-            res = refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_EESPT_DM(), k, spread_cut );
-        if ( disp ) {
-            cout << "Adaptation de maillage #" << adapt << endl;
-            cout << "--------------------------" << endl << endl;
-            cout << "raffinement du maillage autour des noeuds contraints (appartenant a un bord de Dirichlet) :" << endl;
-            cout << "nb de noeuds constraints = " << f.nb_constrained_nodes() << endl;
-            cout << "raffinement du maillage autour des elements contribuant majoritairement a l'erreur estimee :" << endl;
-            cout << "rapport maximal entre la contribution elementaire au carre a l'erreur estimee et la contribution elementaire maximale au carre : k = " << k << endl;
-            cout << "propagation du raffinement au reste du maillage = " << spread_cut << endl << endl;
+        if ( iter <= max_iter ) {
+            if ( method.find("EET") != string::npos )
+                res = refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_EET_DM(), k, spread_cut );
+            else if ( method.find("SPET") != string::npos )
+                res = refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_SPET_DM(), k, spread_cut );
+            else if ( method.find("EESPT") != string::npos )
+                res = refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_EESPT_DM(), k, spread_cut );
+            if ( disp ) {
+                cout << "Adaptation de maillage #" << iter << endl;
+                cout << "--------------------------" << endl << endl;
+                cout << "raffinement du maillage autour des noeuds contraints (appartenant a un bord de Dirichlet) :" << endl;
+                cout << "nb de noeuds constraints = " << f.nb_constrained_nodes() << endl;
+                cout << "raffinement du maillage autour des elements contribuant majoritairement a l'erreur estimee :" << endl;
+                cout << "rapport maximal entre la contribution elementaire au carre a l'erreur estimee et la contribution elementaire maximale au carre : k = " << k << endl;
+                cout << "propagation du raffinement au reste du maillage = " << spread_cut << endl << endl;
+            }
+        }
+        else {
+            if ( method.find("EET") != string::npos )
+                res = refinement_if_elem_field_sup( m, theta_elem_EET_DM(), k, spread_cut );
+            else if ( method.find("SPET") != string::npos )
+                res = refinement_if_elem_field_sup( m, theta_elem_SPET_DM(), k, spread_cut );
+            else if ( method.find("EESPT") != string::npos )
+                res = refinement_if_elem_field_sup( m, theta_elem_EESPT_DM(), k, spread_cut );
+            if ( disp ) {
+                cout << "Adaptation de maillage #" << iter << endl;
+                cout << "--------------------------" << endl << endl;
+                cout << "raffinement du maillage autour des elements contribuant majoritairement a l'erreur estimee :" << endl;
+                cout << "rapport maximal entre la contribution elementaire au carre a l'erreur estimee et la contribution elementaire maximale au carre : k = " << k << endl;
+                cout << "propagation du raffinement au reste du maillage = " << spread_cut << endl << endl;
+            }
         }
 
 //        res = refinement_if_constraints_or_nodal_field_sup( m, f, ExtractDM< theta_nodal_DM >(), k, spread_cut );
 //        if ( disp ) {
-//            cout << "Adaptation de maillage #" << adapt << endl;
+//            cout << "Adaptation de maillage #" << iter << endl;
 //            cout << "--------------------------" << endl << endl;
 //            cout << "raffinement du maillage autour des noeuds contraints (appartenant a un bord de Dirichlet) :" << endl;
 //            cout << "nb de noeuds constraints = " << f.nb_constrained_nodes() << endl;
@@ -1159,7 +1187,7 @@ bool adapt_mesh( TM &m, const TF &f, const string &structure, const string &meth
         else if ( method.find("EESPT") != string::npos )
             res = refinement_if_elem_field_sup( m, theta_elem_EESPT_DM(), k, spread_cut );
         if ( disp ) {
-            cout << "Adaptation de maillage #" << adapt << endl;
+            cout << "Adaptation de maillage #" << iter << endl;
             cout << "--------------------------" << endl << endl;
             cout << "raffinement du maillage autour des elements contribuant majoritairement a l'erreur estimee :" << endl;
             cout << "rapport maximal entre la contribution elementaire au carre a l'erreur estimee et la contribution elementaire maximale au carre : k = " << k << endl;
@@ -1168,7 +1196,7 @@ bool adapt_mesh( TM &m, const TF &f, const string &structure, const string &meth
 
 //        res = refinement_if_nodal_field_sup( m, ExtractDM< theta_nodal_DM >(), k, spread_cut );
 //        if ( disp ) {
-//            cout << "Adaptation de maillage #" << adapt << endl;
+//            cout << "Adaptation de maillage #" << iter << endl;
 //            cout << "--------------------------" << endl << endl;
 //            cout << "raffinement du maillage autour des noeuds contribuant majoritairement a l'erreur estimee lissee :" << endl;
 //            cout << "rapport maximal entre la contribution nodale au carre a l'erreur estimee et la contribution nodale maximale au carre : k = " << k << endl;

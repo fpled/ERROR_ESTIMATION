@@ -42,7 +42,7 @@ int main( int argc, char **argv ) {
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "plate_hole"; // structure
+    static const string structure = "test_specimen_Q3_5"; // structure
     // 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes, square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
     // 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes, test_specimen_n (n=5,10,15,20,25,Q1_5,Q3_5,Q3_10,Q3_15,Q3_20,Q3_25,Q4_5,Q6_5,Q8_5)
     static const string mesh_size = "fine"; // taille du maillage : coarse, fine
@@ -97,7 +97,7 @@ int main( int argc, char **argv ) {
     /// ------------------------------------
     static const bool want_remesh = 1; // remaillage adaptatif (raffinement du maillage)
     static const T tol_remesh = 20e-2; // tolerance pour le critère d'arrêt de l'algorithme de remaillage
-    static const unsigned max_iter_remesh = 10; // nb d'iterations max de l'algorithme de remaillage
+    static const unsigned max_iter_remesh = 3; // nb d'iterations max de l'algorithme de remaillage
     static const T k_remesh = 0.75; // rapport maximal entre la contribution élémentaire au carré à l'erreur estimée et la contribution élémentaire maximale au carré des barres qui ne seront pas divisées
     static const bool spread_cut_remesh = true; // propagation du raffinement au reste du maillage (étendue de la coupe si l'arête coupée n'est pas la plus longue de l'élément)
 
@@ -290,18 +290,21 @@ int main( int argc, char **argv ) {
         else if ( method.find("EESPT") != string::npos )
             smoothing( m, ExtractDM< theta_nodal_DM >(), ExtractDM< theta_elem_EESPT_DM >() );
 
-        unsigned adapt = 0;
+        unsigned iter = 0;
         if ( want_remesh )
-            dp.add_mesh_iter( m, prefix + "_adapt", lp, adapt );
+            dp.add_mesh_iter( m, prefix + "_adapt", lp, iter );
 
         /// ------------------------------------------- ///
         /// Adaptation du maillage associe au pb direct ///
         /// ------------------------------------------- ///
 
-        while( want_remesh and theta / m.norm_dep > tol_remesh and ++adapt <= max_iter_remesh ) {
+        while( want_remesh and theta / m.norm_dep > tol_remesh and adapt_mesh( m, f, structure, method, ++iter, max_iter_remesh, k_remesh, spread_cut_remesh ) ) {
 
-            if ( not adapt_mesh( m, f, structure, method, adapt, k_remesh, spread_cut_remesh ) )
+            if ( iter == max_iter_remesh ) {
+                write_avs( m, prefix + "_adapt_" + to_string( iter ), Vec<std::string>("pos"), Ascii() );
+                save( m, prefix + "_adapt_" + to_string( iter ), Vec<std::string>("pos") );
                 break;
+            }
 
             f.set_mesh( &m );
             f.init();
@@ -309,7 +312,7 @@ int main( int argc, char **argv ) {
             /// Conditions aux limites du pb direct
             /// -----------------------------------
             f.erase_constraints();
-            set_constraints( f, m, boundary_condition_D, "direct", structure, loading, adapt );
+            set_constraints( f, m, boundary_condition_D, "direct", structure, loading, iter );
             reset_load_conditions( m );
             set_load_conditions( m, structure, loading, mesh_size );
 
@@ -351,8 +354,8 @@ int main( int argc, char **argv ) {
             else if ( method.find("EESPT") != string::npos )
                 smoothing( m, ExtractDM< theta_nodal_DM >(), ExtractDM< theta_elem_EESPT_DM >() );
 
-//            display( m, prefix + "_adapt_" + to_string( adapt )  );
-            dp.add_mesh_iter( m, prefix + "_adapt", lp, adapt );
+//            display( m, prefix + "_adapt_" + to_string( iter )  );
+            dp.add_mesh_iter( m, prefix + "_adapt", lp, iter );
 
         }
 
