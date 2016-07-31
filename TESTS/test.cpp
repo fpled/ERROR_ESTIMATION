@@ -141,7 +141,7 @@ using namespace std;
 /// refinement ///
 /// ---------- ///
 int main( int argc, char **argv ) {
-    static const unsigned dim = 3;
+    static const unsigned dim = 2;
     static const bool wont_add_nz = true;
 //    typedef Mesh<MeshCaracStd<dim,2> > TM;
     typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
@@ -152,10 +152,10 @@ int main( int argc, char **argv ) {
 
     TM m;
     T lx = 1., ly = 1., lz = 1.;
-//    make_rect( m, Triangle(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 20, 20 ) );
-//    make_rect( m, Quad(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 20, 20 ) );
-//    make_rect( m, Tetra(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 20, 20, 20 ) );
-    make_rect( m, Hexa(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 5, 5, 5 ) );
+//    make_rect( m, Triangle(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 5, 5 ) );
+//    make_rect( m, Quad(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 5, 5 ) );
+//    make_rect( m, Tetra(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 5, 5, 5 ) );
+//    make_rect( m, Hexa(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 5, 5, 5 ) ); replace_Hexa_by_Tetra( m );
 //    make_rect( m, Triangle(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 21, 5 ) );
 //    make_rect( m, Tetra(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 21, 5, 5 ) );
    display_mesh_carac( m );
@@ -224,6 +224,7 @@ int main( int argc, char **argv ) {
 //    replace_Hexa_by_Tetra( m );
 //    replace_Wedge_by_Tetra( m );
 
+    display_mesh_carac( m );
     display_mesh( m );
 
     return 0;

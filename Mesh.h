@@ -783,8 +783,8 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         /// Eprouvette 3D
         /// -------------
         else if ( structure.find("test_specimen") != string::npos ) {
-            string filename = "MESH/TEST_SPECIMEN_3D/" + structure + "_Hexa.inp";
-//            string filename = "MESH/TEST_SPECIMEN_3D/" + structure + "_Tetra.inp";
+//            string filename = "MESH/TEST_SPECIMEN_3D/" + structure + "_Hexa.inp";
+            string filename = "MESH/TEST_SPECIMEN_3D/" + structure + "_Tetra.inp";
 //            read_inp( m, filename );
             ReaderINP<TM> RI( m, filename.c_str() );
 //            replace_Hexa_by_Tetra( m );
