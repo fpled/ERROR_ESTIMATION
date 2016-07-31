@@ -1032,6 +1032,55 @@ void set_load_conditions( TM &m, const string &structure, const string &loading,
                 }
             }
         }
+        /// Cube 3D
+        /// pre-deformation et pre-contrainte appliquees sur tous les elements
+        /// ------------------------------------------------------------------
+        else if ( structure.find("cube") != string::npos ) {
+            if ( structure.find("init") != string::npos ) {
+                for (unsigned n=0;n<m.elem_list.size();++n) {
+                    m.elem_list[n]->set_field( "pre_epsilon", Vec<T,unsigned(dim*(dim+1)/2) >( 0., -1/sqrt(2.), 0., 0., 0., 0. ) );
+                }
+            }
+            else {
+                size_t offset = structure.rfind( "_" )+1;
+                const string str = structure.substr( offset );
+                istringstream buffer(str);
+                int N;
+                buffer >> N;
+                Hdf hdf("DATA_HDF5/cube-" + str + "x" + str + ".hdf5");
+
+                Vec<int> s;
+                hdf.read_size( "/tau", s );
+
+                Tens3<T> tau;
+                tau.resize( s );
+                hdf.read_data( "/tau", tau.ptr(), s, s );
+
+                Vec<T,unsigned(dim*(dim+1)/2) > pre_sig;
+                for (unsigned n=0;n<m.elem_list.size();++n) {
+                    int i = int(center( *m.elem_list[n] )[0]*N-1/2);
+                    int j = int(center( *m.elem_list[n] )[1]*N-1/2);
+                    pre_sig[ 0 ] = -tau( 0, j, i );
+                    pre_sig[ 1 ] = -tau( 3, j, i )/sqrt(2.);
+                    pre_sig[ 2 ] = -tau( 1, j, i );
+                    pre_sig[ 3 ] = -tau( 4, j, i )/sqrt(2);
+                    pre_sig[ 4 ] = -tau( 5, j, i )/sqrt(2);
+                    pre_sig[ 5 ] = -tau( 2, j, i );
+                    m.elem_list[n]->set_field( "pre_sigma", pre_sig );
+                }
+
+//                for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
+//                    if ( m.sub_mesh(Number<1>()).get_parents_of_EA( m.sub_mesh(Number<1>()).elem_list[i] ).size() == 1 ) {
+//                        unsigned n = m.sub_mesh(Number<1>()).get_parents_of_EA( m.sub_mesh(Number<1>()).elem_list[i] )[0]->number;
+//                        Mat<T,Sym<dim> > pre_sig = m.elem_list[n]->get_field( "pre_sigma", StructForType<Mat<T,Sym<dim> > >() );
+//                        Vec<T,dim> f_surf = pre_sig * m.sub_mesh(Number<1>()).elem_list[i]->sample_normal_virtual() * -1.;
+//                        m.sub_mesh(Number<1>()).elem_list[i]->set_field( "f_surf", f_surf );
+//                    }
+//                }
+//                m.update_elem_children();
+//                apply( m.elem_list, Set_Field_f_surf(), m );
+            }
+        }
     }
 }
 

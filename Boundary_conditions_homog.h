@@ -30,10 +30,18 @@ void set_load_conditions_init( TM &m, const string &structure ) {
 
     /// Carre 2D
     /// pre-deformation et pre-contrainte appliquees sur tous les elements
-    /// -----------------------------------------------------------------
+    /// ------------------------------------------------------------------
     if ( structure.find("square") != string::npos ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
             m.elem_list[n]->set_field( "pre_epsilon_init", Vec<T,unsigned(dim*(dim+1)/2) >( 0., -1/sqrt(2.), 0. ) );
+        }
+    }
+    /// Cube 3D
+    /// pre-deformation et pre-contrainte appliquees sur tous les elements
+    /// ------------------------------------------------------------------
+    else if ( structure.find("cube") != string::npos ) {
+        for (unsigned n=0;n<m.elem_list.size();++n) {
+            m.elem_list[n]->set_field( "pre_epsilon_init", Vec<T,unsigned(dim*(dim+1)/2) >( 0., -1/sqrt(2.), 0., 0., 0., 0. ) );
         }
     }
 }

@@ -789,6 +789,16 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
             ReaderINP<TM> RI( m, filename.c_str() );
 //            replace_Hexa_by_Tetra( m );
         }
+        /// Cube 3D
+        /// -------
+        else if ( structure.find("cube") != string::npos ) {
+            size_t off = structure.rfind( "_" );
+            string str = structure.substr( off+1 );
+            istringstream buffer(str);
+            int N;
+            buffer >> N;
+            make_rect( m, Hexa(), Pvec( 0., 0., 0. ), Pvec( 1. , 1., 1. ), Pvec( N+1, N+1, N+1 ) );
+        }
         /// Sphere 3D avec noeud au centre
         /// ------------------------------
         else if ( structure == "sphere_center" ) {
@@ -1084,6 +1094,13 @@ void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsign
             for (unsigned n=0;n<refinement_level_ref;++n)
                 divide( m_ref );
         }
+        /// Cube 3D
+        /// -------
+        else if ( structure.find("cube") != string::npos ) {
+            m_ref = m;
+            for (unsigned n=0;n<refinement_level_ref;++n)
+                divide( m_ref );
+        }
         /// Sphere 3D avec noeud au centre
         /// ------------------------------
         else if ( structure == "sphere_center" ) {
@@ -1099,6 +1116,8 @@ void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsign
         else if ( structure == "sphere_hollow" ) {
             read_msh_2( m_ref, "MESH/SPHERE_3D/sphere_hollow_very_fine_Tetra.msh" );
         }
+        else
+            cerr << "structure " << structure << " not implemented..." << endl << endl;
         else
             cerr << "structure " << structure << " not implemented..." << endl << endl;
     }
