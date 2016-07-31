@@ -1118,8 +1118,6 @@ void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsign
         }
         else
             cerr << "structure " << structure << " not implemented..." << endl << endl;
-        else
-            cerr << "structure " << structure << " not implemented..." << endl << endl;
     }
     else
         cerr << "dim " << dim << " not implemented..." << endl << endl;
