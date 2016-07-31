@@ -36,15 +36,17 @@ using namespace std;
 int main( int argc, char **argv ) {
     TicToc t_total;
     t_total.start();
-    static const unsigned dim = 3;
+    static const unsigned dim = 2;
     static const bool wont_add_nz = true;
     typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "test_specimen_Q3_5"; // structure
-    // 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes, square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
-    // 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes, test_specimen_n (n=5,10,15,20,25,Q1_5,Q3_5,Q3_10,Q3_15,Q3_20,Q3_25,Q4_5,Q6_5,Q8_5)
+    static const string structure = "weight_sensor"; // structure
+    // 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes,
+    //      square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
+    // 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes,
+    //      test_specimen_n (n=5,10,15,20,25,Q1_5,Q3_5,Q3_10,Q3_15,Q3_20,Q3_25,Q4_5,Q6_5,Q8_5), cube_n (n=32,64,128,256,512), cube_init_n (n=32,64,128,256,512)
     static const string mesh_size = "fine"; // taille du maillage : coarse, fine
     // 2D : plate_hole, plate_crack, structure_crack, test_specimen, weigth_sensor
     // 3D : plate_hole, spot_weld, reactor_head
@@ -97,9 +99,9 @@ int main( int argc, char **argv ) {
     /// ------------------------------------
     static const bool want_remesh = 1; // remaillage adaptatif (raffinement du maillage)
     static const T tol_remesh = 20e-2; // tolerance pour le critère d'arrêt de l'algorithme de remaillage
-    static const unsigned max_iter_remesh = 3; // nb d'iterations max de l'algorithme de remaillage
+    static const unsigned max_iter_remesh = 20; // nb d'iterations max de l'algorithme de remaillage
     static const T k_remesh = 0.5; // rapport maximal entre la contribution élémentaire au carré à l'erreur estimée et la contribution élémentaire maximale au carré des barres qui ne seront pas divisées
-    static const bool spread_cut_remesh = false; // propagation du raffinement au reste du maillage (étendue de la coupe si l'arête coupée n'est pas la plus longue de l'élément)
+    static const bool spread_cut_remesh = true; // propagation du raffinement au reste du maillage (étendue de la coupe si l'arête coupée n'est pas la plus longue de l'élément)
 
     /// Goal-oriented error estimation method
     /// -------------------------------------

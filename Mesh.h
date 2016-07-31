@@ -93,22 +93,22 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
             case 1 :
                 if ( mesh_size == "coarse" ) {
                     if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) ) {
-//                        read_msh_2( m, "MESH_GMSH/PLATE_HOLE_2D/plate_hole_coarse_Triangle.msh" );
-                        read_avs( m, "MESH_AVS/PLATE_HOLE_2D/plate_hole_coarse_Quad.avs" );
+//                        read_msh_2( m, "MESH/PLATE_HOLE_2D/plate_hole_coarse_Triangle.msh" );
+                        read_avs( m, "MESH/PLATE_HOLE_2D/plate_hole_coarse_Quad.avs" );
                     }
                     else {
-//                        read_vtu( m, "MESH_GMSH/PLATE_HOLE_2D/plate_hole_coarse_Triangle_direct_global_local_discretization_error.vtu" );
-                        read_vtu( m, "MESH_AVS/PLATE_HOLE_2D/plate_hole_coarse_Quad_direct_global_local_discretization_error.vtu" );
+//                        read_vtu( m, "MESH/PLATE_HOLE_2D/plate_hole_coarse_Triangle_direct_global_local_discretization_error.vtu" );
+                        read_vtu( m, "MESH/PLATE_HOLE_2D/plate_hole_coarse_Quad_direct_global_local_discretization_error.vtu" );
                     }
                 }
                 else if ( mesh_size == "fine" ) {
                     if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) ) {
-                        read_msh_2( m, "MESH_GMSH/PLATE_HOLE_2D/plate_hole_fine_Triangle.msh" );
-//                        read_avs( m, "MESH_AVS/PLATE_HOLE_2D/plate_hole_fine_Triangle_Quad.avs" );
+                        read_msh_2( m, "MESH/PLATE_HOLE_2D/plate_hole_fine_Triangle.msh" );
+//                        read_avs( m, "MESH/PLATE_HOLE_2D/plate_hole_fine_Triangle_Quad.avs" );
                     }
                     else {
-                        read_vtu( m, "MESH_GMSH/PLATE_HOLE_2D/plate_hole_fine_Triangle_direct_global_local_discretization_error.vtu" );
-//                        read_vtu( m, "MESH_AVS/PLATE_HOLE_2D/plate_hole_fine_Triangle_Quad_direct_global_local_discretization_error.vtu" );
+                        read_vtu( m, "MESH/PLATE_HOLE_2D/plate_hole_fine_Triangle_direct_global_local_discretization_error.vtu" );
+//                        read_vtu( m, "MESH/PLATE_HOLE_2D/plate_hole_fine_Triangle_Quad_direct_global_local_discretization_error.vtu" );
                     }
                 }
                 else
@@ -117,21 +117,21 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
             case 2 :
                 if ( mesh_size == "coarse" ) {
                     if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) ) {
-                        read_msh_2( m, "MESH_GMSH/PLATE_HOLE_2D/plate_hole_coarse_Triangle_6.msh" );
-//                        read_avs( m, "MESH_AVS/PLATE_HOLE_2D/plate_hole_coarse_Quad_8.avs" );
-//                        read_avs( m, "MESH_AVS/PLATE_HOLE_2D/plate_hole_coarse_Quad_9.avs" );
+                        read_msh_2( m, "MESH/PLATE_HOLE_2D/plate_hole_coarse_Triangle_6.msh" );
+//                        read_avs( m, "MESH/PLATE_HOLE_2D/plate_hole_coarse_Quad_8.avs" );
+//                        read_avs( m, "MESH/PLATE_HOLE_2D/plate_hole_coarse_Quad_9.avs" );
                     }
                     else {
-                        read_vtu( m, "MESH_GMSH/PLATE_HOLE_2D/plate_hole_coarse_Triangle_6_direct_global_local_discretization_error.vtu" );
-//                        read_vtu( m, "MESH_AVS/PLATE_HOLE_2D/plate_hole_coarse_Quad_8_direct_global_local_discretization_error.vtu" );
-//                        read_vtu( m, "MESH_AVS/PLATE_HOLE_2D/plate_hole_coarse_Quad_9_direct_global_local_discretization_error.vtu" );
+                        read_vtu( m, "MESH/PLATE_HOLE_2D/plate_hole_coarse_Triangle_6_direct_global_local_discretization_error.vtu" );
+//                        read_vtu( m, "MESH/PLATE_HOLE_2D/plate_hole_coarse_Quad_8_direct_global_local_discretization_error.vtu" );
+//                        read_vtu( m, "MESH/PLATE_HOLE_2D/plate_hole_coarse_Quad_9_direct_global_local_discretization_error.vtu" );
                     }
                 }
                 else if ( mesh_size == "fine" ) {
                     if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                        read_msh_2( m, "MESH_GMSH/PLATE_HOLE_2D/plate_hole_fine_Triangle_6.msh" );
+                        read_msh_2( m, "MESH/PLATE_HOLE_2D/plate_hole_fine_Triangle_6.msh" );
                     else
-                        read_vtu( m, "MESH_GMSH/PLATE_HOLE_2D/plate_hole_fine_Triangle_6_direct_global_local_discretization_error.vtu" );
+                        read_vtu( m, "MESH/PLATE_HOLE_2D/plate_hole_fine_Triangle_6_direct_global_local_discretization_error.vtu" );
                 }
                 else
                     cerr << "mesh_size " << mesh_size << " not implemented..." << endl << endl;
@@ -144,13 +144,13 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         /// ------------------
         else if ( structure == "plate_crack" ) {
             if ( mesh_size == "very_coarse" )
-                read_msh_2( m, "MESH_GMSH/PLATE_CRACK_2D/plate_crack_very_coarse_Triangle.msh" );
+                read_msh_2( m, "MESH/PLATE_CRACK_2D/plate_crack_very_coarse_Triangle.msh" );
             else if ( mesh_size == "coarse" )
-                read_msh_2( m, "MESH_GMSH/PLATE_CRACK_2D/plate_crack_coarse_Triangle.msh" );
+                read_msh_2( m, "MESH/PLATE_CRACK_2D/plate_crack_coarse_Triangle.msh" );
             else if ( mesh_size == "fine" )
-                read_msh_2( m, "MESH_GMSH/PLATE_CRACK_2D/plate_crack_fine_Triangle.msh" );
+                read_msh_2( m, "MESH/PLATE_CRACK_2D/plate_crack_fine_Triangle.msh" );
             else if ( mesh_size == "very_fine" )
-                read_msh_2( m, "MESH_GMSH/PLATE_CRACK_2D/plate_crack_very_fine_Triangle.msh" );
+                read_msh_2( m, "MESH/PLATE_CRACK_2D/plate_crack_very_fine_Triangle.msh" );
             else
                 cerr << "mesh_size " << mesh_size << " not implemented..." << endl << endl;
         }
@@ -161,20 +161,20 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
             case 1 :
                 if ( mesh_size == "coarse" ) {
                     if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) ) {
-//                        read_msh_2( m, "MESH_GMSH/STRUCTURE_CRACK_2D/structure_crack_coarse_Triangle.msh" );
-                        read_avs( m, "MESH_AVS/STRUCTURE_CRACK_2D/structure_crack_coarse_Quad.avs" );
+//                        read_msh_2( m, "MESH/STRUCTURE_CRACK_2D/structure_crack_coarse_Triangle.msh" );
+                        read_avs( m, "MESH/STRUCTURE_CRACK_2D/structure_crack_coarse_Quad.avs" );
                     }
                     else {
-//                        read_vtu( m, "MESH_GMSH/STRUCTURE_CRACK_2D/structure_crack_coarse_Triangle_direct_global_local_discretization_error.vtu" );
-                        read_vtu( m, "MESH_AVS/STRUCTURE_CRACK_2D/structure_crack_coarse_Quad_direct_global_local_discretization_error.vtu" );
+//                        read_vtu( m, "MESH/STRUCTURE_CRACK_2D/structure_crack_coarse_Triangle_direct_global_local_discretization_error.vtu" );
+                        read_vtu( m, "MESH/STRUCTURE_CRACK_2D/structure_crack_coarse_Quad_direct_global_local_discretization_error.vtu" );
                     }
                 }
                 else if ( mesh_size == "fine" ) {
                     if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                        read_msh_2( m, "MESH_GMSH/STRUCTURE_CRACK_2D/structure_crack_fine_Triangle.msh" );
+                        read_msh_2( m, "MESH/STRUCTURE_CRACK_2D/structure_crack_fine_Triangle.msh" );
                     else {
-                        read_vtu( m, "MESH_GMSH/STRUCTURE_CRACK_2D/structure_crack_fine_Triangle_direct_global_local_discretization_error.vtu" );
-//                        read_vtu( m, "MESH_GMSH/STRUCTURE_CRACK_2D/structure_crack_coarse_Triangle_direct_global_local_discretization_error_old.vtu" );
+                        read_vtu( m, "MESH/STRUCTURE_CRACK_2D/structure_crack_fine_Triangle_direct_global_local_discretization_error.vtu" );
+//                        read_vtu( m, "MESH/STRUCTURE_CRACK_2D/structure_crack_coarse_Triangle_direct_global_local_discretization_error_old.vtu" );
                     }
                 }
                 else
@@ -183,21 +183,21 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
             case 2 :
                 if ( mesh_size == "coarse" ) {
                     if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) ) {
-                        read_msh_2( m, "MESH_GMSH/STRUCTURE_CRACK_2D/structure_crack_coarse_Triangle_6.msh" );
-//                        read_avs( m, "MESH_AVS/STRUCTURE_CRACK_2D/structure_crack_coarse_Quad_8.avs" );
-//                        read_avs( m, "MESH_AVS/STRUCTURE_CRACK_2D/structure_crack_coarse_Quad_9.avs" );
+                        read_msh_2( m, "MESH/STRUCTURE_CRACK_2D/structure_crack_coarse_Triangle_6.msh" );
+//                        read_avs( m, "MESH/STRUCTURE_CRACK_2D/structure_crack_coarse_Quad_8.avs" );
+//                        read_avs( m, "MESH/STRUCTURE_CRACK_2D/structure_crack_coarse_Quad_9.avs" );
                     }
                     else {
-                        read_vtu( m, "MESH_GMSH/STRUCTURE_CRACK_2D/structure_crack_coarse_Triangle_6_direct_global_local_discretization_error.vtu" );
-//                        read_vtu( m, "MESH_AVS/STRUCTURE_CRACK_2D/structure_crack_coarse_Quad_8_direct_global_local_discretization_error.vtu" );
-//                        read_vtu( m, "MESH_AVS/STRUCTURE_CRACK_2D/structure_crack_coarse_Quad_9_direct_global_local_discretization_error.vtu" );
+                        read_vtu( m, "MESH/STRUCTURE_CRACK_2D/structure_crack_coarse_Triangle_6_direct_global_local_discretization_error.vtu" );
+//                        read_vtu( m, "MESH/STRUCTURE_CRACK_2D/structure_crack_coarse_Quad_8_direct_global_local_discretization_error.vtu" );
+//                        read_vtu( m, "MESH/STRUCTURE_CRACK_2D/structure_crack_coarse_Quad_9_direct_global_local_discretization_error.vtu" );
                     }
                 }
                 else if ( mesh_size == "fine" ) {
                     if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                        read_msh_2( m, "MESH_GMSH/STRUCTURE_CRACK_2D/structure_crack_fine_Triangle_6.msh" );
+                        read_msh_2( m, "MESH/STRUCTURE_CRACK_2D/structure_crack_fine_Triangle_6.msh" );
                     else
-                        read_vtu( m, "MESH_GMSH/STRUCTURE_CRACK_2D/structure_crack_fine_Triangle_6_direct_global_local_discretization_error.vtu" );
+                        read_vtu( m, "MESH/STRUCTURE_CRACK_2D/structure_crack_fine_Triangle_6_direct_global_local_discretization_error.vtu" );
                 }
                 else
                     cerr << "mesh_size " << mesh_size << " not implemented..." << endl << endl;
@@ -214,19 +214,19 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
             case 1 :
                 if ( mesh_size == "coarse" ) {
                     if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) ) {
-//                        read_avs( m, "MESH_AVS/TEST_SPECIMEN_2D/test_specimen_coarse_Triangle.avs" );
-                        read_msh_2( m, "MESH_GMSH/TEST_SPECIMEN_2D/test_specimen_coarse_Triangle.msh" );
+//                        read_avs( m, "MESH/TEST_SPECIMEN_2D/test_specimen_coarse_Triangle.avs" );
+                        read_msh_2( m, "MESH/TEST_SPECIMEN_2D/test_specimen_coarse_Triangle.msh" );
                     }
                     else {
-//                        read_vtu( m, "MESH_AVS/TEST_SPECIMEN_2D/test_specimen_coarse_Triangle_direct_global_local_discretization_error.vtu" );
-                        read_vtu( m, "MESH_GMSH/TEST_SPECIMEN_2D/test_specimen_coarse_Triangle_direct_global_local_discretization_error.vtu" );
+//                        read_vtu( m, "MESH/TEST_SPECIMEN_2D/test_specimen_coarse_Triangle_direct_global_local_discretization_error_avs.vtu" );
+                        read_vtu( m, "MESH/TEST_SPECIMEN_2D/test_specimen_coarse_Triangle_direct_global_local_discretization_error_msh.vtu" );
                     }
                 }
                 else if ( mesh_size == "fine" ) {
                     if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                        read_msh_2( m, "MESH_GMSH/TEST_SPECIMEN_2D/test_specimen_fine_Triangle.msh" );
+                        read_msh_2( m, "MESH/TEST_SPECIMEN_2D/test_specimen_fine_Triangle.msh" );
                     else
-                        read_vtu( m, "MESH_GMSH/TEST_SPECIMEN_2D/test_specimen_fine_Triangle_direct_global_local_discretization_error.vtu" );
+                        read_vtu( m, "MESH/TEST_SPECIMEN_2D/test_specimen_fine_Triangle_direct_global_local_discretization_error_msh.vtu" );
                 }
                 else
                     cerr << "mesh_size " << mesh_size << " not implemented..." << endl << endl;
@@ -234,15 +234,15 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
             case 2 :
                 if ( mesh_size == "coarse" ) {
                     if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                        read_msh_2( m, "MESH_GMSH/TEST_SPECIMEN_2D/test_specimen_coarse_Triangle_6.msh" );
+                        read_msh_2( m, "MESH/TEST_SPECIMEN_2D/test_specimen_coarse_Triangle_6.msh" );
                     else
-                        read_vtu( m, "MESH_GMSH/TEST_SPECIMEN_2D/test_specimen_coarse_Triangle_6_direct_global_local_discretization_error.vtu" );
+                        read_vtu( m, "MESH/TEST_SPECIMEN_2D/test_specimen_coarse_Triangle_6_direct_global_local_discretization_error.vtu" );
                 }
                 else if ( mesh_size == "fine" ) {
                     if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                        read_msh_2( m, "MESH_GMSH/TEST_SPECIMEN_2D/test_specimen_fine_Triangle_6.msh" );
+                        read_msh_2( m, "MESH/TEST_SPECIMEN_2D/test_specimen_fine_Triangle_6.msh" );
                     else
-                        read_vtu( m, "MESH_GMSH/TEST_SPECIMEN_2D/test_specimen_fine_Triangle_6_direct_global_local_discretization_error.vtu" );
+                        read_vtu( m, "MESH/TEST_SPECIMEN_2D/test_specimen_fine_Triangle_6_direct_global_local_discretization_error.vtu" );
                 }
                 else
                     cerr << "mesh_size " << mesh_size << " not implemented..." << endl << endl;
@@ -259,15 +259,15 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
             case 1 :
                 if ( mesh_size == "coarse" ) {
                     if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                        read_msh_2( m, "MESH_GMSH/WEIGHT_SENSOR_2D/weight_sensor_coarse_Triangle.msh" );
+                        read_msh_2( m, "MESH/WEIGHT_SENSOR_2D/weight_sensor_coarse_Triangle.msh" );
                     else
-                        read_vtu( m, "MESH_GMSH/WEIGHT_SENSOR_2D/weight_sensor_coarse_Triangle_direct_global_local_discretization_error.vtu" );
+                        read_vtu( m, "MESH/WEIGHT_SENSOR_2D/weight_sensor_coarse_Triangle_direct_global_local_discretization_error.vtu" );
                 }
                 else if ( mesh_size == "fine" ) {
                     if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                        read_msh_2( m, "MESH_GMSH/WEIGHT_SENSOR_2D/weight_sensor_fine_Triangle.msh" );
+                        read_msh_2( m, "MESH/WEIGHT_SENSOR_2D/weight_sensor_fine_Triangle.msh" );
                     else
-                        read_vtu( m, "MESH_GMSH/WEIGHT_SENSOR_2D/weight_sensor_fine_Triangle_direct_global_local_discretization_error.vtu" );
+                        read_vtu( m, "MESH/WEIGHT_SENSOR_2D/weight_sensor_fine_Triangle_direct_global_local_discretization_error.vtu" );
                 }
                 else
                     cerr << "mesh_size " << mesh_size << " not implemented..." << endl << endl;
@@ -275,15 +275,15 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
             case 2 :
                 if ( mesh_size == "coarse" ) {
                     if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                        read_msh_2( m, "MESH_GMSH/WEIGHT_SENSOR_2D/weight_sensor_coarse_Triangle_6.msh" );
+                        read_msh_2( m, "MESH/WEIGHT_SENSOR_2D/weight_sensor_coarse_Triangle_6.msh" );
                     else
-                        read_vtu( m, "MESH_GMSH/WEIGHT_SENSOR_2D/weight_sensor_coarse_Triangle_6_direct_global_local_discretization_error.vtu" );
+                        read_vtu( m, "MESH/WEIGHT_SENSOR_2D/weight_sensor_coarse_Triangle_6_direct_global_local_discretization_error.vtu" );
                 }
                 else if ( mesh_size == "fine" ) {
                     if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                        read_msh_2( m, "MESH_GMSH/WEIGHT_SENSOR_2D/weight_sensor_fine_Triangle_6.msh" );
+                        read_msh_2( m, "MESH/WEIGHT_SENSOR_2D/weight_sensor_fine_Triangle_6.msh" );
                     else
-                        read_vtu( m, "MESH_GMSH/WEIGHT_SENSOR_2D/weight_sensor_fine_Triangle_6_direct_global_local_discretization_error.vtu" );
+                        read_vtu( m, "MESH/WEIGHT_SENSOR_2D/weight_sensor_fine_Triangle_6_direct_global_local_discretization_error.vtu" );
                 }
                 else
                     cerr << "mesh_size " << mesh_size << " not implemented..." << endl << endl;
@@ -297,13 +297,13 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         /// ---------
         else if ( structure == "circle" ) {
             if ( mesh_size == "very_coarse" )
-                read_msh_2( m, "MESH_GMSH/CIRCLE_2D/circle_very_coarse_Triangle.msh" );
+                read_msh_2( m, "MESH/CIRCLE_2D/circle_very_coarse_Triangle.msh" );
             else if ( mesh_size == "coarse" )
-                read_msh_2( m, "MESH_GMSH/CIRCLE_2D/circle_coarse_Triangle.msh" );
+                read_msh_2( m, "MESH/CIRCLE_2D/circle_coarse_Triangle.msh" );
             else if ( mesh_size == "fine" )
-                read_msh_2( m, "MESH_GMSH/CIRCLE_2D/circle_fine_Triangle.msh" );
+                read_msh_2( m, "MESH/CIRCLE_2D/circle_fine_Triangle.msh" );
             else if ( mesh_size == "very_fine" )
-                read_msh_2( m, "MESH_GMSH/CIRCLE_2D/circle_very_fine_Triangle.msh" );
+                read_msh_2( m, "MESH/CIRCLE_2D/circle_very_fine_Triangle.msh" );
             else
                 cerr << "mesh_size " << mesh_size << " not implemented..." << endl << endl;
         }
@@ -311,17 +311,17 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         /// -------------------------
         else if ( structure == "circular_inclusions" ) {
             if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                read_msh_2( m, "MESH_GMSH/CIRCULAR_INCLUSIONS_2D/circular_inclusions_Triangle.msh" );
+                read_msh_2( m, "MESH/CIRCULAR_INCLUSIONS_2D/circular_inclusions_Triangle.msh" );
             else {
                 switch ( refinement_level_ref ) {
                 case 1 :
-                    read_vtu( m, "MESH_GMSH/CIRCULAR_INCLUSIONS_2D/circular_inclusions_Triangle_direct_global_local_discretization_error_ref_1.vtu" );
+                    read_vtu( m, "MESH/CIRCULAR_INCLUSIONS_2D/circular_inclusions_Triangle_direct_global_local_discretization_error_ref_1.vtu" );
                     break;
                 case 2 :
-                    read_vtu( m, "MESH_GMSH/CIRCULAR_INCLUSIONS_2D/circular_inclusions_Triangle_direct_global_local_discretization_error_ref_2.vtu" );
+                    read_vtu( m, "MESH/CIRCULAR_INCLUSIONS_2D/circular_inclusions_Triangle_direct_global_local_discretization_error_ref_2.vtu" );
                     break;
                 default :
-                    read_msh_2( m, "MESH_GMSH/CIRCULAR_INCLUSIONS_2D/circular_inclusions_Triangle.msh" );
+                    read_msh_2( m, "MESH/CIRCULAR_INCLUSIONS_2D/circular_inclusions_Triangle.msh" );
                     break;
                 }
             }
@@ -330,17 +330,17 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         /// --------------------
         else if ( structure == "circular_holes" ) {
             if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                read_msh_2( m, "MESH_GMSH/CIRCULAR_HOLES_2D/circular_holes_Triangle.msh" );
+                read_msh_2( m, "MESH/CIRCULAR_HOLES_2D/circular_holes_Triangle.msh" );
             else {
                 switch ( refinement_level_ref ) {
                 case 1 :
-                    read_vtu( m, "MESH_GMSH/CIRCULAR_HOLES_2D/circular_holes_Triangle_direct_global_local_discretization_error_ref_1.vtu" );
+                    read_vtu( m, "MESH/CIRCULAR_HOLES_2D/circular_holes_Triangle_direct_global_local_discretization_error_ref_1.vtu" );
                     break;
                 case 2 :
-                    read_vtu( m, "MESH_GMSH/CIRCULAR_HOLES_2D/circular_holes_Triangle_direct_global_local_discretization_error_ref_2.vtu" );
+                    read_vtu( m, "MESH/CIRCULAR_HOLES_2D/circular_holes_Triangle_direct_global_local_discretization_error_ref_2.vtu" );
                     break;
                 default :
-                    read_msh_2( m, "MESH_GMSH/CIRCULAR_HOLES_2D/circular_holes_Triangle.msh" );
+                    read_msh_2( m, "MESH/CIRCULAR_HOLES_2D/circular_holes_Triangle.msh" );
                     break;
                 }
             }
@@ -385,34 +385,34 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         else if ( structure == "beam_hole" ) {
             if ( mesh_size == "coarse" ) {
                 if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                    read_msh_2( m, "MESH_GMSH/BEAM_HOLE_3D/beam_hole_coarse_Tetra.msh" );
+                    read_msh_2( m, "MESH/BEAM_HOLE_3D/beam_hole_coarse_Tetra.msh" );
                 else {
                     switch ( refinement_level_ref ) {
                     case 1 :
-                        read_vtu( m, "MESH_GMSH/BEAM_HOLE_3D/beam_hole_coarse_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
+                        read_vtu( m, "MESH/BEAM_HOLE_3D/beam_hole_coarse_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
                         break;
                     case 2 :
-                        read_vtu( m, "MESH_GMSH/BEAM_HOLE_3D/beam_hole_coarse_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
+                        read_vtu( m, "MESH/BEAM_HOLE_3D/beam_hole_coarse_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
                         break;
                     default :
-                        read_msh_2( m, "MESH_GMSH/BEAM_HOLE_3D/beam_hole_coarse_Tetra.msh" );
+                        read_msh_2( m, "MESH/BEAM_HOLE_3D/beam_hole_coarse_Tetra.msh" );
                         break;
                     }
                 }
             }
             else if ( mesh_size == "fine" ) {
                 if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                    read_msh_2( m, "MESH_GMSH/BEAM_HOLE_3D/beam_hole_fine_Tetra.msh" );
+                    read_msh_2( m, "MESH/BEAM_HOLE_3D/beam_hole_fine_Tetra.msh" );
                 else {
                     switch ( refinement_level_ref ) {
                     case 1 :
-                        read_vtu( m, "MESH_GMSH/BEAM_HOLE_3D/beam_hole_fine_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
+                        read_vtu( m, "MESH/BEAM_HOLE_3D/beam_hole_fine_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
                         break;
                     case 2 :
-                        read_vtu( m, "MESH_GMSH/BEAM_HOLE_3D/beam_hole_fine_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
+                        read_vtu( m, "MESH/BEAM_HOLE_3D/beam_hole_fine_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
                         break;
                     default :
-                        read_msh_2( m, "MESH_GMSH/BEAM_HOLE_3D/beam_hole_fine_Tetra.msh" );
+                        read_msh_2( m, "MESH/BEAM_HOLE_3D/beam_hole_fine_Tetra.msh" );
                         break;
                     }
                 }
@@ -425,37 +425,37 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         else if ( structure == "plate_hole" ) {
             if ( mesh_size == "coarse" ) {
                 if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                    read_msh_2( m, "MESH_GMSH/PLATE_HOLE_3D/plate_hole_coarse_Tetra.msh" );
+                    read_msh_2( m, "MESH/PLATE_HOLE_3D/plate_hole_coarse_Tetra.msh" );
                 else {
                     switch ( refinement_level_ref ) {
                     case 1 :
-                        read_vtu( m, "MESH_GMSH/PLATE_HOLE_3D/plate_hole_coarse_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
+                        read_vtu( m, "MESH/PLATE_HOLE_3D/plate_hole_coarse_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
                         break;
                     case 2 :
-                        read_vtu( m, "MESH_GMSH/PLATE_HOLE_3D/plate_hole_coarse_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
+                        read_vtu( m, "MESH/PLATE_HOLE_3D/plate_hole_coarse_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
                         break;
                     case 3 :
-                        read_vtu( m, "MESH_GMSH/PLATE_HOLE_3D/plate_hole_coarse_Tetra_direct_global_local_discretization_error_ref_3.vtu" );
+                        read_vtu( m, "MESH/PLATE_HOLE_3D/plate_hole_coarse_Tetra_direct_global_local_discretization_error_ref_3.vtu" );
                         break;
                     default :
-                        read_msh_2( m, "MESH_GMSH/PLATE_HOLE_3D/plate_hole_coarse_Tetra.msh" );
+                        read_msh_2( m, "MESH/PLATE_HOLE_3D/plate_hole_coarse_Tetra.msh" );
                         break;
                     }
                 }
             }
             else if ( mesh_size == "fine" ) {
                 if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                    read_msh_2( m, "MESH_GMSH/PLATE_HOLE_3D/plate_hole_fine_Tetra.msh" );
+                    read_msh_2( m, "MESH/PLATE_HOLE_3D/plate_hole_fine_Tetra.msh" );
                 else {
                     switch ( refinement_level_ref ) {
                     case 1 :
-                        read_vtu( m, "MESH_GMSH/PLATE_HOLE_3D/plate_hole_fine_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
+                        read_vtu( m, "MESH/PLATE_HOLE_3D/plate_hole_fine_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
                         break;
                     case 2 :
-                        read_vtu( m, "MESH_GMSH/PLATE_HOLE_3D/plate_hole_fine_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
+                        read_vtu( m, "MESH/PLATE_HOLE_3D/plate_hole_fine_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
                         break;
                     default :
-                        read_msh_2( m, "MESH_GMSH/PLATE_HOLE_3D/plate_hole_fine_Tetra.msh" );
+                        read_msh_2( m, "MESH/PLATE_HOLE_3D/plate_hole_fine_Tetra.msh" );
                         break;
                     }
                 }
@@ -467,17 +467,17 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         /// ---------------------------------------
         else if ( structure == "plate_hole_full" ) {
             if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                read_avs( m, "MESH_AVS/PLATE_HOLE_3D/plate_hole_full_Hexa.avs" );
+                read_avs( m, "MESH/PLATE_HOLE_3D/plate_hole_full_Hexa.avs" );
             else {
                 switch ( refinement_level_ref ) {
                 case 1 :
-                    read_vtu( m, "MESH_AVS/PLATE_HOLE_3D/plate_hole_full_Hexa_direct_global_local_discretization_error_ref_1.vtu" );
+                    read_vtu( m, "MESH/PLATE_HOLE_3D/plate_hole_full_Hexa_direct_global_local_discretization_error_ref_1.vtu" );
                     break;
                 case 2 :
-                    read_vtu( m, "MESH_AVS/PLATE_HOLE_3D/plate_hole_full_Hexa_direct_global_local_discretization_error_ref_2.vtu" );
+                    read_vtu( m, "MESH/PLATE_HOLE_3D/plate_hole_full_Hexa_direct_global_local_discretization_error_ref_2.vtu" );
                     break;
                 default :
-                    read_avs( m, "MESH_AVS/PLATE_HOLE_3D/plate_hole_full_Hexa.avs" );
+                    read_avs( m, "MESH/PLATE_HOLE_3D/plate_hole_full_Hexa.avs" );
                     break;
                 }
             }
@@ -486,17 +486,17 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         /// -------------------------------------
         else if ( structure == "hub_rotor_helico" ) {
             if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                read_avs( m, "MESH_AVS/HUB_ROTOR_HELICO_3D/hub_rotor_helico_Tetra.avs" );
+                read_avs( m, "MESH/HUB_ROTOR_HELICO_3D/hub_rotor_helico_Tetra.avs" );
             else {
                 switch ( refinement_level_ref ) {
                 case 1 :
-                    read_vtu( m, "MESH_AVS/HUB_ROTOR_HELICO_3D/hub_rotor_helico_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
+                    read_vtu( m, "MESH/HUB_ROTOR_HELICO_3D/hub_rotor_helico_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
                     break;
                 case 2 :
-                    read_vtu( m, "MESH_AVS/HUB_ROTOR_HELICO_3D/hub_rotor_helico_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
+                    read_vtu( m, "MESH/HUB_ROTOR_HELICO_3D/hub_rotor_helico_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
                     break;
                 default :
-                    read_avs( m, "MESH_AVS/HUB_ROTOR_HELICO_3D/hub_rotor_helico_Tetra.avs" );
+                    read_avs( m, "MESH/HUB_ROTOR_HELICO_3D/hub_rotor_helico_Tetra.avs" );
                     break;
                 }
             }
@@ -506,34 +506,34 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         else if ( structure == "reactor_head" ) {
             if ( mesh_size == "coarse" ) {
                 if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                    read_msh_2( m, "MESH_GMSH/REACTOR_HEAD_3D/reactor_head_coarse_Tetra.msh" );
+                    read_msh_2( m, "MESH/REACTOR_HEAD_3D/reactor_head_coarse_Tetra.msh" );
                 else {
                     switch ( refinement_level_ref ) {
                     case 1 :
-                        read_vtu( m, "MESH_GMSH/REACTOR_HEAD_3D/reactor_head_coarse_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
+                        read_vtu( m, "MESH/REACTOR_HEAD_3D/reactor_head_coarse_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
                         break;
                     case 2 :
-                        read_vtu( m, "MESH_GMSH/REACTOR_HEAD_3D/reactor_head_coarse_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
+                        read_vtu( m, "MESH/REACTOR_HEAD_3D/reactor_head_coarse_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
                         break;
                     default :
-                        read_msh_2( m, "MESH_GMSH/REACTOR_HEAD_3D/reactor_head_coarse_Tetra.msh" );
+                        read_msh_2( m, "MESH/REACTOR_HEAD_3D/reactor_head_coarse_Tetra.msh" );
                         break;
                     }
                 }
             }
             else if ( mesh_size == "fine" ) {
                 if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                    read_avs( m, "MESH_AVS/REACTOR_HEAD_3D/reactor_head_fine_Tetra.avs" );
+                    read_avs( m, "MESH/REACTOR_HEAD_3D/reactor_head_fine_Tetra.avs" );
                 else {
                     switch ( refinement_level_ref ) {
                     case 1 :
-                        read_vtu( m, "MESH_AVS/REACTOR_HEAD_3D/reactor_head_fine_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
+                        read_vtu( m, "MESH/REACTOR_HEAD_3D/reactor_head_fine_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
                         break;
                     case 2 :
-                        read_vtu( m, "MESH_AVS/REACTOR_HEAD_3D/reactor_head_fine_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
+                        read_vtu( m, "MESH/REACTOR_HEAD_3D/reactor_head_fine_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
                         break;
                     default :
-                        read_avs( m, "MESH_AVS/REACTOR_HEAD_3D/reactor_head_fine_Tetra.avs" );
+                        read_avs( m, "MESH/REACTOR_HEAD_3D/reactor_head_fine_Tetra.avs" );
                         break;
                     }
                 }
@@ -545,17 +545,17 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         /// ----------------------------------
         else if ( structure == "door_seal" ) {
             if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                read_avs( m, "MESH_AVS/DOOR_SEAL_3D/door_seal_Hexa.avs" );
+                read_avs( m, "MESH/DOOR_SEAL_3D/door_seal_Hexa.avs" );
             else {
                 switch ( refinement_level_ref ) {
                 case 1 :
-                    read_vtu( m, "MESH_AVS/DOOR_SEAL_3D/door_seal_Hexa_direct_global_local_discretization_error_ref_1.vtu" );
+                    read_vtu( m, "MESH/DOOR_SEAL_3D/door_seal_Hexa_direct_global_local_discretization_error_ref_1.vtu" );
                     break;
                 case 2 :
-                    read_vtu( m, "MESH_AVS/DOOR_SEAL_3D/door_seal_Hexa_direct_global_local_discretization_error_ref_2.vtu" );
+                    read_vtu( m, "MESH/DOOR_SEAL_3D/door_seal_Hexa_direct_global_local_discretization_error_ref_2.vtu" );
                     break;
                 default :
-                    read_avs( m, "MESH_AVS/DOOR_SEAL_3D/door_seal_Hexa.avs" );
+                    read_avs( m, "MESH/DOOR_SEAL_3D/door_seal_Hexa.avs" );
                     break;
                 }
             }
@@ -566,40 +566,40 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
             if ( mesh_size == "coarse" ) {
                 if ( loading == "pull" or loading == "shear" ) {
                     if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                        read_avs( m, "MESH_AVS/SPOT_WELD_3D/spot_weld_pull_shear_coarse_Hexa.avs" );
+                        read_avs( m, "MESH/SPOT_WELD_3D/spot_weld_pull_shear_coarse_Hexa.avs" );
                     else {
                         switch ( refinement_level_ref ) {
                         case 1 :
                             if ( loading == "pull" )
-                                read_vtu( m, "MESH_AVS/SPOT_WELD_3D/spot_weld_pull_coarse_Hexa_direct_global_local_discretization_error_ref_1.vtu" );
+                                read_vtu( m, "MESH/SPOT_WELD_3D/spot_weld_pull_coarse_Hexa_direct_global_local_discretization_error_ref_1.vtu" );
                             else if ( loading == "shear" )
-                                read_vtu( m, "MESH_AVS/SPOT_WELD_3D/spot_weld_shear_coarse_Hexa_direct_global_local_discretization_error_ref_1.vtu" );
+                                read_vtu( m, "MESH/SPOT_WELD_3D/spot_weld_shear_coarse_Hexa_direct_global_local_discretization_error_ref_1.vtu" );
                             break;
                         case 2 :
                             if ( loading == "pull" )
-                                read_vtu( m, "MESH_AVS/SPOT_WELD_3D/spot_weld_pull_coarse_Hexa_direct_global_local_discretization_error_ref_2.vtu" );
+                                read_vtu( m, "MESH/SPOT_WELD_3D/spot_weld_pull_coarse_Hexa_direct_global_local_discretization_error_ref_2.vtu" );
                             else if ( loading == "shear" )
-                                read_vtu( m, "MESH_AVS/SPOT_WELD_3D/spot_weld_shear_coarse_Hexa_direct_global_local_discretization_error_ref_2.vtu" );
+                                read_vtu( m, "MESH/SPOT_WELD_3D/spot_weld_shear_coarse_Hexa_direct_global_local_discretization_error_ref_2.vtu" );
                             break;
                         default :
-                            read_avs( m, "MESH_AVS/SPOT_WELD_3D/spot_weld_pull_shear_coarse_Hexa.avs" );
+                            read_avs( m, "MESH/SPOT_WELD_3D/spot_weld_pull_shear_coarse_Hexa.avs" );
                             break;
                         }
                     }
                 }
                 else if ( loading == "peeling" ) {
                     if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                        read_avs( m, "MESH_AVS/SPOT_WELD_3D/spot_weld_peeling_coarse_Hexa.avs" );
+                        read_avs( m, "MESH/SPOT_WELD_3D/spot_weld_peeling_coarse_Hexa.avs" );
                     else {
                         switch ( refinement_level_ref ) {
                         case 1 :
-                            read_vtu( m, "MESH_AVS/SPOT_WELD_3D/spot_weld_peeling_coarse_Hexa_direct_global_local_discretization_error_ref_1.vtu" );
+                            read_vtu( m, "MESH/SPOT_WELD_3D/spot_weld_peeling_coarse_Hexa_direct_global_local_discretization_error_ref_1.vtu" );
                             break;
                         case 2 :
-                            read_vtu( m, "MESH_AVS/SPOT_WELD_3D/spot_weld_peeling_coarse_Hexa_direct_global_local_discretization_error_ref_2.vtu" );
+                            read_vtu( m, "MESH/SPOT_WELD_3D/spot_weld_peeling_coarse_Hexa_direct_global_local_discretization_error_ref_2.vtu" );
                             break;
                         default :
-                            read_avs( m, "MESH_AVS/SPOT_WELD_3D/spot_weld_peeling_coarse_Hexa.avs" );
+                            read_avs( m, "MESH/SPOT_WELD_3D/spot_weld_peeling_coarse_Hexa.avs" );
                             break;
                         }
                     }
@@ -610,40 +610,40 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
             else if ( mesh_size == "fine" ) {
                 if ( loading == "pull" or loading == "shear" ) {
                     if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                        read_avs( m, "MESH_AVS/SPOT_WELD_3D/spot_weld_pull_shear_fine_Hexa.avs" );
+                        read_avs( m, "MESH/SPOT_WELD_3D/spot_weld_pull_shear_fine_Hexa.avs" );
                     else {
                         switch ( refinement_level_ref ) {
                         case 1 :
                             if ( loading == "pull" )
-                                read_vtu( m, "MESH_AVS/SPOT_WELD_3D/spot_weld_pull_fine_Hexa_direct_global_local_discretization_error_ref_1.vtu" );
+                                read_vtu( m, "MESH/SPOT_WELD_3D/spot_weld_pull_fine_Hexa_direct_global_local_discretization_error_ref_1.vtu" );
                             else if ( loading == "shear" )
-                                read_vtu( m, "MESH_AVS/SPOT_WELD_3D/spot_weld_shear_fine_Hexa_direct_global_local_discretization_error_ref_1.vtu" );
+                                read_vtu( m, "MESH/SPOT_WELD_3D/spot_weld_shear_fine_Hexa_direct_global_local_discretization_error_ref_1.vtu" );
                             break;
                         case 2 :
                             if ( loading == "pull" )
-                                read_vtu( m, "MESH_AVS/SPOT_WELD_3D/spot_weld_pull_fine_Hexa_direct_global_local_discretization_error_ref_2.vtu" );
+                                read_vtu( m, "MESH/SPOT_WELD_3D/spot_weld_pull_fine_Hexa_direct_global_local_discretization_error_ref_2.vtu" );
                             else if ( loading == "shear" )
-                                read_vtu( m, "MESH_AVS/SPOT_WELD_3D/spot_weld_shear_fine_Hexa_direct_global_local_discretization_error_ref_2.vtu" );
+                                read_vtu( m, "MESH/SPOT_WELD_3D/spot_weld_shear_fine_Hexa_direct_global_local_discretization_error_ref_2.vtu" );
                             break;
                         default :
-                            read_avs( m, "MESH_AVS/SPOT_WELD_3D/spot_weld_pull_shear_fine_Hexa.avs" );
+                            read_avs( m, "MESH/SPOT_WELD_3D/spot_weld_pull_shear_fine_Hexa.avs" );
                             break;
                         }
                     }
                 }
                 else if ( loading == "peeling" ) {
                     if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                        read_avs( m, "MESH_AVS/SPOT_WELD_3D/spot_weld_peeling_fine_Hexa.avs" );
+                        read_avs( m, "MESH/SPOT_WELD_3D/spot_weld_peeling_fine_Hexa.avs" );
                     else {
                         switch ( refinement_level_ref ) {
                         case 1 :
-                            read_vtu( m, "MESH_AVS/SPOT_WELD_3D/spot_weld_peeling_fine_Hexa_direct_global_local_discretization_error_ref_1.vtu" );
+                            read_vtu( m, "MESH/SPOT_WELD_3D/spot_weld_peeling_fine_Hexa_direct_global_local_discretization_error_ref_1.vtu" );
                             break;
                         case 2 :
-                            read_vtu( m, "MESH_AVS/SPOT_WELD_3D/spot_weld_peeling_fine_Hexa_direct_global_local_discretization_error_ref_2.vtu" );
+                            read_vtu( m, "MESH/SPOT_WELD_3D/spot_weld_peeling_fine_Hexa_direct_global_local_discretization_error_ref_2.vtu" );
                             break;
                         default :
-                            read_avs( m, "MESH_AVS/SPOT_WELD_3D/spot_weld_peeling_fine_Hexa.avs" );
+                            read_avs( m, "MESH/SPOT_WELD_3D/spot_weld_peeling_fine_Hexa.avs" );
                             break;
                         }
                     }
@@ -658,22 +658,22 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         /// ----------
         else if ( structure == "blade" ) {
             if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) ) {
-//                read_avs( m, "MESH_AVS/BLADE_3D/blade_Tetra.avs" );
-//                read_inp( m, "MESH_AVS/BLADE_3D/blade_Tetra.inp" );
-                ReaderINP<TM> RI( m, "MESH_AVS/BLADE_3D/blade_Tetra.inp" );
+//                read_avs( m, "MESH/BLADE_3D/blade_Tetra.avs" );
+//                read_inp( m, "MESH/BLADE_3D/blade_Tetra.inp" );
+                ReaderINP<TM> RI( m, "MESH/BLADE_3D/blade_Tetra.inp" );
             }
             else {
                 switch ( refinement_level_ref ) {
                 case 1 :
-                    read_vtu( m, "MESH_AVS/BLADE_3D/blade_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
+                    read_vtu( m, "MESH/BLADE_3D/blade_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
                     break;
                 case 2 :
-                    read_vtu( m, "MESH_AVS/BLADE_3D/blade_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
+                    read_vtu( m, "MESH/BLADE_3D/blade_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
                     break;
                 default :
-//                    read_avs( m, "MESH_AVS/BLADE_3D/blade_Tetra.avs" );
-//                    read_inp( m, "MESH_AVS/BLADE_3D/blade_Tetra.inp" );
-                    ReaderINP<TM> RI( m, "MESH_AVS/BLADE_3D/blade_Tetra.inp" );
+//                    read_avs( m, "MESH/BLADE_3D/blade_Tetra.avs" );
+//                    read_inp( m, "MESH/BLADE_3D/blade_Tetra.inp" );
+                    ReaderINP<TM> RI( m, "MESH/BLADE_3D/blade_Tetra.inp" );
                     break;
                 }
             }
@@ -682,22 +682,22 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         /// --------------------
         else if ( structure == "pipe" ) {
             if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) ) {
-//                read_avs( m, "MESH_AVS/PIPE_3D/pipe_Tetra.avs" );
-//                read_inp( m, "MESH_AVS/PIPE_3D/pipe_Tetra.inp" );
-                ReaderINP<TM> RI( m, "MESH_AVS/PIPE_3D/pipe_Tetra.inp" );
+//                read_avs( m, "MESH/PIPE_3D/pipe_Tetra.avs" );
+//                read_inp( m, "MESH/PIPE_3D/pipe_Tetra.inp" );
+                ReaderINP<TM> RI( m, "MESH/PIPE_3D/pipe_Tetra.inp" );
             }
             else {
                 switch ( refinement_level_ref ) {
                 case 1 :
-                    read_vtu( m, "MESH_AVS/PIPE_3D/pipe_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
+                    read_vtu( m, "MESH/PIPE_3D/pipe_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
                     break;
                 case 2 :
-                    read_vtu( m, "MESH_AVS/PIPE_3D/pipe_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
+                    read_vtu( m, "MESH/PIPE_3D/pipe_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
                     break;
                 default :
-                    //                read_avs( m, "MESH_AVS/PIPE_3D/pipe_Tetra.avs" );
-                    //                read_inp( m, "MESH_AVS/PIPE_3D/pipe_Tetra.inp" );
-                    ReaderINP<TM> RI( m, "MESH_AVS/PIPE_3D/pipe_Tetra.inp" );
+                    //                read_avs( m, "MESH/PIPE_3D/pipe_Tetra.avs" );
+                    //                read_inp( m, "MESH/PIPE_3D/pipe_Tetra.inp" );
+                    ReaderINP<TM> RI( m, "MESH/PIPE_3D/pipe_Tetra.inp" );
                     break;
                 }
             }
@@ -707,34 +707,34 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         else if ( structure == "SAP" ) {
             if ( mesh_size == "coarse" ) {
                 if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                    read_msh_2( m, "MESH_GMSH/SAP_3D/SAP_coarse_Tetra.msh" );
+                    read_msh_2( m, "MESH/SAP_3D/SAP_coarse_Tetra.msh" );
                 else {
                     switch ( refinement_level_ref ) {
                     case 1 :
-                        read_vtu( m, "MESH_GMSH/SAP_3D/SAP_coarse_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
+                        read_vtu( m, "MESH/SAP_3D/SAP_coarse_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
                         break;
                     case 2 :
-                        read_vtu( m, "MESH_GMSH/SAP_3D/SAP_coarse_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
+                        read_vtu( m, "MESH/SAP_3D/SAP_coarse_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
                         break;
                     default :
-                        read_msh_2( m, "MESH_GMSH/SAP_3D/SAP_coarse_Tetra.msh" );
+                        read_msh_2( m, "MESH/SAP_3D/SAP_coarse_Tetra.msh" );
                         break;
                     }
                 }
             }
             else if ( mesh_size == "fine" ) {
                 if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                    read_msh_2( m, "MESH_GMSH/SAP_3D/SAP_fine_Tetra.msh" );
+                    read_msh_2( m, "MESH/SAP_3D/SAP_fine_Tetra.msh" );
                 else {
                     switch ( refinement_level_ref ) {
                     case 1 :
-                        read_vtu( m, "MESH_GMSH/SAP_3D/SAP_fine_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
+                        read_vtu( m, "MESH/SAP_3D/SAP_fine_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
                         break;
                     case 2 :
-                        read_vtu( m, "MESH_GMSH/SAP_3D/SAP_fine_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
+                        read_vtu( m, "MESH/SAP_3D/SAP_fine_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
                         break;
                     default :
-                        read_msh_2( m, "MESH_GMSH/SAP_3D/SAP_fine_Tetra.msh" );
+                        read_msh_2( m, "MESH/SAP_3D/SAP_fine_Tetra.msh" );
                         break;
                     }
                 }
@@ -746,17 +746,17 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         /// ------------------------
         else if ( structure == "spherical_inclusions" ) {
             if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                read_msh_2( m, "MESH_GMSH/SPHERICAL_INCLUSIONS_3D/spherical_inclusions_Tetra.msh" );
+                read_msh_2( m, "MESH/SPHERICAL_INCLUSIONS_3D/spherical_inclusions_Tetra.msh" );
             else {
                 switch ( refinement_level_ref ) {
                 case 1 :
-                    read_vtu( m, "MESH_GMSH/SPHERICAL_INCLUSIONS_3D/spherical_inclusions_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
+                    read_vtu( m, "MESH/SPHERICAL_INCLUSIONS_3D/spherical_inclusions_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
                     break;
                 case 2 :
-                    read_vtu( m, "MESH_GMSH/SPHERICAL_INCLUSIONS_3D/spherical_inclusions_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
+                    read_vtu( m, "MESH/SPHERICAL_INCLUSIONS_3D/spherical_inclusions_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
                     break;
                 default :
-                    read_msh_2( m, "MESH_GMSH/SPHERICAL_INCLUSIONS_3D/spherical_inclusions_Tetra.msh" );
+                    read_msh_2( m, "MESH/SPHERICAL_INCLUSIONS_3D/spherical_inclusions_Tetra.msh" );
                     break;
                 }
             }
@@ -765,17 +765,17 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         /// -------------------
         else if ( structure == "spherical_holes" ) {
             if ( not( want_global_discretization_error ) and not( want_local_discretization_error ) )
-                read_msh_2( m, "MESH_GMSH/SPHERICAL_HOLES_3D/spherical_holes_Tetra.msh" );
+                read_msh_2( m, "MESH/SPHERICAL_HOLES_3D/spherical_holes_Tetra.msh" );
             else {
                 switch ( refinement_level_ref ) {
                 case 1 :
-                    read_vtu( m, "MESH_GMSH/SPHERICAL_HOLES_3D/spherical_holes_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
+                    read_vtu( m, "MESH/SPHERICAL_HOLES_3D/spherical_holes_Tetra_direct_global_local_discretization_error_ref_1.vtu" );
                     break;
                 case 2 :
-                    read_vtu( m, "MESH_GMSH/SPHERICAL_HOLES_3D/spherical_holes_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
+                    read_vtu( m, "MESH/SPHERICAL_HOLES_3D/spherical_holes_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
                     break;
                 default :
-                    read_msh_2( m, "MESH_GMSH/SPHERICAL_HOLES_3D/spherical_holes_Tetra.msh" );
+                    read_msh_2( m, "MESH/SPHERICAL_HOLES_3D/spherical_holes_Tetra.msh" );
                     break;
                 }
             }
@@ -783,22 +783,23 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         /// Eprouvette 3D
         /// -------------
         else if ( structure.find("test_specimen") != string::npos ) {
-            string filename = "MESH_AVS/TEST_SPECIMEN_3D/" + structure + "_Hexa.inp";
+            string filename = "MESH/TEST_SPECIMEN_3D/" + structure + "_Hexa.inp";
+//            string filename = "MESH/TEST_SPECIMEN_3D/" + structure + "_Tetra.inp";
 //            read_inp( m, filename );
             ReaderINP<TM> RI( m, filename.c_str() );
-            replace_Hexa_by_Tetra( m );
+//            replace_Hexa_by_Tetra( m );
         }
         /// Sphere 3D avec noeud au centre
         /// ------------------------------
         else if ( structure == "sphere_center" ) {
             if ( mesh_size == "very_coarse" )
-                read_msh_2( m, "MESH_GMSH/SPHERE_3D/sphere_center_very_coarse_Tetra.msh" );
+                read_msh_2( m, "MESH/SPHERE_3D/sphere_center_very_coarse_Tetra.msh" );
             else if ( mesh_size == "coarse" )
-                read_msh_2( m, "MESH_GMSH/SPHERE_3D/sphere_center_coarse_Tetra.msh" );
+                read_msh_2( m, "MESH/SPHERE_3D/sphere_center_coarse_Tetra.msh" );
             else if ( mesh_size == "fine" )
-                read_msh_2( m, "MESH_GMSH/SPHERE_3D/sphere_center_fine_Tetra.msh" );
+                read_msh_2( m, "MESH/SPHERE_3D/sphere_center_fine_Tetra.msh" );
             else if ( mesh_size == "very_fine" )
-                read_msh_2( m, "MESH_GMSH/SPHERE_3D/sphere_center_very_fine_Tetra.msh" );
+                read_msh_2( m, "MESH/SPHERE_3D/sphere_center_very_fine_Tetra.msh" );
             else
                 cerr << "mesh_size " << mesh_size << " not implemented..." << endl << endl;
         }
@@ -806,20 +807,20 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
         /// ------------------------------
         else if ( structure == "sphere" ) {
             if ( mesh_size == "very_coarse" )
-                read_msh_2( m, "MESH_GMSH/SPHERE_3D/sphere_very_coarse_Tetra.msh" );
+                read_msh_2( m, "MESH/SPHERE_3D/sphere_very_coarse_Tetra.msh" );
             else if ( mesh_size == "coarse" )
-                read_msh_2( m, "MESH_GMSH/SPHERE_3D/sphere_coarse_Tetra.msh" );
+                read_msh_2( m, "MESH/SPHERE_3D/sphere_coarse_Tetra.msh" );
             else if ( mesh_size == "fine" )
-                read_msh_2( m, "MESH_GMSH/SPHERE_3D/sphere_fine_Tetra.msh" );
+                read_msh_2( m, "MESH/SPHERE_3D/sphere_fine_Tetra.msh" );
             else if ( mesh_size == "very_fine" )
-                read_msh_2( m, "MESH_GMSH/SPHERE_3D/sphere_very_fine_Tetra.msh" );
+                read_msh_2( m, "MESH/SPHERE_3D/sphere_very_fine_Tetra.msh" );
             else
                 cerr << "mesh_size " << mesh_size << " not implemented..." << endl << endl;
         }
         /// Sphere 3D creuse avec noeud au centre
         /// -------------------------------------
         else if ( structure == "sphere_hollow" )
-            read_msh_2( m, "MESH_GMSH/SPHERE_3D/sphere_hollow_very_fine_Tetra.msh" );
+            read_msh_2( m, "MESH/SPHERE_3D/sphere_hollow_very_fine_Tetra.msh" );
         else
             cerr << "structure " << structure << " not implemented..." << endl << endl;
     }
@@ -880,10 +881,10 @@ void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsign
         else if ( structure == "plate_hole" ) {
             switch ( deg_p ) {
             case 1 :
-                read_msh_2( m_ref, "MESH_GMSH/PLATE_HOLE_2D/plate_hole_very_fine_Triangle.msh" );
+                read_msh_2( m_ref, "MESH/PLATE_HOLE_2D/plate_hole_very_fine_Triangle.msh" );
                 break;
             case 2 :
-                read_msh_2( m_ref, "MESH_GMSH/PLATE_HOLE_2D/plate_hole_very_fine_Triangle_6.msh" );
+                read_msh_2( m_ref, "MESH/PLATE_HOLE_2D/plate_hole_very_fine_Triangle_6.msh" );
                 break;
             default :
                 cerr << "deg " << deg_p << " not implemented..." << endl << endl;
@@ -893,18 +894,18 @@ void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsign
         /// Plaque fissuree 2D
         /// ------------------
         else if ( structure == "plate_crack" ) {
-            read_msh_2( m_ref, "MESH_GMSH/PLATE_CRACK_2D/plate_crack_very_fine_Triangle.msh" );
+            read_msh_2( m_ref, "MESH/PLATE_CRACK_2D/plate_crack_very_fine_Triangle.msh" );
         }
         /// Structure fissuree 2D
         /// ---------------------
         else if ( structure == "structure_crack" ) {
             switch ( deg_p ) {
             case 1 :
-//                read_msh_2( m_ref, "MESH_GMSH/STRUCTURE_CRACK_2D/structure_crack_very_fine_Triangle.msh" );
-                read_msh_2( m_ref, "MESH_GMSH/STRUCTURE_CRACK_2D/structure_crack_very_fine_Triangle_6.msh" );
+//                read_msh_2( m_ref, "MESH/STRUCTURE_CRACK_2D/structure_crack_very_fine_Triangle.msh" );
+                read_msh_2( m_ref, "MESH/STRUCTURE_CRACK_2D/structure_crack_very_fine_Triangle_6.msh" );
                 break;
             case 2 :
-                read_msh_2( m_ref, "MESH_GMSH/STRUCTURE_CRACK_2D/structure_crack_very_fine_Triangle_6.msh" );
+                read_msh_2( m_ref, "MESH/STRUCTURE_CRACK_2D/structure_crack_very_fine_Triangle_6.msh" );
                 break;
             default :
                 cerr << "deg " << deg_p << " not implemented..." << endl << endl;
@@ -916,10 +917,10 @@ void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsign
         else if ( structure == "test_specimen" ) {
             switch ( deg_p ) {
             case 1 :
-                read_msh_2( m_ref, "MESH_GMSH/TEST_SPECIMEN_2D/test_specimen_very_fine_Triangle.msh" );
+                read_msh_2( m_ref, "MESH/TEST_SPECIMEN_2D/test_specimen_very_fine_Triangle.msh" );
                 break;
             case 2 :
-                read_msh_2( m_ref, "MESH_GMSH/TEST_SPECIMEN_2D/test_specimen_very_fine_Triangle_6.msh" );
+                read_msh_2( m_ref, "MESH/TEST_SPECIMEN_2D/test_specimen_very_fine_Triangle_6.msh" );
                 break;
             default :
                 cerr << "deg " << deg_p << " not implemented..." << endl << endl;
@@ -931,10 +932,10 @@ void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsign
         else if ( structure == "weight_sensor" ) {
             switch ( deg_p ) {
             case 1 :
-                read_msh_2( m_ref, "MESH_GMSH/WEIGHT_SENSOR_2D/weight_sensor_very_fine_Triangle.msh" );
+                read_msh_2( m_ref, "MESH/WEIGHT_SENSOR_2D/weight_sensor_very_fine_Triangle.msh" );
                 break;
             case 2 :
-                read_msh_2( m_ref, "MESH_GMSH/WEIGHT_SENSOR_2D/weight_sensor_very_fine_Triangle_6.msh" );
+                read_msh_2( m_ref, "MESH/WEIGHT_SENSOR_2D/weight_sensor_very_fine_Triangle_6.msh" );
                 break;
             default :
                 cerr << "deg " << deg_p << " not implemented..." << endl << endl;
@@ -944,7 +945,7 @@ void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsign
         /// Cercle 2D
         /// ---------
         else if ( structure == "circle" ) {
-            read_msh_2( m_ref, "MESH_GMSH/CIRCLE_2D/circle_very_fine_Triangle.msh" );
+            read_msh_2( m_ref, "MESH/CIRCLE_2D/circle_very_fine_Triangle.msh" );
         }
         /// Inclusions circulaires 2D
         /// -------------------------
@@ -1086,17 +1087,17 @@ void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsign
         /// Sphere 3D avec noeud au centre
         /// ------------------------------
         else if ( structure == "sphere_center" ) {
-            read_msh_2( m_ref, "MESH_GMSH/SPHERE_3D/sphere_center_very_fine_Tetra.msh" );
+            read_msh_2( m_ref, "MESH/SPHERE_3D/sphere_center_very_fine_Tetra.msh" );
         }
         /// Sphere 3D sans noeud au centre
         /// ------------------------------
         else if ( structure == "sphere" ) {
-            read_msh_2( m_ref, "MESH_GMSH/SPHERE_3D/sphere_very_fine_Tetra.msh" );
+            read_msh_2( m_ref, "MESH/SPHERE_3D/sphere_very_fine_Tetra.msh" );
         }
         /// Sphere 3D creuse avec noeud au centre
         /// -------------------------------------
         else if ( structure == "sphere_hollow" ) {
-            read_msh_2( m_ref, "MESH_GMSH/SPHERE_3D/sphere_hollow_very_fine_Tetra.msh" );
+            read_msh_2( m_ref, "MESH/SPHERE_3D/sphere_hollow_very_fine_Tetra.msh" );
         }
         else
             cerr << "structure " << structure << " not implemented..." << endl << endl;

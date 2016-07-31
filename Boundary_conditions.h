@@ -598,7 +598,7 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
         /// -----------------------------------------------------------------------------------------------------
         else if ( structure.find("test_specimen") != string::npos ) {
             TM m_Hexa;
-            string filename = "MESH_AVS/TEST_SPECIMEN_3D/" + structure + "_Hexa.inp";
+            string filename = "MESH/TEST_SPECIMEN_3D/" + structure + "_Hexa.inp";
             if ( adapt ) {
                 size_t off = structure.rfind( "_" );
                 string str = structure.substr( off+1 );
@@ -609,7 +609,7 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
                 str = to_string( N );
                 string structure_adapt = structure;
                 structure_adapt = structure_adapt.replace( off+1, string::npos, str );
-                filename = "MESH_AVS/TEST_SPECIMEN_3D/" + structure_adapt + "_Hexa.inp";
+                filename = "MESH/TEST_SPECIMEN_3D/" + structure_adapt + "_Hexa.inp";
             }
             ReaderINP<TM> RI( m_Hexa, filename.c_str() );
 

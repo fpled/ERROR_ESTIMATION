@@ -159,13 +159,13 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
             
             if ( dim ==2 ) {
                 if ( shape == "circle" )
-                    filename_mask = "./MESH_MASK/circle.png";
+                    filename_mask = "./MASK/circle.png";
                 else if ( shape == "half_circle" )
-                    filename_mask = "./MESH_MASK/hal_circle.png";
+                    filename_mask = "./MASK/hal_circle.png";
                 else if ( shape == "circle_crack" )
-                    filename_mask = "./MESH_MASK/circle_crack.png";
+                    filename_mask = "./MASK/circle_crack.png";
                 else if ( shape == "rectangle" )
-                    filename_mask = "./MESH_MASK/rectangle.png";
+                    filename_mask = "./MASK/rectangle.png";
                 else
                     cerr << "forme " << shape << " non implementee pour le calcul de la constante dans l'amelioration..." << endl << endl;
             }
@@ -299,37 +299,37 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
             TM m_mask;
             if ( dim == 2 ) {
                 if ( shape == "circle" ) {
-//                    read_msh_2( m_mask, "MESH_GMSH/CIRCLE_2D/circle_very_coarse_Triangle.msh" );
-//                    read_msh_2( m_mask, "MESH_GMSH/CIRCLE_2D/circle_coarse_Triangle.msh" );
-                    read_msh_2( m_mask, "MESH_GMSH/CIRCLE_2D/circle_fine_Triangle.msh" );
-//                    read_msh_2( m_mask, "MESH_GMSH/CIRCLE_2D/circle_very_fine_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/CIRCLE_2D/circle_very_coarse_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/CIRCLE_2D/circle_coarse_Triangle.msh" );
+                    read_msh_2( m_mask, "MESH/CIRCLE_2D/circle_fine_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/CIRCLE_2D/circle_very_fine_Triangle.msh" );
                 }
                 else if ( shape == "half_circle" ) {
-//                    read_msh_2( m_mask, "MESH_GMSH/HALF_CIRCLE_2D/half_circle_very_coarse_Triangle.msh" );
-//                    read_msh_2( m_mask, "MESH_GMSH/HALF_CIRCLE_2D/half_circle_coarse_Triangle.msh" );
-                    read_msh_2( m_mask, "MESH_GMSH/HALF_CIRCLE_2D/half_circle_fine_Triangle.msh" );
-//                    read_msh_2( m_mask, "MESH_GMSH/HALF_CIRCLE_2D/half_circle_very_fine_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/HALF_CIRCLE_2D/half_circle_very_coarse_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/HALF_CIRCLE_2D/half_circle_coarse_Triangle.msh" );
+                    read_msh_2( m_mask, "MESH/HALF_CIRCLE_2D/half_circle_fine_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/HALF_CIRCLE_2D/half_circle_very_fine_Triangle.msh" );
                 }
                 else if ( shape == "circle_crack" ) {
-//                    read_msh_2( m_mask, "MESH_GMSH/CIRCLE_CRACK_2D/circle_crack_very_coarse_Triangle.msh" );
-//                    read_msh_2( m_mask, "MESH_GMSH/CIRCLE_CRACK_2D/circle_crack_coarse_Triangle.msh" );
-                    read_msh_2( m_mask, "MESH_GMSH/CIRCLE_CRACK_2D/circle_crack_fine_Triangle.msh" );
-//                    read_msh_2( m_mask, "MESH_GMSH/CIRCLE_CRACK_2D/circle_crack_very_fine_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_very_coarse_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_coarse_Triangle.msh" );
+                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_fine_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_very_fine_Triangle.msh" );
 
-//                    read_msh_2( m_mask, "MESH_GMSH/CIRCLE_CRACK_2D/circle_crack_15_very_coarse_Triangle.msh" );
-//                    read_msh_2( m_mask, "MESH_GMSH/CIRCLE_CRACK_2D/circle_crack_15_coarse_Triangle.msh" );
-//                    read_msh_2( m_mask, "MESH_GMSH/CIRCLE_CRACK_2D/circle_crack_15_fine_Triangle.msh" );
-//                    read_msh_2( m_mask, "MESH_GMSH/CIRCLE_CRACK_2D/circle_crack_15_very_fine_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_15_very_coarse_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_15_coarse_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_15_fine_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_15_very_fine_Triangle.msh" );
 
-//                    read_msh_2( m_mask, "MESH_GMSH/CIRCLE_CRACK_2D/circle_crack_30_very_coarse_Triangle.msh" );
-//                    read_msh_2( m_mask, "MESH_GMSH/CIRCLE_CRACK_2D/circle_crack_30_coarse_Triangle.msh" );
-//                    read_msh_2( m_mask, "MESH_GMSH/CIRCLE_CRACK_2D/circle_crack_30_fine_Triangle.msh" );
-//                    read_msh_2( m_mask, "MESH_GMSH/CIRCLE_CRACK_2D/circle_crack_30_very_fine_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_30_very_coarse_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_30_coarse_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_30_fine_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_30_very_fine_Triangle.msh" );
 
-//                    read_msh_2( m_mask, "MESH_GMSH/CIRCLE_CRACK_2D/circle_crack_45_very_coarse_Triangle.msh" );
-//                    read_msh_2( m_mask, "MESH_GMSH/CIRCLE_CRACK_2D/circle_crack_45_coarse_Triangle.msh" );
-//                    read_msh_2( m_mask, "MESH_GMSH/CIRCLE_CRACK_2D/circle_crack_45_fine_Triangle.msh" );
-//                    read_msh_2( m_mask, "MESH_GMSH/CIRCLE_CRACK_2D/circle_crack_45_very_fine_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_45_very_coarse_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_45_coarse_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_45_fine_Triangle.msh" );
+//                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_45_very_fine_Triangle.msh" );
                 }
                 else if ( shape == "square" or shape == "rectangle" )
                     make_rect( m_mask, Triangle(), Pvec( -1., -1. ), Pvec( 1., 1. ), Pvec( 101, 101 ) );
@@ -338,16 +338,16 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
             }
             else if ( dim ==3 ) {
                 if ( shape == "sphere" ) {
-//                    read_msh_2( m_mask, "MESH_GMSH/SPHERE_3D/sphere_very_coarse_Tetra.msh" );
-//                    read_msh_2( m_mask, "MESH_GMSH/SPHERE_3D/sphere_coarse_Tetra.msh" );
-                    read_msh_2( m_mask, "MESH_GMSH/SPHERE_3D/sphere_fine_Tetra.msh" );
-//                    read_msh_2( m_mask, "MESH_GMSH/SPHERE_3D/sphere_very_fine_Tetra.msh" );
+//                    read_msh_2( m_mask, "MESH/SPHERE_3D/sphere_very_coarse_Tetra.msh" );
+//                    read_msh_2( m_mask, "MESH/SPHERE_3D/sphere_coarse_Tetra.msh" );
+                    read_msh_2( m_mask, "MESH/SPHERE_3D/sphere_fine_Tetra.msh" );
+//                    read_msh_2( m_mask, "MESH/SPHERE_3D/sphere_very_fine_Tetra.msh" );
                 }
                 else if ( shape == "half_sphere" ) {
-//                    read_msh_2( m_mask, "MESH_GMSH/HALF_SPHERE_3D/half_sphere_very_coarse_Tetra.msh" );
-//                    read_msh_2( m_mask, "MESH_GMSH/HALF_SPHERE_3D/half_sphere_coarse_Tetra.msh" );
-                    read_msh_2( m_mask, "MESH_GMSH/HALF_SPHERE_3D/half_sphere_fine_Tetra.msh" );
-//                    read_msh_2( m_mask, "MESH_GMSH/HALF_SPHERE_3D/half_sphere_very_fine_Tetra.msh" );
+//                    read_msh_2( m_mask, "MESH/HALF_SPHERE_3D/half_sphere_very_coarse_Tetra.msh" );
+//                    read_msh_2( m_mask, "MESH/HALF_SPHERE_3D/half_sphere_coarse_Tetra.msh" );
+                    read_msh_2( m_mask, "MESH/HALF_SPHERE_3D/half_sphere_fine_Tetra.msh" );
+//                    read_msh_2( m_mask, "MESH/HALF_SPHERE_3D/half_sphere_very_fine_Tetra.msh" );
                 }
                 else if ( shape == "cube" or shape == "cuboid" )
                     make_rect( m_mask, Tetra(), Pvec( -1., -1., -1. ), Pvec( 1., 1., 1. ), Pvec( 11, 11, 11 ) );
