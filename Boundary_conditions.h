@@ -1063,8 +1063,8 @@ void set_load_conditions( TM &m, const string &structure, const string &loading,
                     pre_sig[ 0 ] = -tau( 0, j, i );
                     pre_sig[ 1 ] = -tau( 3, j, i )/sqrt(2.);
                     pre_sig[ 2 ] = -tau( 1, j, i );
-                    pre_sig[ 3 ] = -tau( 4, j, i )/sqrt(2);
-                    pre_sig[ 4 ] = -tau( 5, j, i )/sqrt(2);
+                    pre_sig[ 3 ] = -tau( 4, j, i )/sqrt(2.);
+                    pre_sig[ 4 ] = -tau( 5, j, i )/sqrt(2.);
                     pre_sig[ 5 ] = -tau( 2, j, i );
                     m.elem_list[n]->set_field( "pre_sigma", pre_sig );
                 }
