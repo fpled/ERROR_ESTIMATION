@@ -18,11 +18,11 @@ Node_Dir = /usrtmp/$(USER)
 Cluster_Dir  = /data1/$(USER)
 Cluster_List_Data = 1 2 3 4 5 6
 # LMT_Dir, METIL_Dir, DIC_Dir
-ERROR_ESTIMATION_Dir   = https://github.com/fpled/ERROR_ESTIMATION.git
-#LMT_Dir   = git://gitosis.lmt.ens-cachan.fr/LMTpp-test.git
-LMT_Dir   = https://github.com/fpled/LMTpp.git
+ERROR_ESTIMATION_Dir = https://github.com/fpled/ERROR_ESTIMATION.git
+#LMT_Dir = git://gitosis.lmt.ens-cachan.fr/LMTpp-test.git
+LMT_Dir = https://github.com/fpled/LMTpp.git
 #METIL_Dir = git://gitosis.lmt.ens-cachan.fr/METIL.git
-METIL_Dir   = https://github.com/fpled/METIL.git
+METIL_Dir = https://github.com/fpled/METIL.git
 DIC_Dir = git://gitosis.lmt.ens-cachan.fr/dic.git
 qsub_Dir = /usr/local/torque-current/bin/
 scons_file = SConstruct
@@ -35,9 +35,9 @@ timdavis = 0
 nb_pro = 8
 machine_arch = ''
 # Name of machine
-List_Machine_Names = $(HOSTAME)
-Machine_Name = $(HOSTAME)
-Machine_Name_Results = $(HOSTAME)
+List_Machine_Names = $(HOSTNAME)
+Machine_Name = $(HOSTNAME)
+Machine_Name_Results = $(HOSTNAME)
 # Name of station
 Station_Name = $(HOSTNAME)
 # Name of problem
