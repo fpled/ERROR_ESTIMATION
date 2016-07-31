@@ -597,27 +597,28 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
         /// loading Step-1, ..., Step-9 : champ de deplacement applique aux noeuds specifies dans le fichier .inp
         /// -----------------------------------------------------------------------------------------------------
         else if ( structure.find("test_specimen") != string::npos ) {
-            TM m_Hexa;
-            string filename = "MESH/TEST_SPECIMEN_3D/" + structure + "_Hexa.inp";
-            if ( adapt ) {
-                size_t off = structure.rfind( "_" );
-                string str = structure.substr( off+1 );
-                istringstream buffer(str);
-                int N;
-                buffer >> N;
-                N *= int(2*min(adapt,2));
-                str = to_string( N );
-                string structure_adapt = structure;
-                structure_adapt = structure_adapt.replace( off+1, string::npos, str );
-                filename = "MESH/TEST_SPECIMEN_3D/" + structure_adapt + "_Hexa.inp";
-            }
-            ReaderINP<TM> RI( m_Hexa, filename.c_str() );
+            TM mesh;
+            string filename = "MESH/TEST_SPECIMEN_3D/" + structure + "_Tetra.inp";
+//            string filename = "MESH/TEST_SPECIMEN_3D/" + structure + "_Hexa.inp";
+//            if ( adapt ) {
+//                size_t off = structure.rfind( "_" );
+//                string str = structure.substr( off+1 );
+//                istringstream buffer(str);
+//                int N;
+//                buffer >> N;
+//                N *= int(2*adapt);
+//                str = to_string( N );
+//                string structure_adapt = structure;
+//                structure_adapt = structure_adapt.replace( off+1, string::npos, str );
+//                filename = "MESH/TEST_SPECIMEN_3D/" + structure_adapt + "_Hexa.inp";
+//            }
+            ReaderINP<TM> RI( mesh, filename.c_str() );
 
-//            cout << "Number of nodes = " << m_Hexa.node_list.size() << endl;
-//            for (unsigned i=0;i<m_Hexa.node_list.size();++i) {
+//            cout << "Number of nodes = " << mesh.node_list.size() << endl;
+//            for (unsigned i=0;i<mesh.node_list.size();++i) {
 //                cout << " node " << i << " at position ";
 //                for (unsigned d=0;d<dim;++d)
-//                    cout << m_Hexa.node_list[i].pos[d] << " ";
+//                    cout << mesh.node_list[i].pos[d] << " ";
 //                cout << endl;
 //            }
 //            RI.display_map_node();
@@ -631,9 +632,9 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
 //            RI.display_map_surface( true );
 
             for (unsigned i=1;i<RI.match_inode_inp_lmtpp.size()+1;++i) {
-                if ( m_Hexa.node_list[ RI.match_inode_inp_lmtpp[ i ] ].pos[2] < 0.954 + 1e-6 or m_Hexa.node_list[ RI.match_inode_inp_lmtpp[ i ] ].pos[2] > 7.314 - 1e-6 ) {
-//                    cout << "Inp " <<  i << " -> Hexa " <<  RI.match_inode_inp_lmtpp[ i ] << " -> Tetra " << m.poin( m_Hexa.node_list[ RI.match_inode_inp_lmtpp[ i ] ].pos, 1e-2 ) << endl;
-                    RI.match_inode_inp_lmtpp[ i ] = m.poin( m_Hexa.node_list[ RI.match_inode_inp_lmtpp[ i ] ].pos, 1e-2 );
+                if ( mesh.node_list[ RI.match_inode_inp_lmtpp[ i ] ].pos[2] < 0.954 + 1e-6 or mesh.node_list[ RI.match_inode_inp_lmtpp[ i ] ].pos[2] > 7.314 - 1e-6 ) {
+//                    cout << "Inp " <<  i << " -> Hexa " <<  RI.match_inode_inp_lmtpp[ i ] << " -> Tetra " << m.poin( mesh.node_list[ RI.match_inode_inp_lmtpp[ i ] ].pos, 1e-2 ) << endl;
+                    RI.match_inode_inp_lmtpp[ i ] = m.poin( mesh.node_list[ RI.match_inode_inp_lmtpp[ i ] ].pos, 1e-2 );
                 }
             }
 //            RI.display_match_inode_inp_lmtpp();
