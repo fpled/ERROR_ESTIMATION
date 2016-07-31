@@ -15,7 +15,7 @@ Script_Name = launch_make
 # Node_Dir
 Node_Dir = /usrtmp/$(USER)
 # Cluster_Dir = /data1/$(USER), /data2/$(USER), /nutmp/$(Cluster_Node)/$(USER)
-Cluster_Dir  = /data1/$(USER)
+Cluster_Dir = /data1/$(USER)
 Cluster_List_Data = 1 2 3 4 5 6
 # LMT_Dir, METIL_Dir, DIC_Dir
 ERROR_ESTIMATION_Dir = https://github.com/fpled/ERROR_ESTIMATION.git
