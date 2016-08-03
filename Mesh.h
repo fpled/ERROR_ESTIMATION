@@ -32,6 +32,7 @@
 
 #include "LMT/include/util/Hdf.h" // sert a lire des donnees a partir d'un fichier .h5 ou .hdf5
 #include "LMT/include/containers/Tens3.h"
+#include "LMT/include/containers/Tens4.h"
 
 #include "CONNECTIVITY/Calcul_connectivity.h"
 
@@ -351,8 +352,7 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
             size_t off = structure.rfind( "_" );
             string str = structure.substr( off+1 );
             istringstream buffer(str);
-            int N;
-            buffer >> N;
+            unsigned N; buffer >> N;
             make_rect( m, Quad(), Pvec( 0., 0. ), Pvec( 1. , 1. ), Pvec( N+1, N+1 ) );
         }
         else
@@ -789,14 +789,13 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
             ReaderINP<TM> RI( m, filename.c_str() );
 //            replace_Hexa_by_Tetra( m );
         }
-        /// Cube 3D
-        /// -------
-        else if ( structure.find("cube") != string::npos ) {
+        /// Hashin's coated shpere 3D
+        /// -------------------------
+        else if ( structure.find("hashin") != string::npos ) {
             size_t off = structure.rfind( "_" );
             string str = structure.substr( off+1 );
             istringstream buffer(str);
-            int N;
-            buffer >> N;
+            unsigned N; buffer >> N;
             make_rect( m, Hexa(), Pvec( 0., 0., 0. ), Pvec( 1. , 1., 1. ), Pvec( N+1, N+1, N+1 ) );
         }
         /// Sphere 3D avec noeud au centre
@@ -1094,9 +1093,9 @@ void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsign
             for (unsigned n=0;n<refinement_level_ref;++n)
                 divide( m_ref );
         }
-        /// Cube 3D
-        /// -------
-        else if ( structure.find("cube") != string::npos ) {
+        /// Hashin's coated shpere 3D
+        /// -------------------------
+        else if ( structure.find("hashin") != string::npos ) {
             m_ref = m;
             for (unsigned n=0;n<refinement_level_ref;++n)
                 divide( m_ref );

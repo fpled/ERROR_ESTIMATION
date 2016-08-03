@@ -12,6 +12,8 @@
 #ifndef Material_properties_h
 #define Material_properties_h
 
+#include "LMT/include/util/Hdf.h"
+
 using namespace LMT;
 using namespace std;
 
@@ -104,27 +106,23 @@ void set_material_properties( TF &f, TM &m, const string &structure ) {
             /// Carre 2D
             /// --------
             else if ( structure.find("square") != string::npos ) {
+                T mu_m = 1;
                 if ( structure.find("init") == string::npos ) {
-                    T mu = 0.9;
+                    T mu = 0.9*mu_m;
                     poisson = 0.3;
                     young = 2*(1+poisson)*mu;
                 }
                 else {
                     for (unsigned n=0;n<m.elem_list.size();++n) {
+                        T mu = mu_m;
+                        poisson = 0.3;
                         if ( center( *m.elem_list[n] )[0] < 0.5 and center( *m.elem_list[n] )[1] < 0.5 ) { // x < 0.5 and y < 0.5
-                            T mu = 100.;
+                            mu *= 100;
                             poisson = 0.2;
-                            young = 2*(1+poisson)*mu;
-                            m.elem_list[n]->set_field( "young", young );
-                            m.elem_list[n]->set_field( "poisson", poisson );
                         }
-                        else {
-                            T mu = 1.;
-                            poisson = 0.3;
-                            young = 2*(1+poisson)*mu;
-                            m.elem_list[n]->set_field( "young", young );
-                            m.elem_list[n]->set_field( "poisson", poisson );
-                        }
+                        young = 2*(1+poisson)*mu;
+                        m.elem_list[n]->set_field( "young", young );
+                        m.elem_list[n]->set_field( "poisson", poisson );
                     }
                 }
             }
@@ -165,9 +163,48 @@ void set_material_properties( TF &f, TM &m, const string &structure ) {
                 T K = 1300e6;
                 T n = 0.44;
             }
+            /// Hashin's coated shpere 3D
+            /// -------------------------
+            else if ( structure.find("hashin") != string::npos ) {
+                size_t offset = structure.rfind( "_" )+1;
+                const string str = structure.substr( offset );
+                istringstream buffer(str);
+                unsigned N; buffer >> N;
+                Hdf hdf("DATA/hashin-" + str + "x" + str + "x" + str + ".hdf5");
+
+                hdf.read_tag( "/", "nu", poisson );
+                if ( structure.find("init") == string::npos ) {
+                    T k0;
+                    hdf.read_tag( "/", "k0", k0 );
+                    T mu = 3/5.*k0;
+                    young = 2*(1+poisson)*mu;
+                }
+                else {
+                    T k1, k2, k3;
+                    hdf.read_tag( "/", "k1", k1 );
+                    hdf.read_tag( "/", "k2", k2 );
+                    hdf.read_tag( "/", "k3", k3 );
+                    Tens3<double> f1, f2, f3;
+                    hdf.read( "/f1", f1 );
+                    hdf.read( "/f2", f2 );
+                    f3.resize(N);
+                    f3.set(1.);
+                    f3 -= f1 + f2;
+                    for (unsigned n=0;n<m.elem_list.size();++n) {
+                        unsigned i = unsigned(center( *m.elem_list[n] )[0]*N-1/2);
+                        unsigned j = unsigned(center( *m.elem_list[n] )[1]*N-1/2);
+                        unsigned k = unsigned(center( *m.elem_list[n] )[2]*N-1/2);
+                        T kappa = f1( k, j, i ) * k1 + f2( k, j, i ) * k2 + f3( k, j, i ) * k3;
+                        T mu = 3/5.*kappa;
+                        young = 2*(1+poisson)*mu;
+                        m.elem_list[n]->set_field( "young", young );
+                        m.elem_list[n]->set_field( "poisson", poisson );
+                    }
+                }
+            }
         }
 
-        if ( structure.find("square") == string::npos or ( structure.find("square") != string::npos and structure.find("init") == string::npos ) ) {
+        if ( ( structure.find("square") == string::npos and structure.find("hashin") == string::npos ) or ( ( structure.find("square") != string::npos or structure.find("hashin") != string::npos ) and structure.find("init") == string::npos ) ) {
             set_field_alternativeontype( m, Number< AreSameType< typename ExtractDM<young_DM>::ReturnType<TM>::T, void >::res >(), young, young_DM() );
             set_field_alternativeontype( m, Number< AreSameType< typename ExtractDM<poisson_DM>::ReturnType<TM>::T, void >::res >(), poisson, poisson_DM() );
         }

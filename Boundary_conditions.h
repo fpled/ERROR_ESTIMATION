@@ -13,8 +13,9 @@
 #define Boundary_conditions_h
 
 #include "LMT/include/mesh/ReaderINP.h"
+#include "LMT/include/util/Hdf.h"
+//#include "CONNECTIVITY/Connectivity.h"
 #include "INTEREST_QUANTITY/Interest_quantity.h"
-#include "CONNECTIVITY/Calcul_connectivity.h"
 
 using namespace LMT;
 using namespace std;
@@ -256,17 +257,12 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
         /// Carre 2D
         /// condition de periodicite aux noeuds situes en x = 0 et x = 1
         /// condition de periodicite aux noeuds situes en y = 0 et y = 1
-        /// blocage du noeud (0.25, 0.25) dans toutes les directions
+        /// blocage du noeud (0, 0) dans toutes les directions pour square_init_n
+        /// blocage du noeud (0.25, 0.25) dans toutes les directions pour square_n
         // blocage de la moyenne du deplacement dans toutes les directions
         /// champ de deplacement applique a tous les noeuds
-        /// ---------------------------------------------------------------
+        /// ----------------------------------------------------------------------
         else if ( structure.find("square") != string::npos ) {
-            size_t offset = structure.rfind( "_" )+1;
-            string str = structure.substr( offset );
-            istringstream buffer(str);
-            int N;
-            buffer >> N;
-
             for (unsigned i=0;i<m.node_list.size();++i) {
                 if ( m.node_list[i].pos[0] < 1e-6 ) {
                     for (unsigned j=0;j<m.node_list.size();++j) {
@@ -286,14 +282,19 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
                         }
                     }
                 }
-                if ( structure.find("init") != string::npos and N == 32 ) {
+            }
+
+            if ( structure.find("init") != string::npos ) {
+                for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 1e-6 and m.node_list[i].pos[1] < 1e-6 ) {
                         for (unsigned d=0;d<dim;++d) {
                             f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
                         }
                     }
                 }
-                else {
+            }
+            else {
+                for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( 0.25 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.25 + 1e-6 and 0.25 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.25 + 1e-6 ) {
                         for (unsigned d=0;d<dim;++d) {
                             f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
@@ -316,36 +317,31 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
 //                f.add_constraint( txt_mean_constraint, penalty_val );
 //            }
 
-//            size_t offset = structure.rfind( "_" )+1;
-//            string str = structure.substr( offset );
-//            istringstream buffer(str);
-//            int N;
-//            buffer >> N;
+            size_t offset = structure.rfind( "_" )+1;
+            string str = structure.substr( offset );
+            istringstream buffer(str);
+            unsigned N; buffer >> N;
             Hdf hdf;
-            if ( structure.find("init") != string::npos and N == 32 )
-                hdf.open("DATA_HDF5/square-init-" + str + "x" + str + ".hdf5");
+            if ( structure.find("init") != string::npos )
+                hdf.open("DATA/square-init-" + str + "x" + str + ".hdf5");
             else
-                hdf.open("DATA_HDF5/square-" + str + "x" + str + ".hdf5");
-
-            Vec<int> s;
-            hdf.read_size( "/u", s );
+                hdf.open("DATA/square-" + str + "x" + str + ".hdf5");
 
             Tens3<T> u;
-            u.resize( s );
-            hdf.read_data( "/u", u.ptr(), s, s );
+            hdf.read( "/u", u );
 
             for (unsigned i=0;i<m.node_list.size();++i) {
                 if ( m.node_list[i].pos[0] < 1. - 1e-6 and m.node_list[i].pos[1] < 1. - 1e-6 ) {
                     for (unsigned d=0;d<dim;++d)
-                        m.node_list[i].dep[ d ] = u( d, int(m.node_list[i].pos[1]*N), int(m.node_list[i].pos[0]*N) );
+                        m.node_list[i].dep[ d ] = u( d, unsigned(m.node_list[i].pos[1]*N), unsigned(m.node_list[i].pos[0]*N) );
                 }
                 else if ( m.node_list[i].pos[0] > 1. - 1e-6 and m.node_list[i].pos[1] < 1. - 1e-6 ) {
                     for (unsigned d=0;d<dim;++d)
-                        m.node_list[i].dep[ d ] = u( d, int(m.node_list[i].pos[1]*N), 0 );
+                        m.node_list[i].dep[ d ] = u( d, unsigned(m.node_list[i].pos[1]*N), 0 );
                 }
                 else if ( m.node_list[i].pos[1] > 1. - 1e-6 and m.node_list[i].pos[0] < 1. - 1e-6 ) {
                     for (unsigned d=0;d<dim;++d)
-                        m.node_list[i].dep[ d ] = u( d, 0, int(m.node_list[i].pos[0]*N) );
+                        m.node_list[i].dep[ d ] = u( d, 0, unsigned(m.node_list[i].pos[0]*N) );
                 }
                 else {
                     for (unsigned d=0;d<dim;++d)
@@ -604,9 +600,8 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
 //                size_t off = structure.rfind( "_" );
 //                string str = structure.substr( off+1 );
 //                istringstream buffer(str);
-//                int N;
-//                buffer >> N;
-//                N *= int(2*adapt);
+//                unsigned N; buffer >> N;
+//                N *= unsigned(2*adapt);
 //                str = to_string( N );
 //                string structure_adapt = structure;
 //                structure_adapt = structure_adapt.replace( off+1, string::npos, str );
@@ -639,6 +634,103 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
             }
 //            RI.display_match_inode_inp_lmtpp();
             RI.set_constraint_by_step( f, loading, penalty_val );
+        }
+        /// Hashin 3D
+        /// condition de periodicite aux noeuds situes en x = 0 et x = 1
+        /// condition de periodicite aux noeuds situes en y = 0 et y = 1
+        /// condition de periodicite aux noeuds situes en z = 0 et z = 1
+        /// blocage du noeud (0.5, 0.5, 0.5) dans toutes les directions
+        // blocage de la moyenne du deplacement dans toutes les directions
+        /// champ de deplacement applique a tous les noeuds
+        /// --------------------------------------------------------------
+        else if ( structure.find("hashin") != string::npos ) {
+            for (unsigned i=0;i<m.node_list.size();++i) {
+                if ( m.node_list[i].pos[0] < 1e-6 ) {
+                    for (unsigned j=0;j<m.node_list.size();++j) {
+                        if ( m.node_list[j].pos[0] > 1 - 1e-6 and abs(m.node_list[j].pos[1] - m.node_list[i].pos[1]) < 1e-6 and abs(m.node_list[j].pos[2] - m.node_list[i].pos[2]) < 1e-6 ) {
+                            for (unsigned d=0;d<dim;++d) {
+                                f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"] - node["+to_string(j)+"].dep["+to_string(d)+"]", penalty_val );
+                            }
+                        }
+                    }
+                }
+                else if ( m.node_list[i].pos[1] < 1e-6 ) {
+                    for (unsigned j=0;j<m.node_list.size();++j) {
+                        if ( m.node_list[j].pos[1] > 1 - 1e-6 and abs(m.node_list[j].pos[0] - m.node_list[i].pos[0]) < 1e-6 and abs(m.node_list[j].pos[2] - m.node_list[i].pos[2]) < 1e-6 ) {
+                            for (unsigned d=0;d<dim;++d) {
+                                f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"] - node["+to_string(j)+"].dep["+to_string(d)+"]", penalty_val );
+                            }
+                        }
+                    }
+                }
+                else if ( m.node_list[i].pos[2] < 1e-6 ) {
+                    for (unsigned j=0;j<m.node_list.size();++j) {
+                        if ( m.node_list[j].pos[2] > 1 - 1e-6 and abs(m.node_list[j].pos[0] - m.node_list[i].pos[0]) < 1e-6 and abs(m.node_list[j].pos[1] - m.node_list[i].pos[1]) < 1e-6 ) {
+                            for (unsigned d=0;d<dim;++d) {
+                                f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"] - node["+to_string(j)+"].dep["+to_string(d)+"]", penalty_val );
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (unsigned i=0;i<m.node_list.size();++i) {
+                if ( 0.5 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.5 + 1e-6 and 0.5 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.5 + 1e-6 and 0.5 - 1e-6 < m.node_list[i].pos[2] and m.node_list[i].pos[2] < 0.5 + 1e-6 ) {
+                    for (unsigned d=0;d<dim;++d) {
+                        f.add_constraint( "node["+to_string(i)+"].dep["+to_string(d)+"]", penalty_val );
+                    }
+                }
+            }
+
+//            for (unsigned d=0;d<dim;++d) {
+//                string txt_mean_constraint = "";
+//                for (unsigned i=0;i<m.node_list.size();++i) {
+//                    if ( ( m.node_list[i].pos[0] < 1e-6 and m.node_list[i].pos[1] < 1e-6 ) or ( m.node_list[i].pos[0] > 1 - 1e-6 and m.node_list[i].pos[1] < 1e-6 ) or ( m.node_list[i].pos[0] < 1e-6 and m.node_list[i].pos[1] > 1 - 1e-6 ) or ( m.node_list[i].pos[0] > 1 - 1e-6 and m.node_list[i].pos[1] > 1 - 1e-6 ) )
+//                        txt_mean_constraint += "node["+to_string(i)+"].dep["+to_string(d)+"] * 1/4 + ";
+//                    else if ( m.node_list[i].pos[0] < 1e-6 or m.node_list[i].pos[0] > 1 - 1e-6 or m.node_list[i].pos[1] < 1e-6 or m.node_list[i].pos[1] > 1 - 1e-6 )
+//                        txt_mean_constraint += "node["+to_string(i)+"].dep["+to_string(d)+"] * 1/2 + ";
+//                    else
+//                        txt_mean_constraint += "node["+to_string(i)+"].dep["+to_string(d)+"] + ";
+//                }
+//                txt_mean_constraint.resize( txt_mean_constraint.size()-3 );
+//                f.add_constraint( txt_mean_constraint, penalty_val );
+//            }
+
+            size_t offset = structure.rfind( "_" )+1;
+            string str = structure.substr( offset );
+            istringstream buffer(str);
+            unsigned N; buffer >> N;
+            Hdf hdf("DATA/hashin-" + str + "x" + str + "x" + str + ".hdf5");
+
+//            unsigned grid_size;
+//            hdf.read_tag( "/", "grid_size", grid_size );
+//            PRINT( grid_size );
+
+            Tens4<T> u;
+            hdf.read( "/filtered/u", u );
+
+            for (unsigned i=0;i<m.node_list.size();++i) {
+                if ( m.node_list[i].pos[0] < 1. - 1e-6 and m.node_list[i].pos[1] < 1. - 1e-6 and m.node_list[i].pos[2] < 1. - 1e-6 ) {
+                    for (unsigned d=0;d<dim;++d)
+                        m.node_list[i].dep[ d ] = u( d, int(m.node_list[i].pos[2]*N), int(m.node_list[i].pos[1]*N), int(m.node_list[i].pos[0]*N) );
+                }
+                else if ( m.node_list[i].pos[0] > 1. - 1e-6 and m.node_list[i].pos[1] < 1. - 1e-6 and m.node_list[i].pos[2] < 1. - 1e-6 ) {
+                    for (unsigned d=0;d<dim;++d)
+                        m.node_list[i].dep[ d ] = u( d, int(m.node_list[i].pos[2]*N), int(m.node_list[i].pos[1]*N), 0 );
+                }
+                else if ( m.node_list[i].pos[1] > 1. - 1e-6 and m.node_list[i].pos[0] < 1. - 1e-6 and m.node_list[i].pos[2] < 1. - 1e-6 ) {
+                    for (unsigned d=0;d<dim;++d)
+                        m.node_list[i].dep[ d ] = u( d, int(m.node_list[i].pos[2]*N), 0, int(m.node_list[i].pos[0]*N) );
+                }
+                else if ( m.node_list[i].pos[2] > 1. - 1e-6 and m.node_list[i].pos[0] < 1. - 1e-6 and m.node_list[i].pos[1] < 1. - 1e-6 ) {
+                    for (unsigned d=0;d<dim;++d)
+                        m.node_list[i].dep[ d ] = u( d, 0, int(m.node_list[i].pos[1]*N), int(m.node_list[i].pos[0]*N) );
+                }
+                else {
+                    for (unsigned d=0;d<dim;++d)
+                        m.node_list[i].dep[ d ] = u( d, 0, 0, 0 );
+                }
+            }
         }
     }
 
@@ -777,33 +869,30 @@ void set_load_conditions( TM &m, const string &structure, const string &loading,
             }
         }
         /// Carre 2D
-        /// pre-deformation et pre-contrainte appliquees sur tous les elements
+        /// pre-contrainte appliquee sur tous les elements pour square_n
+        /// pre-deformation appliquee sur tous les elements pour square_init_n
         /// ------------------------------------------------------------------
         else if ( structure.find("square") != string::npos ) {
             if ( structure.find("init") != string::npos ) {
+                T E_12 = 1;
                 for (unsigned n=0;n<m.elem_list.size();++n) {
-                    m.elem_list[n]->set_field( "pre_epsilon", Vec<T,unsigned(dim*(dim+1)/2) >( 0., -1/sqrt(2.), 0. ) );
+                    m.elem_list[n]->set_field( "pre_epsilon", Vec<T,unsigned(dim*(dim+1)/2) >( 0., -E_12/sqrt(2.), 0. ) );
                 }
             }
             else {
                 size_t offset = structure.rfind( "_" )+1;
                 const string str = structure.substr( offset );
                 istringstream buffer(str);
-                int N;
-                buffer >> N;
-                Hdf hdf("DATA_HDF5/square-" + str + "x" + str + ".hdf5");
-
-                Vec<int> s;
-                hdf.read_size( "/tau", s );
+                unsigned N; buffer >> N;
+                Hdf hdf("DATA/square-" + str + "x" + str + ".hdf5");
 
                 Tens3<T> tau;
-                tau.resize( s );
-                hdf.read_data( "/tau", tau.ptr(), s, s );
+                hdf.read( "/tau", tau );
 
                 Vec<T,unsigned(dim*(dim+1)/2) > pre_sig;
                 for (unsigned n=0;n<m.elem_list.size();++n) {
-                    int i = int(center( *m.elem_list[n] )[0]*N-1/2);
-                    int j = int(center( *m.elem_list[n] )[1]*N-1/2);
+                    unsigned i = unsigned(center( *m.elem_list[n] )[0]*N-1/2);
+                    unsigned j = unsigned(center( *m.elem_list[n] )[1]*N-1/2);
                     pre_sig[ 0 ] = -tau( 0, j, i );
                     pre_sig[ 1 ] = -tau( 2, j, i )/sqrt(2.);
                     pre_sig[ 2 ] = -tau( 1, j, i );
@@ -1033,40 +1122,42 @@ void set_load_conditions( TM &m, const string &structure, const string &loading,
                 }
             }
         }
-        /// Cube 3D
-        /// pre-deformation et pre-contrainte appliquees sur tous les elements
+        /// Hashin's coated shpere 3D
+        /// pre-contrainte appliquee sur tous les elements pour hashin_n
+        /// pre-deformation appliquee sur tous les elements pour hashin_init_n
         /// ------------------------------------------------------------------
-        else if ( structure.find("cube") != string::npos ) {
+        else if ( structure.find("hashin") != string::npos ) {
             if ( structure.find("init") != string::npos ) {
+                T E_v = 1;
                 for (unsigned n=0;n<m.elem_list.size();++n) {
-                    m.elem_list[n]->set_field( "pre_epsilon", Vec<T,unsigned(dim*(dim+1)/2) >( 0., -1/sqrt(2.), 0., 0., 0., 0. ) );
+                    m.elem_list[n]->set_field( "pre_epsilon", Vec<T,unsigned(dim*(dim+1)/2) >( -E_v/3., -E_v/3., -E_v/3., 0., 0., 0. ) );
                 }
             }
             else {
                 size_t offset = structure.rfind( "_" )+1;
                 const string str = structure.substr( offset );
                 istringstream buffer(str);
-                int N;
-                buffer >> N;
-                Hdf hdf("DATA_HDF5/cube-" + str + "x" + str + ".hdf5");
+                unsigned N; buffer >> N;
+                Hdf hdf("DATA/hashin-" + str + "x" + str + "x" + str + ".hdf5");
 
-                Vec<int> s;
-                hdf.read_size( "/tau", s );
+//                int grid_size;
+//                hdf.read_tag( "/", "grid_size", grid_size );
+//                PRINT( grid_size );
 
-                Tens3<T> tau;
-                tau.resize( s );
-                hdf.read_data( "/tau", tau.ptr(), s, s );
+                Tens4<T> tau;
+                hdf.read( "/filtered/tau", tau );
 
                 Vec<T,unsigned(dim*(dim+1)/2) > pre_sig;
                 for (unsigned n=0;n<m.elem_list.size();++n) {
-                    int i = int(center( *m.elem_list[n] )[0]*N-1/2);
-                    int j = int(center( *m.elem_list[n] )[1]*N-1/2);
-                    pre_sig[ 0 ] = -tau( 0, j, i );
-                    pre_sig[ 1 ] = -tau( 3, j, i )/sqrt(2.);
-                    pre_sig[ 2 ] = -tau( 1, j, i );
-                    pre_sig[ 3 ] = -tau( 4, j, i )/sqrt(2.);
-                    pre_sig[ 4 ] = -tau( 5, j, i )/sqrt(2.);
-                    pre_sig[ 5 ] = -tau( 2, j, i );
+                    unsigned i = unsigned(center( *m.elem_list[n] )[0]*N-1/2);
+                    unsigned j = unsigned(center( *m.elem_list[n] )[1]*N-1/2);
+                    unsigned k = unsigned(center( *m.elem_list[n] )[2]*N-1/2);
+                    pre_sig[ 0 ] = -tau( 0, k, j, i );
+                    pre_sig[ 1 ] = -tau( 5, k, j, i )/sqrt(2.);
+                    pre_sig[ 2 ] = -tau( 1, k, j, i );
+                    pre_sig[ 3 ] = -tau( 4, k, j, i )/sqrt(2.);
+                    pre_sig[ 4 ] = -tau( 3, k, j, i )/sqrt(2.);
+                    pre_sig[ 5 ] = -tau( 2, k, j, i );
                     m.elem_list[n]->set_field( "pre_sigma", pre_sig );
                 }
 

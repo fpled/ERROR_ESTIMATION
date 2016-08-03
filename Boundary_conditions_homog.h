@@ -12,8 +12,7 @@
 #ifndef Boundary_conditions_homog_h
 #define Boundary_conditions_homog_h
 
-#include "INTEREST_QUANTITY/Interest_quantity.h"
-#include "CONNECTIVITY/Calcul_connectivity.h"
+//#include "../CONNECTIVITY/Connectivity.h"
 
 using namespace LMT;
 using namespace std;
@@ -29,19 +28,21 @@ void set_load_conditions_init( TM &m, const string &structure ) {
     m.update_skin();
 
     /// Carre 2D
-    /// pre-deformation et pre-contrainte appliquees sur tous les elements
-    /// ------------------------------------------------------------------
+    /// pre-deformation appliquee sur tous les elements
+    /// -----------------------------------------------
     if ( structure.find("square") != string::npos ) {
+        T E_12 = 1;
         for (unsigned n=0;n<m.elem_list.size();++n) {
-            m.elem_list[n]->set_field( "pre_epsilon_init", Vec<T,unsigned(dim*(dim+1)/2) >( 0., -1/sqrt(2.), 0. ) );
+            m.elem_list[n]->set_field( "pre_epsilon_init", Vec<T,unsigned(dim*(dim+1)/2) >( 0., -E_12/sqrt(2.), 0. ) );
         }
     }
-    /// Cube 3D
-    /// pre-deformation et pre-contrainte appliquees sur tous les elements
-    /// ------------------------------------------------------------------
-    else if ( structure.find("cube") != string::npos ) {
+    /// Hashin's coated shpere 3D
+    /// pre-deformation appliquee sur tous les elements
+    /// -----------------------------------------------
+    else if ( structure.find("hashin") != string::npos ) {
+        T E_v = 1;
         for (unsigned n=0;n<m.elem_list.size();++n) {
-            m.elem_list[n]->set_field( "pre_epsilon_init", Vec<T,unsigned(dim*(dim+1)/2) >( 0., -1/sqrt(2.), 0., 0., 0., 0. ) );
+            m.elem_list[n]->set_field( "pre_epsilon_init", Vec<T,unsigned(dim*(dim+1)/2) >( -E_v/3., -E_v/3., -E_v/3., 0., 0., 0. ) );
         }
     }
 }

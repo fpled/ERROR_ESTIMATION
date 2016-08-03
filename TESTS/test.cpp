@@ -35,111 +35,111 @@
 using namespace LMT;
 using namespace std;
 
-//int main( int argc, char **argv ) {
-//    TicToc t_total;
-//    t_total.start();
-//    static const unsigned dim = 3;
-//    static const bool wont_add_nz = true;
-//    typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
-//    typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
-//    typedef TM::Pvec Pvec;
-//    typedef TM::TNode::T T;
-//    static const string structure = "test_specimen_Q3_5";
-//    static const string mesh_size = "fine";
-//    static const string loading = "Step-2";
-//    static const unsigned deg_p = 1;
-//    static const string boundary_condition_D = "penalty";
+/*
+int main( int argc, char **argv ) {
+    TicToc t_total;
+    t_total.start();
+    static const unsigned dim = 3;
+    static const bool wont_add_nz = true;
+    typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
+    typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
+    typedef TM::Pvec Pvec;
+    typedef TM::TNode::T T;
+    static const string structure = "hashin_32";
+    static const string mesh_size = "fine";
+    static const string loading = "Step-2";
+    static const unsigned deg_p = 1;
+    static const string boundary_condition_D = "penalty";
 
-//    static const string method = "EET";
-//    static const unsigned cost_function = 0;
-//    static const T penalty_val_N = 1e6;
-//    static const string solver = "LDL";
-//    static const string solver_minimisation = "UMFPACK";
+    static const string method = "EET";
+    static const unsigned cost_function = 0;
+    static const T penalty_val_N = 1e6;
+    static const string solver = "LDL";
+    static const string solver_minimisation = "UMFPACK";
 
-//    static const bool enhancement_with_geometric_criterium = 0;
-//    static const string geometric_criterium = "radius_ratio";
-//    static const T val_geometric_criterium = 0.34;
-//    static const bool enhancement_with_estimator_criterium = 0;
-//    static const T val_estimator_criterium = 0.8;
+    static const bool enhancement_with_geometric_criterium = 0;
+    static const string geometric_criterium = "radius_ratio";
+    static const T val_geometric_criterium = 0.34;
+    static const bool enhancement_with_estimator_criterium = 0;
+    static const T val_estimator_criterium = 0.8;
 
-//    static const bool verif_eq = 1;
-//    static const bool verif_compatibility_conditions = 1;
-//    static const T tol_compatibility_conditions = 1e-6;
-//    static const bool verif_eq_force_fluxes = 1;
-//    static const T tol_eq_force_fluxes = 1e-6;
+    static const bool verif_eq = 1;
+    static const bool verif_compatibility_conditions = 1;
+    static const T tol_compatibility_conditions = 1e-6;
+    static const bool verif_eq_force_fluxes = 1;
+    static const T tol_eq_force_fluxes = 1e-6;
 
-//    static const bool verif_solver = 1;
-//    static const T tol_solver = 1e-6;
-//    static const bool verif_solver_enhancement = 1;
-//    static const T tol_solver_enhancement = 1e-6;
-//    static const bool verif_solver_minimisation = 1;
-//    static const T tol_solver_minimisation = 1e-6;
-//    static const bool verif_solver_minimisation_enhancement = 1;
-//    static const T tol_solver_minimisation_enhancement = 1e-6;
+    static const bool verif_solver = 1;
+    static const T tol_solver = 1e-6;
+    static const bool verif_solver_enhancement = 1;
+    static const T tol_solver_enhancement = 1e-6;
+    static const bool verif_solver_minimisation = 1;
+    static const T tol_solver_minimisation = 1e-6;
+    static const bool verif_solver_minimisation_enhancement = 1;
+    static const T tol_solver_minimisation_enhancement = 1e-6;
 
-//    /// ------------------------------------------------------- ///
-//    /// Construction de la solution elements finis du pb direct ///
-//    /// ------------------------------------------------------- ///
+    /// ------------------------------------------------------- ///
+    /// Construction de la solution elements finis du pb direct ///
+    /// ------------------------------------------------------- ///
 
-//    display_pb( dim, structure, deg_p  );
+    display_pb( dim, structure, deg_p  );
 
-//    /// Maillage du pb direct
-//    /// ---------------------
-//    TM m;
-//    set_mesh( m, structure, mesh_size, loading, deg_p );
+    /// Maillage du pb direct
+    /// ---------------------
+    TM m;
+    set_mesh( m, structure, mesh_size, loading, deg_p );
 
-//    /// Formulation du pb direct
-//    /// ------------------------
-//    TF f( m );
+    /// Formulation du pb direct
+    /// ------------------------
+    TF f( m );
 
-//    /// Proprietes materiaux du pb direct
-//    /// ---------------------------------
-//    set_material_properties( f, m, structure );
+    /// Proprietes materiaux du pb direct
+    /// ---------------------------------
+    set_material_properties( f, m, structure );
+
+    /// Conditions aux limites du pb direct
+    /// -----------------------------------
+    set_constraints( f, m, boundary_condition_D, "direct", structure, loading );
+    set_load_conditions( m, structure, loading, mesh_size );
+
+    /// Resolution du pb direct
+    /// -----------------------
+    cout << "Resolution du pb direct" << endl << endl;
+    TicToc t;
+    t.start();
+    f.solve();
+    t.stop();
+    cout << "temps de calcul de la resolution du pb direct = " << t.res << endl << endl;
 
 //    f.allocate_matrices();
+//    f.shift();
+//    f.assemble();
+////    f.solve_system();
+//    f.get_initial_conditions();
+//    f.update_variables();
+//    f.call_after_solve();
 
-//    /// Conditions aux limites du pb direct
-//    /// -----------------------------------
-//    set_constraints( f, m, boundary_condition_D, "direct", structure, loading );
-//    set_load_conditions( m, structure, loading, mesh_size );
+    /// Verification de l'equilibre du pb direct
+    /// ----------------------------------------
+    if ( verif_eq )
+        check_equilibrium( f, "direct" );
 
-//    /// Resolution du pb direct
-//    /// -----------------------
-//    cout << "Resolution du pb direct" << endl << endl;
-//    TicToc t;
-//    t.start();
-//    f.solve();
-//    t.stop();
-//    cout << "temps de calcul de la resolution du pb direct = " << t.res << endl << endl;
+    /// Calcul de la norme du champ de deplacement approche du pb direct
+    /// ----------------------------------------------------------------
+    calcul_norm_dep( m, f, "direct" );
 
-////    f.allocate_matrices();
-////    f.shift();
-////    f.assemble();
-//////    f.solve_system();
-////    f.get_initial_conditions();
-////    f.update_variables();
-////    f.call_after_solve();
+    /// Affichage
+    /// ---------
+    display( m, "test" );
 
-//    /// Verification de l'equilibre du pb direct
-//    /// ----------------------------------------
-//    if ( verif_eq )
-//        check_equilibrium( f, "direct" );
-
-//    /// Calcul de la norme du champ de deplacement approche du pb direct
-//    /// ----------------------------------------------------------------
-//    calcul_norm_dep( m, f, "direct" );
-
-//    /// Affichage
-//    /// ---------
-//    display( m, "test" );
-
-////    cout << m.type_elements() << endl;
-
-//}
+//    cout << m.type_elements() << endl;
+}
+/*
 
 /// ---------- ///
 /// refinement ///
 /// ---------- ///
+/*
 int main( int argc, char **argv ) {
     static const unsigned dim = 2;
     static const bool wont_add_nz = true;
@@ -229,127 +229,249 @@ int main( int argc, char **argv ) {
 
     return 0;
 }
+*/
+
+/// ------ ///
+/// HDF 2D ///
+/// ------ ///
+/*
+int main() {
+    Hdf hdf( "/Users/Op/Documents/Recherche/LMT/Code_Cpp_FEM_Error_Estimation/ERROR_ESTIMATION/DATA/square-32x32.hdf5" );
+
+    Vec<int> s;
+    Tens3<double> u, tau;
+
+//    hdf.read_size( "/u", s );
+//    u.resize( s );
+//    hdf.read_data( "/u", u.ptr(), s, s );
+//    PRINT( s );
+//    PRINT( u( 0, 0, 0 ) );
+//    PRINT( u( 1, 5, 10 ) );
+
+    hdf.read( "/u", u );
+    PRINT( u( 0, 0, 0 ) );
+    PRINT( u( 1, 5, 10 ) );
+
+//    hdf.read_size( "/tau", s );
+//    tau.resize( s );
+//    hdf.read_data( "/tau", tau.ptr(), s, s );
+//    PRINT( s );
+//    PRINT( tau( 0, 0, 0 ) );
+//    PRINT( tau( 1, 5, 10 ) );
+
+    hdf.read( "/tau", tau );
+    PRINT( tau( 0, 0, 0 ) );
+    PRINT( tau( 1, 5, 10 ) );
+}
+*/
+
+/// ------ ///
+/// HDF 3D ///
+/// ------ ///
+
+int main() {
+    Hdf hdf( "/Users/Op/Documents/Recherche/LMT/Code_Cpp_FEM_Error_Estimation/ERROR_ESTIMATION/DATA/hashin-32x32x32.hdf5" );
+
+    Vec<int> s;
+    unsigned grid_size;
+    double k0, k1, k2, k3, nu;
+    Tens3<double> f1, f2, f3;
+    Tens4<double> u, tau;
+
+    hdf.read_tag( "/", "grid_size", grid_size );
+    PRINT( grid_size );
+    hdf.read_tag( "/", "k0", k0 );
+    PRINT( k0 );
+    hdf.read_tag( "/", "k1", k1 );
+    PRINT( k1 );
+    hdf.read_tag( "/", "k2", k2 );
+    PRINT( k2 );
+    hdf.read_tag( "/", "k3", k3 );
+    PRINT( k3 );
+    hdf.read_tag( "/", "nu", nu );
+    PRINT( nu );
+
+//    hdf.read_size( "/f1", s );
+//    f1.resize( s );
+//    hdf.read_data( "/f1", f1.ptr(), s, s );
+//    PRINT( s );
+//    PRINT( f1( 0, 0, 0 ) );
+//    PRINT( f1( 1, 5, 10 ) );
+
+    hdf.read( "/f1", f1 );
+    PRINT( f1( 0, 0, 0 ) );
+    PRINT( f1( 1, 5, 10 ) );
+
+//    hdf.read_size( "/f2", s );
+//    f2.resize( s );
+//    hdf.read_data( "/f2", f2.ptr(), s, s );
+//    PRINT( s );
+//    PRINT( f2( 0, 0, 0 ) );
+//    PRINT( f2( 1, 5, 10 ) );
+
+    hdf.read( "/f2", f2 );
+    PRINT( f2( 0, 0, 0 ) );
+    PRINT( f2( 1, 5, 10 ) );
+
+    f3.resize(grid_size);
+    f3.set(1.);
+    f3 -= f1 + f2;
+    PRINT( f3( 12, 8, 25 ) );
+    PRINT( 1 - f1( 12, 8, 25 ) - f2( 12, 8, 25 ) );
+
+//    hdf.read_size( "/filtered/u", s );
+//    u.resize( s );
+//    hdf.read_data( "/filtered/u", u.ptr(), s, s );
+//    PRINT( s );
+//    PRINT( u( 0, 0, 0, 0 ) );
+//    PRINT( u( 1, 5, 10, 15 ) );
+
+    hdf.read( "/filtered/u", u );
+    PRINT( u( 0, 0, 0, 0 ) );
+    PRINT( u( 1, 5, 10, 15 ) );
+
+//    hdf.read_size( "/filtered/tau", s );
+//    tau.resize( s );
+//    hdf.read_data( "/filtered/tau", tau.ptr(), s, s );
+//    PRINT( s );
+//    PRINT( tau( 0, 0, 0, 0 ) );
+//    PRINT( tau( 1, 5, 10, 15 ) );
+
+    hdf.read( "/filtered/tau", tau );
+    PRINT( tau( 0, 0, 0, 0 ) );
+    PRINT( tau( 1, 5, 10, 15 ) );
+
+}
+
 
 /// ---------- ///
 /// eig_lapack ///
 /// ---------- ///
-//#include "LMT/include/containers/eig_lapack.h"
+/*
+#include "LMT/include/containers/eig_lapack.h"
 
-//int main ( int argc, char **argv ) {
-//    typedef double T;
+int main ( int argc, char **argv ) {
+    typedef double T;
 
-//    Mat<T, Sym<> > Ms( 3, 3, 0. );
-//    Ms.diag() = 5.;
-//    Ms( 1, 0 ) = 2.;
-//    Ms( 2, 0 ) = 1.;
-//    Ms( 2, 1 ) = -0.3;
+    Mat<T, Sym<> > Ms( 3, 3, 0. );
+    Ms.diag() = 5.;
+    Ms( 1, 0 ) = 2.;
+    Ms( 2, 0 ) = 1.;
+    Ms( 2, 1 ) = -0.3;
 
-//    Mat<T> A( Ms );
-//    PRINTN( A );
+    Mat<T> A( Ms );
+    PRINTN( A );
 
-//    Vec<T> eig_val;
-//    get_eig_val_sym( A, eig_val );
-//    PRINT( eig_val );
+    Vec<T> eig_val;
+    get_eig_val_sym( A, eig_val );
+    PRINT( eig_val );
 
-//    Mat<T> eig_vec;
-//    get_eig_sym( A, eig_val, eig_vec );
-//    PRINT( eig_val );
-//    PRINTN( eig_vec );
+    Mat<T> eig_vec;
+    get_eig_sym( A, eig_val, eig_vec );
+    PRINT( eig_val );
+    PRINTN( eig_vec );
 
-//    PRINTN( eig_vec.row( 0 ) );
-//    PRINTN( A * eig_vec.row( 0 ) - eig_val[ 0 ] * eig_vec.row( 0 ) );
-//    PRINTN( A * trans( eig_vec ) - trans( eig_vec ) * diag( eig_val ) );
-//    PRINTN( A - trans( eig_vec ) * diag( eig_val ) * eig_vec );
+    PRINTN( eig_vec.row( 0 ) );
+    PRINTN( A * eig_vec.row( 0 ) - eig_val[ 0 ] * eig_vec.row( 0 ) );
+    PRINTN( A * trans( eig_vec ) - trans( eig_vec ) * diag( eig_val ) );
+    PRINTN( A - trans( eig_vec ) * diag( eig_val ) * eig_vec );
 
-//    Ms.set( 0. );
-//    Ms.diag() = 1.;
-//    Ms( 1, 1 ) = 2.;
-//    Mat<T> B( Ms );
-//    PRINTN( B );
+    Ms.set( 0. );
+    Ms.diag() = 1.;
+    Ms( 1, 1 ) = 2.;
+    Mat<T> B( Ms );
+    PRINTN( B );
 
-//    get_eig_val_gen( A, B, eig_val );
-//    PRINT( eig_val );
+    get_eig_val_gen( A, B, eig_val );
+    PRINT( eig_val );
 
-//    get_eig_gen( A, B, eig_val, eig_vec );
-//    PRINT( eig_val );
-//    PRINTN( eig_vec );
+    get_eig_gen( A, B, eig_val, eig_vec );
+    PRINT( eig_val );
+    PRINTN( eig_vec );
 
-//    PRINTN( eig_vec.row( 0 ) );
-//    PRINTN( A * eig_vec.row( 0 ) - eig_val[ 0 ] * B * eig_vec.row( 0 ) );
-//    PRINTN( A * trans( eig_vec ) - B * trans( eig_vec ) * diag( eig_val ) );
+    PRINTN( eig_vec.row( 0 ) );
+    PRINTN( A * eig_vec.row( 0 ) - eig_val[ 0 ] * B * eig_vec.row( 0 ) );
+    PRINTN( A * trans( eig_vec ) - B * trans( eig_vec ) * diag( eig_val ) );
 
-//    return 0.;
-//}
+    return 0.;
+}
+*/
 
 /// -------------------------- ///
 /// eigen_problem_using_lapack ///
 /// -------------------------- ///
-//#include "LMT/include/containers/eigen_problem_using_lapack.h"
+/*
+#include "LMT/include/containers/eigen_problem_using_lapack.h"
 
-//int main ( int argc, char **argv ) {
-//    typedef double T;
+int main ( int argc, char **argv ) {
+    typedef double T;
 
-//    Mat<T, Sym<> > Ms( 3, 3, 0. );
-//    Ms.diag() = 5.;
-//    Ms( 1, 0 ) = 2.;
-//    Ms( 2, 0 ) = 1.;
-//    Ms( 2, 1 ) = -0.3;
+    Mat<T, Sym<> > Ms( 3, 3, 0. );
+    Ms.diag() = 5.;
+    Ms( 1, 0 ) = 2.;
+    Ms( 2, 0 ) = 1.;
+    Ms( 2, 1 ) = -0.3;
 
-//    Mat<T> A( Ms );
-//    PRINTN( A );
+    Mat<T> A( Ms );
+    PRINTN( A );
 
-//    Vec<T> eig_val;
-//    eigen_values_using_lapack( A, eig_val );
-//    PRINT( eig_val );
+    Vec<T> eig_val;
+    eigen_values_using_lapack( A, eig_val );
+    PRINT( eig_val );
 
-//    Mat<T> eig_vec;
-//    eigen_problem_using_lapack( A, eig_val, eig_vec );
-//    PRINT( eig_val );
-//    PRINTN( eig_vec );
+    Mat<T> eig_vec;
+    eigen_problem_using_lapack( A, eig_val, eig_vec );
+    PRINT( eig_val );
+    PRINTN( eig_vec );
 
-//    PRINTN( eig_vec.col( 0 ) );
-//    PRINTN( A * eig_vec.col( 0 ) - eig_val[ 0 ] * eig_vec.col( 0 ) );
-//    PRINTN( A * eig_vec - trans( eig_vec ) * diag( eig_val ) );
-//    PRINTN( A - eig_vec * diag( eig_val ) * trans( eig_vec ) );
+    PRINTN( eig_vec.col( 0 ) );
+    PRINTN( A * eig_vec.col( 0 ) - eig_val[ 0 ] * eig_vec.col( 0 ) );
+    PRINTN( A * eig_vec - trans( eig_vec ) * diag( eig_val ) );
+    PRINTN( A - eig_vec * diag( eig_val ) * trans( eig_vec ) );
 
-//    Ms.set( 0. );
-//    Ms.diag() = 1.;
-//    Ms( 1, 1 ) = 2.;
-//    Mat<T> B( Ms );
-//    PRINTN( B );
+    Ms.set( 0. );
+    Ms.diag() = 1.;
+    Ms( 1, 1 ) = 2.;
+    Mat<T> B( Ms );
+    PRINTN( B );
 
-//    generalized_eigen_values_using_lapack( A, B, eig_val );
-//    PRINT( eig_val );
+    generalized_eigen_values_using_lapack( A, B, eig_val );
+    PRINT( eig_val );
 
-//    generalized_eigen_problem_using_lapack( A, B, eig_val, eig_vec );
-//    PRINT( eig_val );
-//    PRINTN( eig_vec );
+    generalized_eigen_problem_using_lapack( A, B, eig_val, eig_vec );
+    PRINT( eig_val );
+    PRINTN( eig_vec );
 
-//    PRINTN( eig_vec.col( 0 ) );
-//    PRINTN( A * eig_vec.col( 0 ) - eig_val[ 0 ] * B * eig_vec.col( 0 ) );
-//    PRINTN( A * eig_vec - B * eig_vec * diag( eig_val ) );
+    PRINTN( eig_vec.col( 0 ) );
+    PRINTN( A * eig_vec.col( 0 ) - eig_val[ 0 ] * B * eig_vec.col( 0 ) );
+    PRINTN( A * eig_vec - B * eig_vec * diag( eig_val ) );
 
-//    return 0.;
-//}
+    return 0.;
+}
+*/
 
 /// --------------- ///
 /// rand / RAND_MAX ///
 /// --------------- ///
-//int main ( int argc, char **argv ) {
-//    double random = rand();
-//    cout << random << endl;
-//    double random_max = RAND_MAX;
-//    cout << random_max << endl;
-//    cout << random/random_max << endl;
-//    return 0;
-//}
+/*
+int main ( int argc, char **argv ) {
+    double random = rand();
+    cout << random << endl;
+    double random_max = RAND_MAX;
+    cout << random_max << endl;
+    cout << random/random_max << endl;
+    return 0;
+}
+*/
 
 /// --------- ///
 /// print env ///
 /// --------- ///
-//int main( int argc, char **argv, char** env ) {
-//    /// Print all environment variables
-//    while (*env)
-//        printf("%s\n", *env++);
-//    return 0;
-//}
+/*
+int main( int argc, char **argv, char** env ) {
+    /// Print all environment variables
+    while (*env)
+        printf("%s\n", *env++);
+    return 0;
+}
+*/
