@@ -87,6 +87,7 @@ void set_material_properties_init( TF &f, TM &m, const string &structure ) {
             unsigned N; buffer >> N;
             Hdf hdf("DATA/hashin-" + str + "x" + str + "x" + str + ".hdf5");
 
+            hdf.read_tag( "/", "nu", poisson );
             T k1, k2, k3;
             hdf.read_tag( "/", "k1", k1 );
             hdf.read_tag( "/", "k2", k2 );
