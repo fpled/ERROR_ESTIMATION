@@ -104,8 +104,8 @@ void set_material_properties_init( TF &f, TM &m, const string &structure ) {
                 T kappa = f1( k, j, i ) * k1 + f2( k, j, i ) * k2 + f3( k, j, i ) * k3;
                 T mu = 3/5.*kappa;
                 young = 2*(1+poisson)*mu;
-                m.elem_list[n]->set_field( "young", young );
-                m.elem_list[n]->set_field( "poisson", poisson );
+                m.elem_list[n]->set_field( "young_init", young );
+                m.elem_list[n]->set_field( "poisson_init", poisson );
             }
         }
         calc_material_coefficients_init_alternativeontype( m, f, Number< AreSameType< typename ExtractDM<young_init_DM>::ReturnType<TM>::T, void >::res >(), Number< AreSameType< typename ExtractDM<poisson_init_DM>::ReturnType<TM>::T, void >::res >() );
