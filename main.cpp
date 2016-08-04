@@ -152,7 +152,7 @@ int main( int argc, char **argv ) {
     
     /// Verification equilibrium / solver
     /// ---------------------------------
-    static const bool verif_eq = 1; // verification de l'equilibre global elements finis
+    static const bool verif_eq = 0; // verification de l'equilibre global elements finis
     static const bool verif_compatibility_conditions = 1; // verification des conditions de compatibilite (equilibre elements finis) (methode EET)
     static const bool verif_eq_force_fluxes = 1; // verification de l'equilibre des densites d'effort (methodes EET, EESPT)
     static const T tol_compatibility_conditions = 1e-6; // tolerance pour la verification des conditions de compatibilite (equilibre elements finis) (methode EET)
