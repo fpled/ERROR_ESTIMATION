@@ -42,7 +42,8 @@ if not want_local_estimation
 
 # Choix du type d'hypothese en 2D : plane stress, plane strain
 #-------------------------------------------------------------
-type_stress_2D := "plane stress"
+#type_stress_2D := "plane stress"
+type_stress_2D := "plane strain"
 
 # Choix de la methode de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalty
 #--------------------------------------------------------------------------------------------------------------------------------------
@@ -262,9 +263,11 @@ formList := [ FormulationElasticity ]
 # Liste d'elements
 #-----------------
 elemList := [ Triangle ]
-#elemList := [ Quad, Triangle ]
+#elemList := [ Quad ]
+#elemList := [ Triangle, Quad ]
 #elemList := [ Tetra ]
 #elemList := [ Hexa ]
+#elemList := [ Tetra, Hexa ]
 
 # Liste de fonctions
 #-------------------
