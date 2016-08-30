@@ -1130,7 +1130,7 @@ void set_load_conditions( TM &m, const string &structure, const string &loading,
             if ( structure.find("init") != string::npos ) {
                 T E_v = 1;
                 for (unsigned n=0;n<m.elem_list.size();++n) {
-                    m.elem_list[n]->set_field( "pre_epsilon", Vec<T,unsigned(dim*(dim+1)/2) >( -E_v/3., -E_v/3., -E_v/3., 0., 0., 0. ) );
+                    m.elem_list[n]->set_field( "pre_epsilon", Vec<T,unsigned(dim*(dim+1)/2) >( -E_v/3., 0., -E_v/3., 0., 0., -E_v/3. ) );
                 }
             }
             else {
