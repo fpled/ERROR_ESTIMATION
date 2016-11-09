@@ -231,6 +231,58 @@ int main( int argc, char **argv ) {
 }
 */
 
+/// --- ///
+/// HDF ///
+/// --- ///
+/*
+void create() {
+    Hdf hdf( "res.h5" );
+
+    Vec<int> v;
+    v << 10;
+    Vec<int,1> s( v.size() );
+    double val = 2;
+
+    hdf.write_data( "/g/v", v.ptr(), s );
+    hdf.write_tag( "/g", "str", "tata" );
+    hdf.write_tag( "/g", "val", val );
+}
+
+void read() {
+    Hdf hdf( "res.h5" );
+
+    int size;
+    hdf.read_size( "/g/v", size );
+    PRINT( size );
+
+    Vec<int> s;
+    Vec<int> v;
+    hdf.read_size( "/g/v", s );
+    v.resize( s[ 0 ] );
+    hdf.read_data( "/g/v", v.ptr(), s, s );
+    PRINT( s );
+    PRINT( v );
+
+    Vec<int> vec;
+    hdf.read( "/g/v", vec );
+    PRINT( vec );
+
+    string str;
+    hdf.read_tag( "/g", "str", str );
+    PRINT( str );
+
+    double val;
+    hdf.read_tag( "/g", "val", val );
+    PRINT( val );
+}
+
+int main() {
+    system( "rm res.h5" );
+    create();
+    read();
+}
+/*
+
 /// ------ ///
 /// HDF 2D ///
 /// ------ ///
@@ -313,8 +365,8 @@ int main() {
     PRINT( f2( 0, 0, 0 ) );
     PRINT( f2( 1, 5, 10 ) );
 
-    f3.resize(grid_size);
-    f3.set(1.);
+    f3.resize( grid_size );
+    f3.set( 1. );
     f3 -= f1 + f2;
     PRINT( f3( 12, 8, 25 ) );
     PRINT( 1 - f1( 12, 8, 25 ) - f2( 12, 8, 25 ) );
@@ -341,7 +393,58 @@ int main() {
     PRINT( tau( 0, 0, 0, 0 ) );
     PRINT( tau( 1, 5, 10, 15 ) );
 
+    Hdf hdf_ms( "/Users/Op/Documents/Recherche/LMT/Code_Cpp_FEM_Error_Estimation/ERROR_ESTIMATION/DATA/microstructure.hdf5" );
+
+    hdf_ms.read_tag( "/", "grid_size", grid_size );
+    PRINT( grid_size );
+    hdf_ms.read_tag( "/", "k0", k0 );
+    PRINT( k0 );
+    hdf_ms.read_tag( "/", "k1", k1 );
+    PRINT( k1 );
+    hdf_ms.read_tag( "/", "k2", k2 );
+    PRINT( k2 );
+    hdf_ms.read_tag( "/", "k3", k3 );
+    PRINT( k3 );
+    hdf_ms.read_tag( "/", "nu", nu );
+    PRINT( nu );
+
+    hdf_ms.read( "/f1", f1 );
+    PRINT( f1( 0, 0, 0 ) );
+    PRINT( f1( 1, 5, 10 ) );
+
+    hdf_ms.read( "/f2", f2 );
+    PRINT( f2( 0, 0, 0 ) );
+    PRINT( f2( 1, 5, 10 ) );
+
+    f3.resize( grid_size );
+    f3.set( 1. );
+    f3 -= f1 + f2;
+    PRINT( f3( 12, 8, 25 ) );
+    PRINT( 1 - f1( 12, 8, 25 ) - f2( 12, 8, 25 ) );
+
+    Hdf hdf_f( "/Users/Op/Documents/Recherche/LMT/Code_Cpp_FEM_Error_Estimation/ERROR_ESTIMATION/DATA/filtered_09.hdf5" );
+
+    double g0, k_eff, nu0;
+
+    hdf_f.read_tag( "/", "g0", g0 );
+    PRINT( g0 );
+    hdf_f.read_tag( "/", "k0", k0 );
+    PRINT( k0 );
+    hdf_f.read_tag( "/", "k_eff", k_eff );
+    PRINT( k_eff );
+    hdf_f.read_tag( "/", "nu0", nu0 );
+    PRINT( nu0 );
+
+    hdf_f.read( "/u", u );
+    PRINT( u( 0, 0, 0, 0 ) );
+    PRINT( u( 1, 5, 10, 15 ) );
+
+    hdf_f.read( "/tau", tau );
+    PRINT( tau( 0, 0, 0, 0 ) );
+    PRINT( tau( 1, 5, 10, 15 ) );
+
 }
+
 
 
 /// ---------- ///

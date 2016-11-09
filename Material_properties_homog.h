@@ -85,14 +85,15 @@ void set_material_properties_init( TF &f, TM &m, const string &structure ) {
             const string str = structure.substr( offset );
             istringstream buffer(str);
             unsigned N; buffer >> N;
-            Hdf hdf("DATA/hashin-" + str + "x" + str + "x" + str + ".hdf5");
+            // Hdf hdf("DATA/hashin-" + str + "x" + str + "x" + str + ".hdf5");
+            Hdf hdf("DATA/microstructure.hdf5");
 
+            T k1, k2, k3, kappa, mu;
+            Tens3<double> f1, f2, f3;
             hdf.read_tag( "/", "nu", poisson );
-            T k1, k2, k3;
             hdf.read_tag( "/", "k1", k1 );
             hdf.read_tag( "/", "k2", k2 );
             hdf.read_tag( "/", "k3", k3 );
-            Tens3<double> f1, f2, f3;
             hdf.read( "/f1", f1 );
             hdf.read( "/f2", f2 );
             f3.resize(N);
@@ -102,8 +103,8 @@ void set_material_properties_init( TF &f, TM &m, const string &structure ) {
                 unsigned i = unsigned(center( *m.elem_list[n] )[0]*N-1/2);
                 unsigned j = unsigned(center( *m.elem_list[n] )[1]*N-1/2);
                 unsigned k = unsigned(center( *m.elem_list[n] )[2]*N-1/2);
-                T kappa = f1( k, j, i ) * k1 + f2( k, j, i ) * k2 + f3( k, j, i ) * k3;
-                T mu = 3/5.*kappa;
+                kappa = f1( k, j, i ) * k1 + f2( k, j, i ) * k2 + f3( k, j, i ) * k3;
+                mu = 3/5.*kappa;
                 young = 2*(1+poisson)*mu;
                 m.elem_list[n]->set_field( "young_init", young );
                 m.elem_list[n]->set_field( "poisson_init", poisson );
