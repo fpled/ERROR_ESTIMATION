@@ -1138,7 +1138,7 @@ void set_load_conditions( TM &m, const string &structure, const string &loading,
         /// ---------------------------------------------------------------------
         else if ( structure.find("hashin") != string::npos ) {
             if ( structure.find("init") != string::npos ) {
-                T E_v = 1;
+                T E_v = 3;
                 for (unsigned n=0;n<m.elem_list.size();++n) {
                     m.elem_list[n]->set_field( "pre_epsilon", Vec<T,unsigned(dim*(dim+1)/2) >( -E_v/3., 0., -E_v/3., 0., 0., -E_v/3. ) );
                 }

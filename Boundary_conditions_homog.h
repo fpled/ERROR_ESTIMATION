@@ -40,7 +40,7 @@ void set_load_conditions_init( TM &m, const string &structure ) {
     /// pre-deformation appliquee sur tous les elements
     /// -----------------------------------------------
     else if ( structure.find("hashin") != string::npos ) {
-        T E_v = 1;
+        T E_v = 3;
         for (unsigned n=0;n<m.elem_list.size();++n) {
             m.elem_list[n]->set_field( "pre_epsilon_init", Vec<T,unsigned(dim*(dim+1)/2) >( -E_v/3., 0., -E_v/3., 0., 0., -E_v/3. ) );
         }
