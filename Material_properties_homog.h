@@ -85,8 +85,8 @@ void set_material_properties_init( TF &f, TM &m, const string &structure ) {
             const string str = structure.substr( offset );
             istringstream buffer(str);
             unsigned N; buffer >> N;
-//            Hdf hdf("DATA/hashin-" + str + "x" + str + "x" + str + ".hdf5");
-            Hdf hdf("DATA/microstructure.hdf5");
+            Hdf hdf("DATA/hashin-" + str + "x" + str + "x" + str + ".hdf5");
+//            Hdf hdf("DATA/microstructure.hdf5");
 
             T k1, k2, k3, kappa, mu;
             Tens3<double> f1, f2, f3;

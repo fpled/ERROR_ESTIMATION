@@ -170,18 +170,18 @@ void set_material_properties( TF &f, TM &m, const string &structure ) {
                 const string str = structure.substr( offset );
                 istringstream buffer(str);
                 unsigned N; buffer >> N;
-//                Hdf hdf("DATA/hashin-" + str + "x" + str + "x" + str + ".hdf5");
-                Hdf hdf("DATA/microstructure.hdf5");
-                Hdf hdf_op("DATA/filtered_01.hdf5");
+                Hdf hdf("DATA/hashin-" + str + "x" + str + "x" + str + ".hdf5");
+//                Hdf hdf("DATA/microstructure.hdf5");
+//                Hdf hdf_op("DATA/filtered_01.hdf5");
 
                 if ( structure.find("init") == string::npos ) {
                     T kappa, mu;
-//                    hdf.read_tag( "/", "nu", poisson );
-//                    hdf.read_tag( "/", "k0", kappa );
-//                    mu = 3/5.*kappa;
-                    hdf_op.read_tag( "/", "nu0", poisson );
-                    hdf_op.read_tag( "/", "k0", kappa );
-                    hdf_op.read_tag( "/", "g0", mu );
+                    hdf.read_tag( "/", "nu", poisson );
+                    hdf.read_tag( "/", "k0", kappa );
+                    mu = 3/5.*kappa;
+//                    hdf_op.read_tag( "/", "nu0", poisson );
+//                    hdf_op.read_tag( "/", "k0", kappa );
+//                    hdf_op.read_tag( "/", "g0", mu );
                     young = 2*(1+poisson)*mu;
                 }
                 else {

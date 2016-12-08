@@ -700,24 +700,24 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
             string str = structure.substr( offset );
             istringstream buffer(str);
             unsigned N; buffer >> N;
-//            Hdf hdf("DATA/hashin-" + str + "x" + str + "x" + str + ".hdf5");
-            Hdf hdf_op("DATA/filtered_01.hdf5");
+            Hdf hdf("DATA/hashin-" + str + "x" + str + "x" + str + ".hdf5");
+//            Hdf hdf_op("DATA/filtered_01.hdf5");
 
             Tens4<T> u;
-//            if ( structure.find("filtered") != string::npos ) {
-//                hdf.read( "/filtered/u", u );
-//            }
-//            else if ( structure.find("truncated") != string::npos ) {
-//                hdf.read( "/truncated/u", u );
-//            }
-//            else if ( structure.find("willot2015") != string::npos ) {
-//                hdf.read( "/willot2015/u", u );
-//            }
-//            else {
-//                cerr << "Arret brutal, car l'operateur de Green discret n'est pas specifie..." << endl << endl;
-//                throw "Anguille sous coquille...";
-//            }
-            hdf_op.read( "/u", u );
+            if ( structure.find("filtered") != string::npos ) {
+                hdf.read( "/filtered/u", u );
+            }
+            else if ( structure.find("truncated") != string::npos ) {
+                hdf.read( "/truncated/u", u );
+            }
+            else if ( structure.find("willot2015") != string::npos ) {
+                hdf.read( "/willot2015/u", u );
+            }
+            else {
+                cerr << "Arret brutal, car l'operateur de Green discret n'est pas specifie..." << endl << endl;
+                throw "Anguille sous coquille...";
+            }
+//            hdf_op.read( "/u", u );
 
             for (unsigned i=0;i<m.node_list.size();++i) {
                 if ( m.node_list[i].pos[0] < 1. - 1e-6 and m.node_list[i].pos[1] < 1. - 1e-6 and m.node_list[i].pos[2] < 1. - 1e-6 ) {
@@ -1148,24 +1148,24 @@ void set_load_conditions( TM &m, const string &structure, const string &loading,
                 const string str = structure.substr( offset );
                 istringstream buffer(str);
                 unsigned N; buffer >> N;
-//                Hdf hdf("DATA/hashin-" + str + "x" + str + "x" + str + ".hdf5");
-                Hdf hdf_op("DATA/filtered_01.hdf5");
+                Hdf hdf("DATA/hashin-" + str + "x" + str + "x" + str + ".hdf5");
+//                Hdf hdf_op("DATA/filtered_01.hdf5");
 
                 Tens4<T> tau;
-//                if ( structure.find("filtered") != string::npos ) {
-//                    hdf.read( "/filtered/tau", tau );
-//                }
-//                else if ( structure.find("truncated") != string::npos ) {
-//                    hdf.read( "/truncated/tau", tau );
-//                }
-//                else if ( structure.find("willot2015") != string::npos ) {
-//                    hdf.read( "/willot2015/tau", tau );
-//                }
-//                else {
-//                    cerr << "Arret brutal, car l'operateur de Green discret n'est pas specifie..." << endl << endl;
-//                    throw "Anguille sous coquille...";
-//                }
-                hdf_op.read( "/tau", tau );
+                if ( structure.find("filtered") != string::npos ) {
+                    hdf.read( "/filtered/tau", tau );
+                }
+                else if ( structure.find("truncated") != string::npos ) {
+                    hdf.read( "/truncated/tau", tau );
+                }
+                else if ( structure.find("willot2015") != string::npos ) {
+                    hdf.read( "/willot2015/tau", tau );
+                }
+                else {
+                    cerr << "Arret brutal, car l'operateur de Green discret n'est pas specifie..." << endl << endl;
+                    throw "Anguille sous coquille...";
+                }
+//                hdf_op.read( "/tau", tau );
 
 
                 Vec<T,unsigned(dim*(dim+1)/2) > pre_sig;
