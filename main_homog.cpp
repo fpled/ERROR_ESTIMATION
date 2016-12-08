@@ -44,7 +44,7 @@ int main( int argc, char **argv ) {
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "hashin_homog_filtered_32"; // structure
+    static const string structure = "hashin_homog_filtered_01_32"; // structure
     // 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes,
     //      square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
     // 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes,
@@ -224,7 +224,7 @@ int main( int argc, char **argv ) {
     /// Formulation du pb direct
     /// ------------------------
     TF f( m );
-    
+
     /// Proprietes materiaux du pb direct
     /// ---------------------------------
     set_material_properties( f, m, structure );
@@ -263,7 +263,7 @@ int main( int argc, char **argv ) {
     /// ----------------------------------------------------------------
     calcul_norm_dep( m, f, "direct" );
     calcul_norm_dep_init( m, f, "direct" );
-    
+
     /// ------------------------------------------------------------------------- ///
     /// Mesure de l'erreur de discretisation globale et locale associee pb direct ///
     /// ------------------------------------------------------------------------- ///
@@ -282,7 +282,7 @@ int main( int argc, char **argv ) {
 
     if ( want_global_estimation or want_local_estimation )
         calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_init, theta_elem, theta_elem_init, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment );
-    
+
     if ( want_local_estimation ) {
         
         display_interest_quantity( interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re );
@@ -473,7 +473,7 @@ int main( int argc, char **argv ) {
         else
             save( m, prefix );
     }
-    
+
     t_total.stop();
     cout << "temps de calcul total = " << t_total.res << endl << endl;
     
