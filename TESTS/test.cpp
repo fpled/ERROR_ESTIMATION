@@ -288,7 +288,7 @@ int main() {
 /// ------ ///
 /*
 int main() {
-    Hdf hdf( "/Users/Op/Documents/Recherche/LMT/Code_Cpp_FEM_Error_Estimation/ERROR_ESTIMATION/DATA/square-32x32.hdf5" );
+    Hdf hdf( "DATA/square-32x32.hdf5" );
 
     Vec<int> s;
     Tens3<double> u, tau;
@@ -322,7 +322,7 @@ int main() {
 /// ------ ///
 
 int main() {
-    Hdf hdf( "/Users/Op/Documents/Recherche/LMT/Code_Cpp_FEM_Error_Estimation/ERROR_ESTIMATION/DATA/hashin-32x32x32.hdf5" );
+    Hdf hdf( "DATA/hashin-32x32x32.hdf5" );
 
     Vec<int> s;
     unsigned grid_size;
@@ -393,7 +393,7 @@ int main() {
     PRINT( tau( 0, 0, 0, 0 ) );
     PRINT( tau( 1, 5, 10, 15 ) );
 
-    Hdf hdf_ms( "/Users/Op/Documents/Recherche/LMT/Code_Cpp_FEM_Error_Estimation/ERROR_ESTIMATION/DATA/microstructure.hdf5" );
+    Hdf hdf_ms( "DATA/microstructure.hdf5" );
 
     hdf_ms.read_tag( "/", "grid_size", grid_size );
     PRINT( grid_size );
@@ -422,7 +422,7 @@ int main() {
     PRINT( f3( 12, 8, 25 ) );
     PRINT( 1 - f1( 12, 8, 25 ) - f2( 12, 8, 25 ) );
 
-    Hdf hdf_f( "/Users/Op/Documents/Recherche/LMT/Code_Cpp_FEM_Error_Estimation/ERROR_ESTIMATION/DATA/filtered_09.hdf5" );
+    Hdf hdf_f( "DATA/filtered_09.hdf5" );
 
     double g0, k_eff, nu0;
 
