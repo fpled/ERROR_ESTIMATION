@@ -79,8 +79,10 @@ void partition_elem_list( TM &m, const string &structure, Vec< Vec<unsigned> > &
 
 /// Construction et resolution du pb en espace
 /// ------------------------------------------
-template<class TM, class TF, class T, class TV, class TVV, class TMATVV, class TTVVV, class TTVV>
+template<class TM, class TF, class TV, class TVV, class TMATVV, class TTVVV, class TTVV>
 void solve_space( TM &m, TF &f, const unsigned &n, const TV &F_space, const TVV &F_param, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVVV &dep_param, TTVV &dep_space, const bool want_normalization = false ) {
+
+    typedef typename TM::TNode::T T;
 
     /// Construction du pb en espace
     /// ----------------------------
@@ -337,10 +339,12 @@ struct Construct_Space_Pb {
 
 /// Verification de la solution PGD pour un jeu connu de parametres
 /// ---------------------------------------------------------------
-template<class TM_param, class TM, class TF, class T, class TVV, class TTVVV, class TTVV>
-void check_PGD( TM_param &m_param, TM &m, TF &f,  const string &pb, const string &structure, const string &loading, const string &mesh_size, const Vec< Vec<unsigned> > &elem_group, const unsigned &nb_vals, const TVV &vals_param, const unsigned &nb_modes, const TTVV &dep_space, const TTVVV &dep_param, const bool display_pvd = false, const bool save_pvd = false ) {
+template<class TM_param, class TM, class TF, class TVV, class TTVV, class TTVVV>
+void check_PGD( TM_param &m_param, TM &m, TF &f,  const string &pb, const string &structure, const string &loading, const string &mesh_size, const Vec< Vec<unsigned> > &elem_group, const unsigned &nb_vals, const TVV &vals_param, const unsigned &nb_modes, const TTVV &dep_space, const TTVVV &dep_param, const string &prefix, const bool display_pvd = false ) {
 
-    string prefix = define_prefix( m, pb, structure, loading, mesh_size );
+    typedef typename TM::TNode::T T;
+
+//    string prefix = define_prefix( m, pb, structure, loading, mesh_size );
 
     Vec< DisplayParaview > dp_space;
     dp_space.resize( nb_vals );
@@ -362,12 +366,11 @@ void check_PGD( TM_param &m_param, TM &m, TF &f,  const string &pb, const string
 
         f.solve();
 
-        if ( display_pvd or save_pvd ) {
-            string prefix_ = prefix + "_space_verif_REF";
-            for (unsigned p=0;p<elem_group.size()-1;++p)
-                prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
-            dp_space[ i ].add_mesh_iter( m, prefix_, lp_space, 0 );
-        }
+        string prefix_ = prefix + "_space_verif_REF";
+        for (unsigned p=0;p<elem_group.size()-1;++p)
+            prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
+        dp_space[ i ].add_mesh_iter( m, prefix_, lp_space, 0 );
+
         f.vectors[0].set( 0. );
         for (unsigned n=0;n<nb_modes;++n) {
             Vec<T> dep_mode = dep_space[ n ];
@@ -377,22 +380,19 @@ void check_PGD( TM_param &m_param, TM &m, TF &f,  const string &pb, const string
         }
         f.update_variables();
         f.call_after_solve();
-        if ( display_pvd or save_pvd ) {
-            string prefix_ = prefix + "_space_verif_PGD";
-            for (unsigned p=0;p<elem_group.size()-1;++p)
-                prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
-            dp_space[ i ].add_mesh_iter( m, prefix_, lp_space, 1 );
-        }
 
-        if ( display_pvd or save_pvd ) {
-            string prefix_ = prefix + "_space_verif";
-            for (unsigned p=0;p<elem_group.size()-1;++p)
-                prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
-            if ( display_pvd )
-                dp_space[ i ].exec( prefix_ );
-            else if ( save_pvd )
-                dp_space[ i ].make_pvd_file( prefix_ );
-        }
+        prefix_ = prefix + "_space_verif_PGD";
+        for (unsigned p=0;p<elem_group.size()-1;++p)
+            prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
+        dp_space[ i ].add_mesh_iter( m, prefix_, lp_space, 1 );
+
+        prefix_ = prefix + "_space_verif";
+        for (unsigned p=0;p<elem_group.size()-1;++p)
+            prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
+        if ( display_pvd )
+            dp_space[ i ].exec( prefix_ );
+        else
+            dp_space[ i ].make_pvd_file( prefix_ );
     }
 
 }

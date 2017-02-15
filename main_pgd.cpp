@@ -18,7 +18,7 @@
 #include "CONNECTIVITY/Calcul_connectivity.h"
 #include "VERIFICATION/Verification.h"
 #include "DISCRETIZATION_ERROR/Calcul_discretization_error.h"
-#include "Calcul_global_error_estimation_PGD.h"
+//#include "Calcul_global_error_estimation_PGD.h"
 #include "Calcul_goal_oriented_error_estimation.h"
 #include "PGD/PGD.h"
 
@@ -316,12 +316,9 @@ int main( int argc, char **argv ) {
 
             solve_space( m, f, n, F_space, F_param, K_param, elem_group, dep_param, dep_space );
 
-            if ( display_pvd_PGD_space or save_pvd_PGD_space )
-                dp_space[ n ].add_mesh_iter( m, prefix + "_space_mode_" + to_string(n+1) + "_iter", lp_space, k );
-            if ( display_pvd_PGD_param or save_pvd_PGD_param ) {
-                for (unsigned p=0;p<elem_group.size()-1;++p)
-                    dp_param[ p ][ n ].add_mesh_iter( m_param[p], prefix + "_param_" + to_string(p+1) + "_mode_" + to_string(n+1) + "_iter", lp_param, k );
-            }
+            dp_space[ n ].add_mesh_iter( m, prefix + "_mode" + to_string(n+1) + "_space_iter", lp_space, k );
+            for (unsigned p=0;p<elem_group.size()-1;++p)
+                dp_param[ p ][ n ].add_mesh_iter( m_param[p], prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1) + "_iter", lp_param, k );
 
             while ( true ) {
                 k++;
@@ -347,12 +344,9 @@ int main( int argc, char **argv ) {
 //                    cout << dep_param[ p ][ n ] << endl << endl;
 //                }
                 
-                if ( display_pvd_PGD_space or save_pvd_PGD_space )
-                    dp_space[ n ].add_mesh_iter( m, prefix + "_space_mode_" + to_string(n+1) + "_iter", lp_space, k );
-                if ( display_pvd_PGD_param or save_pvd_PGD_param ) {
-                    for (unsigned p=0;p<elem_group.size()-1;++p)
-                        dp_param[ p ][ n ].add_mesh_iter( m_param[p], prefix + "_param_" + to_string(p+1) + "_mode_" + to_string(n+1) + "_iter", lp_param, k );
-                }
+                dp_space[ n ].add_mesh_iter( m, prefix + "_mode" + to_string(n+1) + "_space_iter", lp_space, k );
+                for (unsigned p=0;p<elem_group.size()-1;++p)
+                    dp_param[ p ][ n ].add_mesh_iter( m_param[p], prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1) + "_iter", lp_param, k );
                 
                 /// Stationnarite du produit fonction psi en espace * fonction lambda en parametre dans le processus iteratif associe au mode n
                 /// ---------------------------------------------------------------------------------------------------------------------------
@@ -365,15 +359,15 @@ int main( int argc, char **argv ) {
             }
             
             if ( display_pvd_PGD_space )
-                dp_space[ n ].exec( prefix + "_space_mode_" + to_string(n+1) );
+                dp_space[ n ].exec( prefix + "_mode" + to_string(n+1) + "_space" );
             else
-                dp_space[ n ].make_pvd_file( prefix + "_space_mode_" + to_string(n+1) );
+                dp_space[ n ].make_pvd_file( prefix + "_mode" + to_string(n+1) + "_space" );
             for (unsigned p=0;p<elem_group.size()-1;++p) {
                 if ( display_pvd_PGD_param )
-                    dp_param[ p ][ n ].exec( prefix + "_param_" + to_string(p+1)+ "_mode_" + to_string(n+1) );
+                    dp_param[ p ][ n ].exec( prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1) );
                 else
-                    dp_param[ p ][ n ].make_pvd_file( prefix + "_param_" + to_string(p+1) + "_mode_" + to_string(n+1) );
-                string output = "'" + prefix + "_param_" + to_string(p+1) + "_mode_" + to_string(n+1) + ".tex'";
+                    dp_param[ p ][ n ].make_pvd_file( prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1) );
+                string output = "'" + prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1) + ".tex'";
                 string xlabel = "'$p_" + to_string(p+1) + "$'";
                 string ylabel = "'$\\gamma_{" + to_string(p+1) + "," + to_string(n+1) + "}$'";
 //                string param = "notitle w l lt " + to_string(p+1) + " lw 1";
@@ -398,7 +392,7 @@ int main( int argc, char **argv ) {
         }
         
         if ( want_verif_PGD )
-            check_PGD( m_param, m, f, "direct", structure, loading, mesh_size, elem_group, nb_vals_verif, vals_param, nb_modes, dep_space, dep_param, display_pvd_PGD_space_verif, save_pvd_PGD_space_verif );
+            check_PGD( m_param, m, f, "direct", structure, loading, mesh_size, elem_group, nb_vals_verif, vals_param, nb_modes, dep_space, dep_param, prefix, display_pvd_PGD_space_verif );
 
     }
     t.stop();
@@ -439,16 +433,16 @@ int main( int argc, char **argv ) {
     Vec< Vec<T> > dep_part_hat;
     Vec< Vec<T>, max_mode > dep_space_hat;
 
-    if ( want_global_estimation or want_local_estimation ) {
+//    if ( want_global_estimation or want_local_estimation ) {
         
-        /// ------------------------------------------------------------------------------------------------------------- ///
-        /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe pb direct ///
-        /// ------------------------------------------------------------------------------------------------------------- ///
+//        /// ------------------------------------------------------------------------------------------------------------- ///
+//        /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe pb direct ///
+//        /// ------------------------------------------------------------------------------------------------------------- ///
         
-//        calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment );
-        calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_part_hat, dep_part, kappa, dep_space_hat, dep_space, dep_param, nb_modes, K_space, K_param, F_space, F_param, elem_group, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment );
+////        calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment );
+//        calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_part_hat, dep_part, kappa, dep_space_hat, dep_space, dep_param, nb_modes, K_space, K_param, F_space, F_param, elem_group, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment );
         
-    }
+//    }
     
     /// ---------------------- ///
     /// Sauvegarde / Affichage ///
