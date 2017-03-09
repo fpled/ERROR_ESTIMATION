@@ -244,8 +244,8 @@ void construct_vertex_nodes_connected_to_face( TM &m, const Vec<bool> &correspon
 /// Construction du vecteur de vecteurs face_type :
 /// face_type[ k ][ d ] = 0 : face k interieur a Omega dans la direction d
 /// face_type[ k ][ d ] = 1 : face k appartenant a un bord delta_1_Omega dans la direction d
-/// face_type_dim[ k ][ d ] = 2 : face k appartenant a un bord delta_2_Omega dans la direction d
-/// --------------------------------------------------------------------------------------------
+/// face_type[ k ][ d ] = 2 : face k appartenant a un bord delta_2_Omega dans la direction d
+/// ----------------------------------------------------------------------------------------
 template<class TM, class TF>
 void construct_face_type( TM &m, const TF &f, Vec< Vec<unsigned> > &face_type, const bool disp = false ) {
 
@@ -360,7 +360,7 @@ void display_mesh_connectivity( TM &m, const TF &f, const bool disp = true ) {
 
     Vec< Vec<unsigned> > face_type; // face_type[ k ][ d ] = 0 : face k interieur au domaine Omega dans la direction d
     // face_type[ k ][ d ] = 1 : face k appartenant a un bord de Dirichlet delta_1_Omega dans la direction d
-    // face_type_dim[ k ][ d ] = 2 : face k appartenant a un bord de Neumann delta_2_Omega dans la direction d
+    // face_type[ k ][ d ] = 2 : face k appartenant a un bord de Neumann delta_2_Omega dans la direction d
     construct_face_type( m, f, face_type, disp );
 
     Vec< Vec<unsigned> > node_type; // node_type[ i ][ d ] = 0 : noeud i interieur au domaine Omega dans la direction d
