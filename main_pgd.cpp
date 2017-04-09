@@ -367,13 +367,14 @@ int main( int argc, char **argv ) {
                     dp_param[ p ][ n ].exec( prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1) );
                 else
                     dp_param[ p ][ n ].make_pvd_file( prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1) );
-                string output = "'" + prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1) + ".tex'";
+                string output = "'" + prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1);
                 string xlabel = "'$p_" + to_string(p+1) + "$'";
                 string ylabel = "'$\\gamma_{" + to_string(p+1) + "," + to_string(n+1) + "}$'";
 //                string params = "notitle w l lt " + to_string(p+1) + " lw 1";
-//                save_plot( vals_param[p], dep_param[ p ][ n ], output.c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
+//                save_plot( vals_param[p], dep_param[ p ][ n ], (output + ".tex'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
                 string params = ",'LineStyle','-','Color',getfacecolor(" + to_string(p+4) + "),'LineWidth',1";
-                save_ml_plot( vals_param[p], dep_param[ p ][ n ], output.c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
+                save_ml_plot( vals_param[p], dep_param[ p ][ n ], (output + ".tex'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
+                save_ml_plot( vals_param[p], dep_param[ p ][ n ], (output + ".epsc2'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
             }
             
             /// Residu au sens faible associe a la solution au mode n
