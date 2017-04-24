@@ -25,7 +25,7 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
     
     //    const Vec< Vec<T>, max_mode > &dep_space, const Vec< Vec< Vec<T>, max_mode > > &dep_param, const unsigned &nb_modes, const TMAT &K_space, const TMAT &K_unk_s, const TMAT &K_k_s, const TMAT &K_unk_p, const TMAT &K_k_p, const Vec<T> &F_s, const Vec<T> &F_p, const Vec<unsigned> &elem_list_PGD_unknown_param,
     
-    //    m, f, pb, "EET", theta, theta_elem, dep_part_hat, dep_psi_hat, want_global_discretization_error, want_local_discretization_error
+    //    m, f, pb, "EET", theta, theta_elem, dep_part_hat, dep_space_hat, want_global_discretization_error, want_local_discretization_error
     
     /// ------------------------------------------------------------------------------------------------------- ///
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale ///

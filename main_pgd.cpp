@@ -18,7 +18,7 @@
 #include "CONNECTIVITY/Calcul_connectivity.h"
 #include "VERIFICATION/Verification.h"
 #include "DISCRETIZATION_ERROR/Calcul_discretization_error.h"
-#include "Calcul_global_error_estimation_PGD.h"
+//#include "Calcul_global_error_estimation_PGD.h"
 #include "Calcul_goal_oriented_error_estimation.h"
 #include "PGD/PGD.h"
 
@@ -52,11 +52,11 @@ int main( int argc, char **argv ) {
     // 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes,
     //      square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
     // 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes,
-    //      test_specimen_n (n=5,10,15,20,25,Q1_5,Q3_5,Q3_10,Q3_15,Q3_20,Q3_25,Q4_5,Q6_5,Q8_5), hashin_n (n=32,64,128,256,512)
+    //      test_specimen_n (n=5,10,15,20,25,Q1_5,Q3_5,Q3_10,Q3_15,Q3_20,Q3_25,Q4_5,Q6_5,Q8_5), hashin_op_n (op=filtered,truncated,willot2015; n=32,64,128,256,512)
     static const string mesh_size = "fine"; // taille du maillage : coarse, fine
     // 2D : plate_hole, plate_crack, structure_crack, test_specimen, weigth_sensor
     // 3D : plate_hole, spot_weld, reactor_head
-    static const string loading = "pull"; // chargement
+    static const string loading = "Step-2"; // chargement
     // spot_weld (3D) : pull, shear, peeling
     // plate_crack (2D) : pull, shear
     // test_specimen_n (3D) : Step-1, ..., Step-9
@@ -80,7 +80,7 @@ int main( int argc, char **argv ) {
     
     /// Global error estimation method
     /// ------------------------------
-    static const bool want_global_estimation = 0; // calcul d'un estimateur d'erreur globale (au sens de la norme energetique)
+    static const bool want_global_estimation = 1; // calcul d'un estimateur d'erreur globale (au sens de la norme energetique)
     static const string method = "EET"; //methode de construction de champs admissibles pour le pb direct : EET, SPET, EESPT
     static const string method_adjoint = "EET"; // methode de construction de champs admissibles pour le pb adjoint : EET, SPET, EESPT
     static const unsigned cost_function = 0; // fonction-cout pour les methodes EET, EESPT :
@@ -104,8 +104,6 @@ int main( int argc, char **argv ) {
     /// Goal-oriented error estimation method
     /// -------------------------------------
     static const bool want_local_estimation = 0; // calcul de l'erreur locale sur une quantite d'interet
-    static const bool want_interest_quantity_only = 0; // calcul de la quantite d'interet uniquement
-    static const bool want_handbook_only = 0; // calcul de la solution handbook uniquement
     static const bool want_introduction_sigma_hat_m = 1; // introduction de sigma_hat_m pour le calcul de l'erreur sur une quantite d'interet locale
     static const bool want_local_refinement = 1; // raffinement local du mailage adjoint
     static const bool want_local_enrichment = 0; // enrichissement local avec fonctions handbook
@@ -163,8 +161,8 @@ int main( int argc, char **argv ) {
     static const bool want_verif_PGD = 1; // verification de la decomposition PGD
     static const unsigned nb_vals_verif = 3; // nb de valeurs des parametres pris aleatoirement pour la verification de la decomposition PGD
     
-    /// Verification equilibre / solveur
-    /// --------------------------------
+    /// Verification equilibrium / solver
+    /// ---------------------------------
     static const bool verif_eq = 0; // verification de l'equilibre global elements finis
     static const bool verif_compatibility_conditions = 1; // verification des conditions de compatibilite (equilibre elements finis) (methode EET)
     static const bool verif_eq_force_fluxes = 1; // verification de l'equilibre des densites d'effort (methodes EET, EESPT)
@@ -180,8 +178,8 @@ int main( int argc, char **argv ) {
     static const T tol_solver_enhancement = 1e-6; // tolerance pour la verification de la resolution des pbs locaux (amelioration des methodes EET EESPT)
     static const T tol_solver_minimisation_enhancement = 1e-6; // tolerance pour la verification de la resolution des pbs de minimisation (amelioration des methodes EET, EESPT)
     
-    /// Sauvegarde / Affichage
-    /// ----------------------
+    /// Display outputs
+    /// ---------------
     static const bool display_vtu = 0;
     static const bool display_vtu_adjoint = 0;
     static const bool display_vtu_lambda = 0;
@@ -436,7 +434,7 @@ int main( int argc, char **argv ) {
     if ( not want_PGD )
         calcul_norm_dep( m, f, "direct" );
     
-    T theta;
+    T theta = 0.;
     Vec<T> theta_elem;
     Vec< Vec<T> > dep_part_hat;
     Vec< Vec<T>, max_mode > dep_space_hat;
@@ -447,7 +445,7 @@ int main( int argc, char **argv ) {
         /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe pb direct ///
         /// ------------------------------------------------------------------------------------------------------------- ///
         
-        calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_part_hat, dep_part, kappa, dep_space_hat, dep_space, dep_param, nb_modes, K_space, K_param, F_space, F_param, elem_group, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment );
+//        calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_part_hat, dep_part, kappa, dep_space_hat, dep_space, dep_param, nb_modes, K_space, K_param, F_space, F_param, elem_group, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment );
         
     }
     

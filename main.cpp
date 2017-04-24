@@ -42,7 +42,7 @@ int main( int argc, char **argv ) {
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "hashin_filtered_32"; // structure
+    static const string structure = "spherical_inclusions"; // structure
     // 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes,
     //      square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
     // 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes,
@@ -253,7 +253,7 @@ int main( int argc, char **argv ) {
 //    f.allocate_matrices();
 //    f.shift();
 //    f.assemble();
-//    // f.solve_system();
+////    f.solve_system();
 //    f.get_initial_conditions();
 //    f.update_variables();
 //    f.call_after_solve();
@@ -273,7 +273,7 @@ int main( int argc, char **argv ) {
     
     calcul_discretization_error( m, m_ref, f, f_ref, want_global_discretization_error, want_local_discretization_error, want_solve_ref );
     
-    T theta;
+    T theta = 0.;
     Vec<T> theta_elem;
     Vec< Vec<T> > dep_hat;
     
@@ -414,7 +414,6 @@ int main( int argc, char **argv ) {
             
             /// Conditions aux limites du pb de reference local
             /// -----------------------------------------------
-            set_material_properties( f_local_ref, m_local_ref, structure );
             set_constraints( f_local_ref, m_local_ref, boundary_condition_D, "direct", structure, loading );
             set_load_conditions( m_local_ref, structure, loading, mesh_size );
             
@@ -503,7 +502,7 @@ int main( int argc, char **argv ) {
         /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe au pb adjoint ///
         /// ----------------------------------------------------------------------------------------------------------------- ///
         
-        T theta_adjoint;
+        T theta_adjoint = 0.;
         Vec<T> theta_adjoint_elem;
         Vec< Vec<T> > dep_adjoint_hat;
         calcul_global_error_estimation( f_adjoint, m_adjoint, "adjoint", method_adjoint, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta_adjoint, theta_adjoint_elem, dep_adjoint_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, false, false, want_local_enrichment );

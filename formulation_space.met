@@ -20,8 +20,8 @@ import "PGD/PGD.met"
 # Calcul du probleme aux valeurs propres generalisees pour le calcul des constantes impliquees dans l'amelioration d'erreur locale : want_compute_eig := true
 # Calcul avec fonctions d'enrichissement (handbook) d'un estimateur de l'erreur locale sur une quantite d'interet : want_local_enrichment := true
 #------------------------------------------------------------------------------------------------------------------------------------------------------------
-want_discretization_error := false
-want_method_EET := false
+want_discretization_error := true
+want_method_EET := true
 want_method_SPET := false
 want_method_EESPT := false
 want_enhancement := false

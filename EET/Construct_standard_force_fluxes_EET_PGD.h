@@ -188,21 +188,21 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
         }
     }
     
-    //    Calcul_Nodal_Vector_r_PGD<T, TVV, TTVV, TTVVV, TMATVV> calcul_nodal_vector_r_PGD;
-    //    calcul_nodal_vector_r_PGD.elem_ind = &elem_ind;
-    //    calcul_nodal_vector_r_PGD.node_list_face = &node_list_face;
-    //    calcul_nodal_vector_r_PGD.elem_cpt_node = &elem_cpt_node;
-    //    calcul_nodal_vector_r_PGD.pb = &pb;
-    //    calcul_nodal_vector_r_PGD.want_local_enrichment = &want_local_enrichment;
-    //    calcul_nodal_vector_r_PGD.dep_space = &dep_space;
-    //    calcul_nodal_vector_r_PGD.dep_param = &dep_param;
-    //    calcul_nodal_vector_r_PGD.dep_part = &dep_part;
-    //    calcul_nodal_vector_r_PGD.kappa = &kappa;
-    //    calcul_nodal_vector_r_PGD.K_param = &K_param;
-    //    calcul_nodal_vector_r_PGD.elem_group = &elem_group;
-    //    calcul_nodal_vector_r_PGD.mode = &mode;
+    Calcul_Nodal_Vector_r_PGD<T, TVV, TTVV, TTVVV, TMATVV> calcul_nodal_vector_r_PGD;
+    calcul_nodal_vector_r_PGD.elem_ind = &elem_ind;
+    calcul_nodal_vector_r_PGD.node_list_face = &node_list_face;
+    calcul_nodal_vector_r_PGD.elem_cpt_node = &elem_cpt_node;
+    calcul_nodal_vector_r_PGD.pb = &pb;
+    calcul_nodal_vector_r_PGD.want_local_enrichment = &want_local_enrichment;
+    calcul_nodal_vector_r_PGD.dep_space = &dep_space;
+    calcul_nodal_vector_r_PGD.dep_param = &dep_param;
+    calcul_nodal_vector_r_PGD.dep_part = &dep_part;
+    calcul_nodal_vector_r_PGD.kappa = &kappa;
+    calcul_nodal_vector_r_PGD.K_param = &K_param;
+    calcul_nodal_vector_r_PGD.elem_group = &elem_group;
+    calcul_nodal_vector_r_PGD.mode = &mode;
     
-    //    apply( m.elem_list, calcul_nodal_vector_r_PGD, m, f, r );
+    apply( m.elem_list, calcul_nodal_vector_r_PGD, m, f, r );
     
     if ( disp ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
@@ -342,20 +342,20 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
         }
     }
     
-    //    Calcul_Nodal_Vector_q_PGD<T, TVV, TTVV, TTVVV, TMATVV> calcul_nodal_vector_q_PGD;
-    //    calcul_nodal_vector_q_PGD.face_type = &face_type;
-    //    calcul_nodal_vector_q_PGD.nodal_ind = &nodal_ind;
-    //    calcul_nodal_vector_q_PGD.node_list_face = &node_list_face;
-    //    calcul_nodal_vector_q_PGD.face_list_node = &face_list_node;
-    //    calcul_nodal_vector_q_PGD.dep_space = &dep_space;
-    //    calcul_nodal_vector_q_PGD.dep_param = &dep_param;
-    //    calcul_nodal_vector_q_PGD.dep_part = &dep_part;
-    //    calcul_nodal_vector_q_PGD.kappa = &kappa;
-    //    calcul_nodal_vector_q_PGD.K_param = &K_param;
-    //    calcul_nodal_vector_q_PGD.elem_group = &elem_group;
-    //    calcul_nodal_vector_q_PGD.mode = &mode;
+    Calcul_Nodal_Vector_q_PGD<T, TVV, TTVV, TTVVV, TMATVV> calcul_nodal_vector_q_PGD;
+    calcul_nodal_vector_q_PGD.face_type = &face_type;
+    calcul_nodal_vector_q_PGD.nodal_ind = &nodal_ind;
+    calcul_nodal_vector_q_PGD.node_list_face = &node_list_face;
+    calcul_nodal_vector_q_PGD.face_list_node = &face_list_node;
+    calcul_nodal_vector_q_PGD.dep_space = &dep_space;
+    calcul_nodal_vector_q_PGD.dep_param = &dep_param;
+    calcul_nodal_vector_q_PGD.dep_part = &dep_part;
+    calcul_nodal_vector_q_PGD.kappa = &kappa;
+    calcul_nodal_vector_q_PGD.K_param = &K_param;
+    calcul_nodal_vector_q_PGD.elem_group = &elem_group;
+    calcul_nodal_vector_q_PGD.mode = &mode;
     
-    //    apply( m.elem_list, calcul_nodal_vector_q_PGD, m, f, q );
+    apply( m.elem_list, calcul_nodal_vector_q_PGD, m, f, q );
     
     if ( disp ) {
         for (unsigned i=0;i<m.node_list.size();++i) {

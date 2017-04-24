@@ -52,7 +52,7 @@ int main( int argc, char **argv ) {
     static const string mesh_size = "fine"; // taille du maillage : coarse, fine
     // 2D : plate_hole, plate_crack, structure_crack, test_specimen, weigth_sensor
     // 3D : plate_hole, spot_weld, reactor_head
-    static const string loading = "pull"; // chargement
+    static const string loading = "Step-2"; // chargement
     // spot_weld (3D) : pull, shear, peeling
     // plate_crack (2D) : pull, shear
     // test_specimen_n (3D) : Step-1, ..., Step-9
@@ -144,8 +144,8 @@ int main( int argc, char **argv ) {
     static const string integration_k = "trapeze"; // type d'integration sur le parametre k (amelioration steklov) : gauss, trapeze, IPP
     static const unsigned integration_nb_points = 1000; // nb d'intervalles pour l'integration type trapeze sur le parametre k (amelioration steklov)
     
-    /// Verification equilibre / solveur
-    /// --------------------------------
+    /// Verification equilibrium / solver
+    /// ---------------------------------
     static const bool verif_eq = 0; // verification de l'equilibre global elements finis
     static const bool verif_compatibility_conditions = 1; // verification des conditions de compatibilite (equilibre elements finis) (methode EET)
     static const bool verif_eq_force_fluxes = 1; // verification de l'equilibre des densites d'effort (methodes EET, EESPT)
@@ -161,8 +161,8 @@ int main( int argc, char **argv ) {
     static const T tol_solver_enhancement = 1e-6; // tolerance pour la verification de la resolution des pbs locaux (amelioration des methodes EET EESPT)
     static const T tol_solver_minimisation_enhancement = 1e-6; // tolerance pour la verification de la resolution des pbs de minimisation (amelioration des methodes EET, EESPT)
     
-    /// Sauvegarde / Affichage
-    /// ----------------------
+    /// Display outputs
+    /// ---------------
     static const bool display_vtu = 0;
     static const bool display_pvd = 1;
     static const bool display_vtu_adjoint = 0;
@@ -385,7 +385,6 @@ int main( int argc, char **argv ) {
         set_constraints( f_adjoint, m_adjoint, boundary_condition_D, "adjoint", structure, loading );
         reset_load_conditions( m_adjoint );
         set_load_conditions_adjoint( m_adjoint, f_adjoint, m, m_crown, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, interest_quantity, direction_extractor, pointwise_interest_quantity, want_local_enrichment );
-        
         
         /// Resolution du pb adjoint
         /// ------------------------
