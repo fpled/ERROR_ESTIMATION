@@ -60,11 +60,11 @@ void display_mesh_carac( const TM &m ) {
 /// --------------------
 template<class TM>
 void set_mesh( TM &m, const string &structure, const string &mesh_size, const string &loading, const unsigned &deg_p = 1, const unsigned &refinement_level_ref = 2, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool disp = true ) {
-
+    
     static const unsigned dim = TM::dim;
     typedef typename TM::Pvec Pvec;
     typedef typename TM::TNode::T T;
-
+    
     /// Dimension 2
     /// -----------
     if ( dim == 2 ) {
@@ -695,8 +695,8 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
                     read_vtu( m, "MESH/PIPE_3D/pipe_Tetra_direct_global_local_discretization_error_ref_2.vtu" );
                     break;
                 default :
-                    //                read_avs( m, "MESH/PIPE_3D/pipe_Tetra.avs" );
-                    //                read_inp( m, "MESH/PIPE_3D/pipe_Tetra.inp" );
+//                    read_avs( m, "MESH/PIPE_3D/pipe_Tetra.avs" );
+//                    read_inp( m, "MESH/PIPE_3D/pipe_Tetra.inp" );
                     ReaderINP<TM> RI( m, "MESH/PIPE_3D/pipe_Tetra.inp" );
                     break;
                 }
@@ -835,7 +835,7 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
     }
     else
         cerr << "dim " << dim << " not implemented..." << endl << endl;
-
+    
     if ( m.node_list.size() ) {
         if ( remove_lonely_nodes( m ) )
             cerr << "Des noeuds seuls ont ete retires du maillage du pb direct..." << endl << endl;
@@ -858,11 +858,11 @@ void set_mesh( TM &m, const string &structure, const string &mesh_size, const st
 /// -------------------------------------------------------------------------------------------
 template<class TM>
 void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsigned &deg_p = 1, const unsigned &refinement_level_ref = 2, const bool disp = true ) {
-
+    
     static const unsigned dim = TM::dim;
     typedef typename TM::Pvec Pvec;
     typedef typename TM::TNode::T T;
-
+    
     /// Dimension 2
     /// -----------
     if ( dim == 2 ) {
@@ -1120,7 +1120,7 @@ void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsign
     }
     else
         cerr << "dim " << dim << " not implemented..." << endl << endl;
-
+    
     if ( m_ref.node_list.size() ) {
         if ( remove_lonely_nodes( m_ref ) )
             cerr << "Des noeuds seuls ont ete retires du maillage de reference du pb direct..." << endl << endl;
@@ -1137,19 +1137,19 @@ void set_mesh_ref( TM &m_ref, const TM &m, const string &structure, const unsign
         cerr << "Arret brutal, car il n'y a aucun noeud dans le maillage de reference du pb direct..." << endl << endl;
         throw "Ourson sous gravillon...";
     }
-
+    
 }
 
 /// Adaptation du maillage
 /// ----------------------
 template<class TM,class TF,class T>
 bool adapt_mesh( TM &m, const TF &f, const string &structure, const string &method = "EET", unsigned &iter = 1, const unsigned &max_iter = 10, const T &k = 0.75, const bool spread_cut = false, const bool disp = true ) {
-
+    
     static const unsigned dim = TM::dim;
-
+    
     if ( iter > max_iter )
         return 1;
-
+    
     bool res = 0;
     if ( dim == 3 and structure.find("test_specimen") != string::npos ) {
         if ( iter <= max_iter ) {
@@ -1184,7 +1184,6 @@ bool adapt_mesh( TM &m, const TF &f, const string &structure, const string &meth
                 cout << "propagation du raffinement au reste du maillage = " << spread_cut << endl << endl;
             }
         }
-
 //        res = refinement_if_constraints_or_nodal_field_sup( m, f, ExtractDM< theta_nodal_DM >(), k, spread_cut );
 //        if ( disp ) {
 //            cout << "Adaptation de maillage #" << iter << endl;
@@ -1210,7 +1209,6 @@ bool adapt_mesh( TM &m, const TF &f, const string &structure, const string &meth
             cout << "rapport maximal entre la contribution elementaire au carre a l'erreur estimee et la contribution elementaire maximale au carre : k = " << k << endl;
             cout << "propagation du raffinement au reste du maillage = " << spread_cut << endl << endl;
         }
-
 //        res = refinement_if_nodal_field_sup( m, ExtractDM< theta_nodal_DM >(), k, spread_cut );
 //        if ( disp ) {
 //            cout << "Adaptation de maillage #" << iter << endl;
@@ -1220,12 +1218,12 @@ bool adapt_mesh( TM &m, const TF &f, const string &structure, const string &meth
 //            cout << "propagation du raffinement au reste du maillage = " << spread_cut << endl << endl;
 //        }
     }
-
+    
     if ( not res )
         cerr << "Pas d'adaptation de maillage..." << endl << endl;
     if ( disp )
         display_mesh_carac( m );
-
+    
     return res;
 }
 
@@ -1233,11 +1231,11 @@ bool adapt_mesh( TM &m, const TF &f, const string &structure, const string &meth
 /// ----------------------------
 template<class TM, class T, class Pvec>
 void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, const string &direction_extractor, const bool &want_local_refinement, const T &l_min, const T &k, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list, Vec<unsigned> &elem_list_adjoint, const unsigned &node, unsigned &node_adjoint, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool &spread_cut, const bool &want_local_enrichment, const unsigned &nb_layers_nodes_enrichment, Vec<unsigned> &elem_list_adjoint_enrichment_zone_1, Vec<unsigned> &elem_list_adjoint_enrichment_zone_2, Vec<unsigned> &face_list_adjoint_enrichment_zone_12, Vec<unsigned> &node_list_adjoint_enrichment, const bool disp = true ) {
-
+    
     static const unsigned dim = TM::dim;
-
+    
     m_adjoint = m;
-
+    
     if ( interest_quantity.find("mean") != string::npos ) {
         for (unsigned n=0;n<elem_list.size();++n) {
             if ( elem_list[ n ] > m.elem_list.size() ) {
@@ -1281,7 +1279,7 @@ void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, co
         }
         else
             divide( m_adjoint );
-
+        
         if ( disp ) {
             cout << "raffinement local du maillage adjoint :" << endl;
             cout << "longueur minimale des cotes des elements du maillage adjoint : l_min = " << l_min << endl;
@@ -1586,7 +1584,7 @@ void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, co
         LMT::sort( elem_list_adjoint_enrichment_zone_1 );
         LMT::sort( elem_list_adjoint_enrichment_zone_2 );
         LMT::sort( face_list_adjoint_enrichment_zone_12 );
-
+        
         if ( disp ) {
             cout << "enrichissement local avec fonctions handbook : " << endl;
             cout << "nb de couches/rangées de noeuds enrichis = " << nb_layers_nodes_enrichment << endl;
@@ -1600,7 +1598,7 @@ void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, co
             cout << "liste des faces enrichies a l'interface entre Omega_1 et Omega_2 = " << face_list_adjoint_enrichment_zone_12 << endl << endl;
         }
     }
-
+    
     if ( m_adjoint.node_list.size() ) {
         if ( remove_lonely_nodes( m_adjoint ) )
             cerr << "Des noeuds seuls ont ete retires du maillage du pb adjoint..." << endl << endl;
@@ -1617,21 +1615,21 @@ void set_mesh_adjoint( TM &m_adjoint, TM &m, const string &interest_quantity, co
         cerr << "Arret brutal, car il n'y a aucun noeud dans le maillage du pb adjoint..." << endl << endl;
         throw "Ourson sous gravillon...";
     }
-
+    
 }
 
 /// Creation du maillage de reference pour le calcul de la quantite d'interet quasi-exacte
 /// --------------------------------------------------------------------------------------
 template<class TM, class T, class Pvec>
 void set_mesh_local_ref( TM &m_ref, TM &m, const unsigned &refinement_level_ref, const string &interest_quantity, const Vec<unsigned> &elem_list, Vec<unsigned> &elem_list_ref, const unsigned &node, unsigned &node_ref, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool spread_cut = false, const bool disp = true ) {
-
+    
     static const unsigned dim = TM::dim;
-
+    
     m_ref = m;
-
+    
     for (unsigned n=0;n<refinement_level_ref;++n)
         divide( m_ref );
-
+    
 //    if ( interest_quantity.find("mean") != string::npos ) {
 //        for (unsigned n=0;n<elem_list.size();++n) {
 //            while( refinement_point( m_ref, 0.05, 0.05, center( *m.elem_list[ elem_list[ n ] ] ), spread_cut ) );
@@ -1646,7 +1644,7 @@ void set_mesh_local_ref( TM &m_ref, TM &m, const unsigned &refinement_level_ref,
 //    else if ( interest_quantity == "SIF" or interest_quantity == "stress_intensity_factor" ) {
 //        while( refinement_point( m_ref, 0.2, 0.2, pos_crack_tip, spread_cut ) or refinement_circle( m_ref, 0.2, 0.2, pos_crack_tip, radius_Ri, spread_cut ) or refinement_circle( m_ref, 0.2, 0.2, pos_crack_tip, radius_Re, spread_cut )  );
 //    }
-
+    
     if ( m_ref.node_list.size() ) {
         if ( remove_lonely_nodes( m_ref ) )
             cerr << "Des noeuds seuls ont ete retires du maillage de reference du pb direct..." << endl << endl;
@@ -1691,7 +1689,7 @@ void set_mesh_domain( TM &m_domain, TM &m, const string &shape, const T &k, cons
 /// -------------------------------------------------------------------------------------------------
 template<class TM, class T, class Pvec>
 void set_mesh_crown( TM &m_crown, TM &m, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool spread_cut = false, const bool disp = false ) {
-
+    
     for (unsigned i=0;i<m.node_list.size();++i) {
         m.node_list[i].phi_crown_int = length( m.node_list[ i ].pos - pos_crack_tip ) - radius_Ri;
         m.node_list[i].phi_crown_ext = radius_Re - length( m.node_list[ i ].pos - pos_crack_tip );

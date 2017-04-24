@@ -36,7 +36,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
     
     theta = 0.;
     theta_init = 0.;
-
+    
     /// ----------- ///
     /// Methode EET ///
     /// ----------- ///
@@ -78,9 +78,9 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
         Vec<T> estimator_ratio;
         
         if ( not( enhancement ) or enhancement_with_estimator_criterium ) {
-           
+            
             enhancement = 0;
-           
+            
             /// Construction des densites d'effort standard
             /// -------------------------------------------
             
@@ -109,14 +109,14 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             calcul_error_estimate_prolongation_condition( m, f, pb, "EET", theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error );
             
             if ( enhancement_with_estimator_criterium ) {
-           
+                
                 enhancement = 1;
-               
+                
                 /// Construction du critere d'amelioration sur l'estimateur d'erreur
                 /// ----------------------------------------------------------------
                 
                 construct_estimator_criterium( m, estimator_ratio, theta_elem );
-               
+                
             }
             
         }
@@ -175,7 +175,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
         cout << "temps de calcul de la methode d'estimation d'erreur globale EET = " << t_EET.res << endl << endl;
         
     }
-
+    
     /// ------------ ///
     /// Methode SPET ///
     /// ------------ ///
@@ -238,7 +238,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
         Vec<T> estimator_ratio;
         
         if ( not( enhancement ) or enhancement_with_estimator_criterium ) {
-           
+            
             enhancement = 0;
             
             /// Construction des densites d'effort standard
@@ -256,7 +256,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// -----------------------------------------------------------------------
             
             construct_K_hat( m, f, K_hat );
-
+            
             balancing = 0;
             construct_F_hat( m, f, pb, balancing, elem_flag_bal, elem_flag_enh, force_fluxes_standard, F_hat, want_local_enrichment );
             
@@ -270,12 +270,12 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             if ( enhancement_with_estimator_criterium ) {
                 
                 enhancement = 1;
-               
+                
                 /// Construction du critere d'amelioration sur l'estimateur d'erreur globale
                 /// ------------------------------------------------------------------------
                 
                 construct_estimator_criterium( m, estimator_ratio, theta_elem );
-               
+                
             }
             
         }

@@ -59,8 +59,8 @@ struct Calc_Elem_Error_Estimate_EET_EESPT {
     const Vec< Vec<T> >* dep_hat;
     const string* method;
     Vec<T>* theta_elem;
-    const Vec< Vec<T> >* dep_psi;
-    const Vec< Vec<T> >* dep_lambda;
+    const Vec< Vec<T> >* dep_space;
+    const Vec< Vec<T> >* dep_param;
     const Vec<T>* dep_part;
     const Vec<T>* kappa;
     const TMAT* K_k_p;
@@ -74,9 +74,9 @@ struct Calc_Elem_Error_Estimate_EET_EESPT {
             f.vectors[0] = - dot( (*dep_lambda)[ n ], (*K_k_p) * (*kappa) ) * (*dep_part);
             for (unsigned i=0;i<n+1;++i) {
                 if ( find( *elem_list_PGD_unknown_param, _1 == elem.number ) )
-                    f.vectors[0] += dot( (*dep_lambda)[ n ], (*K_unk_p) * (*dep_lambda)[ i ] ) * (*dep_psi)[ i ];
+                    f.vectors[0] += dot( (*dep_lambda)[ n ], (*K_unk_p) * (*dep_lambda)[ i ] ) * (*dep_space)[ i ];
                 else
-                    f.vectors[0] += dot( (*dep_lambda)[ n ], (*K_k_p) * (*dep_lambda)[ i ] ) * (*dep_psi)[ i ];
+                    f.vectors[0] += dot( (*dep_lambda)[ n ], (*K_k_p) * (*dep_lambda)[ i ] ) * (*dep_space)[ i ];
             }
         }
         if ( *method == "EET" ) {

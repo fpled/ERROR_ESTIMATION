@@ -60,16 +60,16 @@ void display_constraints( const TF &f ) {
 /// ------------------------------------------------
 template<class TF, class TM>
 void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const string &pb, const string &structure, const string &loading, const unsigned adapt = 0, const bool disp = false ) {
-
+    
     static const unsigned dim = TM::dim;
     typedef typename TM::TNode::T T;
-
+    
     T penalty_val;
     if ( boundary_condition_D == "lagrange" )
         penalty_val = 0;
     else if ( boundary_condition_D == "penalty" )
         penalty_val = 1e8;
-
+    
     /// Dimension 2
     /// -----------
     if ( dim == 2 ) {
@@ -283,7 +283,7 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
                     }
                 }
             }
-
+            
             if ( structure.find("init") != string::npos ) {
                 for (unsigned i=0;i<m.node_list.size();++i) {
                     if ( m.node_list[i].pos[0] < 1e-6 and m.node_list[i].pos[1] < 1e-6 ) {
@@ -302,7 +302,7 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
                     }
                 }
             }
-
+            
 //            for (unsigned d=0;d<dim;++d) {
 //                string txt_mean_constraint = "";
 //                for (unsigned i=0;i<m.node_list.size();++i) {
@@ -316,7 +316,7 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
 //                txt_mean_constraint.resize( txt_mean_constraint.size()-3 );
 //                f.add_constraint( txt_mean_constraint, penalty_val );
 //            }
-
+            
             size_t offset = structure.rfind( "_" )+1;
             string str = structure.substr( offset );
             istringstream buffer(str);
@@ -326,10 +326,10 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
                 hdf.open("DATA/square-init-" + str + "x" + str + ".hdf5");
             else
                 hdf.open("DATA/square-" + str + "x" + str + ".hdf5");
-
+            
             Tens3<T> u;
             hdf.read( "/u", u );
-
+            
             for (unsigned i=0;i<m.node_list.size();++i) {
                 if ( m.node_list[i].pos[0] < 1. - 1e-6 and m.node_list[i].pos[1] < 1. - 1e-6 ) {
                     for (unsigned d=0;d<dim;++d)
@@ -608,7 +608,7 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
 //                filename = "MESH/TEST_SPECIMEN_3D/" + structure_adapt + "_Hexa.inp";
 //            }
             ReaderINP<TM> RI( mesh, filename.c_str() );
-
+            
 //            cout << "Number of nodes = " << mesh.node_list.size() << endl;
 //            for (unsigned i=0;i<mesh.node_list.size();++i) {
 //                cout << " node " << i << " at position ";
@@ -625,7 +625,7 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
 //            RI.display_map_material();
 //            RI.display_map_step();
 //            RI.display_map_surface( true );
-
+            
             for (unsigned i=1;i<RI.match_inode_inp_lmtpp.size()+1;++i) {
                 if ( mesh.node_list[ RI.match_inode_inp_lmtpp[ i ] ].pos[2] < 0.954 + 1e-6 or mesh.node_list[ RI.match_inode_inp_lmtpp[ i ] ].pos[2] > 7.314 - 1e-6 ) {
 //                    cout << "Inp " <<  i << " -> Hexa " <<  RI.match_inode_inp_lmtpp[ i ] << " -> Tetra " << m.poin( mesh.node_list[ RI.match_inode_inp_lmtpp[ i ] ].pos, 1e-2 ) << endl;
@@ -673,7 +673,7 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
                     }
                 }
             }
-
+            
             for (unsigned i=0;i<m.node_list.size();++i) {
                 if ( 0.5 - 1e-6 < m.node_list[i].pos[0] and m.node_list[i].pos[0] < 0.5 + 1e-6 and 0.5 - 1e-6 < m.node_list[i].pos[1] and m.node_list[i].pos[1] < 0.5 + 1e-6 and 0.5 - 1e-6 < m.node_list[i].pos[2] and m.node_list[i].pos[2] < 0.5 + 1e-6 ) {
                     for (unsigned d=0;d<dim;++d) {
@@ -681,7 +681,7 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
                     }
                 }
             }
-
+            
 //            for (unsigned d=0;d<dim;++d) {
 //                string txt_mean_constraint = "";
 //                for (unsigned i=0;i<m.node_list.size();++i) {
@@ -695,14 +695,14 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
 //                txt_mean_constraint.resize( txt_mean_constraint.size()-3 );
 //                f.add_constraint( txt_mean_constraint, penalty_val );
 //            }
-
+            
             size_t offset = structure.rfind( "_" )+1;
             string str = structure.substr( offset );
             istringstream buffer(str);
             unsigned N; buffer >> N;
             Hdf hdf("DATA/hashin-" + str + "x" + str + "x" + str + ".hdf5");
 //            Hdf hdf_op("DATA/filtered_01.hdf5");
-
+            
             Tens4<T> u;
             if ( structure.find("filtered") != string::npos ) {
                 hdf.read( "/filtered/u", u );
@@ -718,7 +718,7 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
                 throw "Anguille sous coquille...";
             }
 //            hdf_op.read( "/u", u );
-
+            
             for (unsigned i=0;i<m.node_list.size();++i) {
                 if ( m.node_list[i].pos[0] < 1. - 1e-6 and m.node_list[i].pos[1] < 1. - 1e-6 and m.node_list[i].pos[2] < 1. - 1e-6 ) {
                     for (unsigned d=0;d<dim;++d)
@@ -743,7 +743,7 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
             }
         }
     }
-
+    
     if ( disp ) {
         cout << "contraintes cinematiques :" << endl;
         display_constraints( f );
@@ -754,12 +754,12 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
 /// ----------------------------------------------
 template<class TM>
 void set_load_conditions( TM &m, const string &structure, const string &loading, const string &mesh_size ) {
-
+    
     static const unsigned dim = TM::dim;
     typedef typename TM::TNode::T T;
-
+    
     m.update_skin();
-
+    
     /// Dimension 2
     /// -----------
     if ( dim == 2 ) {
@@ -895,10 +895,10 @@ void set_load_conditions( TM &m, const string &structure, const string &loading,
                 istringstream buffer(str);
                 unsigned N; buffer >> N;
                 Hdf hdf("DATA/square-" + str + "x" + str + ".hdf5");
-
+                
                 Tens3<T> tau;
                 hdf.read( "/tau", tau );
-
+                
                 Vec<T,unsigned(dim*(dim+1)/2) > pre_sig;
                 for (unsigned n=0;n<m.elem_list.size();++n) {
                     unsigned i = unsigned(center( *m.elem_list[n] )[0]*N-1/2);
@@ -908,7 +908,6 @@ void set_load_conditions( TM &m, const string &structure, const string &loading,
                     pre_sig[ 2 ] = -tau( 1, j, i );
                     m.elem_list[n]->set_field( "pre_sigma", pre_sig );
                 }
-
 //                for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
 //                    if ( m.sub_mesh(Number<1>()).get_parents_of_EA( m.sub_mesh(Number<1>()).elem_list[i] ).size() == 1 ) {
 //                        unsigned n = m.sub_mesh(Number<1>()).get_parents_of_EA( m.sub_mesh(Number<1>()).elem_list[i] )[0]->number;
@@ -925,13 +924,13 @@ void set_load_conditions( TM &m, const string &structure, const string &loading,
     /// Dimension 3
     /// -----------
     else if ( dim == 3 ) {
-    /// effort surfacique applique sur les bords des elements situes en x = 0 : F_d = -x
-    /// --------------------------------------------------------------------------------
-//    for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
-//        if ( center( *m.sub_mesh(Number<1>()).elem_list[i] )[0] < 1e-6 ) {
-//            m.sub_mesh(Number<1>()).elem_list[i]->set_field( "f_surf", Vec<T,dim>( -1., 0., 0. ) );
+        /// effort surfacique applique sur les bords des elements situes en x = 0 : F_d = -x
+        /// --------------------------------------------------------------------------------
+//        for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
+//            if ( center( *m.sub_mesh(Number<1>()).elem_list[i] )[0] < 1e-6 ) {
+//                m.sub_mesh(Number<1>()).elem_list[i]->set_field( "f_surf", Vec<T,dim>( -1., 0., 0. ) );
+//            }
 //        }
-//    }
         /// effort surfacique applique sur les bords des elements situes en x = 1 : F_d = +x
         /// --------------------------------------------------------------------------------
 //        for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
@@ -1150,7 +1149,7 @@ void set_load_conditions( TM &m, const string &structure, const string &loading,
                 unsigned N; buffer >> N;
                 Hdf hdf("DATA/hashin-" + str + "x" + str + "x" + str + ".hdf5");
 //                Hdf hdf_op("DATA/filtered_01.hdf5");
-
+                
                 Tens4<T> tau;
                 if ( structure.find("filtered") != string::npos ) {
                     hdf.read( "/filtered/tau", tau );
@@ -1166,8 +1165,7 @@ void set_load_conditions( TM &m, const string &structure, const string &loading,
                     throw "Anguille sous coquille...";
                 }
 //                hdf_op.read( "/tau", tau );
-
-
+                
                 Vec<T,unsigned(dim*(dim+1)/2) > pre_sig;
                 for (unsigned n=0;n<m.elem_list.size();++n) {
                     unsigned i = unsigned(center( *m.elem_list[n] )[0]*N-1/2);
@@ -1181,7 +1179,7 @@ void set_load_conditions( TM &m, const string &structure, const string &loading,
                     pre_sig[ 5 ] = -tau( 2, k, j, i );
                     m.elem_list[n]->set_field( "pre_sigma", pre_sig );
                 }
-
+                
 //                for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {
 //                    if ( m.sub_mesh(Number<1>()).get_parents_of_EA( m.sub_mesh(Number<1>()).elem_list[i] ).size() == 1 ) {
 //                        unsigned n = m.sub_mesh(Number<1>()).get_parents_of_EA( m.sub_mesh(Number<1>()).elem_list[i] )[0]->number;
@@ -1259,7 +1257,7 @@ void reset_load_conditions( TM &m ) {
         m.node_list[i].f_nodal.set( 0. );
         m.node_list[i].pre_f_nodal.set( 0. );
     }
-
+    
     m.update_skin();
     
     for (unsigned i=0;i<m.sub_mesh(Number<1>()).elem_list.size();++i) {

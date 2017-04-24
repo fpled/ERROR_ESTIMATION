@@ -20,7 +20,7 @@ using namespace std;
 
 /// Construction de la table de connectivite de chaque patch : nb_unk_patch[ j ] pour chaque noeud sommet j du maillage
 ///                                                            nb_unk_elem[ n ] pour chaque element n du maillage
-///                                                            nb_unk_face[ n ] pour chaque face k du maillage 
+///                                                            nb_unk_face[ n ] pour chaque face k du maillage
 ///                                                            patch_elem[ j ][ n ][ i ] pour chaque noeud i de chaque element n du patch j
 ///                                                            patch_face[ j ][ n ][ i ] pour chaque noeud i de chaque face k du patch j
 /// ---------------------------------------------------------------------------------------------------------------------------------------

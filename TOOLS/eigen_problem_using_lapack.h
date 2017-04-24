@@ -4,14 +4,14 @@
 #include <containers/mat.h>
 
 extern "C" {
-    int dsyev_(
-    char *jobz, char *uplo, int *n, double *a, int *lda, 
-    double *w, double *work, int *lwork,
-    int *info );
-    int dsygv_(
-    int *itype, char *jobz, char *uplo, int *n, double *a, int *lda, double *b, int *ldb, 
-    double *w, double *work, int *lwork,
-    int *info );
+int dsyev_(
+        char *jobz, char *uplo, int *n, double *a, int *lda,
+        double *w, double *work, int *lwork,
+        int *info );
+int dsygv_(
+        int *itype, char *jobz, char *uplo, int *n, double *a, int *lda, double *b, int *ldb,
+        double *w, double *work, int *lwork,
+        int *info );
 }
 
 namespace LMT {

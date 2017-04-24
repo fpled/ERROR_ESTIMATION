@@ -55,7 +55,7 @@ struct Counter {
 
 /// Construction de la correspondance entre noeuds et noeuds sommets du maillage
 /// ----------------------------------------------------------------------------
-template<class TE, class BV> 
+template<class TE, class BV>
 void construct_correspondance_node_to_vertex_node( const TE &elem, BV &correspondance_node_to_vertex_node ) {}
 
 struct Construct_Correspondance_Node_To_Vertex_Node {
@@ -148,7 +148,7 @@ struct Construct_Node_Type {
     const Vec<unsigned>* face_cpt_node;
     const Vec< Vec<unsigned> >* face_list_node;
     template<class TE, class TM, class TF> void operator()( const TE &skin_node, const TM &m, const TF &f, Vec< Vec<unsigned> > &node_type ) const {
-//         PRINT( skin_node.number ); // numero du noeud de bord skin_node dans le maillage global 
+//        PRINT( skin_node.number ); // numero du noeud de bord skin_node dans le maillage global
         for (unsigned d =0;d<TE::dim;++d) {
             unsigned face_type_cpt_1 = 0;
             unsigned face_type_cpt_2 = 0;

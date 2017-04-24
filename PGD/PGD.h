@@ -16,14 +16,13 @@
 using namespace LMT;
 using namespace std;
 
-
 /// Creation des proprietes materiaux
 /// ---------------------------------
 template<class TM>
 void partition_elem_list( TM &m, const string &structure, Vec< Vec<unsigned> > &elem_group ) {
-
+    
     static const unsigned dim = TM::dim;
-
+    
     if ( m.node_list.size() ) {
         /// Dimension 2
         /// -----------
@@ -81,9 +80,9 @@ void partition_elem_list( TM &m, const string &structure, Vec< Vec<unsigned> > &
 /// ------------------------------------------
 template<class TM, class TF, class TV, class TVV, class TMATVV, class TTVVV, class TTVV>
 void solve_space( TM &m, TF &f, const unsigned &n, const TV &F_space, const TVV &F_param, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVVV &dep_param, TTVV &dep_space, const bool want_normalization = false ) {
-
+    
     typedef typename TM::TNode::T T;
-
+    
     /// Construction du pb en espace
     /// ----------------------------
     f.sollicitation = F_space;
@@ -104,7 +103,7 @@ void solve_space( TM &m, TF &f, const unsigned &n, const TV &F_space, const TVV 
         f.assemble( true, false );
         f.sollicitation -= f.matrices(Number<0>()) * dep_space[ i ];
     }
-
+    
     for (unsigned g=0;g<elem_group.size();++g) {
         T alpha = 1.;
         for (unsigned p=0;p<elem_group.size()-1;++p) {
@@ -127,7 +126,7 @@ void solve_space( TM &m, TF &f, const unsigned &n, const TV &F_space, const TVV 
     /// Fonction en espace
     /// ------------------
     dep_space[ n ] = f.vectors[0];
-
+    
     /// Normalisation
     /// -------------
     if ( want_normalization ) {
@@ -142,7 +141,7 @@ void solve_space( TM &m, TF &f, const unsigned &n, const TV &F_space, const TVV 
 /// ---------------------------------------------
 template<class TM_param, class TF_param, class TV, class TVV, class TMATV, class TMATVV, class TTVV, class TTVVV>
 void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const unsigned &n, const TV &F_space, const TVV &F_param, const TMATV &K_space, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVV &dep_space, TTVVV &dep_param, const bool want_normalization = false ) {
-
+    
     typedef typename TM_param::TNode::T T;
     typedef Mat<T, Sym<>, SparseLine<> > TMAT;
     
@@ -236,11 +235,11 @@ void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const
 //        }
 //        dep_param[ p ][ n ][ j ] /= delta;
 //    }
-
+    
     /// Fonction en parametre
     /// ---------------------
     dep_param[ p ][ n ] = f_param.vectors[0];
-
+    
     /// Normalisation
     /// -------------
     if ( want_normalization )
@@ -327,7 +326,7 @@ void calc_error_indicator( TM &m, TF &f, const unsigned &n, const TV &F_space, c
 
 /// Construction des coefficients alpha, gamma associes au pb spatial
 /// -----------------------------------------------------------------
-template<class TE_param, class TM_param, class T> 
+template<class TE_param, class TM_param, class T>
 void construct_space_pb( const TE_param &elem_param, const TM_param &m_param, T &alpha_s, T &gamma_s ) {}
 
 struct Construct_Space_Pb {
@@ -341,17 +340,17 @@ struct Construct_Space_Pb {
 /// ---------------------------------------------------------------
 template<class TM_param, class TM, class TF, class TVV, class TTVV, class TTVVV>
 void check_PGD( TM_param &m_param, TM &m, TF &f,  const string &pb, const string &structure, const string &loading, const string &mesh_size, const Vec< Vec<unsigned> > &elem_group, const unsigned &nb_vals, const TVV &vals_param, const unsigned &nb_modes, const TTVV &dep_space, const TTVVV &dep_param, const string &prefix, const bool display_pvd = false ) {
-
+    
     typedef typename TM::TNode::T T;
-
+    
 //    string prefix = define_prefix( m, pb, structure, loading, mesh_size );
-
+    
     Vec< DisplayParaview > dp_space;
     dp_space.resize( nb_vals );
     Vec<string> lp_space;
     lp_space.push_back( "dep" );
     lp_space.push_back( "young_eff" );
-
+    
     for (unsigned i=0;i<nb_vals;++i) {
         Vec<unsigned> ind;
         ind.resize( elem_group.size()-1 );
@@ -363,14 +362,14 @@ void check_PGD( TM_param &m_param, TM &m, TF &f,  const string &pb, const string
         }
         for (unsigned j=0;j<elem_group.back().size();++j)
             m.elem_list[ elem_group.back()[j] ]->set_field( "alpha", 1. );
-
+        
         f.solve();
-
+        
         string prefix_ = prefix + "_space_verif_REF";
         for (unsigned p=0;p<elem_group.size()-1;++p)
             prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
         dp_space[ i ].add_mesh_iter( m, prefix_, lp_space, 0 );
-
+        
         f.vectors[0].set( 0. );
         for (unsigned n=0;n<nb_modes;++n) {
             Vec<T> dep_mode = dep_space[ n ];
@@ -380,12 +379,12 @@ void check_PGD( TM_param &m_param, TM &m, TF &f,  const string &pb, const string
         }
         f.update_variables();
         f.call_after_solve();
-
+        
         prefix_ = prefix + "_space_verif_PGD";
         for (unsigned p=0;p<elem_group.size()-1;++p)
             prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
         dp_space[ i ].add_mesh_iter( m, prefix_, lp_space, 1 );
-
+        
         prefix_ = prefix + "_space_verif";
         for (unsigned p=0;p<elem_group.size()-1;++p)
             prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
@@ -394,7 +393,7 @@ void check_PGD( TM_param &m_param, TM &m, TF &f,  const string &pb, const string
         else
             dp_space[ i ].make_pvd_file( prefix_ );
     }
-
+    
 }
 
 #endif // PGD_h

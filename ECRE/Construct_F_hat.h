@@ -22,27 +22,26 @@ using namespace std;
 /// ----------------------------------------------------------------------
 template<class TM, class TF, class T>
 void construct_F_hat( TM &m, const TF &f, const string &pb, const bool &balancing, const Vec<bool> &elem_flag_bal, const Vec<bool> &elem_flag_enh, const Vec< Vec< Vec<T> > > &force_fluxes, Vec< Vec<T> > &F_hat, const bool want_local_enrichment = false, const bool disp = false ) {
-
-
+    
     if ( disp ) {
         cout << "Construction des vecteurs F_hat";
         if ( balancing )
             cout << " avec procedure d'equilibrage";
         cout << endl << endl;
     }
-
+    
     Vec<unsigned> node_cpt_face;
     Vec< Vec<unsigned> > node_list_face;
     construct_nodes_connected_to_face( m, node_cpt_face, node_list_face );
-
+    
     Vec<unsigned> elem_cpt_node;
     Vec< Vec<unsigned> > elem_list_node;
     construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node );
-
+    
     elem_list_node.free();
-
+    
     F_hat.resize( m.elem_list.size() );
-
+    
     Calcul_Elem_Vector_F_hat<T> calcul_elem_vector_F_hat;
     calcul_elem_vector_F_hat.node_list_face = &node_list_face;
     calcul_elem_vector_F_hat.elem_cpt_node = &elem_cpt_node;
@@ -52,9 +51,9 @@ void construct_F_hat( TM &m, const TF &f, const string &pb, const bool &balancin
     calcul_elem_vector_F_hat.pb = &pb;
     calcul_elem_vector_F_hat.want_local_enrichment = &want_local_enrichment;
     calcul_elem_vector_F_hat.force_fluxes = &force_fluxes;
-
+    
     apply( m.elem_list, calcul_elem_vector_F_hat, m, f, F_hat );
-
+    
     if ( disp ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
             cout << "vecteur F_hat de l'element " << n << " =" << endl;

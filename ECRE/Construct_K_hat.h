@@ -21,21 +21,21 @@ using namespace std;
 /// ----------------------------------------------------------------------
 template<class TM, class TF, class T>
 void construct_K_hat( const TM &m, const TF &f, Vec< Mat<T, Sym<> > > &K_hat, const bool disp = false ) {
-
+    
     if ( disp )
         cout << "Construction des matrices K_hat" << endl << endl;
-
+    
     TicToc t;
     t.start();
-
+    
     K_hat.resize( m.elem_list.size() );
-
+    
     apply( m.elem_list, Calcul_Elem_Matrix_K_hat(), m, f, K_hat );
-
+    
     t.stop();
     if ( disp )
         cout << "temps de calcul du remplissage des matrices associees aux pbs locaux par element = " << t.res << endl << endl;
-
+    
 //    for (unsigned n=0;n<m.elem_list.size();++n) {
 //        cout << "matrice K_hat de l'element " << n << " :" << endl;
 //        cout << K_hat[ n ] << endl;

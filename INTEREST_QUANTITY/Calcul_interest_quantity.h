@@ -146,7 +146,7 @@ void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const strin
             define_extractor_SIF.radius_Re = &radius_Re;
             
             apply( m_crown.elem_list, define_extractor_SIF, m_crown, f_crown );
-
+            
             const string prefix_crown = prefix + "_crown";
             if ( display_vtu_crown )
                 display( m_crown, prefix_crown );
@@ -162,7 +162,7 @@ void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const strin
         cerr << "Arret brutal, car la quantite d'interet " << interest_quantity << " n'est pas implementee..." << endl << endl;
         throw "Anguille sous coquille...";
     }
-
+    
     
     if ( want_local_enrichment and interest_quantity.find("pointwise") != string::npos ) {
         if ( pointwise_interest_quantity == "node" )
@@ -180,7 +180,7 @@ void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const strin
 /// ----------------------------------------
 template<class TM, class TF, class T, class Pvec>
 void calcul_interest_quantity( const TM &m, const TM &m_crown, const TF &f, const TF &f_crown, const string &pb, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re, T &I_h, const bool disp = false ) {
-
+    
     I_h = 0.;
     
     static const unsigned dim = TM::dim;
@@ -235,7 +235,7 @@ void calcul_interest_quantity( const TM &m, const TM &m_crown, const TF &f, cons
         cerr << "Arret brutal, car la quantite d'interet " << interest_quantity << " n'est pas implementee..." << endl << endl;
         throw "Anguille sous coquille...";
     }
-
+    
     if ( pb == "direct" ) {
         cout << "quantite d'interet locale approchee I_h :" << endl;
         cout << "I_h = " << I_h << endl << endl;
@@ -244,7 +244,7 @@ void calcul_interest_quantity( const TM &m, const TM &m_crown, const TF &f, cons
         cout << "quantite d'interet locale (quasi-)exacte I_ex :" << endl;
         cout << "I_ex = " << I_h << endl << endl;
     }
-
+    
     t.stop();
     if ( disp ) {
         if ( pb == "direct" )
@@ -258,9 +258,9 @@ void calcul_interest_quantity( const TM &m, const TM &m_crown, const TF &f, cons
 /// ----------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T, class TV, class TVV>
 void calcul_correction_interest_quantity( TM &m, TM &m_adjoint, const TF &f, const TF &f_adjoint, const string &interest_quantity, const string &method, const string &method_adjoint, const T &theta, const T &theta_adjoint, const TV &theta_elem_adjoint, const Vec<unsigned> &correspondance_elem_m_adjoint_to_elem_m, const TVV &dep_hat, const TVV &dep_adjoint_hat, const T &I_h, T &I_hh, const bool want_local_enrichment = false, const bool want_introduction_sigma_hat_m = true, const bool disp = false ) {
-
+    
     I_hh = 0.;
-
+    
     if ( disp )
         cout << "Calcul de la correction I_hh sur la quantite d'interet locale I" << endl << endl;
     
@@ -281,7 +281,7 @@ void calcul_correction_interest_quantity( TM &m, TM &m_adjoint, const TF &f, con
         calcul_correction_interest_quantity_w_sigma_hat_m.dep_hat = &dep_hat;
         calcul_correction_interest_quantity_w_sigma_hat_m.dep_adjoint_hat = &dep_adjoint_hat;
         calcul_correction_interest_quantity_w_sigma_hat_m.I_hh = &I_hh;
-
+        
         apply( m_adjoint.elem_list, calcul_correction_interest_quantity_w_sigma_hat_m );
     }
     else {
@@ -296,10 +296,10 @@ void calcul_correction_interest_quantity( TM &m, TM &m_adjoint, const TF &f, con
         calcul_correction_interest_quantity_wo_sigma_hat_m.correspondance_elem_m_adjoint_to_elem_m = &correspondance_elem_m_adjoint_to_elem_m;
         calcul_correction_interest_quantity_wo_sigma_hat_m.dep_hat = &dep_hat;
         calcul_correction_interest_quantity_wo_sigma_hat_m.I_hh = &I_hh;
-
+        
         apply( m_adjoint.elem_list, calcul_correction_interest_quantity_wo_sigma_hat_m );
     }
-
+    
     cout << "correction I_hh sur la quantite d'interet :" << endl;
     cout << "I_hh = " << I_hh << endl << endl;
     
@@ -363,7 +363,7 @@ void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f
 //        cout << "contribution a l'estimateur d'erreur globale au carre sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " de l'element " << n << " :" << endl;
 //        cout << "theta_elem^2 = " << theta_lambda_elem[ n ] << endl;
 //    }
-
+    
     theta_lambda = sqrt( theta_lambda );
     if ( method == "EET" ) {
         m_lambda.ecre_EET = theta_lambda / sqrt(2.);
@@ -381,7 +381,7 @@ void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f
         cout << "estimateur d'erreur globale sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " :" << endl;
         cout << "theta = " << theta_lambda << endl << endl;
     }
-
+    
     t.stop();
     if ( disp )
         cout << "temps de calcul de l'estimateur d'erreur globale sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " = " << t.res << endl << endl;
@@ -438,13 +438,13 @@ void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF 
 //        cout << "contribution a l'estimateur pondere d'erreur globale au carre sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k_min << " de l'element " <<  n << " :" << endl;
 //        cout << "weighted_theta_elem^2 = " << weighted_theta_lambda_elem[ n ] << endl;
 //    }
-
-
+    
+    
     if ( disp ) {
         cout << "estimateur pondere d'erreur globale au carre sur la structure extraite associee au pb " << pb << " de type " << shape << " :" << endl;
         cout << "weighted_theta^2 = " << weighted_theta_lambda << endl << endl;
     }
-
+    
     t.stop();
     if ( disp )
         cout << "temps de calcul de l'estimateur pondere d'erreur globale au carre (technique " << method << ") sur la structure extraite associee au pb " << pb << " de type " << shape << " = " << t.res << endl << endl;
@@ -512,7 +512,7 @@ void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF 
         cout << "estimateur d'erreur globale sur le bord de la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " :" << endl;
         cout << "theta = " << theta_lambda_boundary << endl << endl;
     }
-
+    
     t.stop();
     if ( disp )
         cout << "temps de calcul de l'estimateur d'erreur globale sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " = " << t.res << endl << endl;
@@ -522,17 +522,17 @@ void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF 
 /// ------------------------------------------------------------------
 template<class TM, class TF, class T, class Pvec>
 void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, const TF &f_adjoint, TF &f_adjoint_lambda_, const string &method, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const T &theta_lambda_min, const T &theta_lambda_max, const T &h, const Pvec &domain_center, const Vec<T> &domain_length, const bool &spread_cut, const Vec< Vec<T> > &dep_hat, const Vec< Vec<T> > &dep_adjoint_hat, const string &integration_k, const unsigned &integration_nb_points, T &gamma, const bool disp = false ) {
-
+    
     gamma = 0.;
-
+    
     static const unsigned dim = TM::dim;
-
+    
     if ( disp )
         cout << "Calcul de la quantite gamma pour la technique " << local_improvement << endl << endl;
     
     TicToc t;
     t.start();
-
+    
 //    if ( disp ) {
 //        cout << "Construction d'un champ de contrainte admissible par element" << endl;
 //        if ( local_improvement == "steklov" )
@@ -598,9 +598,9 @@ void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, cons
         unsigned n = dim - 1;
         gamma = 2 * sqrt( h ) / ( h + n + 1 ) * theta_adjoint_lambda_boundary;
     }
-
+    
     cout << "gamma = " << gamma << endl << endl;
-
+    
     t.stop();
     if ( disp )
         cout << "temps de calcul de la quantite gamma = " << t.res << endl << endl;
@@ -610,12 +610,12 @@ void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, cons
 /// -------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T>
 void calcul_correction_interest_quantity_lambda( const TM &m_lambda_min, const TM &m_adjoint_lambda_min, const TF &f_lambda_min, const TF &f_adjoint_lambda_min, const string &interest_quantity, const string &method, const string &method_adjoint, const Vec< Vec<T> > &dep_hat_lambda_min, const Vec< Vec<T> > &dep_adjoint_hat_lambda_min, T &I_hhh, const bool want_introduction_sigma_hat_m = true, const bool disp = false ) {
-
+    
     I_hhh = 0.;
-
+    
     if ( disp )
         cout << "Calcul de la correction I_hhh sur la quantite d'interet locale I" << endl << endl;
-
+    
     TicToc t;
     t.start();
     
@@ -632,13 +632,13 @@ void calcul_correction_interest_quantity_lambda( const TM &m_lambda_min, const T
     calcul_correction_interest_quantity_lambda.I_hhh = &I_hhh;
     
     apply_ij( m_lambda_min.elem_list, m_adjoint_lambda_min.elem_list, calcul_correction_interest_quantity_lambda );
-
+    
     if ( not want_introduction_sigma_hat_m )
         I_hhh *= 2;
-
+    
     cout << "correction I_hhh sur la quantite d'interet :" << endl;
     cout << "I_hhh = " << I_hhh << endl;
-
+    
     t.stop();
     if ( disp )
         cout << "temps de calcul de la correction I_hhh sur la quantite d'interet = " << t.res << endl << endl;

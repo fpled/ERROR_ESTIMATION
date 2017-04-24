@@ -100,8 +100,8 @@ struct Calcul_Geometric_Ratio {
 /// ---------------------------------------
 struct Calcul_Estimator_Ratio {
     template<class TE, class TM, class T> void operator()( const TE &elem, const TM &m, const Vec<T> &theta_2_elem, Vec<T> &estimator_ratio ) const {
-		T theta_2_elem_min, theta_2_elem_max;
-		get_min_max( theta_2_elem, theta_2_elem_min, theta_2_elem_max);
+        T theta_2_elem_min, theta_2_elem_max;
+        get_min_max( theta_2_elem, theta_2_elem_min, theta_2_elem_max);
         estimator_ratio[ elem.number ] = theta_2_elem[ elem.number ] / theta_2_elem_max;
     }
 };

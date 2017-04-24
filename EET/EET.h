@@ -42,7 +42,7 @@ struct Calcul_Elem_Ind_EET {
 
 /// Construction des vecteurs r[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
 /// -------------------------------------------------------------------------------------------
-template<class TE, class TM, class TF, class TVVV, class TVV, class TV, class TTWW, class S, class B, class TTVVV> 
+template<class TE, class TM, class TF, class TVVV, class TVV, class TV, class TTWW, class S, class B, class TTVVV>
 void calc_nodal_vector_r( const TE &elem, const TM &m, const TF &f, const TVVV &elem_ind, const TVV &node_list_face, const TV &elem_cpt_node, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, TTVVV &r ) {}
 
 struct Calcul_Nodal_Vector_r {
@@ -86,7 +86,7 @@ struct Calcul_Nodal_Vector_r {
 
 /// Construction des matrices B[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
 /// -------------------------------------------------------------------------------------------
-template<class TE, class TM, class TVVV, class TVV, class TTMVV> 
+template<class TE, class TM, class TVVV, class TVV, class TTMVV>
 void calc_nodal_matrix_B( const TE &elem, const TM &m, const TVVV &elem_ind, const TVVV &face_ind, const TVV &node_list_face, TTMVV &B ) {}
 
 struct Calcul_Nodal_Matrix_B {
@@ -122,7 +122,7 @@ struct Calcul_Nodal_Ind {
 
 /// Construction des matrices C[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
 /// -------------------------------------------------------------------------------------------
-template<class TE, class TM, class TVV, class TVVV, class TTMVV> 
+template<class TE, class TM, class TVV, class TVVV, class TTMVV>
 void calc_nodal_matrix_C( const TE &child_elem, const TM &m, const TVV &face_type, const TVVV &nodal_ind, const TVVV &face_ind, const TVV &face_list_node, TTMVV &C ) {}
 
 struct Calcul_Nodal_Matrix_C {
@@ -137,7 +137,7 @@ struct Calcul_Nodal_Matrix_C {
 
 /// Construction des vecteurs q[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
 /// -------------------------------------------------------------------------------------------
-template<class TE, class TM, class TF, class TVV, class TVVV, class TTWW, class TTVVV> 
+template<class TE, class TM, class TF, class TVV, class TVVV, class TTWW, class TTVVV>
 void calc_nodal_vector_q( const TE &elem, const TM &m, const TF &f, const TVV &face_type, const TVVV &nodal_ind, const TVV &node_list_face, const TVV &face_list_node, const TTWW &vectors, const Vec<unsigned> &indices, TTVVV &q ) {}
 
 struct Calcul_Nodal_Vector_q {
@@ -179,7 +179,7 @@ struct Calcul_Nodal_Vector_q {
 
 /// Construction des matrices de minimisation M[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
 /// -----------------------------------------------------------------------------------------------------------
-template<class TE, class TM, class TF, class TVVV, class T, class BVV, class TTDMVV> 
+template<class TE, class TM, class TF, class TVVV, class T, class BVV, class TTDMVV>
 void calc_nodal_matrix_M( const TE &child_elem, const TM &m, const TF &f, const TVVV &face_ind, const T &cost_function, const BVV &minimisation, TTDMVV &M ) {}
 
 struct Calcul_Nodal_Matrix_M {
@@ -193,7 +193,7 @@ struct Calcul_Nodal_Matrix_M {
 
 /// Construction des vecteurs de minimisation b[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
 /// -----------------------------------------------------------------------------------------------------------
-template<class TE, class TM, class TF, class BVV, class TVV, class TVVV, class TTWW, class S, class B, class TTVVV> 
+template<class TE, class TM, class TF, class BVV, class TVV, class TVVV, class TTWW, class S, class B, class TTVVV>
 void calc_nodal_vector_b( const TE &elem, const TM &m, const TF &f, const BVV &minimisation, const TVV &face_type, const TVVV &face_ind, const TVV &node_list_face, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, TTVVV &b ) {}
 
 struct Calcul_Nodal_Vector_b {
@@ -240,7 +240,7 @@ struct Calcul_Nodal_Vector_b {
 /// Modification des vecteurs b_hat[ i ][ d ] pour chaque noeud i du maillage et chaque direction d (si amelioration)
 /// -----------------------------------------------------------------------------------------------------------------
 
-template<class TE, class TM, class B, class BV, class TVVV, class TTVVV> 
+template<class TE, class TM, class B, class BV, class TVVV, class TTVVV>
 void reset_nodal_vector_b_hat( const TE &child_elem, const TM &m, const B &enhancement, const BV &flag_face_enh, const TVVV &face_ind, TTVVV &b_hat ) {}
 
 struct Reset_Nodal_Vector_b_hat {
@@ -254,7 +254,7 @@ struct Reset_Nodal_Vector_b_hat {
 
 /// Construction des vecteurs de projection b_face[ k ] pour chaque face k du maillage
 /// ----------------------------------------------------------------------------------
-template<class TE, class TVVV, class TTVVV> 
+template<class TE, class TVVV, class TTVVV>
 void calc_skin_elem_vector_b_face( const TE &child_elem, const TVVV &face_ind, const TTVVV &b_hat, TTVVV &b_face ) {}
 
 struct Calcul_Skin_Elem_Vector_b_face {
@@ -265,7 +265,7 @@ struct Calcul_Skin_Elem_Vector_b_face {
 
 /// Construction des matrices K_face[ k ] pour chaque face k du maillage
 /// --------------------------------------------------------------------
-template<class TE, class TTMVV> 
+template<class TE, class TTMVV>
 void calc_skin_elem_matrix_K_face( const TE &child_elem, TTMVV &K_face ) {}
 
 struct Calcul_Skin_Elem_Matrix_K_face {

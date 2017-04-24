@@ -34,7 +34,7 @@ void check_equilibrium( TF &f, const string &pb, const bool disp = false ) {
     Vec<T> &U = f.get_result( 0 ); // f.vectors[0]
     Vec<T> &F = f.get_sollicitation(); // f.sollicitation
     T residual = norm_2( K * U - F );
-
+    
     if ( disp )
         cout << "Verification de l'equilibre global du pb " << pb << endl << endl;
 //    cout << "residu K * U - F =" << endl;
@@ -65,39 +65,39 @@ struct Check_Elem_Eq_Force_Fluxes {
 /// --------------------------------------------------------------------------------
 template<class TM, class TF, class T>
 void check_equilibrium_force_fluxes( TM &m, const TF &f, const string pb, const Vec< Vec< Vec<T> > > &force_fluxes, const T tol_eq_force_fluxes = 1e-6, const bool want_local_enrichment = false, const bool disp = false ) {
-
+    
     static const unsigned dim = TM::dim;
-
+    
     Vec<unsigned> node_cpt_face;
     Vec< Vec<unsigned> > node_list_face;
     construct_nodes_connected_to_face( m, node_cpt_face, node_list_face );
-
+    
     Vec<unsigned> elem_cpt_node;
     Vec< Vec<unsigned> > elem_list_node;
     construct_elems_connected_to_node( m, elem_cpt_node, elem_list_node );
-
+    
     elem_list_node.free();
-
+    
     if ( disp )
         cout << "Verification de l'equilibre des densites d'effort : tolerance = " << tol_eq_force_fluxes << endl << endl;
-
+    
     Vec< Vec<T> > residual_force_fluxes;
     residual_force_fluxes.resize( m.elem_list.size() );
-
+    
     for (unsigned n=0;n<m.elem_list.size();++n) {
         residual_force_fluxes[ n ].resize( unsigned(dim*(dim+1)/2) );
         residual_force_fluxes[ n ].set( 0. );
     }
-
+    
     Check_Elem_Eq_Force_Fluxes<T> check_elem_eq_force_fluxes;
     check_elem_eq_force_fluxes.node_list_face = &node_list_face;
     check_elem_eq_force_fluxes.elem_cpt_node = &elem_cpt_node;
     check_elem_eq_force_fluxes.force_fluxes = &force_fluxes;
     check_elem_eq_force_fluxes.pb = &pb;
     check_elem_eq_force_fluxes.want_local_enrichment = &want_local_enrichment;
-
+    
     apply( m.elem_list, check_elem_eq_force_fluxes, m, f, residual_force_fluxes );
-
+    
     for (unsigned n=0;n<m.elem_list.size();++n) {
         for (unsigned d=0;d<dim;++d) {
             if ( fabs( residual_force_fluxes[ n ][ d ] ) > tol_eq_force_fluxes ) {

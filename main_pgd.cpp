@@ -18,7 +18,7 @@
 #include "CONNECTIVITY/Calcul_connectivity.h"
 #include "VERIFICATION/Verification.h"
 #include "DISCRETIZATION_ERROR/Calcul_discretization_error.h"
-//#include "Calcul_global_error_estimation_PGD.h"
+#include "Calcul_global_error_estimation_PGD.h"
 #include "Calcul_goal_oriented_error_estimation.h"
 #include "PGD/PGD.h"
 
@@ -77,7 +77,7 @@ int main( int argc, char **argv ) {
     // 6 -> sous-decoupage en 4096/32768 elements en 2D/3D
     // 7 -> sous-decoupage en 16384/262144 elements en 2D/3D
     // 8 -> sous-decoupage en 65536/2097152 elements en 2D/3D
-
+    
     /// Global error estimation method
     /// ------------------------------
     static const bool want_global_estimation = 0; // calcul d'un estimateur d'erreur globale (au sens de la norme energetique)
@@ -155,11 +155,10 @@ int main( int argc, char **argv ) {
     static const bool want_PGD = 1; // methode de reduction de modele PGD
     static const bool want_normalization = 1; // normalisation
     static const unsigned max_mode = 5; // nb de modes max dans la decomposition
-    static const unsigned max_iter = 10; // nb d'iterations max de l'algorithme de type point fixe
+    static const unsigned max_iter = 10; // nb d'iterations max de l'algorithme de point fixe
     static const T tol_convergence_criterium_mode = 1e-4; // precision pour critere d'arret global (boucle sur les modes)
     static const T tol_convergence_criterium_iter = 1e-8; // precision pour critere d'arret local (processus iteratif)
-    static const T min_param = 1.; // valeur min sur l'intervalle des parametres
-    static const T max_param = 10.; // valeur max sur l'intervalle des parametres
+    static const Vec<T,2> support_param( 1., 10. ); // intervalle des parametres
     static const unsigned nb_points_param = 100; // nb de points du maillage parametrique
     static const bool want_verif_PGD = 1; // verification de la decomposition PGD
     static const unsigned nb_vals_verif = 3; // nb de valeurs des parametres pris aleatoirement pour la verification de la decomposition PGD
@@ -171,7 +170,7 @@ int main( int argc, char **argv ) {
     static const bool verif_eq_force_fluxes = 1; // verification de l'equilibre des densites d'effort (methodes EET, EESPT)
     static const T tol_compatibility_conditions = 1e-6; // tolerance pour la verification des conditions de compatibilite (equilibre elements finis) (methode EET)
     static const T tol_eq_force_fluxes = 1e-6; // tolerance pour la verification de l'equilibre des densites d'effort (methodes EET, EESPT)
-
+    
     static const bool verif_solver = 1; // verification de la resolution des pbs locaux (methodes EET, SPET, EESPT)
     static const bool verif_solver_minimisation = 1; // verification de la resolution des pbs de minimisation (methodes EET, EESPT)
     static const bool verif_solver_enhancement = 1; // verification de la resolution des pbs locaux (amelioration des methodes EET, EESPT)
@@ -192,13 +191,15 @@ int main( int argc, char **argv ) {
     static const bool display_pvd_PGD_space = 0;
     static const bool display_pvd_PGD_param = 0;
     static const bool display_pvd_PGD_space_verif = 0;
-
+    
+    static const bool display_matlab = 0;
+    
     /// ------------------------------------------------------- ///
     /// Construction de la solution elements finis du pb direct ///
     /// ------------------------------------------------------- ///
     
     display_pb( dim, structure, deg_p  );
-
+    
     /// Maillage en espace du pb direct
     /// -------------------------------
     TM m;
@@ -211,24 +212,24 @@ int main( int argc, char **argv ) {
     /// Proprietes materiaux du pb direct
     /// ---------------------------------
     set_material_properties( f, m, structure );
-
+    
     /// Conditions aux limites du pb direct
     /// -----------------------------------
     set_constraints( f, m, boundary_condition_D, "direct", structure, loading );
     set_load_conditions( m, structure, loading, mesh_size );
-
+    
     /// Partition des elements du maillage en espace du pb direct
     /// ---------------------------------------------------------
     Vec< Vec<unsigned> > elem_group; // vecteur contenant une liste de pointeurs sur les elements definissant les zones avec parametre inconnu
     partition_elem_list( m, structure, elem_group );
-
+    
     /// Maillage en parametre du pb direct
     /// ----------------------------------
     Vec<TM_param> m_param;
     m_param.resize( elem_group.size()-1 );
     for (unsigned p=0;p<elem_group.size()-1;++p)
-        set_mesh_param( m_param[p], min_param, max_param, nb_points_param );
-
+        set_mesh_param( m_param[p], support_param[0], support_param[1], nb_points_param );
+    
     /// Formulation en parametre du pb direct
     /// -------------------------------------
     Vec<TF_param> f_param;
@@ -287,7 +288,7 @@ int main( int argc, char **argv ) {
             f.assemble( true, false );
             K_space[g] = f.matrices(Number<0>());
         }
-
+        
         for (unsigned p=0;p<elem_group.size()-1;++p) {
             f_param[p].allocate_matrices();
             f_param[p].shift();
@@ -300,26 +301,26 @@ int main( int argc, char **argv ) {
             f_param[p].assemble( true, false );
             K_param[p][1] = f_param[p].matrices(Number<0>());
         }
-
+        
         unsigned n = 0;
         while ( true ) {
-
+            
             /// Initialisation
             /// --------------
             unsigned k = 0;
-
+            
             for (unsigned p=0;p<elem_group.size()-1;++p) {
                 dep_param[ p ][ n ].resize( f_param[p].vectors[0].size() );
                 dep_param[ p ][ n ].set( 1. );
             }
             dep_space[ n ].resize( f.vectors[0].size() );
-
+            
             solve_space( m, f, n, F_space, F_param, K_param, elem_group, dep_param, dep_space );
-
+            
             dp_space[ n ].add_mesh_iter( m, prefix + "_mode" + to_string(n+1) + "_space_iter", lp_space, k );
             for (unsigned p=0;p<elem_group.size()-1;++p)
                 dp_param[ p ][ n ].add_mesh_iter( m_param[p], prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1) + "_iter", lp_param, k );
-
+            
             while ( true ) {
                 k++;
                 
@@ -352,12 +353,32 @@ int main( int argc, char **argv ) {
                 /// ---------------------------------------------------------------------------------------------------------------------------
                 T stagnation_indicator = 0.;
                 calc_stagnation_indicator( m, f, n, K_param, elem_group, dep_space, dep_param, dep_space_old, dep_param_old, stagnation_indicator );
-
-                cout << "Iteration " << k << " : stagnation = " << stagnation_indicator << endl << endl;
-                if ( k >= max_iter ) //if ( stagnation_indicator < tol_convergence_criterium_iter or k >= max_iter )
+                
+                cout << "Iteration " << k << " : stagnation = " << stagnation_indicator << endl;
+                if ( k >= max_iter ) { // if ( stagnation_indicator < tol_convergence_criterium_iter or k >= max_iter )
+                    cout << endl;
                     break;
+                }
             }
             
+            /// Residu au sens faible associe a la solution au mode n
+            /// -----------------------------------------------------
+            T residual = 0.;
+            T error_indicator = 0.;
+            calc_error_indicator( m, f, n, F_space, F_param, K_param, elem_group, dep_space, dep_param, residual, error_indicator );
+            
+            cout << "Mode " << n+1 << " : nb d'iterations = " << k << ", residu = " << residual << ", erreur = " << error_indicator << endl << endl;
+            if ( n >= max_mode-1 ) { // if ( error_indicator < tol_convergence_criterium_mode or n >= max_mode-1 ) {
+                nb_modes = n+1;
+                cout << "Convergence de l'algorithme : nb de modes = " << nb_modes << ", residu = " << residual << ", erreur = " << error_indicator << endl << endl;
+                break;
+            }
+            n++;
+        }
+        
+        MatlabPlot mp(display_matlab);
+        mp.cd_cwd();
+        for (unsigned n=0;n<nb_modes;++n) {
             if ( display_pvd_PGD_space )
                 dp_space[ n ].exec( prefix + "_mode" + to_string(n+1) + "_space" );
             else
@@ -373,28 +394,14 @@ int main( int argc, char **argv ) {
 //                string params = "notitle w l lt " + to_string(p+1) + " lw 1";
 //                save_plot( vals_param[p], dep_param[ p ][ n ], (output + ".tex'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
                 string params = ",'LineStyle','-','Color',getfacecolor(" + to_string(p+4) + "),'LineWidth',1";
-                save_ml_plot( vals_param[p], dep_param[ p ][ n ], (output + ".tex'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
-                save_ml_plot( vals_param[p], dep_param[ p ][ n ], (output + ".epsc2'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
+                mp.save_plot( vals_param[p], dep_param[ p ][ n ], (output + ".tex'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
+                mp.save_plot( vals_param[p], dep_param[ p ][ n ], (output + ".epsc2'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
             }
-            
-            /// Residu au sens faible associe a la solution au mode n
-            /// -----------------------------------------------------
-            T residual = 0.;
-            T error_indicator = 0.;
-            calc_error_indicator( m, f, n, F_space, F_param, K_param, elem_group, dep_space, dep_param, residual, error_indicator );
-
-            cout << "Mode " << n+1 << " : nb d'iterations = " << k << ", residu = " << residual << ", erreur = " << error_indicator << endl << endl;
-            if ( n >= max_mode-1 ) { //if ( error_indicator < tol_convergence_criterium_mode or n >= max_mode-1 ) {
-                nb_modes = n+1;
-                cout << "Convergence de l'algorithme : nb de modes = " << nb_modes << ", residu = " << residual << ", erreur = " << error_indicator << endl << endl;
-                break;
-            }
-            n++;
         }
         
         if ( want_verif_PGD )
             check_PGD( m_param, m, f, "direct", structure, loading, mesh_size, elem_group, nb_vals_verif, vals_param, nb_modes, dep_space, dep_param, prefix, display_pvd_PGD_space_verif );
-
+        
     }
     t.stop();
     cout << "temps de calcul de la resolution du pb direct = " << t.res << endl << endl;
@@ -433,27 +440,26 @@ int main( int argc, char **argv ) {
     Vec<T> theta_elem;
     Vec< Vec<T> > dep_part_hat;
     Vec< Vec<T>, max_mode > dep_space_hat;
-
-//    if ( want_global_estimation or want_local_estimation ) {
+    
+    if ( want_global_estimation or want_local_estimation ) {
         
-//        /// ------------------------------------------------------------------------------------------------------------- ///
-//        /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe pb direct ///
-//        /// ------------------------------------------------------------------------------------------------------------- ///
+        /// ------------------------------------------------------------------------------------------------------------- ///
+        /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe pb direct ///
+        /// ------------------------------------------------------------------------------------------------------------- ///
         
-////        calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment );
-//        calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_part_hat, dep_part, kappa, dep_space_hat, dep_space, dep_param, nb_modes, K_space, K_param, F_space, F_param, elem_group, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment );
+        calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_part_hat, dep_part, kappa, dep_space_hat, dep_space, dep_param, nb_modes, K_space, K_param, F_space, F_param, elem_group, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment );
         
-//    }
+    }
     
     /// ---------------------- ///
     /// Sauvegarde / Affichage ///
     /// ---------------------- ///
-
+    
     if ( display_vtu )
         display( m, prefix );
     else
         save( m, prefix );
-
+    
     t_total.stop();
     cout << "temps de calcul total = " << t_total.res << endl << endl;
     

@@ -88,14 +88,14 @@ struct Calc_Elem_Error_Estimate_Init_EET_EESPT {
         if ( *method == "EET" ) {
             elem.ecre_elem_EET = 0.0;
             elem.ecre_elem_init_EET = 0.0;
-
+            
             elem.theta_elem_EET = 0.0;
             elem.theta_elem_init_EET = 0.0;
         }
         if ( *method == "EESPT" ) {
             elem.ecre_elem_EESPT = 0.0;
             elem.ecre_elem_init_EESPT = 0.0;
-
+            
             elem.theta_elem_EESPT = 0.0;
             elem.theta_elem_init_EESPT = 0.0;
         }

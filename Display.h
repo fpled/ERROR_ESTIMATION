@@ -18,7 +18,7 @@ using namespace std;
 /// Display dimension, structure and mesh parameters
 /// --------------------------------------------------------
 void display_pb( const unsigned &dim, const string &structure, const unsigned &deg_p  ) {
-
+    
     cout << "----------------------------------------------------" << endl;
     cout << "dimension = " << dim << endl;
     cout << "structure = " << structure << endl;
@@ -30,10 +30,10 @@ void display_pb( const unsigned &dim, const string &structure, const unsigned &d
 /// Display method for constructing admissible fields (EET,SPET,EESPT) with/without enhancement, cost-function and solver
 /// ---------------------------------------------------------------------------------------------------------------------
 void display_method( const string &pb, const string &method, const unsigned &cost_function, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const string &solver, const string &solver_minimisation ) {
-
+    
     cout << "Estimation d'erreur globale du pb " << pb << endl;
     cout << "-----------------------------------------" << endl << endl;
-
+    
     cout << "methode de construction de champs admissibles = " << method;
     if ( method.find("EET") != string::npos or method.find("EESPT") != string::npos ) {
         if ( not( enhancement_with_geometric_criterium ) and not( enhancement_with_estimator_criterium ) )
@@ -60,10 +60,10 @@ void display_method( const string &pb, const string &method, const unsigned &cos
 /// -------------------------------------------------
 template<class T, class Pvec>
 void display_interest_quantity( const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list, const unsigned &node, const Pvec &pos, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re ) {
-
+    
     cout << "Quantite d'interet locale" << endl;
     cout << "-------------------------" << endl << endl;
-
+    
     cout << "quantite d'interet = " << interest_quantity << " dans la direction " << direction_extractor << endl;
     cout << "zone d'interet : " << endl;
     if ( interest_quantity.find("mean") != string::npos ) {
@@ -91,9 +91,9 @@ void display_interest_quantity( const string &interest_quantity, const string &d
 /// ------------------------------
 template<class TM, class T, class Pvec>
 string define_prefix( TM &m, const string &pb, const string &structure, const string loading = "pull", const string mesh_size = "fine", const string method = "EET", const bool enhancement_with_geometric_criterium = false, const bool enhancement_with_estimator_criterium = false, const T val_geometric_criterium = 0.34, const T val_estimator_criterium = 0.8, const string geometric_criterium = "radius_ratio", const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_global_estimation = false, const bool want_local_estimation = false, const string interest_quantity = "mean_sigma", const string direction_extractor = "xx", const string pointwise_interest_quantity = "node", const Vec<unsigned> elem_list_interest_quantity = Vec<unsigned>( 4886 ), const unsigned node_interest_quantity = 661, const Pvec pos_interest_quantity = Pvec( 49.5, 135.5 ), const Pvec pos_crack_tip = Pvec( 109., 105. ), const T radius_Ri = 6, const T radius_Re = 8, const bool want_local_improvement = false, const string local_improvement = false, const string shape = "circle", const T k_min = 2.5, const T k_max = 7., const T k_opt = 4.4, const bool want_local_enrichment = false, const unsigned nb_layers_nodes_enrichment = 2 ) {
-
+    
     static const unsigned dim = TM::dim;
-
+    
     string prefix = structure;
     if ( structure == "plate_crack" or structure == "spot_weld" or (structure.find("test_specimen") != string::npos and dim == 3) )
         prefix += "_" + loading;
@@ -102,7 +102,7 @@ string define_prefix( TM &m, const string &pb, const string &structure, const st
     for (unsigned n=0;n<m.type_elements().size();++n)
         prefix += "_" + m.type_elements()[n];
     prefix += "_" + pb;
-
+    
     if ( want_global_estimation or want_local_estimation ) {
         prefix += "_" + method;
         if ( ( enhancement_with_geometric_criterium or enhancement_with_estimator_criterium ) and ( method.find("EET") != string::npos or method.find("EESPT") != string::npos ) ) {

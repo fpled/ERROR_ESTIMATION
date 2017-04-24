@@ -31,23 +31,23 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
         cout << "Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale" << endl;
         cout << "-------------------------------------------------------------------------------------------------------" << endl << endl;
     }
-
+    
     theta = 0.;
     theta_init = 0.;
     theta_elem.resize( m.elem_list.size() );
     theta_elem.set( 0. );
     theta_elem_init.resize( m.elem_list.size() );
     theta_elem_init.set( 0. );
-
+    
     Calc_Elem_Error_Estimate_Init_EET_EESPT<T> calc_elem_error_estimate_init_EET_EESPT;
     calc_elem_error_estimate_init_EET_EESPT.dep_hat = &dep_hat;
     calc_elem_error_estimate_init_EET_EESPT.method = &method;
     calc_elem_error_estimate_init_EET_EESPT.theta_elem = &theta_elem;
     calc_elem_error_estimate_init_EET_EESPT.theta_elem_init = &theta_elem_init;
     calc_elem_error_estimate_init_EET_EESPT.theta_init = &theta_init;
-
+    
     apply( m.elem_list, calc_elem_error_estimate_init_EET_EESPT, m, f, theta );
-
+    
     if ( disp ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
             T ecre_elem = theta_elem[ n ] / 2.;
@@ -55,49 +55,49 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
             cout << "contribution a la mesure globale de l'erreur en relation de comportement au carre de l'element " << n << " :" << endl;
             cout << "ecre_elem^2 = " << ecre_elem << endl;
             cout << "ecre_elem_init^2 = " << ecre_elem_init << endl;
-
+            
             cout << "contribution a l'estimateur d'erreur globale au carre de l'element " << n << " :" << endl;
             cout << "theta_elem^2 = " << theta_elem[ n ] << endl;
             cout << "theta_elem_init^2 = " << theta_elem_init[ n ] << endl;
         }
         cout << endl;
     }
-
+    
     T ecre = theta / 2.;
     T ecre_init = theta_init / 2.;
 //    cout << "mesure globale de l'erreur en relation de comportement au carre :" << endl;
 //    cout << "ecre^2 = " << ecre << endl;
 //    cout << "ecre_init^2 = " << ecre_init << endl << endl;
-
+    
     ecre = sqrt( ecre );
     theta = sqrt( theta );
-
+    
     ecre_init = sqrt( ecre_init );
     theta_init = sqrt( theta_init );
     if ( method == "EET" ) {
         m.ecre_EET = ecre;
         m.theta_EET = theta;
-
+        
         m.ecre_init_EET = ecre_init;
         m.theta_init_EET = theta_init;
     }
     if ( method == "EESPT" ) {
         m.ecre_EESPT = ecre;
         m.theta_EESPT = theta;
-
+        
         m.ecre_init_EESPT = ecre_init;
         m.theta_init_EESPT = theta_init;
     }
     cout << "mesure globale de l'erreur en relation de comportement :" << endl;
     cout << "ecre = " << ecre << endl;
     cout << "ecre_init = " << ecre_init << endl << endl;
-
+    
     cout << "estimateur d'erreur globale :" << endl;
     cout << "theta = " << theta << endl;
     cout << "theta_init = " << theta_init << endl;
     cout << "theta / norm(u_h) = " << theta / m.norm_dep * 100. << " %" << endl;
     cout << "theta_init / norm(u_h)_init = " << theta_init / m.norm_dep_init * 100. << " %" << endl << endl;
-
+    
     if ( pb == "direct" and want_global_discretization_error ) {
         T eff_index = theta / m.discretization_error;
         if ( method == "EET" )
@@ -108,14 +108,14 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
         cout << "eta = theta / e" << endl;
         cout << "    = " << eff_index << endl << endl;
     }
-
+    
     if ( pb == "direct" and want_local_discretization_error ) {
         Vec<T> eff_index_elem;
         eff_index_elem.resize( m.elem_list.size(), 0. );
         eff_index_elem.set( 0. );
-
+        
         apply( m.elem_list, Calcul_Elem_Effectivity_Index(), method, eff_index_elem );
-
+        
         if ( disp ) {
             for (unsigned n=0;n<m.elem_list.size();++n) {
                 cout << "indice d'efficacite local de l'element " << n << " :" << endl;

@@ -19,7 +19,7 @@ using namespace std;
 /// Reperage pour chaque face k et chaque direction d de l'indice de debut de ligne dans les matrices A[ j ][ d ] : face_ind[ k ][ d ]
 /// Calcul du nb de lignes de la matrice A[ j ][ d ] : nb_unk[ j ][ d ]
 /// ----------------------------------------------------------------------------------------------------------------------------------
-template<class TE, class TVV, class TVVV, class TV> 
+template<class TE, class TVV, class TVVV, class TV>
 void calc_face_ind_EESPT( const TE &child_elem, TVVV &face_ind, TVV &nb_unk, const TV &connect_node_to_vertex_node ) {}
 
 struct Calcul_Face_Ind_EESPT {
@@ -31,7 +31,7 @@ struct Calcul_Face_Ind_EESPT {
 /// Reperage pour chaque element n et chaque direction d de l'indice de debut de colonne dans les matrices A[ j ][ d ] et de debut de ligne dans les vecteurs R[ j ][ d ] : vertex_nodal_ind[ n ][ d ]
 /// Calcul du nb de colonnes de la matrice A[ j ][ d ] : nb_eq[ j ][ d ]
 /// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-template<class TE, class TVV, class TVVV, class TV> 
+template<class TE, class TVV, class TVVV, class TV>
 void calc_vertex_nodal_ind_EESPT( const TE &elem, TVVV &vertex_nodal_ind, TVV &nb_eq, const TV &connect_node_to_vertex_node ) {}
 
 struct Calcul_Vertex_Nodal_Ind_EESPT {
@@ -42,7 +42,7 @@ struct Calcul_Vertex_Nodal_Ind_EESPT {
 
 /// Construction des matrices A[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
 /// --------------------------------------------------------------------------------------------------
-template<class TE, class TM, class TV, class TVVV, class TVV, class TTMVV> 
+template<class TE, class TM, class TV, class TVVV, class TVV, class TTMVV>
 void calc_vertex_nodal_matrix_A( const TE &elem, const TM &m, const TV &connect_node_to_vertex_node, const TVVV &face_ind, const TVVV &vertex_nodal_ind, const TVV &vertex_node_list_elem, const TVV &node_list_face, TTMVV &A ) {}
 
 struct Calcul_Vertex_Nodal_Matrix_A {
@@ -57,7 +57,7 @@ struct Calcul_Vertex_Nodal_Matrix_A {
 
 /// Construction des vecteurs R[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
 /// --------------------------------------------------------------------------------------------------
-template<class TE, class TM, class TF, class TV, class TVVV, class TVV, class TTWW, class S, class B, class TTVVV> 
+template<class TE, class TM, class TF, class TV, class TVVV, class TVV, class TTWW, class S, class B, class TTVVV>
 void calc_vertex_nodal_vector_R( const TE &elem, const TM &m, const TF &f, const TV &connect_node_to_vertex_node, const TVVV &vertex_nodal_ind, const TVV &node_list_face, const TVV &vertex_node_list_elem, const TV &elem_cpt_node, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, TTVVV &R ) {}
 
 struct Calcul_Vertex_Nodal_Vector_R {
@@ -77,7 +77,7 @@ struct Calcul_Vertex_Nodal_Vector_R {
 /// Suppression du noyau des matrices A[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
 /// Stockage des inconnues non bloques : eq_indep[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
 /// --------------------------------------------------------------------------------------------------------------------
-template<class TE, class TM, class TV, class TVVV, class TVV, class BVV> 
+template<class TE, class TM, class TV, class TVVV, class TVV, class BVV>
 void remove_kernel( const TE &elem , const TM &m, const TV &connect_node_to_vertex_node, const TVVV &vertex_nodal_ind, const TVV &node_list_vertex_node, const TVV &edge_node_list_vertex_node, BVV &node_flag, TVV &elem_flag, TVVV &eq_indep ) {}
 
 struct Remove_Kernel {
@@ -94,7 +94,7 @@ struct Remove_Kernel {
 
 /// Calcul du degre p de l'analyse elements finis
 /// ---------------------------------------------
-template<class TE, class TV> 
+template<class TE, class TV>
 void get_elem_degree( const TE &elem , TV &degree ) {}
 
 struct Get_Elem_Degree {
@@ -109,7 +109,7 @@ struct Get_Elem_Degree {
     /// ---------
         /// Construction des matrices B[ k ][ d ] pour chaque face k du maillage et chaque direction d
         /// ------------------------------------------------------------------------------------------
-template<class TE, class TM, class TTMVV> 
+template<class TE, class TM, class TTMVV>
 void calc_skin_elem_matrix_B_p_1( const TE &child_elem, const TM &m, TTMVV &B ) {}
 
 struct Calcul_Skin_Elem_Matrix_B_p_1 {
@@ -120,7 +120,7 @@ struct Calcul_Skin_Elem_Matrix_B_p_1 {
 
         /// Construction des vecteurs Q[ k ][ d ] pour chaque face k du maillage et chaque direction d
         /// ------------------------------------------------------------------------------------------
-template<class TE, class TM, class TF, class TV, class TVV, class TVVV, class TTWW, class S, class B, class TTVVV> 
+template<class TE, class TM, class TF, class TV, class TVV, class TVVV, class TTWW, class S, class B, class TTVVV>
 void calc_skin_elem_vector_Q_p_1( const TE &elem , const TM &m, const TF &f, const TV &connect_node_to_vertex_node, const TVV &face_type, const TVVV &face_ind, const TVV &node_list_face, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, TTVVV &Q ) {}
 
 struct Calcul_Skin_Elem_Vector_Q_p_1 {
@@ -185,11 +185,11 @@ struct Calcul_Vertex_Nodal_Matrix_M {
 
 /// Modification des vecteurs lambda_F_hat[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d (si amelioration)
 /// ----------------------------------------------------------------------------------------------------------------------------------
-template<class TE, class TM, class TV, class B, class BV, class TVVV, class TTVVV> 
+template<class TE, class TM, class TV, class B, class BV, class TVVV, class TTVVV>
 void reset_vertex_nodal_vector_lambda_F_hat( const TE &child_elem , const TM &m, const TV &connect_node_to_vertex_node, const B &enhancement, const BV &flag_face_enh, const TVVV &face_ind, TTVVV &lambda_F_hat ) {}
 
 struct Reset_Vertex_Nodal_Vector_lambda_F_hat {
-	const Vec<unsigned>* connect_node_to_vertex_node;
+    const Vec<unsigned>* connect_node_to_vertex_node;
     const bool* enhancement;
     const Vec<bool>* flag_face_enh;
     const Vec< Vec< Vec<unsigned> > >* face_ind;

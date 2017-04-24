@@ -55,9 +55,9 @@ void calc_material_coefficients_init_alternativeontype( TM &m, TF &f, Number<1>,
 /// -------------------------------------------
 template<class TF, class TM>
 void set_material_properties_init( TF &f, TM &m, const string &structure ) {
-
+    
     typedef typename TM::TNode::T T;
-
+    
     if ( m.node_list.size() ) {
         T young = 1;
         T poisson = 0.3;
@@ -87,7 +87,7 @@ void set_material_properties_init( TF &f, TM &m, const string &structure ) {
             unsigned N; buffer >> N;
             Hdf hdf("DATA/hashin-" + str + "x" + str + "x" + str + ".hdf5");
 //            Hdf hdf("DATA/microstructure.hdf5");
-
+            
             T k1, k2, k3, kappa, mu;
             Tens3<double> f1, f2, f3;
             hdf.read_tag( "/", "nu", poisson );
@@ -111,7 +111,7 @@ void set_material_properties_init( TF &f, TM &m, const string &structure ) {
             }
         }
         calc_material_coefficients_init_alternativeontype( m, f, Number< AreSameType< typename ExtractDM<young_init_DM>::ReturnType<TM>::T, void >::res >(), Number< AreSameType< typename ExtractDM<poisson_init_DM>::ReturnType<TM>::T, void >::res >() );
-
+        
         set_field_alternativeontype( m, Number< AreSameType< typename ExtractDM<density_DM>::ReturnType<TM>::T, void >::res >(), density, density_DM() );
     }
 }

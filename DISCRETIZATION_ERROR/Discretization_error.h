@@ -82,7 +82,7 @@ struct Calcul_Elem_Effectivity_Index {
         else if ( method == "EESPT" ) {
             elem.eff_index_elem_EESPT = sqrt( elem.theta_elem_EESPT / elem.discretization_error_elem );
             eff_index_elem[ elem.number ] = elem.eff_index_elem_EESPT;
-        } 
+        }
     }
 };
 

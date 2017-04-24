@@ -20,24 +20,24 @@ using namespace std;
 
 /// Construction des vecteurs dep_hat[ n ] pour chaque element n du maillage
 /// ------------------------------------------------------------------------
-template<class TM, class TF, class T>
-void construct_dep_hat( const TM &m, const TF &f, const string &solver, Vec< Mat<T, Sym<> > > &K_hat, Vec< Vec<T> > &F_hat, Vec< Vec<T> > &dep_hat, const bool verif_solver = false, const T tol_solver = 1e-6, const bool disp = false ) {
-
+template<class TM, class TF, class T, class TVV, class TTVV, class TMATV>
+void construct_dep_hat( const TM &m, const TF &f, const string &solver, TMATV &K_hat, TVV &F_hat, TTVV &dep_hat, const bool verif_solver = false, const T tol_solver = 1e-6, const bool disp = false ) {
+    
     if ( disp ) {
         cout << "Resolution des pbs locaux par element" << endl;
         cout << "-------------------------------------" << endl << endl;
     }
-
+    
     if ( disp ) {
         cout << "Resolution des pbs locaux K_hat * U_hat = F_hat" << endl;
         cout << "Construction des vecteurs U_hat" << endl << endl;
     }
-
+    
     TicToc t;
     t.start();
-
+    
     dep_hat.resize( m.elem_list.size() );
-
+    
     for (unsigned n=0;n<m.elem_list.size();++n) {
         if ( solver == "CholMod" ) {
             #ifdef WITH_CHOLMOD
@@ -73,7 +73,7 @@ void construct_dep_hat( const TM &m, const TF &f, const string &solver, Vec< Mat
         else if ( solver == "LUFactorize" ) {
             Mat<T, Sym<>, SparseLine<> > K_hat_sym = K_hat[ n ];
             Mat<T, Gen<>, SparseLU > K_hat_LU = K_hat_sym;
-//             Vec<int> vector_permutation;
+//            Vec<int> vector_permutation;
             lu_factorize( K_hat_LU/*, vector_permutation*/ );
             solve_using_lu_factorize( K_hat_LU, /*vector_permutation,*/ F_hat[ n ], dep_hat[ n ] );
         }
@@ -85,10 +85,10 @@ void construct_dep_hat( const TM &m, const TF &f, const string &solver, Vec< Mat
             cerr << "Bing. Error : solveur " << solver << " pour la resolution des pbs locaux non implemente" << endl << endl;
         }
     }
-
+    
     t.stop();
     cout << "temps de calcul de la resolution des pbs locaux par element = " << t.res << endl << endl;
-
+    
     if ( disp ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
             cout << "vecteur U_hat de l'element " << n << " =" << endl;

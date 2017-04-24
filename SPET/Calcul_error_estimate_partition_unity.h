@@ -108,7 +108,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     if ( disp )
         cout << "Construction des matrices K" << endl << endl;
     
-    Vec< Mat<T, Sym<> > > K; 
+    Vec< Mat<T, Sym<> > > K;
     K.resize( nb_vertex_nodes );
     
     TicToc t_construct_K;
@@ -154,7 +154,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
             cout << K[ j ] << endl;
         }
     }
-
+    
     /// Construction des vecteurs F[ j ] pour chaque noeud sommet j du maillage
     /// -----------------------------------------------------------------------
     
@@ -268,7 +268,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
         else if ( solver == "LUFactorize" ) {
             Mat<T, Sym<>, SparseLine<> > K_sym = K[ j ];
             Mat<T, Gen<>, SparseLU > K_LU = K_sym;
-//             Vec<int> vector_permutation;
+//            Vec<int> vector_permutation;
             lu_factorize( K_LU/*, vector_permutation*/ );
             solve_using_lu_factorize( K_LU, /*vector_permutation,*/ F[ j ], U[ j ] );
             K_sym.clear();
@@ -298,12 +298,12 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
             cout << U[ j ] << endl << endl;
         }
     }
-     if ( verif_solver ) {
-         if ( disp )
-             cout << "Verification de la resolution des problemes locaux auto-equilibres par patch : tolerance = " << tol_solver << endl << endl;
-         for (unsigned j=0;j<nb_vertex_nodes;++j) {
-             T residual = norm_2( K[ j ] * U[ j ] - F[ j ] );
-             T b = norm_2( F[ j ] );
+    if ( verif_solver ) {
+        if ( disp )
+            cout << "Verification de la resolution des problemes locaux auto-equilibres par patch : tolerance = " << tol_solver << endl << endl;
+        for (unsigned j=0;j<nb_vertex_nodes;++j) {
+            T residual = norm_2( K[ j ] * U[ j ] - F[ j ] );
+            T b = norm_2( F[ j ] );
             if ( residual / b > tol_solver ) {
                 cout << "residu associe au noeud sommet " << j << " :" << endl;
 //                cout << "K * U - F =" << endl;
@@ -381,11 +381,11 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     }
     
     theta = sqrt( theta );
-	m.theta_SPET = theta;
+    m.theta_SPET = theta;
     cout << "estimateur d'erreur globale :" << endl;
     cout << "theta = " << theta << endl;
     cout << "theta / norm(u_h) = " << theta / m.norm_dep * 100. << " %" << endl << endl;
-
+    
     if ( want_global_discretization_error ) {
         m.eff_index_SPET = theta / m.discretization_error;
         cout << "indice d'efficacite global :" << endl;

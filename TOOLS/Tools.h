@@ -7,14 +7,14 @@
 using namespace LMT;
 using namespace std;
 
-///creation d'une boite contenant tout le maillage donne
+/// Creation d'une boite contenant tout le maillage
 template<unsigned dim_, class TM>
 Vec<typename TM::Pvec,dim_> create_box_mesh( TM &m ) {
     typedef typename TM::Pvec Pvec;
     Pvec mini;
     Pvec maxi;
     Vec<Pvec,dim_> box;
-    //creating box
+    // creating box
     get_min_max(m.node_list,ExtractDM<pos_DM>(),mini,maxi);
     box[0]=mini;
     box[1]=maxi;
@@ -45,12 +45,12 @@ bool ComparVec( TV &V1, TV &V2 ) {
 template<class TV> bool inCL( Vec<TV,2> &box1, Vec<TV,2> &box2, const double &eps=1e-6 ) {
     TV P1=box1[0], P2=box1[1];
     TV Q1=box2[0], Q2=box2[1];
-
+    
     bool testin=0;
     // verification si P1 et P2 sont dans la boite box2
-    //verification si P1 est dans box2
+    // verification si P1 est dans box2
     if ( bool_vec(P1<=Q2+eps and P1>=Q1-eps) ) {
-        //verification si P2 est dans box2
+        // verification si P2 est dans box2
         if ( bool_vec(P2<=Q2+eps and P2>=Q1-eps) )
             testin=1;
     }
@@ -71,11 +71,11 @@ bool inCL( Vec<T,4> &box1, Vec<T,4> &box2 ) {
     Vec<T,2> Q1=box2[range(0,2)];
     Vec<T,2> Q2=box2[range(2,4)];
     bool testin=0;
-
+    
     // verification si P1 et P2 sont dans la boite box2
-    //verification si P1 est dans box2
+    // verification si P1 est dans box2
     if ( (Q1[0]-eps<= P1[0]) && (P1[0]<=Q2[0]+eps ) && (Q1[1]-eps<= P1[1]) && (P1[1]<=Q2[1]+eps ) ) {
-        //verification si P2 est dans box2
+        // verification si P2 est dans box2
         if ( (Q1[0]-eps<= P2[0]) && (P2[0]<=Q2[0]+eps ) && (Q1[1]-eps<= P2[1]) && (P2[1]<=Q2[1]+eps ) )
             testin=1;
     }
@@ -89,12 +89,12 @@ bool inCL( Vec<T,6> &box1, Vec<T,6> &box2 ) {
     Vec<T,3> P2=box1[range(3,6)];
     Vec<T,3> Q1=box2[range(0,3)];
     Vec<T,3> Q2=box2[range(3,6)];
-
+    
     bool testin=0;
     // verification si P1 et P2 sont dans la boite box2
-    //verification si P1 est dans box2
+    // verification si P1 est dans box2
     if ( (Q1[0]-eps<= P1[0]) && (P1[0]<=Q2[0]+eps ) && (Q1[1]-eps<= P1[1]) && (P1[1]<=Q2[1]+eps ) && (Q1[2]-eps<= P1[2]) && (P1[2]<=Q2[2]+eps ) ) {
-        //verification si P2 est dans box2
+        // verification si P2 est dans box2
         if ( (Q1[0]-eps<= P2[0]) && (P2[0]<=Q2[0]+eps ) && (Q1[1]-eps<= P2[1]) && (P2[1]<=Q2[1]+eps ) && (Q1[2]-eps<= P2[2]) && (P2[2]<=Q2[2]+eps ) )
             testin=1;
     }
@@ -114,8 +114,7 @@ void assign_q_mesh( TV &q, TM &mesh ) {
     }
 };
 
-// penalisation de matrice
-// a partir des ddls bloques a zero
+/// Penalisation de matrice a partir des ddls bloques a zero
 template<class T,class Str,class Sto,class OP, class TV>
 void penalty( Mat<T,Str,Sto,OP>&K, TV &v, T &coef ) {
     coef=1e5*max(K.diag());
@@ -123,7 +122,7 @@ void penalty( Mat<T,Str,Sto,OP>&K, TV &v, T &coef ) {
         K(v[i],v[i])+= coef;
 }
 
-// a partir des ddls bloques, de la matrice A de relation entre ces ddls
+/// Penalisation de matrice a partir des ddls bloques, de la matrice A de relation entre ces ddls
 template<class T,class Sto,class OP, class TV, class TMAT2>
 void penalty( Mat<T,Gen<>,Sto,OP> &K, TV &v, TMAT2 &A, T &coef ) {
     coef=1e5*max(A.diag());
@@ -136,13 +135,12 @@ void penalty( Mat<T,Sym<>,Sto,OP> &K, TV &v, TMAT2 &A, T &coef ) {
     K[v]+=coef*trans(A)*A;
 }
 
-// penalisation de vecteur
-// a partir des ddls bloques a zero
+/// Penalisation de vecteur a partir des ddls bloques a zero
 template<class TV1, class TV2>
 void penalisation( TV1 &v, TV2 &rep, typename TV1::T &coef ) {
     for (unsigned i=0;i<v.size();++i)
         v(rep[i])+= coef;
-
+    
 }
 
 template<class TT,int static_size_>
@@ -161,7 +159,7 @@ TT norm_2( Vec<TT,static_size_,void> &v ) {
 
 
 
-// ecriture d'une matrice dans un fichier texte
+/// Ecriture d'une matrice dans un fichier texte
 template<class TMAT>
 void write_matrix( TMAT &M, const string &name ) {
     std::ofstream f(name.c_str());
@@ -187,26 +185,26 @@ struct add_elem_node {
     }
 };
 
-// reorganisation des noeuds d'un maillage en fonction d'une renumerotation Cuthin Mackee
+/// Reorganisation des noeuds d'un maillage en fonction d'une renumerotation Cuthin Mackee
 template<class TM>
 void reordering_nodes( TM &m ) {
-
+    
     Mat<bool, Gen<>, SparseLine<> > K;
     K.resize(m.node_list.size(),m.node_list.size());
-
+    
     // creation de la matrice d'indices
     apply(m.elem_list,add_elem_node(),K);
-
+    
     // renumerotation de la matrice
     Vec<Vec<unsigned> > indices;
     for (unsigned i=0;i<K.nb_rows();++i)
         indices.push_back( K.data[i].indices );
-    #ifndef INCOMPLETE
+#ifndef INCOMPLETE
     Vec<unsigned> res = symrcm( indices );
-    #else
+#else
     Vec<unsigned> res = symamd( indices );
-    #endif
-   
+#endif
+    
     Vec<typename TM::TNode *> perm;
     perm.resize( res.size() );
     Vec<typename TM::TNode> nn;
@@ -216,34 +214,34 @@ void reordering_nodes( TM &m ) {
         nn[ i ] = m.node_list[ res[i] ];
     }
     m.change_node_ptr_in_elements( perm.ptr() );
-
+    
     for (unsigned i=0;i<res.size();++i) {
         m.node_list[i] = nn[i];
         m.node_list[i].number = i;
     }
-
+    
     m.signal_connectivity_change();
-
-    /*Mat<bool, Gen<>, SparseLine<> > K2;
-     K2.resize(m.node_list.size(),m.node_list.size());
-     
-     // creation de la matrice d'indices
-     apply(m.elem_list,add_elem_node(),K2);
-     
-      */
+    
+    /*
+    Mat<bool, Gen<>, SparseLine<> > K2;
+    K2.resize(m.node_list.size(),m.node_list.size());
+    
+    // creation de la matrice d'indices
+    apply(m.elem_list,add_elem_node(),K2);
+    */
 }
 
 struct reordering_nodes_SST {
     template<class SST>
     void operator()( SST &S ) const {
-        //reordering_nodes(S.mesh);
+        // reordering_nodes(S.mesh);
         xyz_ordering(S.mesh);
-        //node_reorder( S.mesh );
+        // node_reorder( S.mesh );
     }
 };
 
 
-/** \ingroup  Maillages 
+/** \ingroup  Maillages
 \brief Recherche si un pt est a l'interieur d'une boite définie par ses deux extrémités et par une base dont le dernier vecteur est la normale. Une procédure est écrite en 2d et une autre en 3d
 
 Pour le cas 2d, on cherche à déterminer si le pt M est dans le segment [AB]. Pour cela, on calcul les distances MA et MB puis on vérifie si \f$ \frac{\vec{MA}.\vec{MB}}{MA MB} =-1 \f$ à epsilon près.
@@ -269,7 +267,7 @@ template<class T> bool pt_in_box( Vec<T,3> &pt, Vec<Vec<T,3>,2> &box, Vec<Vec<T,
     return flag;
 }
 
-/** \ingroup  Maillages 
+/** \ingroup  Maillages
 \brief Recherche si un pt est a l'interieur d'une boite définie par ses deux extrémités (rectangle en 2d et parallélépipède en 3d)
 
 Pour le cas 2d ou 3d, on cherche à savoir si le pt M est dans le rectangle ou (parallélépipède) défini par les deux points extrémités de la boite A et B. On calcule donc :
@@ -309,39 +307,39 @@ template<class T> bool pt_in_box( const Vec<T,3> &pt, Vec<Vec<T,3>,2> &box, cons
 
 
 /** \brief Intersection entre deux boites definies par leurs noeuds extremite. Cette fonction renvoit 1 si les deux boites s'intersectent ou se touchent (à epsilon près), 0 sinon
-
+  
 Une fonction est écrite pour des boites 2d et une autre pour des boites 3d. Normalement aucune restriction n'est nécessaire dans l'ordre des points extrémités des boites. Les boites doivent simplement pouvoir être représentées par 2 points et donc alignées sur les axes x, y, z. Cette fonction ne nécessite en 3d que 3 comparaisons et 2 tests ainsi que l'utilisation de produits scalaires qui sont normalement optimisés.
 **/
 template<class T> bool intersection_box( Vec<Vec<T,2>,2> &box1, Vec<Vec<T,2>,2> &box2, const double &eps=1e-6 ) {
     typedef Vec<T,2> TV;
-    //boite 1
+    // boite 1
     TV P1 = (box1[0]+box1[1])/2.;
     TV E1 = abs(box1[1]-box1[0])/2.;
-    //boite 2
+    // boite 2
     TV P2 = (box2[0]+box2[1])/2.;
     TV E2 = abs(box2[1]-box2[0])/2.;
-
+    
     TV V = P2-P1;
     TV x(1,0);
     TV y(0,1);
-
+    
     return ( (abs(dot(V,x))<=dot(E1,x)+dot(E2,x)+eps) and (abs(dot(V,y))<=dot(E1,y)+dot(E2,y)+eps) ) ;
 }
-    template<class T> bool intersection_box( Vec<Vec<T,3>,2> &box1, Vec<Vec<T,3>,2> &box2, const double &eps=1e-6 ) {
+template<class T> bool intersection_box( Vec<Vec<T,3>,2> &box1, Vec<Vec<T,3>,2> &box2, const double &eps=1e-6 ) {
     typedef Vec<T,3> TV;
-    //boite 1
+    // boite 1
     TV P1 = (box1[0]+box1[1])/2.;
     TV E1 = abs(box1[1]-box1[0])/2.;
-    //boite 2
+    // boite 2
     TV P2 = (box2[0]+box2[1])/2.;
     TV E2 = abs(box2[1]-box2[0])/2.;
-
+    
     TV V = P2-P1;
     TV x(1,0,0);
     TV y(0,1,0);
     TV z(0,0,1);
-
+    
     return ( (abs(dot(V,x))<=dot(E1,x)+dot(E2,x)+eps) and (abs(dot(V,y))<=dot(E1,y)+dot(E2,y)+eps) and (abs(dot(V,z))<=dot(E1,z)+dot(E2,z)+eps) );
 }
 
-#endif //Tools_h
+#endif // Tools_h

@@ -25,10 +25,10 @@ using namespace std;
 /// ---------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T>
 void calcul_standard_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, const TF &f_adjoint, const string &method, const T &theta, const T &theta_adjoint, const Vec<T> &theta_adjoint_elem, const Vec<unsigned> &correspondance_elem_m_adjoint_to_elem_m, const Vec< Vec<T> > &dep_hat, const T &I_h, const T &I_hh, const bool want_introduction_sigma_hat_m = true ) {
-
+    
     cout << "Bornes d'erreur standard sur la quantite d'interet locale" << endl;
     cout << "---------------------------------------------------------" << endl << endl;
-
+    
     if ( not want_introduction_sigma_hat_m ) {
         cout << "xi = theta * theta_adjoint" << endl;
         cout << "   = " << theta * theta_adjoint << endl << endl;
@@ -53,9 +53,9 @@ void calcul_standard_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
     calcul_error_estimate_proj_on_adjoint.theta_elem_proj_on_adjoint = &theta_elem_proj_on_adjoint;
     
     apply( m_adjoint.elem_list, calcul_error_estimate_proj_on_adjoint );
-
+    
     T sum_theta_direct_adjoint = 0.;
-
+    
     for (unsigned n=0;n<m_adjoint.elem_list.size();++n)
         sum_theta_direct_adjoint += sqrt( theta_elem_proj_on_adjoint[ n ] * theta_adjoint_elem[ n ] );
     
@@ -98,9 +98,9 @@ void calcul_standard_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
 /// ---------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T, class Pvec>
 void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, const TF &f_adjoint, const string &structure, const unsigned &deg_p, const string &method, const string &method_adjoint, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const string &interest_quantity, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool &spread_cut, const T &theta, const T &theta_adjoint, const Vec< Vec<T> > &dep_hat, const Vec< Vec<T> > &dep_adjoint_hat, const T &I_h, const T &I_hh, const string &integration_k, const unsigned &integration_nb_points, const bool want_introduction_sigma_hat_m = true, const bool want_solve_eig_local_improvement = false, const bool use_mask_eig_local_improvement = false, const bool display_vtu_lambda = false, const bool display_vtu_adjoint_lambda = false, const string &prefix = "paraview_direct", const string &prefix_adjoint = "paraview_adjoint", const bool disp = false ) {
-
+    
     static const unsigned dim = TM::dim;
-
+    
     typedef Mat<T, Sym<>, SparseLine<> > TMatSymSparse;
     typedef Mat<T, Sym<> > TMatSym;
     typedef Mat<T, Gen<>, SparseLine<> > TMatGenSparse;
@@ -109,7 +109,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
     
     cout << "Amelioration des bornes d'erreur sur la quantite d'interet locale" << endl;
     cout << "-----------------------------------------------------------------" << endl << endl;
-
+    
     cout << "technique d'amelioration de l'erreur locale : " << local_improvement << endl;
     cout << "forme geometrique des domaines homothetiques = " << shape << endl;
     if ( local_improvement == "steklov" ) {
@@ -123,7 +123,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
     Vec<T> domain_length;
     Pvec domain_center( 0. );
     construct_center_length_domain( m, deg_p, shape, interest_quantity, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Re, domain_center, domain_length );
-
+    
     /// Calcul de la constante dans l'amelioration
     /// ------------------------------------------
     
@@ -183,9 +183,9 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
             
             Vec<T> generalized_eig_val;
             Mat<T> generalized_eig_vec;
-
+            
             while( residual > criterium_eq_gen_eig_pb ) {
-
+                
                 ++iter;
                 
                 TM m_mask;
@@ -196,7 +196,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
                 
                 if ( disp )
                     cout << "Construction de la solution numerique du pb aux valeurs propres generalisees a l'iteration " << iter << endl << endl;
-
+                
                 if ( m_mask.node_list.size() ) {
                     if ( remove_lonely_nodes( m_mask ) )
                         cerr << "Des noeuds seuls ont ete retires du maillage du pb aux valeurs propres generalisees..." << endl << endl;
@@ -213,7 +213,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
                 }
                 
                 TF f_mask( m_mask );
-
+                
                 set_material_properties( f_mask, m_mask, structure );
                 
                 if ( local_improvement == "steklov" )
@@ -288,7 +288,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
                 }
                 elem_size_mask /= 2.;
             }
-        
+            
 //            if ( local_improvement == "steklov" )
 //                cout << "constante de Steklov : h = " << max( generalized_eig_val ) << endl;
 //            else if ( local_improvement == "rayleigh" )
@@ -315,17 +315,17 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
 //                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_coarse_Triangle.msh" );
                     read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_fine_Triangle.msh" );
 //                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_very_fine_Triangle.msh" );
-
+                    
 //                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_15_very_coarse_Triangle.msh" );
 //                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_15_coarse_Triangle.msh" );
 //                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_15_fine_Triangle.msh" );
 //                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_15_very_fine_Triangle.msh" );
-
+                    
 //                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_30_very_coarse_Triangle.msh" );
 //                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_30_coarse_Triangle.msh" );
 //                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_30_fine_Triangle.msh" );
 //                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_30_very_fine_Triangle.msh" );
-
+                    
 //                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_45_very_coarse_Triangle.msh" );
 //                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_45_coarse_Triangle.msh" );
 //                    read_msh_2( m_mask, "MESH/CIRCLE_CRACK_2D/circle_crack_45_fine_Triangle.msh" );
@@ -365,7 +365,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
             
             if ( disp )
                 cout << "Construction de la solution numerique du pb aux valeurs propres generalisees" << endl << endl;
-
+            
             if ( m_mask.node_list.size() ) {
                 if ( remove_lonely_nodes( m_mask ) )
                     cerr << "Des noeuds seuls ont ete retires du maillage du pb aux valeurs propres generalisees..." << endl << endl;
@@ -454,7 +454,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
             cout << "constante h = " << generalized_eig_val_eq << endl;
             cout << "residu associe aux conditions d'equilibre = " << residual_vec << endl;
             cout << "norme du residu sur les conditions d'equilibre = " << residual << endl << endl;
-    
+            
 //            if ( local_improvement == "steklov" )
 //                cout << "constante de Steklov : h = " << max( generalized_eig_val ) << endl;
 //            else if ( local_improvement == "rayleigh" )
@@ -479,7 +479,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
         set_mesh_domain( m_adjoint_lambda_min, m_adjoint, shape, k_min, domain_length, domain_center, spread_cut );
     else if ( local_improvement == "rayleigh" )
         set_mesh_domain( m_adjoint_lambda_opt, m_adjoint, shape, k_opt, domain_length, domain_center, spread_cut );
-
+    
     /// Formulation des pbs extraits associes aux pbs direct/adjoint
     /// ------------------------------------------------------------
     TF f_lambda_min( m_lambda_min );
@@ -512,7 +512,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
         dep_hat_lambda_max.resize( m_lambda_max.elem_list.size() );
         calcul_error_estimate_lambda( m, m_lambda_min, f, f_lambda_min, "direct", method, shape, k_min, theta_lambda_min, dep_hat, dep_hat_lambda_min );
         calcul_error_estimate_lambda( m, m_lambda_max, f, f_lambda_max, "direct", method, shape, k_max, theta_lambda_max, dep_hat, dep_hat_lambda_max );
-
+        
         const string prefix_lambda_min = prefix + "_lambda_min_" + to_string( k_min );
         const string prefix_lambda_max = prefix + "_lambda_max_" + to_string( k_max );
         if ( display_vtu_lambda ) {
@@ -527,7 +527,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
     else if ( local_improvement == "rayleigh" ) {
         dep_hat_lambda_opt.resize( m_lambda_opt.elem_list.size() );
         calcul_error_estimate_lambda( m, m_lambda_opt, f, f_lambda_opt, "direct", method, shape, k_opt, theta_lambda_opt, dep_hat, dep_hat_lambda_opt );
-
+        
         const string prefix_lambda_opt = prefix + "_lambda_opt_" + to_string( k_opt );
         if ( display_vtu_lambda )
             display( m_lambda_opt, prefix_lambda_opt );
@@ -536,11 +536,11 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
     }
     
     Vec< Vec<T> > dep_adjoint_hat_lambda_min, dep_adjoint_hat_lambda_opt;
-
+    
     if ( local_improvement == "steklov" ) {
         dep_adjoint_hat_lambda_min.resize( m_adjoint_lambda_min.elem_list.size() );
         calcul_error_estimate_lambda( m_adjoint, m_adjoint_lambda_min, f_adjoint, f_adjoint_lambda_min, "adjoint", method_adjoint, shape, k_min, theta_adjoint_lambda_min, dep_adjoint_hat, dep_adjoint_hat_lambda_min );
-
+        
         const string prefix_adjoint_lambda_min = prefix_adjoint + "_lambda_min_" + to_string( k_min );
         if ( display_vtu_adjoint_lambda )
             display( m_adjoint_lambda_min, prefix_adjoint_lambda_min );
@@ -550,7 +550,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
     else if ( local_improvement == "rayleigh" ) {
         dep_adjoint_hat_lambda_opt.resize( m_adjoint_lambda_opt.elem_list.size() );
         calcul_error_estimate_lambda( m_adjoint, m_adjoint_lambda_opt, f_adjoint, f_adjoint_lambda_opt, "adjoint", method, shape, k_opt, theta_adjoint_lambda_opt, dep_adjoint_hat, dep_adjoint_hat_lambda_opt );
-
+        
         string prefix_adjoint_lambda_opt = prefix_adjoint + "_lambda_opt_" + to_string( k_opt );
         if ( display_vtu_adjoint_lambda )
             display( m_adjoint_lambda_opt, prefix_adjoint_lambda_opt );
@@ -588,7 +588,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
         cout << "borne inferieure :" << endl;
         cout << "chi_inf = I_h + I_hh + I_hhh - chi" << endl;
         cout << "        = " << chi_inf << endl << endl;
-
+        
         cout << "borne superieure :" << endl;
         cout << "chi_sup = I_h + I_hh + I_hhh + chi" << endl;
         cout << "        = " << chi_sup << endl << endl;
