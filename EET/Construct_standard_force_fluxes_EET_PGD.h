@@ -21,8 +21,8 @@ using namespace std;
 
 /// Construction standard des densites d'effort par la methode EET
 /// --------------------------------------------------------------
-template<class TM, class TF, class T, class TTV, class TTVV, class TTTVV, class TTVVV, class TMATVV>
-void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, const unsigned &cost_function, const bool enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, Vec< Vec< Vec<T> > > &force_fluxes, const TTTVV &dep_space, const TTVVV &dep_param, const TTV &dep_part, const TTVV &kappa, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const unsigned &mode, const bool want_local_enrichment = false, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool disp = false ) {
+template<class TM, class TF, class T, class TV, class TVV, class TTVV, class TTVVV, class TMATVV>
+void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, const unsigned &cost_function, const bool enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, Vec< Vec< Vec<T> > > &force_fluxes, const TTVV &dep_space, const TTVVV &dep_param, const TV &dep_part, const TVV &kappa, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const unsigned &mode, const bool want_local_enrichment = false, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool disp = false ) {
     
     static const unsigned dim = TM::dim;
     
@@ -188,7 +188,7 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
         }
     }
     
-    Calcul_Nodal_Vector_r_PGD<T, TVV, TTVV, TTVVV, TMATVV> calcul_nodal_vector_r_PGD;
+    Calcul_Nodal_Vector_r_PGD<T, TTVV, TTVVV, TV, TVV, TMATVV> calcul_nodal_vector_r_PGD;
     calcul_nodal_vector_r_PGD.elem_ind = &elem_ind;
     calcul_nodal_vector_r_PGD.node_list_face = &node_list_face;
     calcul_nodal_vector_r_PGD.elem_cpt_node = &elem_cpt_node;
@@ -342,7 +342,7 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
         }
     }
     
-    Calcul_Nodal_Vector_q_PGD<T, TVV, TTVV, TTVVV, TMATVV> calcul_nodal_vector_q_PGD;
+    Calcul_Nodal_Vector_q_PGD<T, TTVV, TTVVV, TV, TVV, TMATVV> calcul_nodal_vector_q_PGD;
     calcul_nodal_vector_q_PGD.face_type = &face_type;
     calcul_nodal_vector_q_PGD.nodal_ind = &nodal_ind;
     calcul_nodal_vector_q_PGD.node_list_face = &node_list_face;
