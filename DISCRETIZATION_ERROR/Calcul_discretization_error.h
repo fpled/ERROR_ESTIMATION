@@ -129,7 +129,7 @@ void calcul_discretization_error( TM &m, TM &m_ref, const TF &f, const TF &f_ref
             bool homogeneous_constraints = 1;
             
             for (unsigned nc=0;nc<f.constraints.size();++nc) {
-                if ( f.constraints[nc].res != 0.0 ) {
+                if ( not ( f.constraints[nc].res == 0 ) ) {
                     homogeneous_constraints = 0;
                     cerr << "Conditions aux limites de Dirichlet non homogènes..." << endl << endl;
                     break;
