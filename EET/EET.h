@@ -57,7 +57,7 @@ struct Calcul_Nodal_Vector_r {
     }
 };
 
-template<class T, class TTVV, class TTVVV, class TV, class TVV, class TMATVV>
+template<class TTVV, class TTVVV, class TV, class TVV, class TMATVV>
 struct Calcul_Nodal_Vector_r_PGD {
     const Vec< Vec< Vec<unsigned> > >* elem_ind;
     const Vec< Vec<unsigned> >* node_list_face;
@@ -71,7 +71,7 @@ struct Calcul_Nodal_Vector_r_PGD {
     const TMATVV* K_param;
     const Vec< Vec<unsigned> >* elem_group;
     const unsigned* mode;
-    template<class TE, class TM, class TF> void operator()( const TE &elem, const TM &m, TF &f, Vec< Vec< Vec<T> > > &r ) const {
+    template<class TE, class TM, class TF, class T> void operator()( const TE &elem, const TM &m, TF &f, Vec< Vec< Vec<T> > > &r ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
         f.vectors[0] = - (*dep_part);
         for (unsigned p=0;p<(*elem_group).size()-1;++p)
@@ -80,9 +80,9 @@ struct Calcul_Nodal_Vector_r_PGD {
             T alpha = 1.;
             for (unsigned p=0;p<(*elem_group).size()-1;++p) {
                 if ( find( (*elem_group)[p], _1 == elem.number ) )
-                    alpha *= dot( dep_param[ p ][ *mode ], K_param[p][1] * dep_param[ p ][ i ] );
+                    alpha *= dot( (*dep_param)[ p ][ *mode ], (*K_param)[p][1] * (*dep_param)[ p ][ i ] );
                 else
-                    alpha *= dot( dep_param[ p ][ *mode ], K_param[p][0] * dep_param[ p ][ i ] );
+                    alpha *= dot( (*dep_param)[ p ][ *mode ], (*K_param)[p][0] * (*dep_param)[ p ][ i ] );
             }
             f.vectors[0] += alpha * (*dep_space)[ i ];
         }
@@ -157,7 +157,7 @@ struct Calcul_Nodal_Vector_q {
     }
 };
 
-template<class T, class TTVV, class TTVVV, class TV, class TVV, class TMATVV>
+template<class TTVV, class TTVVV, class TV, class TVV, class TMATVV>
 struct Calcul_Nodal_Vector_q_PGD {
     const Vec< Vec<unsigned> >* face_type;
     const Vec< Vec< Vec<unsigned> > >* nodal_ind;
@@ -170,7 +170,7 @@ struct Calcul_Nodal_Vector_q_PGD {
     const TMATVV* K_param;
     const Vec< Vec<unsigned> >* elem_group;
     const unsigned* mode;
-    template<class TE, class TM, class TF> void operator()( const TE &elem, const TM &m, TF &f, Vec< Vec< Vec<T> > > &q ) const {
+    template<class TE, class TM, class TF, class T> void operator()( const TE &elem, const TM &m, TF &f, Vec< Vec< Vec<T> > > &q ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
         f.vectors[0] = - (*dep_part);
         for (unsigned p=0;p<(*elem_group).size()-1;++p)
@@ -179,9 +179,9 @@ struct Calcul_Nodal_Vector_q_PGD {
             T alpha = 1.;
             for (unsigned p=0;p<(*elem_group).size()-1;++p) {
                 if ( find( (*elem_group)[p], _1 == elem.number ) )
-                    alpha *= dot( dep_param[ p ][ *mode ], K_param[p][1] * dep_param[ p ][ i ] );
+                    alpha *= dot( (*dep_param)[ p ][ *mode ], (*K_param)[p][1] * (*dep_param)[ p ][ i ] );
                 else
-                    alpha *= dot( dep_param[ p ][ *mode ], K_param[p][0] * dep_param[ p ][ i ] );
+                    alpha *= dot( (*dep_param)[ p ][ *mode ], (*K_param)[p][0] * (*dep_param)[ p ][ i ] );
             }
             f.vectors[0] += alpha * (*dep_space)[ i ];
         }
@@ -221,7 +221,7 @@ struct Calcul_Nodal_Vector_b {
     }
 };
 
-template<class T, class TTVV, class TTVVV, class TV, class TVV, class TMATVV>
+template<class TTVV, class TTVVV, class TV, class TVV, class TMATVV>
 struct Calcul_Nodal_Vector_b_PGD {
     const Vec< Vec<bool> >* minimisation;
     const Vec< Vec<unsigned> >* face_type;
@@ -236,7 +236,7 @@ struct Calcul_Nodal_Vector_b_PGD {
     const TMATVV* K_param;
     const Vec< Vec<unsigned> >* elem_group;
     const unsigned* mode;
-    template<class TE, class TM, class TF> void operator()( const TE &elem, const TM &m, TF &f, Vec< Vec< Vec<T> > > &b ) const {
+    template<class TE, class TM, class TF, class T> void operator()( const TE &elem, const TM &m, TF &f, Vec< Vec< Vec<T> > > &b ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
         f.vectors[0] = - (*dep_part);
         for (unsigned p=0;p<(*elem_group).size()-1;++p)
@@ -245,9 +245,9 @@ struct Calcul_Nodal_Vector_b_PGD {
             T alpha = 1.;
             for (unsigned p=0;p<(*elem_group).size()-1;++p) {
                 if ( find( (*elem_group)[p], _1 == elem.number ) )
-                    alpha *= dot( dep_param[ p ][ *mode ], K_param[p][1] * dep_param[ p ][ i ] );
+                    alpha *= dot( (*dep_param)[ p ][ *mode ], (*K_param)[p][1] * (*dep_param)[ p ][ i ] );
                 else
-                    alpha *= dot( dep_param[ p ][ *mode ], K_param[p][0] * dep_param[ p ][ i ] );
+                    alpha *= dot( (*dep_param)[ p ][ *mode ], (*K_param)[p][0] * (*dep_param)[ p ][ i ] );
             }
             f.vectors[0] += alpha * (*dep_space)[ i ];
         }
