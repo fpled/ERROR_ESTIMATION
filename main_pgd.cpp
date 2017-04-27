@@ -504,7 +504,6 @@ int main( int argc, char **argv ) {
             mp.set_fontsize(16);
             mp.set_xlabel_interpreter(xlabel.c_str(),"'latex'");
             mp.set_ylabel_interpreter(ylabel.c_str(),"'latex'");
-            mp.set_legend_interpreter(legend.c_str(),"'latex'");
             mp.save_output((output + ".fig'").c_str());
             mp.save_output((output + ".epsc2'").c_str());
             mp.save_output((output + ".tex'").c_str());
