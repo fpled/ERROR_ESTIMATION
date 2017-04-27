@@ -1,5 +1,5 @@
 //
-// C++ Interface: Calcul_error_estimate_prolongation_condition
+// C++ Interface: Calcul_error_estimate_prolongation_condition_PGD
 //
 // Description: calcul d'un champ de contrainte admissible et d'un estimateur theta de l'erreur globale pour les methodes basees sur la condition de prolongement (EET,EESPT)
 //
@@ -9,8 +9,8 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#ifndef Calcul_error_estimate_prolongation_condition_h
-#define Calcul_error_estimate_prolongation_condition_h
+#ifndef Calcul_error_estimate_prolongation_condition_PGD_h
+#define Calcul_error_estimate_prolongation_condition_PGD_h
 
 #include "ECRE.h"
 #include "../DISCRETIZATION_ERROR/Discretization_error.h"
@@ -20,12 +20,8 @@ using namespace std;
 
 /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale pour les methodes basees sur la condition de prolongement (EET,EESPT)
 /// -----------------------------------------------------------------------------------------------------------------------------------------------------------------
-template<class TM, class TF, class T>
-void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const string &pb, const string &method, T &theta, Vec<T> &theta_elem, const Vec< Vec<T> > &dep_hat, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool disp = false ) {
-    
-    //    const Vec< Vec<T>, max_mode > &dep_space, const Vec< Vec< Vec<T>, max_mode > > &dep_param, const unsigned &nb_modes, const TMAT &K_space, const TMAT &K_unk_s, const TMAT &K_k_s, const TMAT &K_unk_p, const TMAT &K_k_p, const Vec<T> &F_s, const Vec<T> &F_p, const Vec<unsigned> &elem_list_PGD_unknown_param,
-    
-    //    m, f, pb, "EET", theta, theta_elem, dep_part_hat, dep_space_hat, want_global_discretization_error, want_local_discretization_error
+template<class TM, class TF, class T, class TV, class TVV, class TTVV, class TTVVV, class TTTVVV>
+void calcul_error_estimate_prolongation_condition_PGD( TM &m, TF &f, const string &pb, const string &method, T &theta, TV &theta_elem, const TTVV &dep_space, const TTVVV &dep_param, const TTTVVV &dep_space_hat, const TVV &dep_space_part_hat, const Vec< Vec<unsigned> > &elem_group, const unsigned &nb_modes, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool disp = false ) {
     
     /// ------------------------------------------------------------------------------------------------------- ///
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale ///
@@ -40,7 +36,22 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
     theta_elem.resize( m.elem_list.size() );
     theta_elem.set( 0. );
     
-    Calc_Elem_Error_Estimate_EET_EESPT<T> calc_elem_error_estimate_EET_EESPT;
+    f.vectors[0].set( 0. );
+    for (unsigned n=0;n<nb_modes;++n) {
+        TV dep_mode = dep_space[ n ];
+        for (unsigned p=0;p<elem_group.size()-1;++p)
+            dep_mode *= dep_param[ p ][ n ][ 0 ];
+        f.vectors[0] +=  dep_mode;
+    }
+    TVV dep_hat = dep_space_part_hat;
+    for (unsigned n=0;n<nb_modes;++n) {
+        TVV dep_mode_hat = dep_space_hat[ n ];
+        for (unsigned p=0;p<elem_group.size()-1;++p)
+            dep_mode_hat *= dep_param[ p ][ n ][ 0 ];
+        dep_hat += dep_mode_hat;
+    }
+    
+    Calc_Elem_Error_Estimate_EET_EESPT<TV,TVV> calc_elem_error_estimate_EET_EESPT;
     calc_elem_error_estimate_EET_EESPT.dep_hat = &dep_hat;
     calc_elem_error_estimate_EET_EESPT.method = &method;
     calc_elem_error_estimate_EET_EESPT.theta_elem = &theta_elem;
@@ -92,7 +103,7 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
     }
     
     if ( pb == "direct" and want_local_discretization_error ) {
-        Vec<T> eff_index_elem;
+        TV eff_index_elem;
         eff_index_elem.resize( m.elem_list.size(), 0. );
         eff_index_elem.set( 0. );
         
@@ -109,4 +120,4 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
     }
 }
 
-#endif // Calcul_error_estimate_prolongation_condition_h
+#endif // Calcul_error_estimate_prolongation_condition_PGD_h
