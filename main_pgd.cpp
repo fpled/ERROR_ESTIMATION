@@ -49,7 +49,7 @@ int main( int argc, char **argv ) {
     typedef TM_param::Pvec Pvec_param;
     typedef TM::TElemListPtr TElemListPtr;
     typedef Mat<T, Sym<>, SparseLine<> > TMatSymSparse;
-    static const string structure = "plate_flexion"; // structure
+    static const string structure = "spherical_inclusions"; // structure
     // 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes,
     //      square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
     // 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes,
