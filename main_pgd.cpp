@@ -152,8 +152,8 @@ int main( int argc, char **argv ) {
     /// Proper Generalized Decomposition - PGD
     /// --------------------------------------
     static const bool want_normalization = 1; // normalisation
-    static const unsigned max_mode = 2; // nb de modes max dans la decomposition
-    static const unsigned max_iter = 10; // nb d'iterations max de l'algorithme de point fixe
+    static const unsigned max_mode = 5; // nb de modes max dans la decomposition
+    static const unsigned max_iter = 4; // nb d'iterations max de l'algorithme de point fixe
     static const T tol_convergence_criterium_mode = 1e-4; // precision pour critere d'arret global (boucle sur les modes)
     static const T tol_convergence_criterium_iter = 1e-8; // precision pour critere d'arret local (processus iteratif)
     static const Vec<T,2> support_param( 1., 10. ); // support de l'espace des parametres
