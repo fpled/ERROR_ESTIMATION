@@ -81,7 +81,7 @@ int main( int argc, char **argv ) {
     
     /// Global error estimation method
     /// ------------------------------
-    static const bool want_global_estimation = 1; // calcul d'un estimateur d'erreur globale (au sens de la norme energetique)
+    static const bool want_global_estimation = 0; // calcul d'un estimateur d'erreur globale (au sens de la norme energetique)
     static const string method = "EET"; //methode de construction de champs admissibles pour le pb direct : EET, SPET, EESPT
     static const string method_adjoint = "EET"; // methode de construction de champs admissibles pour le pb adjoint : EET, SPET, EESPT
     static const unsigned cost_function = 0; // fonction-cout pour les methodes EET, EESPT :
@@ -484,37 +484,57 @@ int main( int argc, char **argv ) {
                 dp_param[ p ][ n ].exec( prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1) );
             else
                 dp_param[ p ][ n ].make_pvd_file( prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1) );
+            
             string output = "'" + prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1);
             string xlabel = "'$p_" + to_string(p+1) + "$'";
             string ylabel = "'$\\gamma_{" + to_string(p+1) + "," + to_string(n+1) + "}$'";
+            string params = ",'LineStyle','-','Color',getfacecolor(" + to_string(p+4) + "),'LineWidth',1";
+            
+//            mp.save_plot( vals_param[p], dep_param[ p ][ n ], (output + ".fig'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
+//            mp.save_plot( vals_param[p], dep_param[ p ][ n ], (output + ".epsc2'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
+//            mp.save_plot( vals_param[p], dep_param[ p ][ n ], (output + ".tex'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
+            
 //            string params = "notitle w l lt " + to_string(p+1) + " lw 1";
 //            save_plot( vals_param[p], dep_param[ p ][ n ], (output + ".tex'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
-            string params = ",'LineStyle','-','Color',getfacecolor(" + to_string(p+4) + "),'LineWidth',1";
-            mp.save_plot( vals_param[p], dep_param[ p ][ n ], (output + ".fig'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
-            mp.save_plot( vals_param[p], dep_param[ p ][ n ], (output + ".epsc2'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
-            mp.save_plot( vals_param[p], dep_param[ p ][ n ], (output + ".tex'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
+            
+            mp.figure();
+            mp.plot( vals_param[p], dep_param[ p ][ n ], params.c_str() );
+            mp.grid_on();
+            mp.box_on();
+            mp.set_fontsize(16);
+            mp.set_xlabel_interpreter(xlabel.c_str(),"'latex'");
+            mp.set_ylabel_interpreter(ylabel.c_str(),"'latex'");
+            mp.set_legend_interpreter(legend.c_str(),"'latex'");
+            mp.save_output((output + ".fig'").c_str());
+            mp.save_output((output + ".epsc2'").c_str());
+            mp.save_output((output + ".tex'").c_str());
+            mp.close();
         }
     }
-    string output = "'" + prefix + "_estimates";
-    string xlabel = "'$m$'";
-    string ylabel = "'$E^2_{\\mathrm{CRE}}$'";
-    string legend = "'$E^2_{\\mathrm{CRE}}$'";
-    string params = ",'LineStyle','-','Color',getfacecolor(4),'LineWidth',1";
-    mp.figure();
-    mp.semilogy( range(1,nb_modes+1), theta_2_mode, params.c_str() );
-    mp.grid_on();
-    mp.box_on();
-    mp.set_fontsize(16);
-    mp.set_xlabel_interpreter(xlabel.c_str(),"'latex'");
-//    mp.set_ylabel_interpreter(ylabel.c_str(),"'latex'");
-    mp.set_legend_interpreter(legend.c_str(),"'latex'");
-    mp.save_output((output + ".fig'").c_str());
-    mp.save_output((output + ".epsc2'").c_str());
-    mp.save_output((output + ".tex'").c_str());
-    mp.close();
-//    mp.save_semilogy( range(1,nb_modes+1), theta_2_mode, (output + ".fig'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
-//    mp.save_semilogy( range(1,nb_modes+1), theta_2_mode, (output + ".epsc2'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
-//    mp.save_semilogy( range(1,nb_modes+1), theta_2_mode, (output + ".tex'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
+    if ( want_global_estimation or want_local_estimation ) {
+        string output = "'" + prefix + "_estimates";
+        string xlabel = "'$m$'";
+        string ylabel = "'$E^2_{\\mathrm{CRE}}$'";
+        string legend = "'$E^2_{\\mathrm{CRE}}$'";
+        string params = ",'LineStyle','-','Color',getfacecolor(4),'LineWidth',1";
+        
+//        mp.save_semilogy( range(1,nb_modes+1), theta_2_mode, (output + ".fig'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
+//        mp.save_semilogy( range(1,nb_modes+1), theta_2_mode, (output + ".epsc2'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
+//        mp.save_semilogy( range(1,nb_modes+1), theta_2_mode, (output + ".tex'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
+        
+        mp.figure();
+        mp.semilogy( range(1,nb_modes+1), theta_2_mode, params.c_str() );
+        mp.grid_on();
+        mp.box_on();
+        mp.set_fontsize(16);
+        mp.set_xlabel_interpreter(xlabel.c_str(),"'latex'");
+//        mp.set_ylabel_interpreter(ylabel.c_str(),"'latex'");
+        mp.set_legend_interpreter(legend.c_str(),"'latex'");
+        mp.save_output((output + ".fig'").c_str());
+        mp.save_output((output + ".epsc2'").c_str());
+        mp.save_output((output + ".tex'").c_str());
+        mp.close();
+    }
     
     if ( want_verif_PGD )
         check_PGD( m_param, m, f, "direct", structure, loading, mesh_size, elem_group, nb_vals_verif, vals_param, nb_modes, dep_space, dep_param, prefix, display_pvd_PGD_space_verif );
