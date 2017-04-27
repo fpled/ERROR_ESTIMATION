@@ -25,6 +25,7 @@ void calcul_norm_dep( TM &m, const TF &f, const string &pb, const bool disp = fa
     
     typedef typename TM::Pvec Pvec;
     typedef typename TM::TNode::T T;
+    typedef Vec<T> TV;
     
     if ( disp ) {
         if ( pb == "direct" ) {
@@ -36,11 +37,11 @@ void calcul_norm_dep( TM &m, const TF &f, const string &pb, const bool disp = fa
     }
     
     T norm_dep = 0.;
-    Vec<T> norm_dep_elem;
+    TV norm_dep_elem;
     norm_dep_elem.resize( m.elem_list.size() );
     norm_dep_elem.set( 0. );
     
-    Add_Elem_Norm_Dep<T> add_elem_norm_dep;
+    Add_Elem_Norm_Dep<T,TV> add_elem_norm_dep;
     add_elem_norm_dep.norm_dep_elem = &norm_dep_elem;
     
     apply( m.elem_list, add_elem_norm_dep, m, f, norm_dep );
@@ -70,6 +71,7 @@ void calcul_norm_dep_init( TM &m, const TF &f, const string &pb, const bool disp
     
     typedef typename TM::Pvec Pvec;
     typedef typename TM::TNode::T T;
+    typedef Vec<T> TV;
     
     if ( disp ) {
         if ( pb == "direct" )
@@ -79,11 +81,11 @@ void calcul_norm_dep_init( TM &m, const TF &f, const string &pb, const bool disp
     }
     
     T norm_dep_init = 0.;
-    Vec<T> norm_dep_elem_init;
+    TV norm_dep_elem_init;
     norm_dep_elem_init.resize( m.elem_list.size() );
     norm_dep_elem_init.set( 0. );
     
-    Add_Elem_Norm_Dep_Init<T> add_elem_norm_dep_init;
+    Add_Elem_Norm_Dep_Init<T,TV> add_elem_norm_dep_init;
     add_elem_norm_dep_init.norm_dep_elem_init = &norm_dep_elem_init;
     
     apply( m.elem_list, add_elem_norm_dep_init, m, f, norm_dep_init );
@@ -113,9 +115,10 @@ void calcul_discretization_error( TM &m, TM &m_ref, const TF &f, const TF &f_ref
     
     typedef typename TM::Pvec Pvec;
     typedef typename TM::TNode::T T;
+    typedef Vec<T> TV;
     
     T discretization_error = 0.;
-    Vec<T> discretization_error_elem;
+    TV discretization_error_elem;
     discretization_error_elem.resize( m.elem_list.size() );
     discretization_error_elem.set( 0. );
     
@@ -159,7 +162,7 @@ void calcul_discretization_error( TM &m, TM &m_ref, const TF &f, const TF &f_ref
                 discretization_error = sqrt( discretization_error );
                 m.discretization_error = discretization_error;
                 cout << "mesure de l'erreur de discretisation globale :" << endl;
-                cout << "e = norm(u_ex - u_h) = sqrt( norm(u_ex) - norm(u_h) ) = " << m.discretization_error << endl;
+                cout << "e = norm(u_ex - u_h) = sqrt( norm(u_ex)^2 - norm(u_h)^2 ) = " << m.discretization_error << endl;
                 cout << "e / norm(u_h) = " << m.discretization_error / m.norm_dep * 100. << " %" << endl << endl;
                 
                 t.stop();
@@ -177,7 +180,7 @@ void calcul_discretization_error( TM &m, TM &m_ref, const TF &f, const TF &f_ref
                 if ( disp )
                     cout << "Calcul approche des mesures (elementaires) de l'erreur de discretisation locale" << endl << endl;
                 
-                Calcul_Elem_Discretization_Error<TM, TF, T> calcul_elem_discretization_error;
+                Calcul_Elem_Discretization_Error<TM, TF, TV> calcul_elem_discretization_error;
                 calcul_elem_discretization_error.m = &m;
                 calcul_elem_discretization_error.m_ref = &m_ref;
                 calcul_elem_discretization_error.f = &f;
@@ -190,19 +193,19 @@ void calcul_discretization_error( TM &m, TM &m_ref, const TF &f, const TF &f_ref
                 
 //                for (unsigned n=0;n<m.elem_list.size();++n) {
 //                    cout << "mesure de l'erreur de discretisation locale au carre sur l'element " << n << " :" << endl;
-//                    cout << "e_elem^2 = norm( u_ex - u_h )_elem^2 = " << discretization_error_elem[ n ] << endl;
+//                    cout << "e_elem^2 = norm(u_ex - u_h)_elem^2 = " << discretization_error_elem[ n ] << endl;
 //                }
                 
                 T sum_discretization_error_elem = 0.;
-                for (unsigned n=0;n<m.elem_list.size();++n) {
+                for (unsigned n=0;n<m.elem_list.size();++n)
                     sum_discretization_error_elem += discretization_error_elem[ n ];
-                }
+                    
 //                cout << "indicateur d'erreur globale au carre :" << endl;
-//                cout << "e^2 = norm( u_ex - u_h )^2 = " << sum_discretization_error_elem << endl << endl;
+//                cout << "e^2 = norm(u_ex - u_h)^2 = " << sum_discretization_error_elem << endl << endl;
                 
                 cout << "indicateur d'erreur globale :" << endl;
-                cout << "e = norm( u_ex - u_h ) = " << sqrt( sum_discretization_error_elem ) << endl;
-                cout << "e / norm( u_h ) = " << sqrt( sum_discretization_error_elem ) / m.norm_dep * 100. << " %" << endl << endl;
+                cout << "e = norm(u_ex - u_h) ≈ " << sqrt( sum_discretization_error_elem ) << endl;
+                cout << "e / norm(u_h) ≈ " << sqrt( sum_discretization_error_elem ) / m.norm_dep * 100. << " %" << endl << endl;
                 
                 t.stop();
                 cout << "temps de calcul des mesures (elementaires) de l'erreur de discretisation locale = " << t.res << endl << endl;
@@ -230,11 +233,11 @@ void calcul_discretization_error( TM &m, TM &m_ref, const TF &f, const TF &f_ref
                 sum_discretization_error_elem += discretization_error_elem[ n ];
             }
 //            cout << "indicateur d'erreur globale au carre :" << endl;
-//            cout << "e^2 = norm(u_ex - u_h)^2 = " << sum_discretization_error_elem << endl << endl;
+//            cout << "e^2 = norm(u_ex - u_h)^2 ≈ " << sum_discretization_error_elem << endl << endl;
             
             cout << "indicateur d'erreur globale :" << endl;
-            cout << "e = norm(u_ex - u_h) = " << sqrt( sum_discretization_error_elem ) << endl;
-            cout << "e / norm(u_h) = " << sqrt( sum_discretization_error_elem ) / m.norm_dep * 100. << " %" << endl << endl;
+            cout << "e = norm(u_ex - u_h) ≈ " << sqrt( sum_discretization_error_elem ) << endl;
+            cout << "e / norm(u_h) ≈ " << sqrt( sum_discretization_error_elem ) / m.norm_dep * 100. << " %" << endl << endl;
         }
     }
 }

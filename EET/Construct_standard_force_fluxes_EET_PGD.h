@@ -21,10 +21,16 @@ using namespace std;
 
 /// Construction standard des densites d'effort par la methode EET
 /// --------------------------------------------------------------
-template<class TM, class TF, class T, class TV, class TVV, class TTVV, class TTVVV, class TMATVV>
-void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, const unsigned &cost_function, const bool enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, Vec< Vec< Vec<T> > > &force_fluxes, const TTVV &dep_space, const TTVVV &dep_param, const TV &dep_part, const TVV &kappa, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const unsigned &mode, const bool want_local_enrichment = false, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool disp = false ) {
+template<class TM, class TF, class T, class TV, class TVV, class TTVV, class TVVV, class TTVVV, class TMatVV>
+void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, const unsigned &cost_function, const bool enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, TVVV &force_fluxes, const TTVV &dep_space, const TTVVV &dep_param, const TV &dep_space_part, const TVV &F_param, const TMatVV &K_param, const Vec< Vec<unsigned> > &elem_group, const unsigned &mode, const bool want_local_enrichment = false, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool disp = false ) {
     
     static const unsigned dim = TM::dim;
+    
+    typedef Mat<T, Gen<>, SparseLine<> > TMatGenSparse;
+    typedef Mat<T, Sym<>, SparseLine<> > TMatSymSparse;
+    typedef Mat< T, Diag<> > TMatDiag;
+    typedef Mat<T, Gen<>, SparseUMFPACK > TMatGenSparseUMFPACK;
+    typedef Mat<T, Gen<>, SparseLU > TMatGenSparseLU;
     
     TicToc t_force_fluxes_std;
     t_force_fluxes_std.start();
@@ -144,7 +150,7 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
     if ( disp )
         cout << "Construction des matrices B" << endl << endl;
     
-    Vec< Vec< Mat<T, Gen<>, SparseLine<> > > > B;
+    Vec< Vec< TMatGenSparse > > B;
     B.resize( m.node_list.size() );
     
     for (unsigned i=0;i<m.node_list.size();++i) {
@@ -188,7 +194,7 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
         }
     }
     
-    Calcul_Nodal_Vector_r_PGD<TTVV, TTVVV, TV, TVV, TMATVV> calcul_nodal_vector_r_PGD;
+    Calcul_Nodal_Vector_r_PGD<TV, TVV, TTVV, TTVVV, TMatVV> calcul_nodal_vector_r_PGD;
     calcul_nodal_vector_r_PGD.elem_ind = &elem_ind;
     calcul_nodal_vector_r_PGD.node_list_face = &node_list_face;
     calcul_nodal_vector_r_PGD.elem_cpt_node = &elem_cpt_node;
@@ -196,8 +202,8 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
     calcul_nodal_vector_r_PGD.want_local_enrichment = &want_local_enrichment;
     calcul_nodal_vector_r_PGD.dep_space = &dep_space;
     calcul_nodal_vector_r_PGD.dep_param = &dep_param;
-    calcul_nodal_vector_r_PGD.dep_part = &dep_part;
-    calcul_nodal_vector_r_PGD.kappa = &kappa;
+    calcul_nodal_vector_r_PGD.dep_space_part = &dep_space_part;
+    calcul_nodal_vector_r_PGD.F_param = &F_param;
     calcul_nodal_vector_r_PGD.K_param = &K_param;
     calcul_nodal_vector_r_PGD.elem_group = &elem_group;
     calcul_nodal_vector_r_PGD.mode = &mode;
@@ -295,7 +301,7 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
     if ( disp )
         cout << "Construction des matrices C" << endl << endl;
     
-    Vec< Vec< Mat<T, Gen<>, SparseLine<> > > > C;
+    Vec< Vec< TMatGenSparse > > C;
     C.resize( m.node_list.size() );
     
     for (unsigned i=0;i<m.node_list.size();++i) {
@@ -342,15 +348,15 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
         }
     }
     
-    Calcul_Nodal_Vector_q_PGD<TTVV, TTVVV, TV, TVV, TMATVV> calcul_nodal_vector_q_PGD;
+    Calcul_Nodal_Vector_q_PGD<TV, TVV, TTVV, TTVVV, TMatVV> calcul_nodal_vector_q_PGD;
     calcul_nodal_vector_q_PGD.face_type = &face_type;
     calcul_nodal_vector_q_PGD.nodal_ind = &nodal_ind;
     calcul_nodal_vector_q_PGD.node_list_face = &node_list_face;
     calcul_nodal_vector_q_PGD.face_list_node = &face_list_node;
     calcul_nodal_vector_q_PGD.dep_space = &dep_space;
     calcul_nodal_vector_q_PGD.dep_param = &dep_param;
-    calcul_nodal_vector_q_PGD.dep_part = &dep_part;
-    calcul_nodal_vector_q_PGD.kappa = &kappa;
+    calcul_nodal_vector_q_PGD.dep_space_part = &dep_space_part;
+    calcul_nodal_vector_q_PGD.F_param = &F_param;
     calcul_nodal_vector_q_PGD.K_param = &K_param;
     calcul_nodal_vector_q_PGD.elem_group = &elem_group;
     calcul_nodal_vector_q_PGD.mode = &mode;
@@ -507,7 +513,7 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
     if ( disp )
         cout << "Construction des matrices M" << endl << endl;
     
-    Vec< Vec< Mat< T, Diag<> > > > M;
+    Vec< Vec< TMatDiag > > M;
     M.resize( m.node_list.size() );
     
     for (unsigned i=0;i<m.node_list.size();++i) {
@@ -559,7 +565,7 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
         }
     }
     
-    Calcul_Nodal_Vector_b_PGD<TTVV, TTVVV, TV, TVV, TMATVV> calcul_nodal_vector_b_PGD;
+    Calcul_Nodal_Vector_b_PGD<TV, TVV, TTVV, TTVVV, TMatVV> calcul_nodal_vector_b_PGD;
     calcul_nodal_vector_b_PGD.minimisation = &minimisation;
     calcul_nodal_vector_b_PGD.face_type = &face_type;
     calcul_nodal_vector_b_PGD.face_ind = &face_ind;
@@ -568,8 +574,8 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
     calcul_nodal_vector_b_PGD.want_local_enrichment = &want_local_enrichment;
     calcul_nodal_vector_b_PGD.dep_space = &dep_space;
     calcul_nodal_vector_b_PGD.dep_param = &dep_param;
-    calcul_nodal_vector_b_PGD.dep_part = &dep_part;
-    calcul_nodal_vector_b_PGD.kappa = &kappa;
+    calcul_nodal_vector_b_PGD.dep_space_part = &dep_space_part;
+    calcul_nodal_vector_b_PGD.F_param = &F_param;
     calcul_nodal_vector_b_PGD.K_param = &K_param;
     calcul_nodal_vector_b_PGD.elem_group = &elem_group;
     calcul_nodal_vector_b_PGD.mode = &mode;
@@ -663,7 +669,7 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
 //                    Vec<unsigned> vec_unk = range( nb_unk[ i ][ d ] );
 //                    Vec<unsigned> vec_eq_indep = range( nb_eq_indep[ i ][ d ] );
 //                    Vec<unsigned> vec_unk_to_unk_plus_eq_indep = range( nb_unk[ i ][ d ], nb_unk[ i ][ d ] + nb_eq_indep[ i ][ d ] );
-//                    Mat<T, Gen<>, SparseLine<> > trans_B = trans( B[ i ][ d ] );
+//                    TMatGenSparse trans_B = trans( B[ i ][ d ] );
 //                    K[ i ][ d ]( vec_unk, vec_unk ) = M[ i ][ d ][ vec_unk ] * 1.;
 //                    K[ i ][ d ]( vec_unk_to_unk_plus_eq_indep, vec_unk ) = B[ i ][ d ]( vec_eq_indep, vec_unk ) * 1.;
 //                    K[ i ][ d ]( vec_unk, vec_unk_to_unk_plus_eq_indep ) = trans_B( vec_unk, vec_eq_indep ) * 1.;
@@ -694,8 +700,8 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
 //                    Vec<unsigned> vec_eq_indep = range( nb_eq_indep[ i ][ d ] );
 //                    Vec<unsigned> vec_unk_to_unk_plus_eq_imp = range( nb_unk[ i ][ d ], nb_unk[ i ][ d ] + nb_eq_imp[ i ][ d ] );
 //                    Vec<unsigned> vec_unk_plus_eq_imp_to_unk_plus_eq_imp_plus_eq_indep = range( nb_unk[ i ][ d ] + nb_eq_imp[ i ][ d ], nb_unk[ i ][ d ] + nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] );
-//                    Mat<T, Gen<>, SparseLine<> > trans_B = trans( B[ i ][ d ] );
-//                    Mat<T, Gen<>, SparseLine<> > trans_C = trans( C[ i ][ d ] );
+//                    TMatGenSparse trans_B = trans( B[ i ][ d ] );
+//                    TMatGenSparse trans_C = trans( C[ i ][ d ] );
 //                    K[ i ][ d ]( vec_unk, vec_unk ) = M[ i ][ d ][ vec_unk ] * 1.;
 //                    K[ i ][ d ]( vec_unk_to_unk_plus_eq_imp, vec_unk ) = C[ i ][ d ]( vec_eq_imp, vec_unk ) * 1.;
 //                    K[ i ][ d ]( vec_unk_plus_eq_imp_to_unk_plus_eq_imp_plus_eq_indep, vec_unk ) = B[ i ][ d ]( vec_eq_indep, vec_unk ) * 1.;
@@ -723,8 +729,8 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
                 Vec<unsigned> vec_eq_indep = range( nb_eq_indep[ i ][ d ] );
                 Vec<unsigned> vec_unk_to_unk_plus_eq_imp = range( nb_unk[ i ][ d ], nb_unk[ i ][ d ] + nb_eq_imp[ i ][ d ] );
                 Vec<unsigned> vec_unk_plus_eq_imp_to_unk_plus_eq_imp_plus_eq_indep = range( nb_unk[ i ][ d ] + nb_eq_imp[ i ][ d ], nb_unk[ i ][ d ] + nb_eq_imp[ i ][ d ] + nb_eq_indep[ i ][ d ] );
-                Mat<T, Gen<>, SparseLine<> > trans_B = trans( B[ i ][ d ] );
-                Mat<T, Gen<>, SparseLine<> > trans_C = trans( C[ i ][ d ] );
+                TMatGenSparse trans_B = trans( B[ i ][ d ] );
+                TMatGenSparse trans_C = trans( C[ i ][ d ] );
                 K[ i ][ d ]( vec_unk, vec_unk ) = M[ i ][ d ][ vec_unk ] * 1.;
                 K[ i ][ d ]( vec_unk_to_unk_plus_eq_imp, vec_unk ) = C[ i ][ d ]( vec_eq_imp, vec_unk ) * 1.;
                 K[ i ][ d ]( vec_unk_plus_eq_imp_to_unk_plus_eq_imp_plus_eq_indep, vec_unk ) = B[ i ][ d ]( vec_eq_indep, vec_unk ) * 1.;
@@ -782,7 +788,7 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
             if ( K[ i ][ d ].nb_rows() != 0 ) {
                 if ( not minimisation[ i ][ d ] ) {
                     #ifdef WITH_UMFPACK
-                    Mat<T, Gen<>, SparseUMFPACK > K_UMFPACK = K[ i ][ d ];
+                    TMatGenSparseUMFPACK K_UMFPACK = K[ i ][ d ];
                     K_UMFPACK.get_factorization();
                     U[ i ][ d ] = K_UMFPACK.solve( F[ i ][ d ] );
                     #endif
@@ -790,7 +796,7 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
                 else {
                     if ( solver_minimisation == "LDL" ) {
                         #ifdef WITH_LDL
-                        Mat<T, Sym<>, SparseLine<> > K_LDL = K[ i ][ d ];
+                        TMatSymSparse K_LDL = K[ i ][ d ];
                         U[ i ][ d ] = F[ i ][ d ];
                         LDL_solver ls;
                         Vec< Vec<T> > Ker;
@@ -801,18 +807,18 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
                     }
                     else if ( solver_minimisation == "UMFPACK" ) {
                         #ifdef WITH_UMFPACK
-                        Mat<T, Gen<>, SparseUMFPACK > K_UMFPACK = K[ i ][ d ];
+                        TMatGenSparseUMFPACK K_UMFPACK = K[ i ][ d ];
                         K_UMFPACK.get_factorization();
                         U[ i ][ d ] = K_UMFPACK.solve( F[ i ][ d ] );
                         #endif
                     }
                     else if ( solver_minimisation == "Inv" ) {
-                        Mat<T, Sym<>, SparseLine<> > K_Inv = K[ i ][ d ];
+                        TMatSymSparse K_Inv = K[ i ][ d ];
                         U[ i ][ d ] = inv( K_Inv ) * F[ i ][ d ];
                     }
                     else if ( solver_minimisation == "LUFactorize" ) {
-                        Mat<T, Sym<>, SparseLine<> > K_sym = K[ i ][ d ];
-                        Mat<T, Gen<>, SparseLU > K_LU = K_sym;
+                        TMatSymSparse K_sym = K[ i ][ d ];
+                        TMatGenSparseLU K_LU = K_sym;
 //                        Vec<int> vector_permutation;
                         lu_factorize( K_LU/*, vector_permutation*/ );
                         solve_using_lu_factorize( K_LU, /*vector_permutation,*/ F[ i ][ d ], U[ i ][ d ] );
@@ -954,7 +960,7 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
     if ( disp )
         cout << "Construction des matrices K_face" << endl << endl;
     
-    Vec< Vec< Mat<T, Gen<>, SparseUMFPACK > > > K_face;
+    Vec< Vec< TMatGenSparseUMFPACK > > K_face;
     K_face.resize( m.sub_mesh(Number<1>()).elem_list.size() );
     for (unsigned k=0;k<m.sub_mesh(Number<1>()).elem_list.size();++k) {
         K_face[ k ].resize( dim );

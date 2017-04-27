@@ -268,7 +268,7 @@ void calcul_correction_interest_quantity( TM &m, TM &m_adjoint, const TF &f, con
     t.start();
     
     if ( not want_introduction_sigma_hat_m ) {
-        Calcul_Correction_Interest_Quantity_w_sigma_hat_m<TM, TF, T> calcul_correction_interest_quantity_w_sigma_hat_m;
+        Calcul_Correction_Interest_Quantity_w_sigma_hat_m<TM, TF, T, TVV> calcul_correction_interest_quantity_w_sigma_hat_m;
         calcul_correction_interest_quantity_w_sigma_hat_m.m = &m;
         calcul_correction_interest_quantity_w_sigma_hat_m.m_adjoint = &m_adjoint;
         calcul_correction_interest_quantity_w_sigma_hat_m.f = &f;
@@ -285,7 +285,7 @@ void calcul_correction_interest_quantity( TM &m, TM &m_adjoint, const TF &f, con
         apply( m_adjoint.elem_list, calcul_correction_interest_quantity_w_sigma_hat_m );
     }
     else {
-        Calcul_Correction_Interest_Quantity_wo_sigma_hat_m<TM, TF, T> calcul_correction_interest_quantity_wo_sigma_hat_m;
+        Calcul_Correction_Interest_Quantity_wo_sigma_hat_m<TM, TF, T, TVV> calcul_correction_interest_quantity_wo_sigma_hat_m;
         calcul_correction_interest_quantity_wo_sigma_hat_m.m = &m;
         calcul_correction_interest_quantity_wo_sigma_hat_m.m_adjoint = &m_adjoint;
         calcul_correction_interest_quantity_wo_sigma_hat_m.f = &f;
@@ -313,8 +313,10 @@ void calcul_correction_interest_quantity( TM &m, TM &m_adjoint, const TF &f, con
 
 /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale sur la structure extraite, Affichage de l'estimateur
 /// -------------------------------------------------------------------------------------------------------------------------------------------------
-template<class TM, class TF, class T>
-void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const T &k, T &theta_lambda, const Vec< Vec<T> > &dep_hat, Vec< Vec<T> > &dep_hat_lambda, const bool disp = false ) {
+template<class TM, class TF, class T, class TVV>
+void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const T &k, T &theta_lambda, const TVV &dep_hat, TVV &dep_hat_lambda, const bool disp = false ) {
+    
+    typedef Vec<T> TV;
     
     /// --------------------------------------------------------------------------------------------------------------------------------- ///
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale sur la structure extraite ///
@@ -341,11 +343,11 @@ void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f
     f_lambda.call_after_solve();
     
     theta_lambda = 0.;
-    Vec<T> theta_lambda_elem;
+    TV theta_lambda_elem;
     theta_lambda_elem.resize( m.elem_list.size() );
     theta_lambda_elem.set( 0. );
     
-    Calcul_Error_Estimate_Lambda<TM, TF, T> calcul_error_estimate_lambda;
+    Calcul_Error_Estimate_Lambda<TM, TF, T, TV, TVV> calcul_error_estimate_lambda;
     calcul_error_estimate_lambda.m = &m;
     calcul_error_estimate_lambda.m_lambda = &m_lambda;
     calcul_error_estimate_lambda.f = &f;
@@ -389,8 +391,8 @@ void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f
 
 /// Calcul d'un estimateur pondere d'erreur globale weighted_theta
 /// --------------------------------------------------------------
-template<class TM, class TF, class T, class Pvec>
-void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const T &h, const Pvec &domain_center, const Vec<T> &domain_length, const T &k_min, T &weighted_theta_lambda, const Vec< Vec<T> > &dep_hat, const bool disp = false ) {
+template<class TM, class TF, class T, class TVV, class Pvec>
+void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const T &h, const Pvec &domain_center, const Vec<T> &domain_length, const T &k_min, T &weighted_theta_lambda, const TVV &dep_hat, const bool disp = false ) {
     
     /// ----------------------------------------------------------------------------------------------------------------------------------------- ///
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur pondere d'erreur globale sur la structure extraite ///
@@ -418,7 +420,7 @@ void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF 
     
     weighted_theta_lambda = 0.;
     
-    Calcul_Weighted_Error_Estimate_Lambda<TM, TF, T, Pvec> calcul_weighted_error_estimate_lambda;
+    Calcul_Weighted_Error_Estimate_Lambda<TM, TF, T, TVV, Pvec> calcul_weighted_error_estimate_lambda;
     calcul_weighted_error_estimate_lambda.m = &m;
     calcul_weighted_error_estimate_lambda.m_lambda = &m_lambda;
     calcul_weighted_error_estimate_lambda.f = &f;
@@ -452,8 +454,10 @@ void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF 
 
 /// Construction d'un champ de contrainte admissible, Calcul d'un estimateur d'erreur globale sur le bord de la structure extraite, Affichage de l'estimateur
 /// ---------------------------------------------------------------------------------------------------------------------------------------------------------
-template<class TM, class TF, class T, class Pvec>
-void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const Pvec &domain_center, const T &k, T &theta_lambda_boundary, const Vec< Vec<T> > &dep_hat, const bool disp = false ) {
+template<class TM, class TF, class T, class TVV, class Pvec>
+void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const Pvec &domain_center, const T &k, T &theta_lambda_boundary, const TVV &dep_hat, const bool disp = false ) {
+    
+    typedef Vec<T> TV;
     
     /// -------------------------------------------------------------------------------------------------------------------------------------------- ///
     /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale sur le bord de la structure extraite ///
@@ -480,9 +484,9 @@ void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF 
     f_lambda.call_after_solve();
     
     theta_lambda_boundary = 0.;
-    Vec<T> theta_face_lambda_boundary;
+    TV theta_face_lambda_boundary;
     
-    Calcul_Error_Estimate_Lambda_Boundary<TM, TF, T, Pvec> calcul_error_estimate_lambda_boundary;
+    Calcul_Error_Estimate_Lambda_Boundary<TM, TF, T, TV, TVV, Pvec> calcul_error_estimate_lambda_boundary;
     calcul_error_estimate_lambda_boundary.m = &m;
     calcul_error_estimate_lambda_boundary.m_lambda = &m_lambda;
     calcul_error_estimate_lambda_boundary.f = &f;
@@ -520,8 +524,10 @@ void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF 
 
 /// Calcul du terme gamma pour le calcul des bornes locales ameliorees
 /// ------------------------------------------------------------------
-template<class TM, class TF, class T, class Pvec>
-void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, const TF &f_adjoint, TF &f_adjoint_lambda_, const string &method, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const T &theta_lambda_min, const T &theta_lambda_max, const T &h, const Pvec &domain_center, const Vec<T> &domain_length, const bool &spread_cut, const Vec< Vec<T> > &dep_hat, const Vec< Vec<T> > &dep_adjoint_hat, const string &integration_k, const unsigned &integration_nb_points, T &gamma, const bool disp = false ) {
+template<class TM, class TF, class T, class TVV, class Pvec>
+void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, const TF &f_adjoint, TF &f_adjoint_lambda_, const string &method, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const T &theta_lambda_min, const T &theta_lambda_max, const T &h, const Pvec &domain_center, const Vec<T> &domain_length, const bool &spread_cut, const TVV &dep_hat, const TVV &dep_adjoint_hat, const string &integration_k, const unsigned &integration_nb_points, T &gamma, const bool disp = false ) {
+    
+    typedef Vec<T> TV;
     
     gamma = 0.;
     
@@ -542,7 +548,7 @@ void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, cons
 //    }
     
     if ( local_improvement == "steklov" ) {
-        Vec<T> theta_lambda;
+        TV theta_lambda;
         Vec<T> func_lambda;
         Vec<T> lambda;
         if ( integration_k == "trapeze" ) {
@@ -608,8 +614,8 @@ void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, cons
 
 /// Calcul de la correction I_hhh sur la quantite d'interet locale I pour le calcul des bornes locales ameliorees
 /// -------------------------------------------------------------------------------------------------------------
-template<class TM, class TF, class T>
-void calcul_correction_interest_quantity_lambda( const TM &m_lambda_min, const TM &m_adjoint_lambda_min, const TF &f_lambda_min, const TF &f_adjoint_lambda_min, const string &interest_quantity, const string &method, const string &method_adjoint, const Vec< Vec<T> > &dep_hat_lambda_min, const Vec< Vec<T> > &dep_adjoint_hat_lambda_min, T &I_hhh, const bool want_introduction_sigma_hat_m = true, const bool disp = false ) {
+template<class TM, class TF, class T, class TVV>
+void calcul_correction_interest_quantity_lambda( const TM &m_lambda_min, const TM &m_adjoint_lambda_min, const TF &f_lambda_min, const TF &f_adjoint_lambda_min, const string &interest_quantity, const string &method, const string &method_adjoint, const TVV &dep_hat_lambda_min, const TVV &dep_adjoint_hat_lambda_min, T &I_hhh, const bool want_introduction_sigma_hat_m = true, const bool disp = false ) {
     
     I_hhh = 0.;
     
@@ -619,7 +625,7 @@ void calcul_correction_interest_quantity_lambda( const TM &m_lambda_min, const T
     TicToc t;
     t.start();
     
-    Calcul_Correction_Interest_Quantity_Lambda<TM, TF, T> calcul_correction_interest_quantity_lambda;
+    Calcul_Correction_Interest_Quantity_Lambda<TM, TF, T, TVV> calcul_correction_interest_quantity_lambda;
     calcul_correction_interest_quantity_lambda.m = &m_lambda_min;
     calcul_correction_interest_quantity_lambda.m_adjoint = &m_adjoint_lambda_min;
     calcul_correction_interest_quantity_lambda.f = &f_lambda_min;

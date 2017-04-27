@@ -57,7 +57,7 @@ struct Calcul_Nodal_Vector_r {
     }
 };
 
-template<class TTVV, class TTVVV, class TV, class TVV, class TMATVV>
+template<class TV, class TVV, class TTVV, class TTVVV, class TMatVV>
 struct Calcul_Nodal_Vector_r_PGD {
     const Vec< Vec< Vec<unsigned> > >* elem_ind;
     const Vec< Vec<unsigned> >* node_list_face;
@@ -66,16 +66,16 @@ struct Calcul_Nodal_Vector_r_PGD {
     const bool* want_local_enrichment;
     const TTVV* dep_space;
     const TTVVV* dep_param;
-    const TV* dep_part;
-    const TVV* kappa;
-    const TMATVV* K_param;
+    const TV* dep_space_part;
+    const TVV* F_param;
+    const TMatVV* K_param;
     const Vec< Vec<unsigned> >* elem_group;
     const unsigned* mode;
     template<class TE, class TM, class TF, class T> void operator()( const TE &elem, const TM &m, TF &f, Vec< Vec< Vec<T> > > &r ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
-        f.vectors[0] = - (*dep_part);
+        f.vectors[0] = - *dep_space_part;
         for (unsigned p=0;p<(*elem_group).size()-1;++p)
-            f.vectors[0] *= dot( (*dep_param)[ p ][ *mode ], (*K_param)[p][0] * (*kappa)[ p ] );
+            f.vectors[0] *= dot( (*F_param)[p], (*dep_param)[ p ][ *mode ] );
         for (unsigned i=0;i<(*mode)+1;++i) {
             T alpha = 1.;
             for (unsigned p=0;p<(*elem_group).size()-1;++p) {
@@ -92,8 +92,8 @@ struct Calcul_Nodal_Vector_r_PGD {
 
 /// Construction des matrices B[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
 /// -------------------------------------------------------------------------------------------
-template<class TE, class TM, class TVVV, class TVV, class TTMVV>
-void calc_nodal_matrix_B( const TE &elem, const TM &m, const TVVV &elem_ind, const TVVV &face_ind, const TVV &node_list_face, TTMVV &B ) {}
+template<class TE, class TM, class TVVV, class TVV, class TMatVV>
+void calc_nodal_matrix_B( const TE &elem, const TM &m, const TVVV &elem_ind, const TVVV &face_ind, const TVV &node_list_face, TMatVV &B ) {}
 
 struct Calcul_Nodal_Matrix_B {
     const Vec< Vec< Vec<unsigned> > >* elem_ind;
@@ -128,8 +128,8 @@ struct Calcul_Nodal_Ind {
 
 /// Construction des matrices C[ i ][ d ] pour chaque noeud i du maillage et chaque direction d
 /// -------------------------------------------------------------------------------------------
-template<class TE, class TM, class TVV, class TVVV, class TTMVV>
-void calc_nodal_matrix_C( const TE &child_elem, const TM &m, const TVV &face_type, const TVVV &nodal_ind, const TVVV &face_ind, const TVV &face_list_node, TTMVV &C ) {}
+template<class TE, class TM, class TVV, class TVVV, class TMatVV>
+void calc_nodal_matrix_C( const TE &child_elem, const TM &m, const TVV &face_type, const TVVV &nodal_ind, const TVVV &face_ind, const TVV &face_list_node, TMatVV &C ) {}
 
 struct Calcul_Nodal_Matrix_C {
     const Vec< Vec<unsigned> >* face_type;
@@ -151,13 +151,13 @@ struct Calcul_Nodal_Vector_q {
     const Vec< Vec< Vec<unsigned> > >* nodal_ind;
     const Vec< Vec<unsigned> >* node_list_face;
     const Vec< Vec<unsigned> >* face_list_node;
-    template<class TE, class TM, class TF, class T> void operator()( const TE &elem, const TM &m, const TF &f, Vec< Vec< Vec<T> > > &q ) const {
+    template<class TE, class TM, class TF, class TVVV> void operator()( const TE &elem, const TM &m, const TF &f, TVVV &q ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
         calc_nodal_vector_q( elem, m, f, *face_type, *nodal_ind, *node_list_face, *face_list_node, f.vectors, ind, q );
     }
 };
 
-template<class TTVV, class TTVVV, class TV, class TVV, class TMATVV>
+template<class TV, class TVV, class TTVV, class TTVVV, class TMatVV>
 struct Calcul_Nodal_Vector_q_PGD {
     const Vec< Vec<unsigned> >* face_type;
     const Vec< Vec< Vec<unsigned> > >* nodal_ind;
@@ -165,16 +165,17 @@ struct Calcul_Nodal_Vector_q_PGD {
     const Vec< Vec<unsigned> >* face_list_node;
     const TTVV* dep_space;
     const TTVVV* dep_param;
-    const TV* dep_part;
-    const TVV* kappa;
-    const TMATVV* K_param;
+    const TV* dep_space_part;
+    const TVV* F_param;
+    const TMatVV* K_param;
     const Vec< Vec<unsigned> >* elem_group;
     const unsigned* mode;
-    template<class TE, class TM, class TF, class T> void operator()( const TE &elem, const TM &m, TF &f, Vec< Vec< Vec<T> > > &q ) const {
+    template<class TE, class TM, class TF, class TVVV> void operator()( const TE &elem, const TM &m, TF &f, TVVV &q ) const {
+        typedef typename TE::T T;
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
-        f.vectors[0] = - (*dep_part);
+        f.vectors[0] = - *dep_space_part;
         for (unsigned p=0;p<(*elem_group).size()-1;++p)
-            f.vectors[0] *= dot( (*dep_param)[ p ][ *mode ], (*K_param)[p][0] * (*kappa)[ p ] );
+            f.vectors[0] *= dot( (*F_param)[p], (*dep_param)[ p ][ *mode ] );
         for (unsigned i=0;i<(*mode)+1;++i) {
             T alpha = 1.;
             for (unsigned p=0;p<(*elem_group).size()-1;++p) {
@@ -196,9 +197,9 @@ void calc_nodal_matrix_M( const TE &child_elem, const TM &m, const TF &f, const 
 
 struct Calcul_Nodal_Matrix_M {
     const Vec< Vec< Vec<unsigned> > >* face_ind;
-    const unsigned *cost_function;
+    const unsigned* cost_function;
     const Vec< Vec<bool> >* minimisation;
-    template<class TE, class TM, class TF, class T> void operator()( const TE &child_elem, const TM &m, const TF &f, Vec< Vec< Mat< T, Diag<> > > > &M ) const {
+    template<class TE, class TM, class TF, class TMatVV> void operator()( const TE &child_elem, const TM &m, const TF &f, TMatVV &M ) const {
         calc_nodal_matrix_M( child_elem, m, f, *face_ind, *cost_function, *minimisation, M );
     }
 };
@@ -215,13 +216,13 @@ struct Calcul_Nodal_Vector_b {
     const Vec< Vec<unsigned> >* node_list_face;
     const string* pb;
     const bool* want_local_enrichment;
-    template<class TE, class TM, class TF, class T> void operator()( const TE &elem, const TM &m, const TF &f, Vec< Vec< Vec<T> > > &b ) const {
+    template<class TE, class TM, class TF, class TVVV> void operator()( const TE &elem, const TM &m, const TF &f, TVVV &b ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
         calc_nodal_vector_b( elem, m, f, *minimisation, *face_type, *face_ind, *node_list_face, f.vectors, ind, *pb, *want_local_enrichment, b );
     }
 };
 
-template<class TTVV, class TTVVV, class TV, class TVV, class TMATVV>
+template<class TV, class TVV, class TTVV, class TTVVV, class TMatVV>
 struct Calcul_Nodal_Vector_b_PGD {
     const Vec< Vec<bool> >* minimisation;
     const Vec< Vec<unsigned> >* face_type;
@@ -231,16 +232,17 @@ struct Calcul_Nodal_Vector_b_PGD {
     const bool* want_local_enrichment;
     const TTVV* dep_space;
     const TTVVV* dep_param;
-    const TV* dep_part;
-    const TVV* kappa;
-    const TMATVV* K_param;
+    const TV* dep_space_part;
+    const TVV* F_param;
+    const TMatVV* K_param;
     const Vec< Vec<unsigned> >* elem_group;
     const unsigned* mode;
-    template<class TE, class TM, class TF, class T> void operator()( const TE &elem, const TM &m, TF &f, Vec< Vec< Vec<T> > > &b ) const {
+    template<class TE, class TM, class TF, class TVVV> void operator()( const TE &elem, const TM &m, TF &f, TVVV &b ) const {
+        typedef typename TE::T T;
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
-        f.vectors[0] = - (*dep_part);
+        f.vectors[0] = - (*dep_space_part);
         for (unsigned p=0;p<(*elem_group).size()-1;++p)
-            f.vectors[0] *= dot( (*dep_param)[ p ][ *mode ], (*K_param)[p][0] * (*kappa)[ p ] );
+            f.vectors[0] *= dot( (*F_param)[p], (*dep_param)[ p ][ *mode ] );
         for (unsigned i=0;i<(*mode)+1;++i) {
             T alpha = 1.;
             for (unsigned p=0;p<(*elem_group).size()-1;++p) {
@@ -265,7 +267,7 @@ struct Reset_Nodal_Vector_b_hat {
     const bool* enhancement;
     const Vec<bool>* flag_face_enh;
     const Vec< Vec< Vec<unsigned> > >* face_ind;
-    template<class TE, class TM, class T> void operator()( const TE &child_elem, const TM &m, Vec< Vec< Vec<T> > > &b_hat ) const {
+    template<class TE, class TM, class TVVV> void operator()( const TE &child_elem, const TM &m, TVVV &b_hat ) const {
         reset_nodal_vector_b_hat( child_elem, m, *enhancement, *flag_face_enh, *face_ind, b_hat );
     }
 };
@@ -276,18 +278,18 @@ template<class TE, class TVVV, class TTVVV>
 void calc_skin_elem_vector_b_face( const TE &child_elem, const TVVV &face_ind, const TTVVV &b_hat, TTVVV &b_face ) {}
 
 struct Calcul_Skin_Elem_Vector_b_face {
-    template<class TE, class T> void operator()( const TE &child_elem, const Vec< Vec< Vec<unsigned> > > &face_ind, const Vec< Vec< Vec<T> > > &b_hat, Vec< Vec< Vec<T> > > &b_face ) const {
+    template<class TE, class TVVV> void operator()( const TE &child_elem, const Vec< Vec< Vec<unsigned> > > &face_ind, const TVVV &b_hat, TVVV &b_face ) const {
         calc_skin_elem_vector_b_face( child_elem, face_ind, b_hat, b_face );
     }
 };
 
 /// Construction des matrices K_face[ k ] pour chaque face k du maillage
 /// --------------------------------------------------------------------
-template<class TE, class TTMVV>
-void calc_skin_elem_matrix_K_face( const TE &child_elem, TTMVV &K_face ) {}
+template<class TE, class TMatVV>
+void calc_skin_elem_matrix_K_face( const TE &child_elem, TMatVV &K_face ) {}
 
 struct Calcul_Skin_Elem_Matrix_K_face {
-    template<class TE, class T> void operator()( const TE &child_elem, Vec< Vec< Mat<T, Gen<>, SparseUMFPACK > > > &K_face ) const {
+    template<class TE, class TMatVV> void operator()( const TE &child_elem, TMatVV &K_face ) const {
         calc_skin_elem_matrix_K_face( child_elem, K_face );
     }
 };

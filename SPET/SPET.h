@@ -44,7 +44,7 @@ template<class TE, class TTVVV>
 void calc_pos_elem( const TE &elem, TTVVV &pos_elem ) {}
 
 struct Calc_Pos_Elem {
-    template<class TE, class T> void operator()( const TE &elem, Vec< Vec< Vec<T> > > &pos_elem ) const {
+    template<class TE, class TVVV> void operator()( const TE &elem, TVVV &pos_elem ) const {
         calc_pos_elem( elem, pos_elem );
     }
 };
@@ -53,7 +53,7 @@ template<class TE, class TTVVV>
 void calc_pos_face( const TE &elem, TTVVV &pos_face ) {}
 
 struct Calc_Pos_Face {
-    template<class TE, class T> void operator()( const TE &elem, Vec< Vec< Vec<T> > > &pos_face ) const {
+    template<class TE, class TVVV> void operator()( const TE &elem, TVVV &pos_face ) const {
         calc_pos_face( elem, pos_face );
     }
 };
@@ -77,14 +77,14 @@ struct Construct_Patch {
 
 /// Construction des matrices K[ j ] pour chaque noeud sommet j du maillage
 /// -----------------------------------------------------------------------
-template<class TE, class TM, class TF, class TVV, class TV, class TVVV, class TTMV>
-void calc_vertex_nodal_matrix_K( const TE &elem, const TM &m, const TF &f, const TVV &elem_list_vertex_node, const TV &connect_node_to_vertex_node, const TVVV &patch_elem, const TTMV &K ) {}
+template<class TE, class TM, class TF, class TVV, class TV, class TVVV, class TMatV>
+void calc_vertex_nodal_matrix_K( const TE &elem, const TM &m, const TF &f, const TVV &elem_list_vertex_node, const TV &connect_node_to_vertex_node, const TVVV &patch_elem, const TMatV &K ) {}
 
 struct Calcul_Vertex_Nodal_Matrix_K {
     const Vec<unsigned>* connect_node_to_vertex_node;
     const Vec< Vec<unsigned> >* elem_list_vertex_node;
     const Vec< Vec< Vec<unsigned> > >* patch_elem;
-    template<class TE, class TM, class TF, class T> void operator()( const TE &elem, const TM &m, const TF &f, Vec< Mat<T, Sym<> > > &K ) const {
+    template<class TE, class TM, class TF, class TMatV> void operator()( const TE &elem, const TM &m, const TF &f, TMatV &K ) const {
         calc_vertex_nodal_matrix_K( elem, m, f, *elem_list_vertex_node, *connect_node_to_vertex_node, *patch_elem, K );
     }
 };
@@ -101,7 +101,7 @@ struct Calcul_Vertex_Nodal_Vector_F {
     const Vec< Vec< Vec<unsigned> > >* patch_elem;
     const string* pb;
     const bool* want_local_enrichment;
-    template<class TE, class TM, class TF, class T> void operator()( const TE &elem, const TM &m, const TF &f, Vec< Vec<T> > &F ) const {
+    template<class TE, class TM, class TF, class TVV> void operator()( const TE &elem, const TM &m, const TF &f, TVV &F ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
         calc_vertex_nodal_vector_F( elem, m, f, *elem_list_vertex_node, *face_type, *connect_node_to_vertex_node, *patch_elem, f.vectors, ind, *pb, *want_local_enrichment, F );
     }
@@ -116,7 +116,7 @@ struct Calcul_Elem_Vector_E {
     const Vec< Vec<unsigned> >* elem_list_vertex_node;
     const Vec<unsigned>* connect_node_to_vertex_node;
     const Vec< Vec< Vec<unsigned> > >* patch_elem;
-    template<class TE, class T> void operator()( const TE &elem, const Vec< Vec<T> > &U, Vec< Vec<T> > &E ) const {
+    template<class TE, class TVV> void operator()( const TE &elem, const TVV &U, TVV &E ) const {
         calc_elem_vector_E( elem, *elem_list_vertex_node, *connect_node_to_vertex_node, *patch_elem, U, E );
     }
 };
@@ -126,11 +126,11 @@ struct Calcul_Elem_Vector_E {
 template<class TE, class TM, class TF, class TTVV, class TTWW, class TTV, class TT>
 void calc_elem_error_estimate_SPET( TE &elem, const TM &m, const TF &f, const TTVV &E, const TTWW &vectors, const Vec<unsigned> &indices, TTV &theta_elem, TT &theta ) {}
 
-template<class T>
+template<class TV, class TVV>
 struct Calcul_Elem_Error_Estimate_SPET {
-    const Vec< Vec<T> >* E;
-    Vec<T>* theta_elem;
-    template<class TE, class TM, class TF> void operator()( TE &elem, const TM &m, const TF &f, T &theta ) const {
+    const TVV* E;
+    TV* theta_elem;
+    template<class TE, class TM, class TF, class T> void operator()( TE &elem, const TM &m, const TF &f, T &theta ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
         calc_elem_error_estimate_SPET( elem, m, f, *E, f.vectors, ind, *theta_elem, theta );
     }
@@ -139,11 +139,11 @@ struct Calcul_Elem_Error_Estimate_SPET {
 template<class TE, class TM, class TF, class TTVV, class TTWW, class TTV, class TT>
 void calc_elem_error_estimate_init_SPET( TE &elem, const TM &m, const TF &f, const TTVV &E, const TTWW &vectors, const Vec<unsigned> &indices, TTV &theta_elem, TTV &theta_elem_init, TT &theta, TT &theta_init ) {}
 
-template<class T>
+template<class T, class TV, class TVV>
 struct Calcul_Elem_Error_Estimate_Init_SPET {
-    const Vec< Vec<T> >* E;
-    Vec<T>* theta_elem;
-    Vec<T>* theta_elem_init;
+    const TVV* E;
+    TV* theta_elem;
+    TV* theta_elem_init;
     T* theta_init;
     template<class TE, class TM, class TF> void operator()( TE &elem, const TM &m, const TF &f, T &theta ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );

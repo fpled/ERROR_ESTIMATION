@@ -15,7 +15,7 @@ template<class TT> int sign( TT a ) {
 
 // Recherche valeurs propres matrices 2x2 et 3x3
 template<class TT, class STO, class TYP > void eig_jacobi( Mat<TT,STO,TYP> &A,Vec<Vec<TT> > &V, Vec<TT> &D ) {
-    typedef Mat<TT,STO,TYP> TTM;
+    typedef Mat<TT,STO,TYP> TMat;
     // cout << "Attention valable pour un matrice carree symetrique" << endl;
     TT eps=1e-15;
     TT pi=3.14159265358979;
@@ -25,7 +25,7 @@ template<class TT, class STO, class TYP > void eig_jacobi( Mat<TT,STO,TYP> &A,Ve
         cout << "matrice non carree" <<endl;
         assert(0);
     }
-    TTM B;
+    TMat B;
     B.resize(n,n);
     B=A;
     
@@ -33,7 +33,7 @@ template<class TT, class STO, class TYP > void eig_jacobi( Mat<TT,STO,TYP> &A,Ve
     Vec<int ,2> pq(0,1);
     // int debut=1;
     
-    TTM G;
+    TMat G;
     G.resize(n,n);
     G.set(0.0);
     G.diag()+=1.0;
@@ -80,7 +80,7 @@ template<class TT, class STO, class TYP > void eig_jacobi( Mat<TT,STO,TYP> &A,Ve
         s=sin(theta);
         
         // calcul de la matrice de rotation
-        TTM Gnew(n,n,0.0);
+        TMat Gnew(n,n,0.0);
         // Gnew.resize(n,n);
         // Gnew.set(0.0);
         Gnew.diag()+=1.0;

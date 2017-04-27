@@ -264,9 +264,9 @@ int main( int argc, char **argv ) {
     calcul_norm_dep( m, f, "direct" );
     calcul_norm_dep_init( m, f, "direct" );
     
-    /// ------------------------------------------------------------------------- ///
-    /// Mesure de l'erreur de discretisation globale et locale associee pb direct ///
-    /// ------------------------------------------------------------------------- ///
+    /// ---------------------------------------------------------------------------- ///
+    /// Mesure de l'erreur de discretisation globale et locale associee au pb direct ///
+    /// ---------------------------------------------------------------------------- ///
     
     calcul_discretization_error( m, m_ref, f, f_ref, want_global_discretization_error, want_local_discretization_error, want_solve_ref );
     
@@ -276,9 +276,9 @@ int main( int argc, char **argv ) {
     Vec<T> theta_elem_init;
     Vec< Vec<T> > dep_hat;
     
-    /// ------------------------------------------------------------------------------------------------------------- ///
-    /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe pb direct ///
-    /// ------------------------------------------------------------------------------------------------------------- ///
+    /// ---------------------------------------------------------------------------------------------------------------- ///
+    /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe au pb direct ///
+    /// ---------------------------------------------------------------------------------------------------------------- ///
     
     if ( want_global_estimation or want_local_estimation )
         calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_init, theta_elem, theta_elem_init, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment );
@@ -355,9 +355,9 @@ int main( int argc, char **argv ) {
             calcul_interest_quantity( m_local_ref, m_crown_ref, f_local_ref, f_crown_ref, "reference", interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_local_ref_interest_quantity, node_local_ref_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, I_ex );
         }
         
-        /// ------------------------------------------------------- ///
-        /// Construction de la solution element finis du pb adjoint ///
-        /// ------------------------------------------------------- ///
+        /// -------------------------------------------------------- ///
+        /// Construction de la solution elements finis du pb adjoint ///
+        /// -------------------------------------------------------- ///
         
         Vec<unsigned> elem_list_adjoint_interest_quantity;
         Vec<unsigned> elem_list_adjoint_enrichment_zone_1;

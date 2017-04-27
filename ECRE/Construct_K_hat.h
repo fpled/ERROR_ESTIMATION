@@ -19,8 +19,8 @@ using namespace std;
 
 /// Construction des matrices K_hat[ n ] pour chaque element n du maillage
 /// ----------------------------------------------------------------------
-template<class TM, class TF, class T>
-void construct_K_hat( const TM &m, const TF &f, Vec< Mat<T, Sym<> > > &K_hat, const bool disp = false ) {
+template<class TM, class TF, class TMatV>
+void construct_K_hat( const TM &m, const TF &f, TMatV &K_hat, const bool disp = false ) {
     
     if ( disp )
         cout << "Construction des matrices K_hat" << endl << endl;

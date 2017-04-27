@@ -22,8 +22,8 @@ using namespace std;
 
 /// Calcul d'un champ de contrainte admissible, calcul d'un estimateur theta de l'erreur globale pour la methode basee sur la partition de l'unite (SPET)
 /// -----------------------------------------------------------------------------------------------------------------------------------------------------
-template<class TM, class TF, class T>
-void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb, const string &solver, const string &method, T &theta, T &theta_init, Vec<T> &theta_elem, Vec<T> &theta_elem_init, Vec< Vec<T> > &E, const bool verif_solver = false, const T tol_solver = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const bool disp = false ) {
+template<class TM, class TF, class T, class TV, class TVV>
+void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb, const string &solver, const string &method, T &theta, T &theta_init, TV &theta_elem, TV &theta_elem_init, TVV &E, const bool verif_solver = false, const T tol_solver = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const bool disp = false ) {
     
     static const unsigned dim = TM::dim;
     
@@ -161,7 +161,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     if ( disp )
         cout << "Construction des vecteurs F" << endl << endl;
     
-    Vec< Vec<T> > F;
+    TVV F;
     F.resize( nb_vertex_nodes );
     
     for (unsigned j=0;j<nb_vertex_nodes;++j) {
@@ -216,7 +216,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
         cout << "Construction des vecteurs U" << endl << endl;
     }
     
-    Vec< Vec<T> > U;
+    TVV U;
     U.resize( nb_vertex_nodes );
     
     TicToc t_solve_local_SPET;
@@ -366,7 +366,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     theta_elem.resize( m.elem_list.size() );
     theta_elem.set( 0. );
     
-    Calcul_Elem_Error_Estimate_Init_SPET<T> calcul_elem_error_estimate_init_SPET;
+    Calcul_Elem_Error_Estimate_Init_SPET<T,TV,TVV> calcul_elem_error_estimate_init_SPET;
     calcul_elem_error_estimate_init_SPET.E = &E;
     calcul_elem_error_estimate_init_SPET.theta_elem = &theta_elem;
     calcul_elem_error_estimate_init_SPET.theta_elem_init = &theta_elem_init;
@@ -399,7 +399,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     }
     
     if ( want_local_discretization_error ) {
-        Vec<T> eff_index_elem;
+        TV eff_index_elem;
         eff_index_elem.resize( m.elem_list.size() );
         eff_index_elem.set( 0. );
         

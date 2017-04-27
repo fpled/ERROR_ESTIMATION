@@ -78,8 +78,8 @@ void partition_elem_list( TM &m, const string &structure, Vec< Vec<unsigned> > &
 
 /// Construction et resolution du pb en espace
 /// ------------------------------------------
-template<class TM, class TF, class TV, class TVV, class TMATVV, class TTVVV, class TTVV>
-void solve_space( TM &m, TF &f, const unsigned &n, const TV &F_space, const TVV &F_param, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVVV &dep_param, TTVV &dep_space, const bool want_normalization = false ) {
+template<class TM, class TF, class TV, class TVV, class TMatVV, class TTVVV, class TTVV>
+void solve_space( TM &m, TF &f, const unsigned &n, const TV &F_space, const TVV &F_param, const TMatVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVVV &dep_param, TTVV &dep_space, const bool want_normalization = false ) {
     
     typedef typename TM::TNode::T T;
     
@@ -139,11 +139,11 @@ void solve_space( TM &m, TF &f, const unsigned &n, const TV &F_space, const TVV 
 
 /// Construction et resolution du pb en parametre
 /// ---------------------------------------------
-template<class TM_param, class TF_param, class TV, class TVV, class TMATV, class TMATVV, class TTVV, class TTVVV>
-void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const unsigned &n, const TV &F_space, const TVV &F_param, const TMATV &K_space, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVV &dep_space, TTVVV &dep_param, const bool want_normalization = false ) {
+template<class TM_param, class TF_param, class TV, class TVV, class TMatV, class TMatVV, class TTVV, class TTVVV>
+void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const unsigned &n, const TV &F_space, const TVV &F_param, const TMatV &K_space, const TMatVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVV &dep_space, TTVVV &dep_param, const bool want_normalization = false ) {
     
     typedef typename TM_param::TNode::T T;
-    typedef Mat<T, Sym<>, SparseLine<> > TMAT;
+    typedef Mat<T, Sym<>, SparseLine<> > TMatSymSparse;
     
     /// Construction du pb en parametre
     /// -------------------------------
@@ -170,7 +170,7 @@ void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const
                 f_param.sollicitation -= alpha * K_param[p][0] * dep_param[ p ][ i ];
         }
     }
-    TMAT K = f_param.matrices(Number<0>());
+    TMatSymSparse K = f_param.matrices(Number<0>());
     K.clear();
     for (unsigned g=0;g<elem_group.size();++g) {
         T alpha = dot( dep_space[ n ], K_space[g] * dep_space[ n ] );
@@ -248,22 +248,22 @@ void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const
 
 /// Calcul de l'indicateur de stagnation
 /// ------------------------------------
-template<class TM, class TF, class T, class TV, class TVV, class TMATVV, class TTVV, class TTVVV>
-void calc_stagnation_indicator( TM &m, TF &f, const unsigned &n, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVV &dep_space, const TTVVV &dep_param, const TV &dep_space_old, const TVV &dep_param_old, T &stagnation_indicator ) {
+template<class TM, class TF, class T, class TV, class TVV, class TMatVV, class TTVV, class TTVVV>
+void calc_stagnation_indicator( TM &m, TF &f, const unsigned &mode, const TMatVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVV &dep_space, const TTVVV &dep_param, const TV &dep_space_old, const TVV &dep_param_old, T &stagnation_indicator ) {
     stagnation_indicator = 0.;
     for (unsigned g=0;g<elem_group.size();++g) {
         T alpha = 1.;
         for (unsigned p=0;p<elem_group.size()-1;++p) {
             if ( g == p )
-                alpha *= dot( dep_param[ p ][ n ], K_param[p][1] * dep_param[ p ][ n ] );
+                alpha *= dot( dep_param[ p ][ mode ], K_param[p][1] * dep_param[ p ][ mode ] );
             else
-                alpha *= dot( dep_param[ p ][ n ], K_param[p][0] * dep_param[ p ][ n ] );
+                alpha *= dot( dep_param[ p ][ mode ], K_param[p][0] * dep_param[ p ][ mode ] );
         }
         for (unsigned j=0;j<elem_group[g].size();++j)
             m.elem_list[ elem_group[g][j] ]->set_field( "alpha", alpha );
     }
     f.assemble( true, false );
-    stagnation_indicator += dot( dep_space[ n ], f.matrices(Number<0>()) * dep_space[ n ] );
+    stagnation_indicator += dot( dep_space[ mode ], f.matrices(Number<0>()) * dep_space[ mode ] );
     for (unsigned g=0;g<elem_group.size();++g) {
         T alpha = 1.;
         for (unsigned p=0;p<elem_group.size()-1;++p) {
@@ -281,31 +281,31 @@ void calc_stagnation_indicator( TM &m, TF &f, const unsigned &n, const TMATVV &K
         T alpha = 1.;
         for (unsigned p=0;p<elem_group.size()-1;++p) {
             if ( g == p )
-                alpha *= dot( dep_param[ p ][ n ], K_param[p][1] * dep_param_old[ p ] );
+                alpha *= dot( dep_param[ p ][ mode ], K_param[p][1] * dep_param_old[ p ] );
             else
-                alpha *= dot( dep_param[ p ][ n ], K_param[p][0] * dep_param_old[ p ] );
+                alpha *= dot( dep_param[ p ][ mode ], K_param[p][0] * dep_param_old[ p ] );
         }
         for (unsigned j=0;j<elem_group[g].size();++j)
             m.elem_list[ elem_group[g][j] ]->set_field( "alpha", alpha );
     }
     f.assemble( true, false );
-    stagnation_indicator -= 2 * dot( dep_space[ n ], f.matrices(Number<0>()) * dep_space_old );
+    stagnation_indicator -= 2 * dot( dep_space[ mode ], f.matrices(Number<0>()) * dep_space_old );
     stagnation_indicator = sqrt( fabs( stagnation_indicator ) );
 }
 
 /// Calcul de l'indicateur d'erreur
 /// -------------------------------
-template<class TM, class TF, class T, class TV, class TVV, class TMATVV, class TTVV, class TTVVV>
-void calc_error_indicator( TM &m, TF &f, const unsigned &n, const TV &F_space, const TVV &F_param, const TMATVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVV &dep_space, const TTVVV &dep_param, T &residual, T &error_indicator ) {
+template<class TM, class TF, class T, class TV, class TVV, class TMatVV, class TTVV, class TTVVV>
+void calc_error_indicator( TM &m, TF &f, const unsigned &mode, const TV &F_space, const TVV &F_param, const TMatVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVV &dep_space, const TTVVV &dep_param, T &residual, T &error_indicator ) {
     residual = 0.;
     T sollicitation = 0.;
-    for (unsigned i=0;i<n+1;++i) {
+    for (unsigned i=0;i<mode+1;++i) {
         T sollicitation_mode = dot( F_space, dep_space[ i ] );
         for (unsigned p=0;p<elem_group.size()-1;++p)
             sollicitation_mode *= dot( F_param[p], dep_param[ p ][ i ] );
         sollicitation += sollicitation_mode;
         residual -= sollicitation_mode;
-        for (unsigned j=0;j<n+1;++j) {
+        for (unsigned j=0;j<mode+1;++j) {
             for (unsigned g=0;g<elem_group.size();++g) {
                 T alpha = 1.;
                 for (unsigned p=0;p<elem_group.size()-1;++p) {

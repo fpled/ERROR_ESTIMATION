@@ -217,7 +217,7 @@ struct Calcul_Interest_Quantity_SIF {
 template<class TE, class TE_adjoint, class TM, class TF, class TTWW, class S, class B, class TTVV, class TT>
 void calc_elem_correction_interest_quantity_wo_sigma_hat_m( const TE &elem, const TE_adjoint &elem_adjoint, const TM &m, const TM &m_adjoint, const TF &f, const TF &f_adjoint, const TTWW &vectors, const TTWW &adjoint_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &adjoint_indices, const S &method, const B &want_local_enrichment, const TTVV &dep_hat, TT &I_hh  ) {}
 
-template<class TM, class TF, class T>
+template<class TM, class TF, class T, class TVV>
 struct Calcul_Elem_Correction_Interest_Quantity_wo_sigma_hat_m {
     const TM* m;
     const TM* m_adjoint;
@@ -225,7 +225,7 @@ struct Calcul_Elem_Correction_Interest_Quantity_wo_sigma_hat_m {
     const TF* f_adjoint;
     const string* method;
     const bool* want_local_enrichment;
-    const Vec< Vec<T> >* dep_hat;
+    const TVV* dep_hat;
     T* I_hh;
     template<class TE, class TE_adjoint> void operator()( const TE &elem, const TE_adjoint &elem_adjoint ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = (*f).indices_for_element( elem );
@@ -234,7 +234,7 @@ struct Calcul_Elem_Correction_Interest_Quantity_wo_sigma_hat_m {
     }
 };
 
-template<class TM, class TF, class T>
+template<class TM, class TF, class T, class TVV>
 struct Calcul_Correction_Interest_Quantity_wo_sigma_hat_m {
     const TM* m;
     const TM* m_adjoint;
@@ -244,12 +244,12 @@ struct Calcul_Correction_Interest_Quantity_wo_sigma_hat_m {
     const string* method;
     const bool* want_local_enrichment;
     const Vec<unsigned>* correspondance_elem_m_adjoint_to_elem_m;
-    const Vec< Vec<T> >* dep_hat;
+    const TVV* dep_hat;
     T* I_hh;
     template<class TE_adjoint> void operator()( const TE_adjoint &elem_adjoint ) const {
         unsigned num_elem = (*correspondance_elem_m_adjoint_to_elem_m)[ elem_adjoint.number ];
         
-        Calcul_Elem_Correction_Interest_Quantity_wo_sigma_hat_m<TM, TF, T> calcul_elem_correction_interest_quantity_wo_sigma_hat_m;
+        Calcul_Elem_Correction_Interest_Quantity_wo_sigma_hat_m<TM, TF, T, TVV> calcul_elem_correction_interest_quantity_wo_sigma_hat_m;
         calcul_elem_correction_interest_quantity_wo_sigma_hat_m.m = m;
         calcul_elem_correction_interest_quantity_wo_sigma_hat_m.m_adjoint = m_adjoint;
         calcul_elem_correction_interest_quantity_wo_sigma_hat_m.f = f;
@@ -268,7 +268,7 @@ struct Calcul_Correction_Interest_Quantity_wo_sigma_hat_m {
 template<class TE, class TE_adjoint, class TM, class TF, class TTWW, class S, class B, class TTVV, class TT>
 void calc_elem_correction_interest_quantity_w_sigma_hat_m( const TE &elem, const TE_adjoint &elem_adjoint, const TM &m, const TM &m_adjoint, const TF &f, const TF &f_adjoint, const TTWW &vectors, const TTWW &adjoint_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &adjoint_indices, const S &method, const S &method_adjoint, const B &want_local_enrichment, const TTVV &dep_hat, const TTVV &dep_adjoint_hat, TT &I_hh ) {}
 
-template<class TM, class TF,class T>
+template<class TM, class TF, class T, class TVV>
 struct Calcul_Elem_Correction_Interest_Quantity_w_sigma_hat_m {
     const TM* m;
     const TM* m_adjoint;
@@ -278,8 +278,8 @@ struct Calcul_Elem_Correction_Interest_Quantity_w_sigma_hat_m {
     const string* method;
     const string* method_adjoint;
     const bool* want_local_enrichment;
-    const Vec< Vec<T> >* dep_hat;
-    const Vec< Vec<T> >* dep_adjoint_hat;
+    const TVV* dep_hat;
+    const TVV* dep_adjoint_hat;
     T* I_hh;
     template<class TE, class TE_adjoint> void operator()( const TE &elem, const TE_adjoint &elem_adjoint ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = (*f).indices_for_element( elem );
@@ -288,7 +288,7 @@ struct Calcul_Elem_Correction_Interest_Quantity_w_sigma_hat_m {
     }
 };
 
-template<class TM, class TF, class T>
+template<class TM, class TF, class T, class TVV>
 struct Calcul_Correction_Interest_Quantity_w_sigma_hat_m {
     const TM* m;
     const TM* m_adjoint;
@@ -299,13 +299,13 @@ struct Calcul_Correction_Interest_Quantity_w_sigma_hat_m {
     const string* method_adjoint;
     const bool* want_local_enrichment;
     const Vec<unsigned>* correspondance_elem_m_adjoint_to_elem_m;
-    const Vec< Vec<T> >* dep_hat;
-    const Vec< Vec<T> >* dep_adjoint_hat;
+    const TVV* dep_hat;
+    const TVV* dep_adjoint_hat;
     T* I_hh;
     template<class TE_adjoint> void operator()( const TE_adjoint &elem_adjoint ) const {
         unsigned num_elem = (*correspondance_elem_m_adjoint_to_elem_m)[ elem_adjoint.number ];
         
-        Calcul_Elem_Correction_Interest_Quantity_w_sigma_hat_m<TM, TF, T> calcul_elem_correction_interest_quantity_w_sigma_hat_m;
+        Calcul_Elem_Correction_Interest_Quantity_w_sigma_hat_m<TM, TF, T, TVV> calcul_elem_correction_interest_quantity_w_sigma_hat_m;
         calcul_elem_correction_interest_quantity_w_sigma_hat_m.m = m;
         calcul_elem_correction_interest_quantity_w_sigma_hat_m.m_adjoint = m_adjoint;
         calcul_elem_correction_interest_quantity_w_sigma_hat_m.f = f;
@@ -418,16 +418,16 @@ void construct_center_length_domain( TM &m, const unsigned &deg_p, const string 
 template<class TE, class TE_lambda, class TM, class TF, class TTWW, class TTVV, class S, class TTV, class TT>
 void calc_elem_error_estimate_lambda( const TE &elem, TE_lambda &elem_lambda, const TM &m, const TM &m_lambda, const TF &f, const TF &f_lambda, const TTWW &vectors, const TTWW &lambda_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &lambda_indices, const TTVV &dep_hat, const TTVV &dep_hat_lambda, const S &method, TTV &theta_elem, TT &theta ) {}
 
-template<class TM, class TF, class T>
+template<class TM, class TF, class T, class TV, class TVV>
 struct Calcul_Elem_Error_Estimate_Lambda {
     const TM* m;
     const TM* m_lambda;
     const TF* f;
     const TF* f_lambda;
     const string* method;
-    const Vec< Vec<T> >* dep_hat;
-    Vec< Vec<T> >* dep_hat_lambda;
-    Vec<T>* theta_elem;
+    const TVV* dep_hat;
+    TVV* dep_hat_lambda;
+    TV* theta_elem;
     T* theta;
     template<class TE, class TE_lambda> void operator()( const TE &elem, TE_lambda &elem_lambda ) const {
         Vec<unsigned,TE_lambda::nb_nodes+1+TF::nb_global_unknowns> ind_lambda = (*f_lambda).indices_for_element( elem_lambda );
@@ -436,7 +436,7 @@ struct Calcul_Elem_Error_Estimate_Lambda {
     }
 };
 
-template<class TM, class TF, class T>
+template<class TM, class TF, class T, class TV, class TVV>
 struct Calcul_Error_Estimate_Lambda {
     const TM* m;
     const TM* m_lambda;
@@ -444,14 +444,14 @@ struct Calcul_Error_Estimate_Lambda {
     const TF* f_lambda;
     const string* method;
     const Vec<unsigned>* correspondance_elem_m_lambda_to_elem_m;
-    const Vec< Vec<T> >* dep_hat;
-    Vec< Vec<T> >* dep_hat_lambda;
-    Vec<T>* theta_elem;
+    const TVV* dep_hat;
+    TVV* dep_hat_lambda;
+    TV* theta_elem;
     T* theta;
     template<class TE_lambda> void operator()( TE_lambda &elem_lambda ) const {
         unsigned num_elem = (*correspondance_elem_m_lambda_to_elem_m)[ elem_lambda.number ];
         
-        Calcul_Elem_Error_Estimate_Lambda<TM, TF, T> calcul_elem_error_estimate_lambda;
+        Calcul_Elem_Error_Estimate_Lambda<TM, TF, T, TV, TVV> calcul_elem_error_estimate_lambda;
         calcul_elem_error_estimate_lambda.m = m;
         calcul_elem_error_estimate_lambda.m_lambda = m_lambda;
         calcul_elem_error_estimate_lambda.f = f;
@@ -471,14 +471,14 @@ struct Calcul_Error_Estimate_Lambda {
 template<class TE, class TE_lambda, class TM, class TF, class TTWW, class TTVV, class S, class Pvec, class TTV, class TT>
 void calc_elem_weighted_error_estimate_lambda( const TE &elem, const TE_lambda &elem_lambda, const TM &m, const TM &m_lambda, const TF &f, const TF &f_lambda, const TTWW &vectors, const TTWW &lambda_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &lambda_indices, const TTVV &dep_hat, S &method, const TT &h, const Pvec &domain_center, const TTV &domain_length, const TT &k_min, TT &weighted_theta ) {}
 
-template<class TM, class TF, class T, class Pvec>
+template<class TM, class TF, class T, class TVV, class Pvec>
 struct Calcul_Elem_Weighted_Error_Estimate_Lambda {
     const TM* m;
     const TM* m_lambda;
     const TF* f;
     const TF* f_lambda;
     const string* method;
-    const Vec< Vec<T> >* dep_hat;
+    const TVV* dep_hat;
     const T* h;
     const Pvec* domain_center;
     const Vec<T>* domain_length;
@@ -491,7 +491,7 @@ struct Calcul_Elem_Weighted_Error_Estimate_Lambda {
     }
 };
 
-template<class TM, class TF, class T, class Pvec>
+template<class TM, class TF, class T, class TVV, class Pvec>
 struct Calcul_Weighted_Error_Estimate_Lambda {
     const TM* m;
     const TM* m_lambda;
@@ -499,7 +499,7 @@ struct Calcul_Weighted_Error_Estimate_Lambda {
     const TF* f_lambda;
     const string* method;
     const Vec<unsigned>* correspondance_elem_m_lambda_to_elem_m;
-    const Vec< Vec<T> >* dep_hat;
+    const TVV* dep_hat;
     const T* h;
     const Pvec* domain_center;
     const Vec<T>* domain_length;
@@ -508,7 +508,7 @@ struct Calcul_Weighted_Error_Estimate_Lambda {
     template<class TE_lambda> void operator()( const TE_lambda &elem_lambda ) const {
         unsigned num_elem = (*correspondance_elem_m_lambda_to_elem_m)[ elem_lambda.number ];
         
-        Calcul_Elem_Weighted_Error_Estimate_Lambda<TM, TF, T, Pvec> calcul_elem_weighted_error_estimate_lambda;
+        Calcul_Elem_Weighted_Error_Estimate_Lambda<TM, TF, T, TVV, Pvec> calcul_elem_weighted_error_estimate_lambda;
         calcul_elem_weighted_error_estimate_lambda.m = m;
         calcul_elem_weighted_error_estimate_lambda.m_lambda = m_lambda;
         calcul_elem_weighted_error_estimate_lambda.f = f;
@@ -530,16 +530,16 @@ struct Calcul_Weighted_Error_Estimate_Lambda {
 template<class TE, class TE_lambda, class TM, class TF, class TTWW, class TTVV, class S, class Pvec, class TTV, class TT>
 void calc_skin_elem_error_estimate_lambda_boundary( const TE &elem, const TE_lambda &elem_lambda, const TM &m, const TM &m_lambda, const TF &f, const TF &f_lambda, const TTWW &vectors, const TTWW &lambda_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &lambda_indices, const TTVV &dep_hat, S &method, const Pvec &domain_center, TTV &theta_boundary_face, TT &theta_boundary ) {}
 
-template<class TM, class TF, class T, class Pvec>
+template<class TM, class TF, class T, class TV, class TVV, class Pvec>
 struct Calcul_Skin_Elem_Error_Estimate_Lambda_Boundary {
     const TM* m;
     const TM* m_lambda;
     const TF* f;
     const TF* f_lambda;
     const string* method;
-    const Vec< Vec<T> >* dep_hat;
+    const TVV* dep_hat;
     const Pvec* domain_center;
-    Vec<T>* theta_boundary_face;
+    TV* theta_boundary_face;
     T* theta_boundary;
     template<class TE, class TE_lambda> void operator()( const TE &elem, const TE_lambda &elem_lambda ) const {
         Vec<unsigned,TE_lambda::nb_nodes+1+TF::nb_global_unknowns> ind_lambda = (*f_lambda).indices_for_element( elem_lambda );
@@ -548,7 +548,7 @@ struct Calcul_Skin_Elem_Error_Estimate_Lambda_Boundary {
     }
 };
 
-template<class TM, class TF, class T, class Pvec>
+template<class TM, class TF, class T, class TV, class TVV, class Pvec>
 struct Calcul_Error_Estimate_Lambda_Boundary {
     const TM* m;
     const TM* m_lambda;
@@ -556,14 +556,14 @@ struct Calcul_Error_Estimate_Lambda_Boundary {
     const TF* f_lambda;
     const string* method;
     const Vec<unsigned>* correspondance_elem_m_lambda_to_elem_m;
-    const Vec< Vec<T> >* dep_hat;
+    const TVV* dep_hat;
     const Pvec* domain_center;
-    Vec<T>* theta_boundary_face;
+    TV* theta_boundary_face;
     T* theta_boundary;
     template<class TE_lambda> void operator()( const TE_lambda &elem_lambda ) const {
         unsigned num_elem = (*correspondance_elem_m_lambda_to_elem_m)[ elem_lambda.number ];
         
-        Calcul_Skin_Elem_Error_Estimate_Lambda_Boundary<TM, TF, T, Pvec> calcul_skin_elem_error_estimate_lambda_boundary;
+        Calcul_Skin_Elem_Error_Estimate_Lambda_Boundary<TM, TF, T, TV, TVV, Pvec> calcul_skin_elem_error_estimate_lambda_boundary;
         calcul_skin_elem_error_estimate_lambda_boundary.m = m;
         calcul_skin_elem_error_estimate_lambda_boundary.m_lambda = m_lambda;
         calcul_skin_elem_error_estimate_lambda_boundary.f = f;
@@ -583,7 +583,7 @@ struct Calcul_Error_Estimate_Lambda_Boundary {
 template<class TE, class TE_adjoint, class TM, class TF, class TTWW, class S, class TTVV, class TT>
 void calc_elem_correction_interest_quantity_lambda( const TE &elem, const TE_adjoint &elem_adjoint, const TM &m, const TM &m_adjoint, const TF &f, const TF &f_adjoint, const TTWW &vectors, const TTWW &adjoint_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &adjoint_indices, const S &method, const S &method_adjoint, const TTVV &dep_hat, const TTVV &dep_adjoint_hat, TT &I_hhh ) {}
 
-template<class TM, class TF, class T>
+template<class TM, class TF, class T, class TVV>
 struct Calcul_Correction_Interest_Quantity_Lambda {
     const TM* m;
     const TM* m_adjoint;
@@ -592,8 +592,8 @@ struct Calcul_Correction_Interest_Quantity_Lambda {
     const string* interest_quantity;
     const string* method;
     const string* method_adjoint;
-    const Vec< Vec<T> >* dep_hat;
-    const Vec< Vec<T> >* dep_adjoint_hat;
+    const TVV* dep_hat;
+    const TVV* dep_adjoint_hat;
     T* I_hhh;
     template<class TE, class TE_adjoint> void operator()( const TE &elem, unsigned i, const TE_adjoint &elem_adjoint, unsigned j ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = (*f).indices_for_element( elem );
@@ -607,15 +607,15 @@ struct Calcul_Correction_Interest_Quantity_Lambda {
 template<class TE, class TE_adjoint, class TM, class TF, class TTWW, class TTVV, class S, class TTV>
 void calc_elem_error_estimate_proj_on_adjoint( const TE &elem, const TE_adjoint &elem_adjoint, const TM &m, const TM &m_adjoint, const TF &f, const TF &f_adjoint, const TTWW &vectors, const TTWW &adjoint_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &adjoint_indices, const S &method, const TTVV &dep_hat, TTV &theta_elem_proj_on_adjoint ) {}
 
-template<class TM, class TF, class T>
+template<class TM, class TF, class TV, class TVV>
 struct Calcul_Elem_Error_Estimate_Proj_On_Adjoint {
     const TM* m;
     const TM* m_adjoint;
     const TF* f;
     const TF* f_adjoint;
     const string* method;
-    const Vec< Vec<T> >* dep_hat;
-    Vec<T>* theta_elem_proj_on_adjoint;
+    const TVV* dep_hat;
+    TV* theta_elem_proj_on_adjoint;
     template<class TE, class TE_adjoint> void operator()( const TE &elem, const TE_adjoint &elem_adjoint ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = (*f).indices_for_element( elem );
         Vec<unsigned,TE_adjoint::nb_nodes+1+TF::nb_global_unknowns> ind_adjoint = (*f_adjoint).indices_for_element( elem_adjoint );
@@ -623,7 +623,7 @@ struct Calcul_Elem_Error_Estimate_Proj_On_Adjoint {
     }
 };
 
-template<class TM, class TF, class T>
+template<class TM, class TF, class TV, class TVV>
 struct Calcul_Error_Estimate_Proj_On_Adjoint {
     const TM* m;
     const TM* m_adjoint;
@@ -631,12 +631,12 @@ struct Calcul_Error_Estimate_Proj_On_Adjoint {
     const TF* f_adjoint;
     const string* method;
     const Vec<unsigned>* correspondance_elem_m_adjoint_to_elem_m;
-    const Vec< Vec<T> >* dep_hat;
-    Vec<T>* theta_elem_proj_on_adjoint;
+    const TVV* dep_hat;
+    TV* theta_elem_proj_on_adjoint;
     template<class TE_adjoint> void operator()( const TE_adjoint &elem_adjoint ) const {
         unsigned num_elem = (*correspondance_elem_m_adjoint_to_elem_m)[ elem_adjoint.number ];
         
-        Calcul_Elem_Error_Estimate_Proj_On_Adjoint<TM, TF, T> calcul_elem_error_estimate_proj_on_adjoint;
+        Calcul_Elem_Error_Estimate_Proj_On_Adjoint<TM, TF, TV, TVV> calcul_elem_error_estimate_proj_on_adjoint;
         calcul_elem_error_estimate_proj_on_adjoint.m = m;
         calcul_elem_error_estimate_proj_on_adjoint.m_adjoint = m_adjoint;
         calcul_elem_error_estimate_proj_on_adjoint.f = f;

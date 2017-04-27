@@ -21,10 +21,16 @@ using namespace std;
 
 /// Construction amelioree des densites d'effort par les methodes EET et EESPT
 /// --------------------------------------------------------------------------
-template<class TM, class TF, class T>
-void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string &method, const Vec<bool> &elem_flag_enh, const Vec<bool> &face_flag_enh, const Vec<bool> &elem_flag_bal, const Vec<unsigned> &elem_list_enh, const Vec<unsigned> &face_list_enh, const Vec<unsigned> &elem_list_bal, Vec< Mat<T, Sym<> > > &K_hat, const Vec< Vec<T> > &dep_hat, Vec< Vec< Vec<T> > > &force_fluxes, const string &solver, const string &solver_minimisation, const bool verif_solver_enhancement = false, const T tol_solver_enhancement = 1e-6, const bool verif_solver_minimisation_enhancement = false, const T tol_solver_minimisation_enhancement = 1e-6, const bool disp = false ) {
+template<class TM, class TF, class T, class TVV, class TVVV, class TMatV>
+void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string &method, const Vec<bool> &elem_flag_enh, const Vec<bool> &face_flag_enh, const Vec<bool> &elem_flag_bal, const Vec<unsigned> &elem_list_enh, const Vec<unsigned> &face_list_enh, const Vec<unsigned> &elem_list_bal, TMatV &K_hat, const TVV &dep_hat, TVVV &force_fluxes, const string &solver, const string &solver_minimisation, const bool verif_solver_enhancement = false, const T tol_solver_enhancement = 1e-6, const bool verif_solver_minimisation_enhancement = false, const T tol_solver_minimisation_enhancement = 1e-6, const bool disp = false ) {
     
     static const unsigned dim = TM::dim;
+    
+    typedef Mat<T, Gen<>, SparseLine<> > TMatGenSparse;
+    typedef Mat<T, Sym<>, SparseLine<> > TMatSymSparse;
+    typedef Mat<T, Sym<>, SparseCholMod > TMatSymSparseCholMod;
+    typedef Mat<T, Gen<>, SparseUMFPACK > TMatSymSparseUMFPACK;
+    typedef Mat<T, Gen<>, SparseLU > TMatGenSparseLU;
     
     TicToc t_force_fluxes_enh;
     t_force_fluxes_enh.start();
@@ -102,15 +108,15 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
         for (unsigned i=0;i<nb_unk_local_enh[ n ];++i) {
             if ( solver == "CholMod" ) {
                 #ifdef WITH_CHOLMOD
-                Mat<T, Sym<>, SparseLine<> > K_hat_sym = K_hat[ elem_list_enh[ n ] ];
-                Mat<T, Sym<>, SparseCholMod > K_hat_CholMod = K_hat_sym;
+                TMatSymSparse K_hat_sym = K_hat[ elem_list_enh[ n ] ];
+                TMatSymSparseCholMod K_hat_CholMod = K_hat_sym;
                 K_hat_CholMod.get_factorization();
                 dep_hat_enh[ n ][ i ] = K_hat_CholMod.solve( F_hat_enh[ n ][ i ] );
                 #endif
             }
             else if ( solver == "LDL" ) {
                 #ifdef WITH_LDL
-                Mat<T, Sym<>, SparseLine<> > K_hat_LDL = K_hat[ elem_list_enh[ n ] ];
+                TMatSymSparse K_hat_LDL = K_hat[ elem_list_enh[ n ] ];
                 dep_hat_enh[ n ][ i ] = F_hat_enh[ n ][ i ];
                 LDL_solver ls;
                 Vec< Vec<T> > Ker;
@@ -122,25 +128,25 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
             }
             else if ( solver == "UMFPACK" ) {
                 #ifdef WITH_UMFPACK
-                Mat<T, Gen<>, SparseUMFPACK > K_hat_UMFPACK = K_hat[ elem_list_enh[ n ] ];
+                TMatSymSparseUMFPACK K_hat_UMFPACK = K_hat[ elem_list_enh[ n ] ];
                 K_hat_UMFPACK.get_factorization();
                 dep_hat_enh[ n ][ i ] = K_hat_UMFPACK.solve( F_hat_enh[ n ][ i ] );
                 #endif
             }
             else if ( solver == "CholFactorize" ) {
-                Mat<T, Sym<>, SparseLine<> > K_hat_Chol = K_hat[ elem_list_enh[ n ] ];
+                TMatSymSparse K_hat_Chol = K_hat[ elem_list_enh[ n ] ];
                 chol_factorize( K_hat_Chol );
                 solve_using_chol_factorize( K_hat_Chol, F_hat_enh[ n ][ i ], dep_hat_enh[ n ][ i ] );
             }
             else if ( solver == "LUFactorize" ) {
-                Mat<T, Sym<>, SparseLine<> > K_hat_sym = K_hat[ elem_list_enh[ n ] ];
-                Mat<T, Gen<>, SparseLU > K_hat_LU = K_hat_sym;
+                TMatSymSparse K_hat_sym = K_hat[ elem_list_enh[ n ] ];
+                TMatGenSparseLU K_hat_LU = K_hat_sym;
 //                Vec<int> vector_permutation;
                 lu_factorize( K_hat_LU/*, vector_permutation*/ );
                 solve_using_lu_factorize( K_hat_LU, /*vector_permutation,*/ F_hat_enh[ n ][ i ], dep_hat_enh[ n ][ i ] );
             }
             else if ( solver == "Inv" ) {
-                Mat<T, Sym<>, SparseLine<> > K_hat_Inv = K_hat[ elem_list_enh[ n ] ];
+                TMatSymSparse K_hat_Inv = K_hat[ elem_list_enh[ n ] ];
                 dep_hat_enh[ n ][ i ] = inv( K_hat_Inv ) * F_hat_enh[ n ][ i ];
             }
             else {
@@ -182,7 +188,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     if ( disp )
         cout << "Construction des matrices A_local_enh" << endl << endl;
     
-    Vec< Mat<T, Gen<>, SparseLine<> > > A_local_enh;
+    Vec< TMatGenSparse > A_local_enh;
     A_local_enh.resize( elem_list_enh.size() );
     
     for (unsigned n=0;n<elem_list_enh.size();++n) {
@@ -254,7 +260,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     
     unsigned cpt_eq_f_surf_enh = 0;
     
-    Mat<T, Gen<>, SparseLine<> > C_enh;
+    TMatGenSparse C_enh;
     C_enh.resize( nb_eq_f_surf_enh, nb_unk_enh );
     
     Calcul_Global_Matrix_C_enh calcul_global_matrix_C_enh;
@@ -311,7 +317,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     Vec<unsigned> nb_eq_f_vol_local_enh;
     nb_eq_f_vol_local_enh.resize( elem_list_bal.size() );
     
-    Vec< Mat<T, Gen<>, SparseLine<> > > L_local_enh;
+    Vec< TMatGenSparse > L_local_enh;
     L_local_enh.resize( elem_list_bal.size() );
     
     Calcul_Elem_Matrix_L_enh calcul_elem_matrix_L_enh;
@@ -365,7 +371,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     if ( disp )
         cout << "Construction de la matrice A_enh" << endl << endl;
     
-    Mat<T, Gen<>, SparseLine<> > A_enh;
+    TMatGenSparse A_enh;
     A_enh.resize( nb_unk_enh );
     
     Calcul_Global_Matrix_A_enh calcul_global_matrix_A_enh;
@@ -422,7 +428,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
         nb_eq_f_vol_enh += nb_eq_f_vol_local_enh[ n ];
     }
     
-    Mat<T, Gen<>, SparseLine<> > L_enh;
+    TMatGenSparse L_enh;
     L_enh.resize( nb_eq_f_vol_enh, nb_unk_enh );
     
     Calcul_Global_Matrix_L_enh calcul_global_matrix_L_enh;
@@ -487,7 +493,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     
     unsigned cpt_eq_proj_f_surf_enh = 0;
     
-    Mat<T, Gen<>, SparseLine<> > P_enh;
+    TMatGenSparse P_enh;
     P_enh.resize( nb_eq_proj_f_surf_enh, nb_unk_enh );
     
     Calcul_Global_Matrix_P_enh calcul_global_matrix_P_enh;
@@ -512,7 +518,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     if ( disp )
         cout << "Construction de la matrice C_tot_enh et du vecteur q_tot_enh" << endl << endl;
     
-    Mat<T, Gen<>, SparseLine<> > C_tot_enh;
+    TMatGenSparse C_tot_enh;
     Vec<T> q_tot_enh;
     
     C_tot_enh.resize( nb_eq_f_surf_enh + nb_eq_proj_f_surf_enh + nb_eq_f_vol_enh, nb_unk_enh );
@@ -585,7 +591,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     TicToc t_detect_pivots;
     t_detect_pivots.start();
     
-    Mat<T, Sym<>, SparseLine<> > C_tot_2_enhancement = C_tot_enh * trans( C_tot_enh );
+    TMatSymSparse C_tot_2_enhancement = C_tot_enh * trans( C_tot_enh );
     
     LDL_solver ls_enh;
     Vec< Vec<T> > Ker_enh;
@@ -650,7 +656,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     if ( disp )
         cout << "Construction de la matrice K_enh et du vecteur F_enh" << endl << endl;
     
-    Mat<T, Gen<>, SparseLine<> > K_enh;
+    TMatGenSparse K_enh;
     Vec<T> F_enh;
     Vec<T> U_enh;
     
@@ -666,7 +672,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     
     Vec<unsigned> vec_eq_indep = range( nb_eq_indep_enh );
     Vec<unsigned> vec_unk_to_unk_plus_eq_indep = range( nb_unk_enh, nb_unk_enh + nb_eq_indep_enh );
-    Mat<T, Gen<>, SparseLine<> > trans_C_tot_tilde_enh = trans( C_tot_tilde_enh );
+    TMatGenSparse trans_C_tot_tilde_enh = trans( C_tot_tilde_enh );
     K_enh( vec_unk, vec_unk ) = A_enh( vec_unk, vec_unk ) * 1.;
     K_enh( vec_unk_to_unk_plus_eq_indep, vec_unk ) = C_tot_tilde_enh( vec_eq_indep, vec_unk ) * 1.;
     K_enh( vec_unk, vec_unk_to_unk_plus_eq_indep ) = trans_C_tot_tilde_enh( vec_unk, vec_eq_indep ) * 1.;
@@ -708,7 +714,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     
     if ( solver_minimisation == "LDL" ) {
         #ifdef WITH_LDL
-        Mat<T, Sym<>, SparseLine<> > K_LDL = K_enh;
+        TMatSymSparse K_LDL = K_enh;
         U_enh = F_enh;
         LDL_solver ls;
         Vec< Vec<T> > Ker;
@@ -719,18 +725,18 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     }
     else if ( solver_minimisation == "UMFPACK" ) {
         #ifdef WITH_UMFPACK
-        Mat<T, Gen<>, SparseUMFPACK > K_UMFPACK = K_enh;
+        TMatSymSparseUMFPACK K_UMFPACK = K_enh;
         K_UMFPACK.get_factorization();
         U_enh = K_UMFPACK.solve( F_enh );
         #endif
     }
     else if ( solver_minimisation == "Inv" ) {
-        Mat<T, Sym<>, SparseLine<> > K_Inv = K_enh;
+        TMatSymSparse K_Inv = K_enh;
         U_enh = inv( K_Inv ) * F_enh;
     }
     else if ( solver_minimisation == "LUFactorize" ) {
-        Mat<T, Sym<>, SparseLine<> > K_sym = K_enh;
-        Mat<T, Gen<>, SparseLU > K_LU = K_sym;
+        TMatSymSparse K_sym = K_enh;
+        TMatGenSparseLU K_LU = K_sym;
 //        Vec<int> vector_permutation;
         lu_factorize( K_LU/*, vector_permutation*/ );
         solve_using_lu_factorize( K_LU, /*vector_permutation,*/ F_enh, U_enh );

@@ -48,7 +48,7 @@ void display_method( const string &pb, const string &method, const unsigned &cos
     cout << endl;
     if ( method == "EET" or method == "EESPT" ) {
         cout << "fonction-cout = " << cost_function << endl;
-        cout << "solveur pour la resolution des pbs de minimisation    = " << solver_minimisation << endl;
+        cout << "solveur pour la resolution des pbs de minimisation = " << solver_minimisation << endl;
         cout << "solveur pour la resolution des pbs locaux par element = " << solver << endl;
     }
     else if ( method == "SPET" )

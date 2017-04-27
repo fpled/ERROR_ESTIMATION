@@ -28,7 +28,6 @@ ECRE/Construct_F_hat.h
 ECRE/Construct_K_hat.h
 ECRE/ECRE.h
 ECRE/ECRE.met
-ECRE/ECRE_PGD.h
 EESPT/Construct_standard_force_fluxes_EESPT.h
 EESPT/EESPT.h
 EESPT/EESPT.met

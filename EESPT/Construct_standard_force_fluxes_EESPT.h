@@ -21,10 +21,12 @@ using namespace std;
 
 /// Construction standard des densites d'effort par la methode EESPT
 /// ----------------------------------------------------------------
-template<class TM, class TF, class T>
-void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &cost_function, const bool &enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, const T &penalty_val_N, const string &pb, Vec< Vec< Vec<T> > > &force_fluxes, const bool want_local_enrichment = false, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool disp = false ) {
+template<class TM, class TF, class T, class TVVV>
+void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &cost_function, const bool &enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, const T &penalty_val_N, const string &pb, TVVV &force_fluxes, const bool want_local_enrichment = false, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool disp = false ) {
     
     static const unsigned dim = TM::dim;
+    
+    typedef Mat<T, Gen<>, SparseLine<> > TMatGenSparse;
     
     TicToc t_force_fluxes_std;
     t_force_fluxes_std.start();
@@ -146,7 +148,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     if ( disp )
         cout << "Construction des matrices A" << endl << endl;
     
-    Vec< Vec< Mat<T, Gen<>, SparseLine<> > > > A;
+    Vec< Vec< TMatGenSparse > > A;
     A.resize( nb_vertex_nodes );
     
     for (unsigned j=0;j<nb_vertex_nodes;++j) {
@@ -332,7 +334,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     if ( disp )
         cout << "Construction des matrices A_tilde" << endl << endl;
     
-    Vec< Vec< Mat<T, Gen<>, SparseLine<> > > > A_tilde;
+    Vec< Vec< TMatGenSparse > > A_tilde;
     A_tilde.resize( nb_vertex_nodes );
     
     for (unsigned j=0;j<nb_vertex_nodes;++j) {
@@ -708,7 +710,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
             if ( not minimisation[ j ][ d ] ) {
                 Vec<unsigned> vec_unk = range( nb_unk[ j ][ d ] );
                 Vec<unsigned> vec_eq_indep = range( nb_eq_indep[ j ][ d ] );
-                Mat<T, Gen<>, SparseLine<> > trans_A_tilde = trans( A_tilde[ j ][ d ] );
+                TMatGenSparse trans_A_tilde = trans( A_tilde[ j ][ d ] );
                 K[ j ][ d ]( vec_eq_indep, vec_unk ) = trans_A_tilde( vec_eq_indep, vec_unk ) * 1.;
                 F[ j ][ d ][ vec_eq_indep ] = R_tilde[ j ][ d ][ vec_eq_indep ] * 1.;
             }
@@ -716,7 +718,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
                 Vec<unsigned> vec_unk = range( nb_unk[ j ][ d ] );
                 Vec<unsigned> vec_eq_indep = range( nb_eq_indep[ j ][ d ] );
                 Vec<unsigned> vec_unk_to_unk_plus_eq_indep = range( nb_unk[ j ][ d ], nb_unk[ j ][ d ] + nb_eq_indep[ j ][ d ] );
-                Mat<T, Gen<>, SparseLine<> > trans_A_tilde = trans( A_tilde[ j ][ d ] );
+                TMatGenSparse trans_A_tilde = trans( A_tilde[ j ][ d ] );
                 K[ j ][ d ]( vec_unk, vec_unk ) = M[ j ][ d ][ vec_unk ] * 1.;
                 K[ j ][ d ]( vec_unk_to_unk_plus_eq_indep, vec_unk ) = trans_A_tilde( vec_eq_indep, vec_unk ) * 1.;
                 K[ j ][ d ]( vec_unk, vec_unk_to_unk_plus_eq_indep ) = A_tilde[ j ][ d ]( vec_unk, vec_eq_indep ) * 1.;

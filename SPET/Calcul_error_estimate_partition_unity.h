@@ -22,8 +22,8 @@ using namespace std;
 
 /// Calcul d'un champ de contrainte admissible, calcul d'un estimateur theta de l'erreur globale pour la methode basee sur la partition de l'unite (SPET)
 /// -----------------------------------------------------------------------------------------------------------------------------------------------------
-template<class TM, class TF, class T>
-void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb, const string &solver, const string &method, T &theta, Vec<T> &theta_elem, Vec< Vec<T> > &E, const bool verif_solver = false, const T tol_solver = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const bool disp = false ) {
+template<class TM, class TF, class T, class TV, class TVV>
+void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb, const string &solver, const string &method, T &theta, TV &theta_elem, TVV &E, const bool verif_solver = false, const T tol_solver = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const bool disp = false ) {
     
     static const unsigned dim = TM::dim;
     
@@ -366,7 +366,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     theta_elem.resize( m.elem_list.size() );
     theta_elem.set( 0. );
     
-    Calcul_Elem_Error_Estimate_SPET<T> calcul_elem_error_estimate_SPET;
+    Calcul_Elem_Error_Estimate_SPET<TV,TVV> calcul_elem_error_estimate_SPET;
     calcul_elem_error_estimate_SPET.E = &E;
     calcul_elem_error_estimate_SPET.theta_elem = &theta_elem;
     

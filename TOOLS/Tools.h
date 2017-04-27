@@ -123,14 +123,14 @@ void penalty( Mat<T,Str,Sto,OP>&K, TV &v, T &coef ) {
 }
 
 /// Penalisation de matrice a partir des ddls bloques, de la matrice A de relation entre ces ddls
-template<class T,class Sto,class OP, class TV, class TMAT2>
-void penalty( Mat<T,Gen<>,Sto,OP> &K, TV &v, TMAT2 &A, T &coef ) {
+template<class T,class Sto,class OP, class TV, class TMat2>
+void penalty( Mat<T,Gen<>,Sto,OP> &K, TV &v, TMat2 &A, T &coef ) {
     coef=1e5*max(A.diag());
     K(v,v)+=coef*trans(A)*A;
 }
 
-template<class T,class Sto,class OP, class TV, class TMAT2>
-void penalty( Mat<T,Sym<>,Sto,OP> &K, TV &v, TMAT2 &A, T &coef ) {
+template<class T,class Sto,class OP, class TV, class TMat2>
+void penalty( Mat<T,Sym<>,Sto,OP> &K, TV &v, TMat2 &A, T &coef ) {
     coef=1e5*max(A.diag());
     K[v]+=coef*trans(A)*A;
 }
@@ -160,12 +160,12 @@ TT norm_2( Vec<TT,static_size_,void> &v ) {
 
 
 /// Ecriture d'une matrice dans un fichier texte
-template<class TMAT>
-void write_matrix( TMAT &M, const string &name ) {
+template<class TMat>
+void write_matrix( TMat &M, const string &name ) {
     std::ofstream f(name.c_str());
     for (unsigned i=0;i<M.nb_rows();++i) {
         for (unsigned j=0;j<M.nb_cols();++j) {
-            typename TMAT::T a;
+            typename TMat::T a;
             a=M(i,j);
             f<< a<< " ";
         }
@@ -174,8 +174,8 @@ void write_matrix( TMAT &M, const string &name ) {
 }
 
 struct add_elem_node {
-    template<class TE, class TMAT>
-    void operator()( TE &e, TMAT &K ) const {
+    template<class TE, class TMat>
+    void operator()( TE &e, TMat &K ) const {
         Vec<unsigned> rep;
         rep.resize(e.nb_nodes);
         for (unsigned i=0;i<e.nb_nodes;++i) {

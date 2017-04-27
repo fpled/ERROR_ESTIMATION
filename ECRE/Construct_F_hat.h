@@ -20,8 +20,8 @@ using namespace std;
 
 /// Construction des vecteurs F_hat[ n ] pour chaque element n du maillage
 /// ----------------------------------------------------------------------
-template<class TM, class TF, class T>
-void construct_F_hat( TM &m, const TF &f, const string &pb, const bool &balancing, const Vec<bool> &elem_flag_bal, const Vec<bool> &elem_flag_enh, const Vec< Vec< Vec<T> > > &force_fluxes, Vec< Vec<T> > &F_hat, const bool want_local_enrichment = false, const bool disp = false ) {
+template<class TM, class TF, class TVV, class TVVV>
+void construct_F_hat( TM &m, const TF &f, const string &pb, const bool &balancing, const Vec<bool> &elem_flag_bal, const Vec<bool> &elem_flag_enh, const TVVV &force_fluxes, TVV &F_hat, const bool want_local_enrichment = false, const bool disp = false ) {
     
     if ( disp ) {
         cout << "Construction des vecteurs F_hat";
@@ -42,7 +42,7 @@ void construct_F_hat( TM &m, const TF &f, const string &pb, const bool &balancin
     
     F_hat.resize( m.elem_list.size() );
     
-    Calcul_Elem_Vector_F_hat<T> calcul_elem_vector_F_hat;
+    Calcul_Elem_Vector_F_hat<TVVV> calcul_elem_vector_F_hat;
     calcul_elem_vector_F_hat.node_list_face = &node_list_face;
     calcul_elem_vector_F_hat.elem_cpt_node = &elem_cpt_node;
     calcul_elem_vector_F_hat.balancing = &balancing;

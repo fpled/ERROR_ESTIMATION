@@ -20,8 +20,13 @@ using namespace std;
 
 /// Construction des vecteurs dep_hat[ n ] pour chaque element n du maillage
 /// ------------------------------------------------------------------------
-template<class TM, class TF, class T, class TVV, class TTVV, class TMATV>
-void construct_dep_hat( const TM &m, const TF &f, const string &solver, TMATV &K_hat, TVV &F_hat, TTVV &dep_hat, const bool verif_solver = false, const T tol_solver = 1e-6, const bool disp = false ) {
+template<class TM, class TF, class T, class TVV, class TTVV, class TMatV>
+void construct_dep_hat( const TM &m, const TF &f, const string &solver, TMatV &K_hat, TVV &F_hat, TTVV &dep_hat, const bool verif_solver = false, const T tol_solver = 1e-6, const bool disp = false ) {
+    
+    typedef Mat<T, Sym<>, SparseLine<> > TMatSymSparse;
+    typedef Mat<T, Sym<>, SparseCholMod > TMatSparseCholMod;
+    typedef Mat<T, Gen<>, SparseUMFPACK > TMatGenSparseUMFPACK;
+    typedef Mat<T, Gen<>, SparseLU > TMatGenSparseLU;
     
     if ( disp ) {
         cout << "Resolution des pbs locaux par element" << endl;
@@ -41,15 +46,15 @@ void construct_dep_hat( const TM &m, const TF &f, const string &solver, TMATV &K
     for (unsigned n=0;n<m.elem_list.size();++n) {
         if ( solver == "CholMod" ) {
             #ifdef WITH_CHOLMOD
-            Mat<T, Sym<>, SparseLine<> > K_hat_sym = K_hat[ n ];
-            Mat<T, Sym<>, SparseCholMod > K_hat_CholMod = K_hat_sym;
+            TMatSymSparse K_hat_sym = K_hat[ n ];
+            TMatSparseCholMod K_hat_CholMod = K_hat_sym;
             K_hat_CholMod.get_factorization();
             dep_hat[ n ] = K_hat_CholMod.solve( F_hat[ n ] );
             #endif
         }
         else if ( solver == "LDL" ) {
             #ifdef WITH_LDL
-            Mat<T, Sym<>, SparseLine<> > K_hat_LDL = K_hat[ n ];
+            TMatSymSparse K_hat_LDL = K_hat[ n ];
             dep_hat[ n ] = F_hat[ n ];
             LDL_solver ls;
             Vec< Vec<T> > Ker;
@@ -60,25 +65,25 @@ void construct_dep_hat( const TM &m, const TF &f, const string &solver, TMATV &K
         }
         else if ( solver == "UMFPACK" ) {
             #ifdef WITH_UMFPACK
-            Mat<T, Gen<>, SparseUMFPACK > K_hat_UMFPACK = K_hat[ n ];
+            TMatGenSparseUMFPACK K_hat_UMFPACK = K_hat[ n ];
             K_hat_UMFPACK.get_factorization();
             dep_hat[ n ] = K_hat_UMFPACK.solve( F_hat[ n ] );
             #endif
         }
         else if ( solver == "CholFactorize" ) {
-            Mat<T, Sym<>, SparseLine<> > K_hat_Chol = K_hat[ n ];
+            TMatSymSparse K_hat_Chol = K_hat[ n ];
             chol_factorize( K_hat_Chol );
             solve_using_chol_factorize( K_hat_Chol, F_hat[ n ], dep_hat[ n ] );
         }
         else if ( solver == "LUFactorize" ) {
-            Mat<T, Sym<>, SparseLine<> > K_hat_sym = K_hat[ n ];
-            Mat<T, Gen<>, SparseLU > K_hat_LU = K_hat_sym;
+            TMatSymSparse K_hat_sym = K_hat[ n ];
+            TMatGenSparseLU K_hat_LU = K_hat_sym;
 //            Vec<int> vector_permutation;
             lu_factorize( K_hat_LU/*, vector_permutation*/ );
             solve_using_lu_factorize( K_hat_LU, /*vector_permutation,*/ F_hat[ n ], dep_hat[ n ] );
         }
         else if ( solver == "Inv" ) {
-            Mat<T, Sym<>, SparseLine<> > K_hat_Inv = K_hat[ n ];
+            TMatSymSparse K_hat_Inv = K_hat[ n ];
             dep_hat[ n ] = inv( K_hat_Inv ) * F_hat[ n ];
         }
         else {
