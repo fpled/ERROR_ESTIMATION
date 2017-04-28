@@ -23,12 +23,12 @@ using namespace std;
 template<class TM, class TF, class T, class TV, class TVV, class TTVV, class TTVVV, class TTTVVV>
 void calcul_error_estimate_prolongation_condition_PGD( TM &m, TF &f, const string &pb, const string &method, T &theta, TV &theta_elem, const TTVV &dep_space, const TTVVV &dep_param, const TTTVVV &dep_space_hat, const TVV &dep_space_part_hat, const Vec< Vec<unsigned> > &elem_group, const unsigned &nb_modes, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool disp = false ) {
     
-    /// ------------------------------------------------------------------------------------------------------- ///
-    /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale ///
-    /// ------------------------------------------------------------------------------------------------------- ///
+    /// ------------------------------------------------------------------------------------------ ///
+    /// Construction d'un champ de contrainte admissible - Calcul d'un estimateur d'erreur globale ///
+    /// ------------------------------------------------------------------------------------------ ///
     
     if ( disp ) {
-        cout << "Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale" << endl;
+        cout << "Construction d'un champ de contrainte admissible - Calcul d'un estimateur d'erreur globale" << endl;
         cout << "-------------------------------------------------------------------------------------------------------" << endl << endl;
     }
     

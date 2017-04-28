@@ -13,12 +13,14 @@
 #define Calcul_global_error_estimation_h
 
 #include "EET/Construct_standard_force_fluxes_EET.h"
+#include "EET/Construct_standard_force_fluxes_EET_PGD.h"
 #include "EESPT/Construct_standard_force_fluxes_EESPT.h"
 #include "ENHANCEMENT/Construct_enhanced_force_fluxes_EET_EESPT.h"
 #include "ECRE/Construct_K_hat.h"
 #include "ECRE/Construct_F_hat.h"
 #include "ECRE/Construct_dep_hat.h"
 #include "ECRE/Calcul_error_estimate_prolongation_condition.h"
+#include "ECRE/Calcul_error_estimate_prolongation_condition_PGD.h"
 #include "SPET/Calcul_error_estimate_partition_unity.h"
 #include "VERIFICATION/Verification.h"
 #include "CRITERIUM_ENHANCEMENT/Construct_criterium_enhancement.h"

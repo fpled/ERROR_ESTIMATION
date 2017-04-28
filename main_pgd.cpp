@@ -18,7 +18,7 @@
 #include "CONNECTIVITY/Calcul_connectivity.h"
 #include "VERIFICATION/Verification.h"
 #include "DISCRETIZATION_ERROR/Calcul_discretization_error.h"
-#include "Calcul_global_error_estimation_PGD.h"
+#include "Calcul_global_error_estimation.h"
 #include "Calcul_goal_oriented_error_estimation.h"
 #include "PGD/PGD.h"
 
@@ -81,7 +81,7 @@ int main( int argc, char **argv ) {
     
     /// Global error estimation method
     /// ------------------------------
-    static const bool want_global_estimation = 0; // calcul d'un estimateur d'erreur globale (au sens de la norme energetique)
+    static const bool want_global_estimation = 1; // calcul d'un estimateur d'erreur globale (au sens de la norme energetique)
     static const string method = "EET"; //methode de construction de champs admissibles pour le pb direct : EET, SPET, EESPT
     static const string method_adjoint = "EET"; // methode de construction de champs admissibles pour le pb adjoint : EET, SPET, EESPT
     static const unsigned cost_function = 0; // fonction-cout pour les methodes EET, EESPT :
@@ -152,7 +152,7 @@ int main( int argc, char **argv ) {
     /// Proper Generalized Decomposition - PGD
     /// --------------------------------------
     static const bool want_normalization = 1; // normalisation des fonctions en parametres
-    static const unsigned max_mode = 5; // nb de modes max dans la decomposition
+    static const unsigned max_mode = 10; // nb de modes max dans la decomposition
     static const unsigned max_iter = 4; // nb d'iterations max de l'algorithme de point fixe
     static const T tol_convergence_criterium_mode = 1e-4; // precision pour critere d'arret global (boucle sur les modes)
     static const T tol_convergence_criterium_iter = 1e-8; // precision pour critere d'arret local (processus iteratif)
@@ -163,16 +163,16 @@ int main( int argc, char **argv ) {
     
     /// Verification equilibrium / solver
     /// ---------------------------------
-    static const bool verif_eq = 1; // verification de l'equilibre global elements finis
+    static const bool verif_eq = 0; // verification de l'equilibre global elements finis
     static const bool verif_compatibility_conditions = 1; // verification des conditions de compatibilite (equilibre elements finis) (methode EET)
     static const bool verif_eq_force_fluxes = 1; // verification de l'equilibre des densites d'effort (methodes EET, EESPT)
     static const T tol_compatibility_conditions = 1e-6; // tolerance pour la verification des conditions de compatibilite (equilibre elements finis) (methode EET)
     static const T tol_eq_force_fluxes = 1e-6; // tolerance pour la verification de l'equilibre des densites d'effort (methodes EET, EESPT)
     
     static const bool verif_solver = 1; // verification de la resolution des pbs locaux (methodes EET, SPET, EESPT)
-    static const bool verif_solver_minimisation = 0; // verification de la resolution des pbs de minimisation (methodes EET, EESPT)
-    static const bool verif_solver_enhancement = 0; // verification de la resolution des pbs locaux (amelioration des methodes EET, EESPT)
-    static const bool verif_solver_minimisation_enhancement = 0; // verification de la resolution des pbs de minimisation (amelioration des methodes EET, EESPT)
+    static const bool verif_solver_minimisation = 1; // verification de la resolution des pbs de minimisation (methodes EET, EESPT)
+    static const bool verif_solver_enhancement = 1; // verification de la resolution des pbs locaux (amelioration des methodes EET, EESPT)
+    static const bool verif_solver_minimisation_enhancement = 1; // verification de la resolution des pbs de minimisation (amelioration des methodes EET, EESPT)
     static const T tol_solver = 1e-6; // tolerance pour la verification de la resolution des pbs locaux (methodes EET, SPET, EESPT)
     static const T tol_solver_minimisation = 1e-6; // tolerance pour la verification de la resolution des pbs de minimisation (methodes EET, EESPT)
     static const T tol_solver_enhancement = 1e-6; // tolerance pour la verification de la resolution des pbs locaux (amelioration des methodes EET EESPT)
@@ -307,6 +307,10 @@ int main( int argc, char **argv ) {
     if ( verif_eq )
         check_equilibrium( f, "direct" );
     
+    /// Calcul de la norme du champ de deplacement approche du pb direct
+    /// ----------------------------------------------------------------
+    calcul_norm_dep( m, f, "direct" );
+    
     /// Construction d'un champ de contrainte admissible particulier
     /// ------------------------------------------------------------
     
@@ -339,10 +343,11 @@ int main( int argc, char **argv ) {
         construct_dep_hat( m, f, solver, K_hat, F_hat, dep_space_part_hat, verif_solver, tol_solver );
     }
     
-    T theta = 0.;
-    Vec<T> theta_elem;
-    Vec<T, max_mode > theta_2_mode;
-    theta_2_mode.set( 0. );
+    Vec<T, max_mode > theta, theta_PGD, theta_dis;
+    theta.set( 0. );
+    theta_PGD.set( 0. );
+    theta_dis.set( 0. );
+    Vec< Vec<T>, max_mode > theta_elem, theta_elem_PGD, theta_elem_dis;
     Vec< Vec< Vec<T> >, max_mode > dep_space_hat;
     
     unsigned n = 0;
@@ -424,9 +429,10 @@ int main( int argc, char **argv ) {
             cout << "-------------------------------------------------------" << endl << endl;
             
             reset_load_conditions( m );
+            for (unsigned i=0;i<m.elem_list.size();++i)
+                m.elem_list[i]->set_field( "alpha", 1. );
             
             Vec< Vec< Vec<T> > > force_fluxes_standard_mode;
-//            construct_standard_force_fluxes_EET( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, force_fluxes_standard_mode, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions );
             construct_standard_force_fluxes_EET_PGD( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, force_fluxes_standard_mode, dep_space, dep_param, dep_space_part, F_param, K_param, elem_group, n, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions );
             
             if ( verif_eq_force_fluxes )
@@ -440,10 +446,7 @@ int main( int argc, char **argv ) {
             
             set_load_conditions( m, structure, loading, mesh_size );
             
-            theta = 0.;
-            calcul_error_estimate_prolongation_condition_PGD( m, f, "direct", "EET", theta, theta_elem, dep_space, dep_param, dep_space_hat, dep_space_part_hat, elem_group, n, want_global_discretization_error, want_local_discretization_error );
-            
-            theta_2_mode[ n ] = pow( theta, 2 );
+            calcul_error_estimate_prolongation_condition_PGD( m, f, "direct", "EET", theta[ n ], theta_elem[ n ], dep_space, dep_param, dep_space_hat, dep_space_part_hat, elem_group, n, want_global_discretization_error, want_local_discretization_error );
         }
         
         if ( n >= max_mode-1 ) { // if ( error_indicator < tol_convergence_criterium_mode or n >= max_mode-1 ) {
@@ -499,6 +502,13 @@ int main( int argc, char **argv ) {
     }
     
     if ( want_global_estimation or want_local_estimation ) {
+        Vec<unsigned> modes = range(1,nb_modes+1);
+        Vec<T, max_mode > theta_2, theta_2_PGD, theta_2_dis;
+        for (unsigned n=0;n<nb_modes;++n) {
+            theta_2[ n ] = pow( theta[ n ], 2 );
+            theta_2_PGD[ n ] = pow( theta_PGD[ n ], 2 );
+            theta_2_dis[ n ] = pow( theta_dis[ n ], 2 );
+        }
         // Matlab
         string output = "'" + prefix + "_estimates";
         string xlabel = "'$m$'";
@@ -509,7 +519,7 @@ int main( int argc, char **argv ) {
 //        mp.save_semilogy( range(1,nb_modes+1), theta_2_mode, (output + ".epsc2'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
 //        mp.save_semilogy( range(1,nb_modes+1), theta_2_mode, (output + ".tex'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
         mp.figure();
-        mp.semilogy( range(1,nb_modes+1), theta_2_mode, params.c_str() );
+        mp.semilogy( modes, theta_2, params.c_str() );
         mp.grid_on();
         mp.box_on();
         mp.set_fontsize(16);
@@ -527,10 +537,6 @@ int main( int argc, char **argv ) {
     
     t.stop();
     cout << "temps de calcul de la resolution du pb direct = " << t.res << endl << endl;
-    
-    /// Calcul de la norme du champ de deplacement approche du pb direct
-    /// ----------------------------------------------------------------
-//    calcul_norm_dep( m, f, "direct" );
     
     /// ---------------------- ///
     /// Sauvegarde / Affichage ///
