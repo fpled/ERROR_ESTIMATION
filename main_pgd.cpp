@@ -152,7 +152,7 @@ int main( int argc, char **argv ) {
     /// Proper Generalized Decomposition - PGD
     /// --------------------------------------
     static const bool want_normalization = 1; // normalisation des fonctions en parametres
-    static const unsigned max_mode = 10; // nb de modes max dans la decomposition
+    static const unsigned max_mode = 6; // nb de modes max dans la decomposition
     static const unsigned max_iter = 4; // nb d'iterations max de l'algorithme de point fixe
     static const T tol_convergence_criterium_mode = 1e-4; // precision pour critere d'arret global (boucle sur les modes)
     static const T tol_convergence_criterium_iter = 1e-8; // precision pour critere d'arret local (processus iteratif)
@@ -181,14 +181,14 @@ int main( int argc, char **argv ) {
     /// Display outputs
     /// ---------------
     static const bool display_vtu = 0;
+    static const bool display_pvd = 0;
     static const bool display_vtu_adjoint = 0;
     static const bool display_vtu_lambda = 0;
     static const bool display_vtu_adjoint_lambda = 0;
     static const bool display_vtu_crown = 0;
     
-    static const bool display_pvd_PGD_space = 0;
-    static const bool display_pvd_PGD_param = 0;
-    static const bool display_pvd_PGD_space_verif = 0;
+    static const bool display_pvd_space = 0;
+    static const bool display_pvd_eval = 0;
     
     static const bool display_matlab = 0;
     
@@ -247,10 +247,12 @@ int main( int argc, char **argv ) {
     for (unsigned p=0;p<elem_group.size()-1;++p)
         vals_param[p] = generate( m_param[p].node_list, ExtractDMi<pos_DM>( 0 ) );
     
-    Vec< DisplayParaview, max_mode > dp;
-    Vec<string> lp;
-    lp.push_back( "dep" );
-    lp.push_back( "young_eff" );
+    Vec< DisplayParaview, max_mode > dp_space;
+    Vec<string> lp_space;
+    lp_space.push_back( "dep" );
+    lp_space.push_back( "young_eff" );
+    DisplayParaview dp;
+    Vec<string> lp("all");
     
     /// Resolution du pb direct
     /// -----------------------
@@ -264,7 +266,7 @@ int main( int argc, char **argv ) {
     f.assemble( false, true );
     Vec<T> F_space = f.sollicitation;
     Vec<TMatSymSparse> K_space;
-    K_space.resize(elem_group.size());
+    K_space.resize( elem_group.size() );
     for (unsigned g=0;g<elem_group.size();++g) {
         for (unsigned j=0;j<m.elem_list.size();++j) {
             if ( find( elem_group[g], _1 == j ) )
@@ -280,8 +282,8 @@ int main( int argc, char **argv ) {
     /// -----------------------------------------------------------
     Vec< Vec<T> > F_param;
     Vec< Vec<TMatSymSparse,2> > K_param;
-    F_param.resize(elem_group.size()-1);
-    K_param.resize(elem_group.size()-1);
+    F_param.resize( elem_group.size()-1 );
+    K_param.resize( elem_group.size()-1 );
     for (unsigned p=0;p<elem_group.size()-1;++p) {
         f_param[p].allocate_matrices();
         f_param[p].shift();
@@ -330,8 +332,8 @@ int main( int argc, char **argv ) {
         
         display_method( "direct", "EET", cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, solver, solver_minimisation );
         
-        cout << "Construction d'un champ de contrainte admissible particulier" << endl;
-        cout << "------------------------------------------------------------" << endl << endl;
+        /// Construction d'un champ de contrainte admissible particulier
+        /// ------------------------------------------------------------
         
         construct_standard_force_fluxes_EET( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, force_fluxes_standard, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions );
         
@@ -369,7 +371,7 @@ int main( int argc, char **argv ) {
         solve_space( m, f, n, F_space, F_param, K_param, elem_group, dep_param, dep_space );
         
         string filename = prefix + "_mode" + to_string(n+1) + "_space_iter";
-        dp[ n ].add_mesh_iter( m, filename, lp, k );
+        dp_space[ n ].add_mesh_iter( m, filename, lp_space, k );
         
         /// Processus iteratif : Algorithme de point fixe
         /// ---------------------------------------------
@@ -398,7 +400,7 @@ int main( int argc, char **argv ) {
 //            }
             
             filename = prefix + "_mode" + to_string(n+1) + "_space_iter";
-            dp[ n ].add_mesh_iter( m, filename, lp, k );
+            dp_space[ n ].add_mesh_iter( m, filename, lp_space, k );
             
             /// Stationnarite du produit mode en espace * modes en parametre dans le processus iteratif
             /// ---------------------------------------------------------------------------------------
@@ -425,9 +427,6 @@ int main( int argc, char **argv ) {
             /// Construction d'un champ de contrainte admissible a zero
             /// -------------------------------------------------------
             
-            cout << "Construction d'un champ de contrainte admissible a zero" << endl;
-            cout << "-------------------------------------------------------" << endl << endl;
-            
             reset_load_conditions( m );
             for (unsigned i=0;i<m.elem_list.size();++i)
                 m.elem_list[i]->set_field( "alpha", 1. );
@@ -447,7 +446,21 @@ int main( int argc, char **argv ) {
             set_load_conditions( m, structure, loading, mesh_size );
             
             calcul_error_estimate_prolongation_condition_PGD( m, f, "direct", "EET", theta[ n ], theta_elem[ n ], dep_space, dep_param, dep_space_hat, dep_space_part_hat, elem_group, n, want_global_discretization_error, want_local_discretization_error );
+            
         }
+        
+        f.vectors[0].set( 0. );
+        for (unsigned i=0;i<n+1;++i) {
+            Vec<T> dep_mode = dep_space[ i ];
+            for (unsigned p=0;p<elem_group.size()-1;++p)
+                dep_mode *= dep_param[ p ][ i ][ 0 ];
+            f.vectors[0] +=  dep_mode;
+        }
+        f.update_variables();
+        f.call_after_solve();
+        
+        filename = prefix + "_mode";
+        dp.add_mesh_iter( m, filename, lp, n+1 );
         
         if ( n >= max_mode-1 ) { // if ( error_indicator < tol_convergence_criterium_mode or n >= max_mode-1 ) {
             nb_modes = n+1;
@@ -457,15 +470,19 @@ int main( int argc, char **argv ) {
         n++;
     }
     
+    /// ---------------------- ///
+    /// Sauvegarde / Affichage ///
+    /// ---------------------- ///
+    
     MatlabPlot mp(display_matlab);
     mp.cd_cwd();
     for (unsigned n=0;n<nb_modes;++n) {
         // Paraview
         string filename = prefix + "_mode" + to_string(n+1) + "_space";
-        if ( display_pvd_PGD_space )
-            dp[ n ].exec( filename );
+        if ( display_pvd_space )
+            dp_space[ n ].exec( filename );
         else
-            dp[ n ].make_pvd_file( filename );
+            dp_space[ n ].make_pvd_file( filename );
         
         for (unsigned p=0;p<elem_group.size()-1;++p) {
             // Matlab
@@ -501,6 +518,12 @@ int main( int argc, char **argv ) {
         }
     }
     
+    string filename = prefix;
+    if ( display_pvd )
+        dp.exec( filename );
+    else
+        dp.make_pvd_file( filename );
+    
     if ( want_global_estimation or want_local_estimation ) {
         Vec<unsigned> modes = range(1,nb_modes+1);
         Vec<T, max_mode > theta_2, theta_2_PGD, theta_2_dis;
@@ -533,19 +556,10 @@ int main( int argc, char **argv ) {
     }
     
     if ( want_eval_PGD )
-        eval_PGD( m_param, m, f, "direct", structure, boundary_condition_D, loading, mesh_size, elem_group, nb_vals, vals_param, nb_modes, dep_space, dep_param, prefix, display_pvd_PGD_space_verif );
+        eval_PGD( m_param, m, f, "direct", structure, boundary_condition_D, loading, mesh_size, elem_group, nb_vals, vals_param, nb_modes, dep_space, dep_param, prefix, display_pvd_eval );
     
     t.stop();
     cout << "temps de calcul de la resolution du pb direct = " << t.res << endl << endl;
-    
-    /// ---------------------- ///
-    /// Sauvegarde / Affichage ///
-    /// ---------------------- ///
-    
-    if ( display_vtu )
-        display( m, prefix );
-    else
-        save( m, prefix );
     
     t_total.stop();
     cout << "temps de calcul total = " << t_total.res << endl << endl;

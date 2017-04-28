@@ -103,43 +103,4 @@ struct Calc_Elem_Error_Estimate_Init_EET_EESPT {
     }
 };
 
-template<class TV, class TVV, class TTVV, class TTVVV, class TTTVVV>
-struct Calc_Elem_Error_Estimate_EET_EESPT_PGD {
-    const TTVV* dep_space;
-    const TTVVV* dep_param;
-    const TTTVVV* dep_space_hat;
-    const TVV* dep_space_part_hat;
-    const TTVVV* dep_param_part_hat;
-    const Vec< Vec<unsigned> >* elem_group;
-    const unsigned* nb_modes;
-    const string* method;
-    TV* theta_elem;
-    template<class TE, class TM, class TF, class T> void operator()( TE &elem, const TM &m, TF &f, T &theta ) const {
-        Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
-        f.vectors[0].set( 0. );
-        for (unsigned n=0;n<*nb_modes;++n) {
-            TV dep_mode = (*dep_space)[ n ];
-            for (unsigned p=0;p<(*elem_group).size()-1;++p)
-                dep_mode *= (*dep_param)[ p ][ n ][ 0 ];
-            f.vectors[0] +=  dep_mode;
-        }
-        TVV dep_hat = *dep_space_part_hat;
-        for (unsigned n=0;n<*nb_modes;++n) {
-            TVV dep_mode_hat = (*dep_space_hat)[ n ];
-            for (unsigned p=0;p<(*elem_group).size()-1;++p)
-                dep_mode_hat *= (*dep_param)[ p ][ n ][ 0 ];
-            dep_hat += dep_mode_hat;
-        }
-        if ( *method == "EET" ) {
-            elem.ecre_elem_EET = 0.0;
-            elem.theta_elem_EET = 0.0;
-        }
-        if ( *method == "EESPT" ) {
-            elem.ecre_elem_EESPT = 0.0;
-            elem.theta_elem_EESPT = 0.0;
-        }
-        calc_elem_error_estimate_EET_EESPT( elem, m, f, f.vectors, ind, dep_hat, *method, *theta_elem, theta );
-    }
-};
-
 #endif // ECRE_h

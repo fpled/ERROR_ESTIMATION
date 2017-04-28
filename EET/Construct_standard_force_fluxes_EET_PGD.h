@@ -32,6 +32,24 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
     typedef Mat<T, Gen<>, SparseUMFPACK > TMatGenSparseUMFPACK;
     typedef Mat<T, Gen<>, SparseLU > TMatGenSparseLU;
     
+    Vec< Vec<T> > dep;
+    dep.resize( elem_group.size() );
+    for (unsigned g=0;g<elem_group.size();++g) {
+        dep[g] = - dep_space_part;
+        for (unsigned p=0;p<elem_group.size()-1;++p)
+            dep[g] *= dot( F_param[p], dep_param[ p ][ mode ] );
+        for (unsigned i=0;i<mode+1;++i) {
+            T alpha = 1.;
+            for (unsigned p=0;p<elem_group.size()-1;++p) {
+                if ( p == g )
+                    alpha *= dot( dep_param[ p ][ mode ], K_param[p][1] * dep_param[ p ][ i ] );
+                else
+                    alpha *= dot( dep_param[ p ][ mode ], K_param[p][0] * dep_param[ p ][ i ] );
+            }
+            dep[g] += alpha * dep_space[ i ];
+        }
+    }
+    
     TicToc t_force_fluxes_std;
     t_force_fluxes_std.start();
     
@@ -194,19 +212,14 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
         }
     }
     
-    Calcul_Nodal_Vector_r_PGD<TV, TVV, TTVV, TTVVV, TMatVV> calcul_nodal_vector_r_PGD;
+    Calcul_Nodal_Vector_r_PGD<TVV> calcul_nodal_vector_r_PGD;
     calcul_nodal_vector_r_PGD.elem_ind = &elem_ind;
     calcul_nodal_vector_r_PGD.node_list_face = &node_list_face;
     calcul_nodal_vector_r_PGD.elem_cpt_node = &elem_cpt_node;
     calcul_nodal_vector_r_PGD.pb = &pb;
     calcul_nodal_vector_r_PGD.want_local_enrichment = &want_local_enrichment;
-    calcul_nodal_vector_r_PGD.dep_space = &dep_space;
-    calcul_nodal_vector_r_PGD.dep_param = &dep_param;
-    calcul_nodal_vector_r_PGD.dep_space_part = &dep_space_part;
-    calcul_nodal_vector_r_PGD.F_param = &F_param;
-    calcul_nodal_vector_r_PGD.K_param = &K_param;
+    calcul_nodal_vector_r_PGD.dep = &dep;
     calcul_nodal_vector_r_PGD.elem_group = &elem_group;
-    calcul_nodal_vector_r_PGD.mode = &mode;
     
     apply( m.elem_list, calcul_nodal_vector_r_PGD, m, f, r );
     
@@ -348,18 +361,13 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
         }
     }
     
-    Calcul_Nodal_Vector_q_PGD<TV, TVV, TTVV, TTVVV, TMatVV> calcul_nodal_vector_q_PGD;
+    Calcul_Nodal_Vector_q_PGD<TVV> calcul_nodal_vector_q_PGD;
     calcul_nodal_vector_q_PGD.face_type = &face_type;
     calcul_nodal_vector_q_PGD.nodal_ind = &nodal_ind;
     calcul_nodal_vector_q_PGD.node_list_face = &node_list_face;
     calcul_nodal_vector_q_PGD.face_list_node = &face_list_node;
-    calcul_nodal_vector_q_PGD.dep_space = &dep_space;
-    calcul_nodal_vector_q_PGD.dep_param = &dep_param;
-    calcul_nodal_vector_q_PGD.dep_space_part = &dep_space_part;
-    calcul_nodal_vector_q_PGD.F_param = &F_param;
-    calcul_nodal_vector_q_PGD.K_param = &K_param;
+    calcul_nodal_vector_q_PGD.dep = &dep;
     calcul_nodal_vector_q_PGD.elem_group = &elem_group;
-    calcul_nodal_vector_q_PGD.mode = &mode;
     
     apply( m.elem_list, calcul_nodal_vector_q_PGD, m, f, q );
     
@@ -565,20 +573,15 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
         }
     }
     
-    Calcul_Nodal_Vector_b_PGD<TV, TVV, TTVV, TTVVV, TMatVV> calcul_nodal_vector_b_PGD;
+    Calcul_Nodal_Vector_b_PGD<TVV> calcul_nodal_vector_b_PGD;
     calcul_nodal_vector_b_PGD.minimisation = &minimisation;
     calcul_nodal_vector_b_PGD.face_type = &face_type;
     calcul_nodal_vector_b_PGD.face_ind = &face_ind;
     calcul_nodal_vector_b_PGD.node_list_face = &node_list_face;
     calcul_nodal_vector_b_PGD.pb = &pb;
     calcul_nodal_vector_b_PGD.want_local_enrichment = &want_local_enrichment;
-    calcul_nodal_vector_b_PGD.dep_space = &dep_space;
-    calcul_nodal_vector_b_PGD.dep_param = &dep_param;
-    calcul_nodal_vector_b_PGD.dep_space_part = &dep_space_part;
-    calcul_nodal_vector_b_PGD.F_param = &F_param;
-    calcul_nodal_vector_b_PGD.K_param = &K_param;
+    calcul_nodal_vector_b_PGD.dep = &dep;
     calcul_nodal_vector_b_PGD.elem_group = &elem_group;
-    calcul_nodal_vector_b_PGD.mode = &mode;
     
     apply( m.elem_list, calcul_nodal_vector_b_PGD, m, f, b );
     
