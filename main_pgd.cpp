@@ -486,15 +486,15 @@ int main( int argc, char **argv ) {
             mp.close();
             
             // Gnuplot
-            output = "'gp_" + prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1);
-            params = "notitle w l lt " + to_string(p+1) + " lw 1";
-            bool jump_lines = false;
-//            save_plot( vals_param[p], dep_param[ p ][ n ], (output + ".tex'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
-            GnuPlot gp;
-            gp.set_output_terminal((output + ".tex'").c_str());
-            gp.set_xlabel(xlabel.c_str());
-            gp.set_ylabel(ylabel.c_str());
-            gp.plot( vals_param[p], dep_param[ p ][ n ], params.c_str(), jump_lines );
+//            output = "'gp_" + prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1);
+//            params = "notitle w l lt " + to_string(p+1) + " lw 1";
+//            bool jump_lines = false;
+////            save_plot( vals_param[p], dep_param[ p ][ n ], (output + ".tex'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
+//            GnuPlot gp;
+//            gp.set_output_terminal((output + ".tex'").c_str());
+//            gp.set_xlabel(xlabel.c_str());
+//            gp.set_ylabel(ylabel.c_str());
+//            gp.plot( vals_param[p], dep_param[ p ][ n ], params.c_str(), jump_lines );
         }
     }
     
