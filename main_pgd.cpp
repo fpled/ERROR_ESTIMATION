@@ -151,15 +151,15 @@ int main( int argc, char **argv ) {
     
     /// Proper Generalized Decomposition - PGD
     /// --------------------------------------
-    static const bool want_normalization = 1; // normalisation
+    static const bool want_normalization = 1; // normalisation des fonctions en parametres
     static const unsigned max_mode = 5; // nb de modes max dans la decomposition
     static const unsigned max_iter = 4; // nb d'iterations max de l'algorithme de point fixe
     static const T tol_convergence_criterium_mode = 1e-4; // precision pour critere d'arret global (boucle sur les modes)
     static const T tol_convergence_criterium_iter = 1e-8; // precision pour critere d'arret local (processus iteratif)
     static const Vec<T,2> support_param( 1., 10. ); // support de l'espace des parametres
     static const unsigned nb_points_param = 100; // nb de points du maillage parametrique
-    static const bool want_verif_PGD = 1; // verification de la decomposition PGD
-    static const unsigned nb_vals_verif = 3; // nb de valeurs des parametres pris aleatoirement pour la verification de la decomposition PGD
+    static const bool want_eval_PGD = 1; // evaluation de la decomposition PGD
+    static const unsigned nb_vals = 3; // nb de valeurs des parametres pris aleatoirement pour l'evaluation de la decomposition PGD
     
     /// Verification equilibrium / solver
     /// ---------------------------------
@@ -247,14 +247,10 @@ int main( int argc, char **argv ) {
     for (unsigned p=0;p<elem_group.size()-1;++p)
         vals_param[p] = generate( m_param[p].node_list, ExtractDMi<pos_DM>( 0 ) );
     
-    Vec< DisplayParaview, max_mode > dp_space;
-    Vec< Vec< DisplayParaview, max_mode > > dp_param;
-    dp_param.resize( elem_group.size()-1 );
-    Vec<string> lp_space("all");
-//    lp_space.push_back( "dep" );
-//    lp_space.push_back( "young_eff" );
-    Vec<string> lp_param;
-    lp_param.push_back( "dep" );
+    Vec< DisplayParaview, max_mode > dp;
+    Vec<string> lp;
+    lp.push_back( "dep" );
+    lp.push_back( "young_eff" );
     
     /// Resolution du pb direct
     /// -----------------------
@@ -367,9 +363,8 @@ int main( int argc, char **argv ) {
         
         solve_space( m, f, n, F_space, F_param, K_param, elem_group, dep_param, dep_space );
         
-        dp_space[ n ].add_mesh_iter( m, prefix + "_mode" + to_string(n+1) + "_space_iter", lp_space, k );
-        for (unsigned p=0;p<elem_group.size()-1;++p)
-            dp_param[ p ][ n ].add_mesh_iter( m_param[p], prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1) + "_iter", lp_param, k );
+        string filename = prefix + "_mode" + to_string(n+1) + "_space_iter";
+        dp[ n ].add_mesh_iter( m, filename, lp, k );
         
         /// Processus iteratif : Algorithme de point fixe
         /// ---------------------------------------------
@@ -397,9 +392,8 @@ int main( int argc, char **argv ) {
 //                cout << dep_param[ p ][ n ] << endl << endl;
 //            }
             
-            dp_space[ n ].add_mesh_iter( m, prefix + "_mode" + to_string(n+1) + "_space_iter", lp_space, k );
-            for (unsigned p=0;p<elem_group.size()-1;++p)
-                dp_param[ p ][ n ].add_mesh_iter( m_param[p], prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1) + "_iter", lp_param, k );
+            filename = prefix + "_mode" + to_string(n+1) + "_space_iter";
+            dp[ n ].add_mesh_iter( m, filename, lp, k );
             
             /// Stationnarite du produit mode en espace * modes en parametre dans le processus iteratif
             /// ---------------------------------------------------------------------------------------
@@ -431,20 +425,6 @@ int main( int argc, char **argv ) {
             
             reset_load_conditions( m );
             
-//            f.vectors[0] = - dep_space_part;
-//            for (unsigned p=0;p<elem_group.size()-1;++p)
-//                f.vectors[0] *= dot( F_param[p], dep_param[ p ][ n ] );
-//            for (unsigned i=0;i<n+1;++i) {
-//                T alpha = 1.;
-//                for (unsigned p=0;p<elem_group.size()-1;++p) {
-//                    if ( find( elem_group[p], _1 == elem.number ) )
-//                        alpha *= dot( dep_param[ p ][ n ], K_param[p][1] * dep_param[ p ][ i ] );
-//                    else
-//                        alpha *= dot( dep_param[ p ][ n ], K_param[p][0] * dep_param[ p ][ i ] );
-//                }
-//                f.vectors[0] += alpha * dep_space[ i ];
-//            }
-            
             Vec< Vec< Vec<T> > > force_fluxes_standard_mode;
 //            construct_standard_force_fluxes_EET( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, force_fluxes_standard_mode, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions );
             construct_standard_force_fluxes_EET_PGD( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, force_fluxes_standard_mode, dep_space, dep_param, dep_space_part, F_param, K_param, elem_group, n, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions );
@@ -457,6 +437,8 @@ int main( int argc, char **argv ) {
             
             /// Calcul d'un estimateur d'erreur globale
             /// ---------------------------------------
+            
+            set_load_conditions( m, structure, loading, mesh_size );
             
             theta = 0.;
             calcul_error_estimate_prolongation_condition_PGD( m, f, "direct", "EET", theta, theta_elem, dep_space, dep_param, dep_space_hat, dep_space_part_hat, elem_group, n, want_global_discretization_error, want_local_discretization_error );
@@ -475,28 +457,22 @@ int main( int argc, char **argv ) {
     MatlabPlot mp(display_matlab);
     mp.cd_cwd();
     for (unsigned n=0;n<nb_modes;++n) {
+        // Paraview
+        string filename = prefix + "_mode" + to_string(n+1) + "_space";
         if ( display_pvd_PGD_space )
-            dp_space[ n ].exec( prefix + "_mode" + to_string(n+1) + "_space" );
+            dp[ n ].exec( filename );
         else
-            dp_space[ n ].make_pvd_file( prefix + "_mode" + to_string(n+1) + "_space" );
+            dp[ n ].make_pvd_file( filename );
+        
         for (unsigned p=0;p<elem_group.size()-1;++p) {
-            if ( display_pvd_PGD_param )
-                dp_param[ p ][ n ].exec( prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1) );
-            else
-                dp_param[ p ][ n ].make_pvd_file( prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1) );
-            
+            // Matlab
             string output = "'" + prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1);
             string xlabel = "'$p_" + to_string(p+1) + "$'";
             string ylabel = "'$\\gamma_{" + to_string(p+1) + "," + to_string(n+1) + "}$'";
             string params = ",'LineStyle','-','Color',getfacecolor(" + to_string(p+4) + "),'LineWidth',1";
-            
 //            mp.save_plot( vals_param[p], dep_param[ p ][ n ], (output + ".fig'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
 //            mp.save_plot( vals_param[p], dep_param[ p ][ n ], (output + ".epsc2'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
 //            mp.save_plot( vals_param[p], dep_param[ p ][ n ], (output + ".tex'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
-            
-//            string params = "notitle w l lt " + to_string(p+1) + " lw 1";
-//            save_plot( vals_param[p], dep_param[ p ][ n ], (output + ".tex'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
-            
             mp.figure();
             mp.plot( vals_param[p], dep_param[ p ][ n ], params.c_str() );
             mp.grid_on();
@@ -508,19 +484,30 @@ int main( int argc, char **argv ) {
             mp.save_output((output + ".epsc2'").c_str());
             mp.save_output((output + ".tex'").c_str());
             mp.close();
+            
+            // Gnuplot
+            output = "'gp_" + prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1);
+            params = "notitle w l lt " + to_string(p+1) + " lw 1";
+            bool jump_lines = false;
+//            save_plot( vals_param[p], dep_param[ p ][ n ], (output + ".tex'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
+            GnuPlot gp;
+            gp.set_ouput_terminal((output + ".tex'").c_str());
+            gp.set_xlabel(xlabel.c_str());
+            gp.set_ylabel(ylabel.c_str());
+            gp.plot( vals_param[p], dep_param[ p ][ n ], params.c_str(), jump_lines );
         }
     }
+    
     if ( want_global_estimation or want_local_estimation ) {
+        // Matlab
         string output = "'" + prefix + "_estimates";
         string xlabel = "'$m$'";
         string ylabel = "'$E^2_{\\mathrm{CRE}}$'";
         string legend = "'$E^2_{\\mathrm{CRE}}$'";
         string params = ",'LineStyle','-','Color',getfacecolor(4),'LineWidth',1";
-        
 //        mp.save_semilogy( range(1,nb_modes+1), theta_2_mode, (output + ".fig'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
 //        mp.save_semilogy( range(1,nb_modes+1), theta_2_mode, (output + ".epsc2'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
 //        mp.save_semilogy( range(1,nb_modes+1), theta_2_mode, (output + ".tex'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
-        
         mp.figure();
         mp.semilogy( range(1,nb_modes+1), theta_2_mode, params.c_str() );
         mp.grid_on();
@@ -535,8 +522,8 @@ int main( int argc, char **argv ) {
         mp.close();
     }
     
-    if ( want_verif_PGD )
-        check_PGD( m_param, m, f, "direct", structure, loading, mesh_size, elem_group, nb_vals_verif, vals_param, nb_modes, dep_space, dep_param, prefix, display_pvd_PGD_space_verif );
+    if ( want_eval_PGD )
+        eval_PGD( m_param, m, f, "direct", structure, boundary_condition_D, loading, mesh_size, elem_group, nb_vals, vals_param, nb_modes, dep_space, dep_param, prefix, display_pvd_PGD_space_verif );
     
     t.stop();
     cout << "temps de calcul de la resolution du pb direct = " << t.res << endl << endl;

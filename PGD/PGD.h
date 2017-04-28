@@ -336,26 +336,36 @@ struct Construct_Space_Pb {
 };
 
 
-/// Verification de la solution PGD pour un jeu connu de parametres
-/// ---------------------------------------------------------------
+/// Evaluation de la solution PGD pour un jeu connu de parametres
+/// -------------------------------------------------------------
 template<class TM_param, class TM, class TF, class TVV, class TTVV, class TTVVV>
-void check_PGD( TM_param &m_param, TM &m, TF &f,  const string &pb, const string &structure, const string &loading, const string &mesh_size, const Vec< Vec<unsigned> > &elem_group, const unsigned &nb_vals, const TVV &vals_param, const unsigned &nb_modes, const TTVV &dep_space, const TTVVV &dep_param, const string &prefix, const bool display_pvd = false ) {
+void eval_PGD( TM_param &m_param, TM &m, TF &f, const string &pb, const string &structure, const string &boundary_condition_D, const string &loading, const string &mesh_size, const Vec< Vec<unsigned> > &elem_group, const unsigned &nb_vals, const TVV &vals_param, const unsigned &nb_modes, const TTVV &dep_space, const TTVVV &dep_param, const string &prefix, const bool display_pvd = false ) {
     
     typedef typename TM::TNode::T T;
     
 //    string prefix = define_prefix( m, pb, structure, loading, mesh_size );
     
-    Vec< DisplayParaview > dp_space;
-    dp_space.resize( nb_vals );
-    Vec<string> lp_space;
-    lp_space.push_back( "dep" );
-    lp_space.push_back( "young_eff" );
+    Vec< DisplayParaview > dp;
+    dp.resize( nb_vals );
+    Vec<string> lp("all");
+//    lp.push_back( "dep" );
+//    lp.push_back( "young_eff" );
     
     for (unsigned i=0;i<nb_vals;++i) {
         Vec<unsigned> ind;
         ind.resize( elem_group.size()-1 );
         for (unsigned p=0;p<elem_group.size()-1;++p)
             ind[p] = rand() % m_param[p].node_list.size();
+        
+        /// Proprietes materiaux du pb direct
+        /// ---------------------------------
+        set_material_properties( f, m, structure );
+        
+        /// Conditions aux limites du pb direct
+        /// -----------------------------------
+        set_constraints( f, m, boundary_condition_D, "direct", structure, loading );
+        set_load_conditions( m, structure, loading, mesh_size );
+        
         for (unsigned p=0;p<elem_group.size()-1;++p) {
             for (unsigned j=0;j<elem_group[p].size();++j)
                 m.elem_list[ elem_group[p][j] ]->set_field( "alpha", vals_param[p][ ind[p] ] );
@@ -365,10 +375,10 @@ void check_PGD( TM_param &m_param, TM &m, TF &f,  const string &pb, const string
         
         f.solve();
         
-        string prefix_ = prefix + "_space_verif_REF";
+        string prefix_ = prefix + "_space_REF_params";
         for (unsigned p=0;p<elem_group.size()-1;++p)
             prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
-        dp_space[ i ].add_mesh_iter( m, prefix_, lp_space, 0 );
+        dp[ i ].add_mesh_iter( m, prefix_, lp, 0 );
         
         f.vectors[0].set( 0. );
         for (unsigned n=0;n<nb_modes;++n) {
@@ -380,18 +390,18 @@ void check_PGD( TM_param &m_param, TM &m, TF &f,  const string &pb, const string
         f.update_variables();
         f.call_after_solve();
         
-        prefix_ = prefix + "_space_verif_PGD";
+        prefix_ = prefix + "_space_PGD_params";
         for (unsigned p=0;p<elem_group.size()-1;++p)
             prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
-        dp_space[ i ].add_mesh_iter( m, prefix_, lp_space, 1 );
+        dp[ i ].add_mesh_iter( m, prefix_, lp, 1 );
         
-        prefix_ = prefix + "_space_verif";
+        prefix_ = prefix + "_space_params";
         for (unsigned p=0;p<elem_group.size()-1;++p)
             prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
         if ( display_pvd )
-            dp_space[ i ].exec( prefix_ );
+            dp[ i ].exec( prefix_ );
         else
-            dp_space[ i ].make_pvd_file( prefix_ );
+            dp[ i ].make_pvd_file( prefix_ );
     }
     
 }
