@@ -38,7 +38,7 @@ using namespace std;
 int main( int argc, char **argv ) {
     TicToc t_total;
     t_total.start();
-    static const unsigned dim = 2;
+    static const unsigned dim = 3;
     static const bool wont_add_nz = true;
     typedef Mesh<Mesh_carac_space<double,dim> > TM;
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
@@ -49,7 +49,7 @@ int main( int argc, char **argv ) {
     typedef TM_param::Pvec Pvec_param;
     typedef TM::TElemListPtr TElemListPtr;
     typedef Mat<T, Sym<>, SparseLine<> > TMatSymSparse;
-    static const string structure = "circular_inclusions"; // structure
+    static const string structure = "spherical_inclusions"; // structure
     // 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes,
     //      square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
     // 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes,
@@ -164,15 +164,15 @@ int main( int argc, char **argv ) {
     /// Verification equilibrium / solver
     /// ---------------------------------
     static const bool verif_eq = 0; // verification de l'equilibre global elements finis
-    static const bool verif_compatibility_conditions = 1; // verification des conditions de compatibilite (equilibre elements finis) (methode EET)
-    static const bool verif_eq_force_fluxes = 1; // verification de l'equilibre des densites d'effort (methodes EET, EESPT)
+    static const bool verif_compatibility_conditions = 0; // verification des conditions de compatibilite (equilibre elements finis) (methode EET)
+    static const bool verif_eq_force_fluxes = 0; // verification de l'equilibre des densites d'effort (methodes EET, EESPT)
     static const T tol_compatibility_conditions = 1e-6; // tolerance pour la verification des conditions de compatibilite (equilibre elements finis) (methode EET)
     static const T tol_eq_force_fluxes = 1e-6; // tolerance pour la verification de l'equilibre des densites d'effort (methodes EET, EESPT)
     
-    static const bool verif_solver = 1; // verification de la resolution des pbs locaux (methodes EET, SPET, EESPT)
-    static const bool verif_solver_minimisation = 1; // verification de la resolution des pbs de minimisation (methodes EET, EESPT)
-    static const bool verif_solver_enhancement = 1; // verification de la resolution des pbs locaux (amelioration des methodes EET, EESPT)
-    static const bool verif_solver_minimisation_enhancement = 1; // verification de la resolution des pbs de minimisation (amelioration des methodes EET, EESPT)
+    static const bool verif_solver = 0; // verification de la resolution des pbs locaux (methodes EET, SPET, EESPT)
+    static const bool verif_solver_minimisation = 0; // verification de la resolution des pbs de minimisation (methodes EET, EESPT)
+    static const bool verif_solver_enhancement = 0; // verification de la resolution des pbs locaux (amelioration des methodes EET, EESPT)
+    static const bool verif_solver_minimisation_enhancement = 0; // verification de la resolution des pbs de minimisation (amelioration des methodes EET, EESPT)
     static const T tol_solver = 1e-6; // tolerance pour la verification de la resolution des pbs locaux (methodes EET, SPET, EESPT)
     static const T tol_solver_minimisation = 1e-6; // tolerance pour la verification de la resolution des pbs de minimisation (methodes EET, EESPT)
     static const T tol_solver_enhancement = 1e-6; // tolerance pour la verification de la resolution des pbs locaux (amelioration des methodes EET EESPT)
@@ -355,6 +355,9 @@ int main( int argc, char **argv ) {
     unsigned n = 0;
     while ( true ) {
         
+        TicToc t_mode;
+        t_mode.start();
+        
         cout << "Mode #" << n+1 << endl;
         cout << "-------" << endl << endl;
         
@@ -421,6 +424,9 @@ int main( int argc, char **argv ) {
         calc_error_indicator( m, f, n, F_space, F_param, K_param, elem_group, dep_space, dep_param, residual, error_indicator );
         
         cout << "Nb d'iterations = " << k << " : residu = " << residual << ", erreur = " << error_indicator << endl << endl;
+        
+        t_mode.stop();
+        cout << "temps de calcul du mode " << n+1 << " = " << t_mode.res << endl << endl;
         
         if ( want_global_estimation or want_local_estimation ) {
             
