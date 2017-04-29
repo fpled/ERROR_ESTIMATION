@@ -667,7 +667,7 @@ def calc_elem_error_estimate_lambda( list_f, rep )
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
         file_ <<< "namespace LMT {"
         deg_p := max( e->order_interpolation )
-        e_lambda := new SymbolicElement[ e->name, e->dim ]( name_elem = "elem_lambda", tex_symbol_pos = "P_{lambda}", node_numbers_to_node_numbers_in_parent_cpp = range(e->nb_nodes).map( e->corr_cpp ) )
+        e_lambda := new SymbolicElement[ e->name, e->dim ]( name_elem = "elem_lambda", tex_symbol_pos = "P_{\\lambda}", node_numbers_to_node_numbers_in_parent_cpp = range(e->nb_nodes).map( e->corr_cpp ) )
         e_lambda->assume_const_jac = e->assume_const_jac
         Tf_lambda := f->name
         f_lambda := new FormulationElasticity[ e_lambda->dim ]( @e_lambda, "lambda_" )
@@ -766,7 +766,7 @@ def calc_elem_error_estimate_lambda( list_f, rep )
         sigma_hat_proj_const_jac := ( sigma_hat_const_jac ).subs( e->var_inter, e_var_inter )
         e_lambda->assume_const_jac = hyp_const_jac
         degre_poly := ( ( sigma_hat_proj_const_jac - sigma_const_jac ) : eps_hooke_iso( sigma_hat_proj_const_jac - sigma_const_jac, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ) ).poly_deg( e_lambda->var_inter )
-
+        
         if integration_type == "gauss_num" and integration_lang == "cpp"
             file_ <<< "        Vec<double> poids;"
             file_ <<< "        Vec<Vec<double, $(e_lambda->dim)> > valeurs;"
@@ -847,7 +847,7 @@ def calc_elem_weighted_error_estimate_lambda( list_f, rep )
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
         file_ <<< "namespace LMT {"
         deg_p := max( e->order_interpolation )
-        e_lambda := new SymbolicElement[ e->name, e->dim ]( name_elem = "elem_lambda", tex_symbol_pos = "P_{lambda}", node_numbers_to_node_numbers_in_parent_cpp = range(e->nb_nodes).map( e->corr_cpp ) )
+        e_lambda := new SymbolicElement[ e->name, e->dim ]( name_elem = "elem_lambda", tex_symbol_pos = "P_{\\lambda}", node_numbers_to_node_numbers_in_parent_cpp = range(e->nb_nodes).map( e->corr_cpp ) )
         e_lambda->assume_const_jac = e->assume_const_jac
         Tf_lambda := f->name
         f_lambda := new FormulationElasticity[ e_lambda->dim ]( @e_lambda, "lambda_" )
@@ -968,7 +968,7 @@ def calc_skin_elem_error_estimate_lambda_boundary( list_f, rep )
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
         file_ <<< "namespace LMT {"
         deg_p := max( e->order_interpolation )
-        e_lambda := new SymbolicElement[ e->name, e->dim ]( name_elem = "elem_lambda", tex_symbol_pos = "P_{lambda}", node_numbers_to_node_numbers_in_parent_cpp = range(e->nb_nodes).map( e->corr_cpp ) )
+        e_lambda := new SymbolicElement[ e->name, e->dim ]( name_elem = "elem_lambda", tex_symbol_pos = "P_{\\lambda}", node_numbers_to_node_numbers_in_parent_cpp = range(e->nb_nodes).map( e->corr_cpp ) )
         e_lambda->assume_const_jac = e->assume_const_jac
         Tf_lambda := f->name
         f_lambda := new FormulationElasticity[ e_lambda->dim ]( @e_lambda, "lambda_" )

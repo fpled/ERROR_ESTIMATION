@@ -70,7 +70,7 @@ void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const str
         m.theta_EESPT = theta;
     }
     cout << "mesure globale de l'erreur en relation de comportement :" << endl;
-    cout << "ecre = " << ecre << endl;
+    cout << "ecre = " << ecre << endl << endl;
     
     cout << "estimateur d'erreur globale :" << endl;
     cout << "theta = " << theta << endl;

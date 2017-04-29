@@ -21,8 +21,8 @@ using namespace std;
 
 /// Construction standard des densites d'effort par la methode EET
 /// --------------------------------------------------------------
-template<class TM, class TF, class T, class TV, class TVV, class TTVV, class TVVV, class TTVVV, class TMatVV>
-void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, const unsigned &cost_function, const bool enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, TVVV &force_fluxes, const TTVV &dep_space, const TTVVV &dep_param, const TV &dep_space_part, const TVV &F_param, const TMatVV &K_param, const Vec< Vec<unsigned> > &elem_group, const unsigned &mode, const bool want_local_enrichment = false, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool disp = false ) {
+template<class TM, class TF, class T, class TVV, class TVVV>
+void construct_standard_force_fluxes_EET_PGD( TM &m, const TF &f, const string &pb, const unsigned &cost_function, const bool enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, TVVV &force_fluxes, const TVV &dep, const Vec< Vec<unsigned> > &elem_group, const bool want_local_enrichment = false, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool disp = false ) {
     
     static const unsigned dim = TM::dim;
     
@@ -31,24 +31,6 @@ void construct_standard_force_fluxes_EET_PGD( TM &m, TF &f, const string &pb, co
     typedef Mat< T, Diag<> > TMatDiag;
     typedef Mat<T, Gen<>, SparseUMFPACK > TMatGenSparseUMFPACK;
     typedef Mat<T, Gen<>, SparseLU > TMatGenSparseLU;
-    
-    Vec< Vec<T> > dep;
-    dep.resize( elem_group.size() );
-    for (unsigned g=0;g<elem_group.size();++g) {
-        dep[g] = - dep_space_part;
-        for (unsigned p=0;p<elem_group.size()-1;++p)
-            dep[g] *= dot( F_param[p], dep_param[ p ][ mode ] );
-        for (unsigned i=0;i<mode+1;++i) {
-            T alpha = 1.;
-            for (unsigned p=0;p<elem_group.size()-1;++p) {
-                if ( p == g )
-                    alpha *= dot( dep_param[ p ][ mode ], K_param[p][1] * dep_param[ p ][ i ] );
-                else
-                    alpha *= dot( dep_param[ p ][ mode ], K_param[p][0] * dep_param[ p ][ i ] );
-            }
-            dep[g] += alpha * dep_space[ i ];
-        }
-    }
     
     TicToc t_force_fluxes_std;
     t_force_fluxes_std.start();

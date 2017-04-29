@@ -424,7 +424,7 @@ def calc_skin_elem_matrix_B_p_1( list_f, rep )
         deg_p := max( face.order_interpolation )
         if deg_p == 1 # si le degre de l'analyse elements finis p = 1
             sym_lambda_n_F := Vec[ Op ]()
-            lambda_n_F := face.new_variable( "\\lambda F",interpolation_type = "nodal", nb_dim = [ face.dim ], sym = sym_lambda_n_F, interpolation_base = force_fluxes_base )
+            lambda_n_F := face.new_variable( "\\lambda F", interpolation_type = "nodal", nb_dim = [ face.dim ], sym = sym_lambda_n_F, interpolation_base = force_fluxes_base )
             cpt_vertex_nodes_n := 0
             cw := CodeWriterAlt( "T" )
             for n in 0 .. face.nb_vertex_nodes

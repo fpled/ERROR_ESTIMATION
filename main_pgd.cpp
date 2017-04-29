@@ -158,7 +158,7 @@ int main( int argc, char **argv ) {
     static const T tol_convergence_criterium_iter = 1e-8; // precision pour critere d'arret local (processus iteratif)
     static const Vec<T,2> support_param( 1., 10. ); // support de l'espace des parametres
     static const unsigned nb_points_param = 100; // nb de points du maillage parametrique
-    static const bool want_eval_PGD = 1; // evaluation de la decomposition PGD
+    static const bool want_eval_PGD = 0; // evaluation de la decomposition PGD
     static const unsigned nb_vals = 3; // nb de valeurs des parametres pris aleatoirement pour l'evaluation de la decomposition PGD
     
     /// Verification equilibrium / solver
@@ -350,7 +350,7 @@ int main( int argc, char **argv ) {
     theta_PGD.set( 0. );
     theta_dis.set( 0. );
     Vec< Vec<T>, max_mode > theta_elem, theta_elem_PGD, theta_elem_dis;
-    Vec< Vec< Vec<T> >, max_mode > dep_space_hat;
+    Vec< Vec< Vec<T> >, max_mode > dep_space_hat, dep_space_FE;
     
     unsigned n = 0;
     while ( true ) {
@@ -424,6 +424,9 @@ int main( int argc, char **argv ) {
         
         if ( want_global_estimation or want_local_estimation ) {
             
+            TicToc t_CRE;
+            t_CRE.start();
+            
             /// Construction d'un champ de contrainte admissible a zero
             /// -------------------------------------------------------
             
@@ -431,8 +434,25 @@ int main( int argc, char **argv ) {
             for (unsigned i=0;i<m.elem_list.size();++i)
                 m.elem_list[i]->set_field( "alpha", 1. );
             
+            dep_space_FE[ n ].resize( elem_group.size() );
+            for (unsigned g=0;g<elem_group.size();++g) {
+                dep_space_FE[ n ][ g ] = - dep_space_part;
+                for (unsigned p=0;p<elem_group.size()-1;++p)
+                    dep_space_FE[ n ][ g ] *= dot( F_param[p], dep_param[ p ][ n ] );
+                for (unsigned i=0;i<n+1;++i) {
+                    T alpha = 1.;
+                    for (unsigned p=0;p<elem_group.size()-1;++p) {
+                        if ( p == g )
+                            alpha *= dot( dep_param[ p ][ n ], K_param[p][1] * dep_param[ p ][ i ] );
+                        else
+                            alpha *= dot( dep_param[ p ][ n ], K_param[p][0] * dep_param[ p ][ i ] );
+                    }
+                    dep_space_FE[ n ][ g ] += alpha * dep_space[ i ];
+                }
+            }
+            
             Vec< Vec< Vec<T> > > force_fluxes_standard_mode;
-            construct_standard_force_fluxes_EET_PGD( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, force_fluxes_standard_mode, dep_space, dep_param, dep_space_part, F_param, K_param, elem_group, n, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions );
+            construct_standard_force_fluxes_EET_PGD( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, force_fluxes_standard_mode, dep_space_FE[ n ], elem_group, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions );
             
             if ( verif_eq_force_fluxes )
                 check_equilibrium_force_fluxes( m, f, "direct", force_fluxes_standard_mode, tol_eq_force_fluxes, want_local_enrichment );
@@ -445,7 +465,10 @@ int main( int argc, char **argv ) {
             
             set_load_conditions( m, structure, loading, mesh_size );
             
-            calcul_error_estimate_prolongation_condition_PGD( m, f, "direct", "EET", theta[ n ], theta_elem[ n ], dep_space, dep_param, dep_space_hat, dep_space_part_hat, elem_group, n, want_global_discretization_error, want_local_discretization_error );
+            calcul_error_estimate_prolongation_condition_PGD( m, f, "direct", "EET", theta[ n ],  theta_PGD[ n ], theta_dis[ n ], theta_elem[ n ], theta_elem_PGD[ n ], theta_elem_dis[ n ], dep_space, dep_param, dep_space_part, dep_space_FE, dep_space_hat, dep_space_part_hat, elem_group, n, want_global_discretization_error, want_local_discretization_error );
+            
+            t_CRE.stop();
+            cout << "temps de calcul de la methode d'estimation d'erreur globale = " << t_CRE.res << endl << endl;
             
         }
         
@@ -533,16 +556,19 @@ int main( int argc, char **argv ) {
             theta_2_dis[ n ] = pow( theta_dis[ n ], 2 );
         }
         // Matlab
-        string output = "'" + prefix + "_estimates";
+        string output = "'" + prefix + "_estimates_global";
         string xlabel = "'$m$'";
-        string ylabel = "'$E^2_{\\mathrm{CRE}}$'";
-        string legend = "'$E^2_{\\mathrm{CRE}}$'";
-        string params = ",'LineStyle','-','Color',getfacecolor(4),'LineWidth',1";
-//        mp.save_semilogy( range(1,nb_modes+1), theta_2_mode, (output + ".fig'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
-//        mp.save_semilogy( range(1,nb_modes+1), theta_2_mode, (output + ".epsc2'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
-//        mp.save_semilogy( range(1,nb_modes+1), theta_2_mode, (output + ".tex'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
+        string ylabel = "'Error'";
+        string legend = "'$E^2_{\\mathrm{CRE}}$','$\\eta^2_{\\mathrm{PGD}}$','$\\eta^2_{\\mathrm{dis}}$'";
+        string params_CRE = ",'LineStyle','-','Color',getfacecolor(4),'LineWidth',1";
+        string params_PGD = ",'LineStyle','-','Color',getfacecolor(5),'LineWidth',1";
+        string params_dis = ",'LineStyle','-','Color',getfacecolor(6),'LineWidth',1";
         mp.figure();
-        mp.semilogy( modes, theta_2, params.c_str() );
+        mp.semilogy( modes, theta_2, params_CRE.c_str() );
+        mp.hold_on();
+        mp.semilogy( modes, theta_2_PGD, params_PGD.c_str() );
+        mp.semilogy( modes, theta_2_dis, params_dis.c_str() );
+        mp.hold_off();
         mp.grid_on();
         mp.box_on();
         mp.set_fontsize(16);

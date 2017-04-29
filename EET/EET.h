@@ -51,7 +51,7 @@ struct Calcul_Nodal_Vector_r {
     const Vec<unsigned>* elem_cpt_node;
     const string* pb;
     const bool* want_local_enrichment;
-    template<class TE, class TM, class TF, class T> void operator()( const TE &elem, const TM &m, const TF &f, Vec< Vec< Vec<T> > > &r ) const {
+    template<class TE, class TM, class TF, class TVVV> void operator()( const TE &elem, const TM &m, const TF &f, TVVV &r ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
         calc_nodal_vector_r( elem, m, f, *elem_ind, *node_list_face, *elem_cpt_node, f.vectors, ind, *pb, *want_local_enrichment, r );
     }
@@ -66,7 +66,7 @@ struct Calcul_Nodal_Vector_r_PGD {
     const bool* want_local_enrichment;
     const TVV* dep;
     const Vec< Vec<unsigned> >* elem_group;
-    template<class TE, class TM, class TF, class T> void operator()( const TE &elem, const TM &m, TF &f, Vec< Vec< Vec<T> > > &r ) const {
+    template<class TE, class TM, class TF, class TVVV> void operator()( const TE &elem, const TM &m, TF &f, TVVV &r ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
         for (unsigned g=0;g<(*elem_group).size();++g) {
             if ( find( (*elem_group)[g], _1 == elem.number ) )
@@ -85,7 +85,7 @@ struct Calcul_Nodal_Matrix_B {
     const Vec< Vec< Vec<unsigned> > >* elem_ind;
     const Vec< Vec< Vec<unsigned> > >* face_ind;
     const Vec< Vec<unsigned> >* node_list_face;
-    template<class TE, class TM, class T> void operator()( const TE &elem, const TM &m, Vec< Vec< Mat<T, Gen<>, SparseLine<> > > > &B ) const {
+    template<class TE, class TM, class TMatVV> void operator()( const TE &elem, const TM &m, TMatVV &B ) const {
         calc_nodal_matrix_B( elem, m, *elem_ind, *face_ind, *node_list_face, B );
     }
 };
@@ -122,7 +122,7 @@ struct Calcul_Nodal_Matrix_C {
     const Vec< Vec< Vec<unsigned> > >* nodal_ind;
     const Vec< Vec< Vec<unsigned> > >* face_ind;
     const Vec< Vec<unsigned> >* face_list_node;
-    template<class TE, class TM, class T> void operator()( const TE &child_elem, const TM &m, Vec< Vec< Mat<T, Gen<>, SparseLine<> > > > &C ) const {
+    template<class TE, class TM, class TMatVV> void operator()( const TE &child_elem, const TM &m, TMatVV &C ) const {
         calc_nodal_matrix_C( child_elem, m, *face_type, *nodal_ind, *face_ind, *face_list_node, C );
     }
 };

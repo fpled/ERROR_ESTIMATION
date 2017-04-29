@@ -295,7 +295,7 @@ funcList_local_improvement_rayleigh := [ calc_elem_error_estimate_lambda, calc_s
 
 funcList_local_enrichment := [ calc_dep_handbook_in_infinite_domain ]
 
-funcList_PGD := [ ]
+funcList_PGD := [ calc_elem_error_estimate_EET_EESPT_EF ]
 
 funcList := Vec[Def]()
 funcList.append( funcList_material_properties )

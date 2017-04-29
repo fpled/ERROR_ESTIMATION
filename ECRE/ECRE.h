@@ -73,6 +73,31 @@ struct Calc_Elem_Error_Estimate_EET_EESPT {
     }
 };
 
+template<class TV, class TVV>
+struct Calc_Elem_Error_Estimate_EET_EESPT_FE {
+    const TVV* dep_FE;
+    const Vec< Vec<unsigned> >* elem_group;
+    const string* method;
+    TV* theta_elem;
+    template<class TE, class TM, class TF, class T> void operator()( TE &elem, const TM &m, const TF &f, T &theta ) const {
+        Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
+        Vec< Vec<T>,TF::nb_vectors> vectors_;
+        for (unsigned g=0;g<(*elem_group).size();++g) {
+            if ( find( (*elem_group)[g], _1 == elem.number ) )
+                vectors_[0] = (*dep_FE)[g];
+        }
+        if ( *method == "EET" ) {
+            elem.ecre_elem_EET = 0.0;
+            elem.theta_elem_EET = 0.0;
+        }
+        if ( *method == "EESPT" ) {
+            elem.ecre_elem_EESPT = 0.0;
+            elem.theta_elem_EESPT = 0.0;
+        }
+        calc_elem_error_estimate_EET_EESPT_EF( elem, m, f, f.vectors, vectors_, ind, ind, *method, *theta_elem, theta );
+    }
+};
+
 template<class TE, class TM, class TF, class TTWW, class TTVV, class S, class TTV, class TT>
 void calc_elem_error_estimate_init_EET_EESPT( TE &elem, const TM &m, const TF &f, const TTWW &vectors, const Vec<unsigned> &indices, const TTVV &dep_hat, const S &method, TTV &theta_elem, TTV &theta_elem_init, TT &theta, TT &theta_init ) {}
 
