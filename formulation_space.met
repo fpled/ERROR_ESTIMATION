@@ -22,8 +22,8 @@ import "PGD/PGD.met"
 #------------------------------------------------------------------------------------------------------------------------------------------------------------
 want_discretization_error := true
 want_method_EET := true
-want_method_SPET := false
-want_method_EESPT := false
+want_method_SPET := true
+want_method_EESPT := true
 want_enhancement := false
 want_local_estimation := false
 want_local_improvement_steklov := false
@@ -262,10 +262,10 @@ formList := [ FormulationElasticity ]
 
 # Liste d'elements
 #-----------------
-#elemList := [ Triangle ]
+elemList := [ Triangle ]
 #elemList := [ Quad ]
 #elemList := [ Triangle, Quad ]
-elemList := [ Tetra ]
+#elemList := [ Tetra ]
 #elemList := [ Hexa ]
 #elemList := [ Tetra, Hexa ]
 

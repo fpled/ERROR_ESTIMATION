@@ -4,7 +4,7 @@
 // Description: calcul d'un champ de contrainte admissible et d'un estimateur theta de l'erreur globale pour les methodes basees sur la condition de prolongement (EET,EESPT)
 //
 //
-// Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2010
+// Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2017
 //
 // Copyright: See COPYING file that comes with this distribution
 //
@@ -50,15 +50,15 @@ void calcul_error_estimate_prolongation_condition_PGD( TM &m, TF &f, const strin
         f.vectors[0] +=  dep_mode;
     }
     
-    TVV dep_FE;
-    dep_FE.resize( elem_group.size() );
+    TVV dep;
+    dep.resize( elem_group.size() );
     for (unsigned g=0;g<elem_group.size();++g) {
-        dep_FE[ g ] = dep_space_part;
+        dep[ g ] = dep_space_part;
         for (unsigned n=0;n<nb_modes;++n) {
-            TV dep_FE_mode = dep_space_FE[ n ][ g ];
+            TV dep_mode = dep_space_FE[ n ][ g ];
             for (unsigned p=0;p<elem_group.size()-1;++p)
-                dep_FE_mode *= dep_param[ p ][ n ][ 0 ];
-            dep_FE[ g ] += dep_FE_mode;
+                dep_mode *= dep_param[ p ][ n ][ 0 ];
+            dep[ g ] += dep_mode;
         }
     }
     
@@ -71,7 +71,7 @@ void calcul_error_estimate_prolongation_condition_PGD( TM &m, TF &f, const strin
     }
     
     Calc_Elem_Error_Estimate_EET_EESPT_FE<TV,TVV> calc_elem_error_estimate_EET_EESPT_FE;
-    calc_elem_error_estimate_EET_EESPT_FE.dep_FE = &dep_FE;
+    calc_elem_error_estimate_EET_EESPT_FE.dep = &dep;
     calc_elem_error_estimate_EET_EESPT_FE.elem_group = &elem_group;
     calc_elem_error_estimate_EET_EESPT_FE.method = &method;
     calc_elem_error_estimate_EET_EESPT_FE.theta_elem = &theta_elem_PGD;

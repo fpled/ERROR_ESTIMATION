@@ -66,13 +66,14 @@ struct Calcul_Nodal_Vector_r_PGD {
     const bool* want_local_enrichment;
     const TVV* dep;
     const Vec< Vec<unsigned> >* elem_group;
-    template<class TE, class TM, class TF, class TVVV> void operator()( const TE &elem, const TM &m, TF &f, TVVV &r ) const {
+    template<class TE, class TM, class TF, class TVVV> void operator()( const TE &elem, const TM &m, const TF &f, TVVV &r ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
+        Vec<Vec<typename TE::T>,TF::nb_vectors> vectors;
         for (unsigned g=0;g<(*elem_group).size();++g) {
             if ( find( (*elem_group)[g], _1 == elem.number ) )
-                f.vectors[0] = (*dep)[g];
+                vectors[0] = (*dep)[g];
         }
-        calc_nodal_vector_r( elem, m, f, *elem_ind, *node_list_face, *elem_cpt_node, f.vectors, ind, *pb, *want_local_enrichment, r );
+        calc_nodal_vector_r( elem, m, f, *elem_ind, *node_list_face, *elem_cpt_node, vectors, ind, *pb, *want_local_enrichment, r );
     }
 };
 
@@ -151,13 +152,14 @@ struct Calcul_Nodal_Vector_q_PGD {
     const Vec< Vec<unsigned> >* face_list_node;
     const TVV* dep;
     const Vec< Vec<unsigned> >* elem_group;
-    template<class TE, class TM, class TF, class TVVV> void operator()( const TE &elem, const TM &m, TF &f, TVVV &q ) const {
+    template<class TE, class TM, class TF, class TVVV> void operator()( const TE &elem, const TM &m, const TF &f, TVVV &q ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
+        Vec<Vec<typename TE::T>,TF::nb_vectors> vectors;
         for (unsigned g=0;g<(*elem_group).size();++g) {
             if ( find( (*elem_group)[g], _1 == elem.number ) )
-                f.vectors[0] = (*dep)[g];
+                vectors[0] = (*dep)[g];
         }
-        calc_nodal_vector_q( elem, m, f, *face_type, *nodal_ind, *node_list_face, *face_list_node, f.vectors, ind, q );
+        calc_nodal_vector_q( elem, m, f, *face_type, *nodal_ind, *node_list_face, *face_list_node, vectors, ind, q );
     }
 };
 
@@ -203,13 +205,14 @@ struct Calcul_Nodal_Vector_b_PGD {
     const bool* want_local_enrichment;
     const TVV* dep;
     const Vec< Vec<unsigned> >* elem_group;
-    template<class TE, class TM, class TF, class TVVV> void operator()( const TE &elem, const TM &m, TF &f, TVVV &b ) const {
+    template<class TE, class TM, class TF, class TVVV> void operator()( const TE &elem, const TM &m, const TF &f, TVVV &b ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
+        Vec<Vec<typename TE::T>,TF::nb_vectors> vectors;
         for (unsigned g=0;g<(*elem_group).size();++g) {
             if ( find( (*elem_group)[g], _1 == elem.number ) )
-                f.vectors[0] = (*dep)[g];
+                vectors[0] = (*dep)[g];
         }
-        calc_nodal_vector_b( elem, m, f, *minimisation, *face_type, *face_ind, *node_list_face, f.vectors, ind, *pb, *want_local_enrichment, b );
+        calc_nodal_vector_b( elem, m, f, *minimisation, *face_type, *face_ind, *node_list_face, vectors, ind, *pb, *want_local_enrichment, b );
     }
 };
 

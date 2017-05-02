@@ -169,6 +169,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// ------------------------------------------------------------------------------------------
             
             calcul_error_estimate_prolongation_condition( m, f, pb, "EET", theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error );
+            
         }
         
         t_EET.stop();
@@ -245,7 +246,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// -------------------------------------------
             
             Vec< Vec< Vec<T> > > force_fluxes_standard;
-            construct_standard_force_fluxes_EESPT( m, f, cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, pb, force_fluxes_standard, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation );
+            construct_standard_force_fluxes_EESPT( m, f, pb, cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, force_fluxes_standard, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation );
             
             /// Verification de l'equilibre des densites d'effort standard
             /// ----------------------------------------------------------
@@ -293,7 +294,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// Construction de la partie standard des densites d'effort
             /// --------------------------------------------------------
             
-            construct_standard_force_fluxes_EESPT( m, f, cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, pb, force_fluxes, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation );
+            construct_standard_force_fluxes_EESPT( m, f, pb, cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, force_fluxes, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation );
             
             /// Resolution des problemes locaux associes a la partie standard des densites d'effort avec procedure d'equilibrage
             /// ----------------------------------------------------------------------------------------------------------------

@@ -4,7 +4,7 @@
 // Description: construction standard des densites d'effort par la methode EET dans le cadre PGD
 //
 //
-// Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2012
+// Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2017
 //
 // Copyright: See COPYING file that comes with this distribution
 //

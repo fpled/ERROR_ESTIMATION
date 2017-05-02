@@ -74,6 +74,28 @@ struct Calcul_Vertex_Nodal_Vector_R {
     }
 };
 
+template<class TVV>
+struct Calcul_Vertex_Nodal_Vector_R_PGD {
+    const Vec<unsigned>* connect_node_to_vertex_node;
+    const Vec< Vec< Vec<unsigned> > >* vertex_nodal_ind;
+    const Vec< Vec<unsigned> >* node_list_face;
+    const Vec< Vec<unsigned> >* vertex_node_list_elem;
+    const Vec<unsigned>* elem_cpt_node;
+    const string* pb;
+    const bool* want_local_enrichment;
+    const TVV* dep;
+    const Vec< Vec<unsigned> >* elem_group;
+    template<class TE, class TM, class TF, class TVVV> void operator()( const TE &elem, const TM &m, const TF &f, TVVV &R ) const {
+        Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
+        Vec<Vec<typename TE::T>,TF::nb_vectors> vectors;
+        for (unsigned g=0;g<(*elem_group).size();++g) {
+            if ( find( (*elem_group)[g], _1 == elem.number ) )
+                vectors[0] = (*dep)[g];
+        }
+        calc_vertex_nodal_vector_R( elem, m, f, *connect_node_to_vertex_node, *vertex_nodal_ind, *node_list_face, *vertex_node_list_elem, *elem_cpt_node, vectors, ind, *pb, *want_local_enrichment, R );
+    }
+};
+
 /// Suppression du noyau des matrices A[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
 /// Stockage des inconnues non bloques : eq_indep[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
 /// --------------------------------------------------------------------------------------------------------------------
@@ -136,6 +158,27 @@ struct Calcul_Skin_Elem_Vector_Q_p_1 {
     }
 };
 
+template<class TVV>
+struct Calcul_Skin_Elem_Vector_Q_p_1_PGD {
+    const Vec<unsigned>* connect_node_to_vertex_node;
+    const Vec< Vec<unsigned> >* face_type;
+    const Vec< Vec< Vec<unsigned> > >* face_ind;
+    const Vec< Vec<unsigned> >* node_list_face;
+    const string* pb;
+    const bool* want_local_enrichment;
+    const TVV* dep;
+    const Vec< Vec<unsigned> >* elem_group;
+    template<class TE, class TM, class TF, class TVVV> void operator()( const TE &elem, const TM &m, const TF &f, TVVV &Q ) const {
+        Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
+        Vec<Vec<typename TE::T>,TF::nb_vectors> vectors;
+        for (unsigned g=0;g<(*elem_group).size();++g) {
+            if ( find( (*elem_group)[g], _1 == elem.number ) )
+                vectors[0] = (*dep)[g];
+        }
+        calc_skin_elem_vector_Q_p_1( elem, m, f, *connect_node_to_vertex_node, *face_type, *face_ind, *node_list_face, vectors, ind, *pb, *want_local_enrichment, Q );
+    }
+};
+
 template<class TE, class TV, class TVVV, class TTVVV>
 void calc_vertex_nodal_vector_lambda_F_p_1( const TE &child_elem, const TV &connect_node_to_vertex_node, const TVVV &face_ind, const TTVVV &lambda_F_face, TTVVV &lambda_F ) {}
 
@@ -162,6 +205,28 @@ struct Calcul_Vertex_Nodal_Vector_lambda_F_p_2 {
     template<class TE, class TM, class TF, class TVVV> void operator()( const TE &elem, const TM &m, const TF &f, TVVV &lambda_F ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
         calc_vertex_nodal_vector_lambda_F_p_2( elem, m, f, *connect_node_to_vertex_node, *face_type, *face_ind, *node_list_face, *vertex_node_list_face, f.vectors, ind, *pb, *want_local_enrichment, lambda_F );
+    }
+};
+
+template<class TVV>
+struct Calcul_Vertex_Nodal_Vector_lambda_F_p_2_PGD {
+    const Vec<unsigned>* connect_node_to_vertex_node;
+    const Vec< Vec<unsigned> >* face_type;
+    const Vec< Vec< Vec<unsigned> > >* face_ind;
+    const Vec< Vec<unsigned> >* node_list_face;
+    const Vec< Vec<unsigned> >* vertex_node_list_face;
+    const string* pb;
+    const bool* want_local_enrichment;
+    const TVV* dep;
+    const Vec< Vec<unsigned> >* elem_group;
+    template<class TE, class TM, class TF, class TVVV> void operator()( const TE &elem, const TM &m, const TF &f, TVVV &lambda_F ) const {
+        Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
+        Vec<Vec<typename TE::T>,TF::nb_vectors> vectors;
+        for (unsigned g=0;g<(*elem_group).size();++g) {
+            if ( find( (*elem_group)[g], _1 == elem.number ) )
+                vectors[0] = (*dep)[g];
+        }
+        calc_vertex_nodal_vector_lambda_F_p_2( elem, m, f, *connect_node_to_vertex_node, *face_type, *face_ind, *node_list_face, *vertex_node_list_face, vectors, ind, *pb, *want_local_enrichment, lambda_F );
     }
 };
 

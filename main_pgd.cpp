@@ -18,6 +18,11 @@
 #include "CONNECTIVITY/Calcul_connectivity.h"
 #include "VERIFICATION/Verification.h"
 #include "DISCRETIZATION_ERROR/Calcul_discretization_error.h"
+#include "EET/Construct_standard_force_fluxes_EET.h"
+#include "EET/Construct_standard_force_fluxes_EET_PGD.h"
+#include "EESPT/Construct_standard_force_fluxes_EESPT.h"
+#include "EESPT/Construct_standard_force_fluxes_EESPT_PGD.h"
+#include "ECRE/Calcul_error_estimate_prolongation_condition_PGD.h"
 #include "Calcul_global_error_estimation.h"
 #include "Calcul_goal_oriented_error_estimation.h"
 #include "PGD/PGD.h"
@@ -38,7 +43,7 @@ using namespace std;
 int main( int argc, char **argv ) {
     TicToc t_total;
     t_total.start();
-    static const unsigned dim = 3;
+    static const unsigned dim = 2;
     static const bool wont_add_nz = true;
     typedef Mesh<Mesh_carac_space<double,dim> > TM;
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
@@ -49,7 +54,7 @@ int main( int argc, char **argv ) {
     typedef TM_param::Pvec Pvec_param;
     typedef TM::TElemListPtr TElemListPtr;
     typedef Mat<T, Sym<>, SparseLine<> > TMatSymSparse;
-    static const string structure = "spherical_inclusions"; // structure
+    static const string structure = "circular_inclusions"; // structure
     // 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes,
     //      square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
     // 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes,
@@ -330,12 +335,15 @@ int main( int argc, char **argv ) {
     
     if ( want_global_estimation or want_local_estimation ) {
         
-        display_method( "direct", "EET", cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, solver, solver_minimisation );
+        display_method( "direct", method, cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, solver, solver_minimisation );
         
         /// Construction d'un champ de contrainte admissible particulier
         /// ------------------------------------------------------------
         
-        construct_standard_force_fluxes_EET( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, force_fluxes_standard, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions );
+        if (method == "EET")
+            construct_standard_force_fluxes_EET( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, force_fluxes_standard, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions );
+        else if (method == "EESPT")
+            construct_standard_force_fluxes_EESPT( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, force_fluxes_standard, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation );
         
         if ( verif_eq_force_fluxes )
             check_equilibrium_force_fluxes( m, f, "direct", force_fluxes_standard, tol_eq_force_fluxes, want_local_enrichment );
@@ -458,7 +466,11 @@ int main( int argc, char **argv ) {
             }
             
             Vec< Vec< Vec<T> > > force_fluxes_standard_mode;
-            construct_standard_force_fluxes_EET_PGD( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, force_fluxes_standard_mode, dep_space_FE[ n ], elem_group, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions );
+            if (method == "EET")
+                construct_standard_force_fluxes_EET_PGD( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, force_fluxes_standard_mode, dep_space_FE[ n ], elem_group, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions );
+//            else if (method == "SPET")  
+            else if (method == "EESPT")
+                construct_standard_force_fluxes_EESPT_PGD( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, force_fluxes_standard, dep_space_FE[ n ], elem_group, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation );
             
             if ( verif_eq_force_fluxes )
                 check_equilibrium_force_fluxes( m, f, "direct", force_fluxes_standard_mode, tol_eq_force_fluxes, want_local_enrichment );
@@ -471,10 +483,13 @@ int main( int argc, char **argv ) {
             
             set_load_conditions( m, structure, loading, mesh_size );
             
-            calcul_error_estimate_prolongation_condition_PGD( m, f, "direct", "EET", theta[ n ],  theta_PGD[ n ], theta_dis[ n ], theta_elem[ n ], theta_elem_PGD[ n ], theta_elem_dis[ n ], dep_space, dep_param, dep_space_part, dep_space_FE, dep_space_hat, dep_space_part_hat, elem_group, n, want_global_discretization_error, want_local_discretization_error );
+            if (method == "EET" || method == "EESPT")
+                calcul_error_estimate_prolongation_condition_PGD( m, f, "direct", "EET", theta[ n ],  theta_PGD[ n ], theta_dis[ n ], theta_elem[ n ], theta_elem_PGD[ n ], theta_elem_dis[ n ], dep_space, dep_param, dep_space_part, dep_space_FE, dep_space_hat, dep_space_part_hat, elem_group, n, want_global_discretization_error, want_local_discretization_error );
+//            else if (method == "SPET")
+                
             
             t_CRE.stop();
-            cout << "temps de calcul de la methode d'estimation d'erreur globale = " << t_CRE.res << endl << endl;
+            cout << "temps de calcul de la methode d'estimation d'erreur globale " << method << " = " << t_CRE.res << endl << endl;
             
         }
         

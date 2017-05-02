@@ -22,7 +22,7 @@ using namespace std;
 /// Construction standard des densites d'effort par la methode EESPT
 /// ----------------------------------------------------------------
 template<class TM, class TF, class T, class TVVV>
-void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &cost_function, const bool &enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, const T &penalty_val_N, const string &pb, TVVV &force_fluxes, const bool want_local_enrichment = false, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool disp = false ) {
+void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const string &pb, const unsigned &cost_function, const bool &enhancement, const Vec<bool> &flag_face_enh, const string &solver_minimisation, const T &penalty_val_N, TVVV &force_fluxes, const bool want_local_enrichment = false, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool disp = false ) {
     
     static const unsigned dim = TM::dim;
     
@@ -71,7 +71,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     
     /// Reperage pour chaque face k et chaque direction d de l'indice de debut de ligne dans les matrices A[ j ][ d ] : face_ind[ k ][ d ]
     /// Calcul du nb de lignes de la matrice A[ j ][ d ] : nb_unk[ j ][ d ]
-    /// --------------------------------------------------------------------------------------------------------------------------------------
+    /// ----------------------------------------------------------------------------------------------------------------------------------
     
     if ( disp )
         cout << "Calcul du vecteur nb_unk" << endl << endl;
@@ -220,7 +220,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
     
     /// Construction de la liste des noeuds connectes a un noeud sommet : node_list_vertex_node[ j ]
     /// Construction de la liste des noeuds connectes a un noeud sommet et appartenant au bord du patch : edge_node_list_vertex_node[ j ]
-    /// ----------------------------------------------------------------------------------------------------------------------------------
+    /// ---------------------------------------------------------------------------------------------------------------------------------
     
     if ( disp )  {
         cout << "Construction de la liste des noeuds connectes a un noeud sommet" << endl;
@@ -405,7 +405,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         R.free();
     
     /// Construction des vecteurs lambda_F[ j ][ d ] pour chaque noeud sommet j du maillage et chaque direction d
-    /// ------------------------------------------------------------------------------------------------------------
+    /// ---------------------------------------------------------------------------------------------------------
     
     if ( disp )
         cout << "Construction des vecteurs lambda_F" << endl << endl;
@@ -541,7 +541,7 @@ void construct_standard_force_fluxes_EESPT( TM &m, const TF &f, const unsigned &
         vertex_node_cpt_face.free();
         
         /// Construction des vecteurs lambda_F[ j ][ d ] pour chaque sommet j du maillage et chaque direction d
-        /// ------------------------------------------------------------------------------------------------------
+        /// ---------------------------------------------------------------------------------------------------
         
         if ( disp )
             cout << "Construction des vecteurs lambda_F" << endl << endl;

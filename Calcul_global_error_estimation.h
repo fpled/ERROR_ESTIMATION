@@ -13,14 +13,12 @@
 #define Calcul_global_error_estimation_h
 
 #include "EET/Construct_standard_force_fluxes_EET.h"
-#include "EET/Construct_standard_force_fluxes_EET_PGD.h"
 #include "EESPT/Construct_standard_force_fluxes_EESPT.h"
 #include "ENHANCEMENT/Construct_enhanced_force_fluxes_EET_EESPT.h"
 #include "ECRE/Construct_K_hat.h"
 #include "ECRE/Construct_F_hat.h"
 #include "ECRE/Construct_dep_hat.h"
 #include "ECRE/Calcul_error_estimate_prolongation_condition.h"
-#include "ECRE/Calcul_error_estimate_prolongation_condition_PGD.h"
 #include "SPET/Calcul_error_estimate_partition_unity.h"
 #include "VERIFICATION/Verification.h"
 #include "CRITERIUM_ENHANCEMENT/Construct_criterium_enhancement.h"
@@ -245,7 +243,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// -------------------------------------------
             
             Vec< Vec< Vec<T> > > force_fluxes_standard;
-            construct_standard_force_fluxes_EESPT( m, f, cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, pb, force_fluxes_standard, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation );
+            construct_standard_force_fluxes_EESPT( m, f, pb, cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, force_fluxes_standard, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation );
             
             /// Verification de l'equilibre des densites d'effort standard
             /// ----------------------------------------------------------
@@ -293,7 +291,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// Construction de la partie standard des densites d'effort
             /// --------------------------------------------------------
             
-            construct_standard_force_fluxes_EESPT( m, f, cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, pb, force_fluxes, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation );
+            construct_standard_force_fluxes_EESPT( m, f, pb, cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, force_fluxes, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation );
             
             /// Resolution des problemes locaux associes a la partie standard des densites d'effort avec procedure d'equilibrage
             /// ----------------------------------------------------------------------------------------------------------------
