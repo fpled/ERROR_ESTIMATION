@@ -66,7 +66,7 @@ def calc_nodal_vector_r( list_f, rep )
         e := child_cast( f->pe )
         file_name := "calc_nodal_vector_r_$(f->name).$(e->dim).$(e->name).h"
         file_names.push_back( file_name )
-        file_ := File( rep + "/calc_nodal_vector_r_$(f->name).$(e->dim).$(e->name).h", "w")
+        file_ := File( rep + "/calc_nodal_vector_r_$(f->name).$(e->dim).$(e->name).h", "w" )
         file_ <<< "#ifndef calc_nodal_vector_r_$(f->name)_$(e->dim)_$(e->name)_h"
         file_ <<< "#define calc_nodal_vector_r_$(f->name)_$(e->dim)_$(e->name)_h"
         if integration_type == "gauss_num" and integration_lang == "cpp"
@@ -89,12 +89,12 @@ def calc_nodal_vector_r( list_f, rep )
         for n in 0 .. e->nb_nodes
             nb_elems_node := symbol( "elem_cpt_node[ elem.node( $n )->number ]" )
             phi_n := e->get_shape_functions( force_fluxes_base )[ n ]
-            r_n := ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) * e->grad( phi_n ) - phi_n * ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr )
+            r_n := ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) * e->grad( phi_n ) - phi_n * ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr )
             r_n_handbook := child_cast(f)->sigma_handbook_PUM_zone_2.expr * e->grad( phi_n )
 
             e->assume_const_jac = true
-            sigma_const_jac := sigma_hooke_iso( e->grad_sym( child_cast(f)->dep.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
-            r_n_const_jac := ( sigma_const_jac - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) * e->grad( phi_n ) - phi_n * ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr )
+            sigma_const_jac := sigma_hooke_iso( e->grad_sym( child_cast(f)->dep.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
+            r_n_const_jac := ( sigma_const_jac - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) * e->grad( phi_n ) - phi_n * ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr )
             e->assume_const_jac = hyp_const_jac
 
             for d in 0 .. e->dim
@@ -400,7 +400,7 @@ def calc_nodal_vector_b( list_f, rep )
         e := child_cast( f->pe )
         file_name := "calc_nodal_vector_b_$(f->name).$(e->dim).$(e->name).h"
         file_names.push_back( file_name )
-        file_ := File( rep + "/calc_nodal_vector_b_$(f->name).$(e->dim).$(e->name).h", "w")
+        file_ := File( rep + "/calc_nodal_vector_b_$(f->name).$(e->dim).$(e->name).h", "w" )
         file_ <<< "#ifndef calc_nodal_vector_b_$(f->name)_$(e->dim)_$(e->name)_h"
         file_ <<< "#define calc_nodal_vector_b_$(f->name)_$(e->dim)_$(e->name)_h"
         if integration_type == "gauss_num" and integration_lang == "cpp"
@@ -421,18 +421,18 @@ def calc_nodal_vector_b( list_f, rep )
         for face_ in e->children( 1 )
             face := child_cast( face_ )
             eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)", tex_name = "\\eta" )
-            Pi_sigma := 1/eta * ( e->projection_on_child_elem( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ), face ) ) * face->normal
+            Pi_sigma := 1/eta * ( e->projection_on_child_elem( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ), face ) ) * face->normal
             Pi_sigma_N := 1/eta * child_cast(f)->f_surf.expr
             Pi_sigma_handbook := 1/eta * ( e->projection_on_child_elem( child_cast(f)->sigma_handbook_PUM_zone_2.expr, face ) ) * face->normal
             Pi_sigma_N_handbook := 1/eta * e->projection_on_child_elem( child_cast(f)->sigma_handbook.expr, face ) * face->normal
             Pi_sigma_N_handbook_linear_part := e->projection_on_shape_functions_with_equilibrium( Pi_sigma_N_handbook, degre_poly_handbook, face, force_fluxes_base )
 
             e->assume_const_jac = true
-            sigma_const_jac := sigma_hooke_iso( e->grad_sym( child_cast(f)->dep.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+            sigma_const_jac := sigma_hooke_iso( e->grad_sym( child_cast(f)->dep.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
             face_normal := face->normal
             if face_normal.depends_on( face->var_inter )
                 face_normal = ( face->normal ).subs( face->var_inter, face->get_center_of_var_inter() )
-            Pi_sigma_const_jac := 1/eta * ( e->projection_on_child_elem( ( sigma_const_jac - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ), face ) ) * face_normal
+            Pi_sigma_const_jac := 1/eta * ( e->projection_on_child_elem( ( sigma_const_jac - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ), face ) ) * face_normal
             e->assume_const_jac = hyp_const_jac
 
             deg_p := max( face->order_interpolation )

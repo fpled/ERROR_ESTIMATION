@@ -183,7 +183,7 @@ int main( int argc, char **argv ) {
     /// ---------------------
     TM m;
     set_mesh( m, structure, mesh_size, loading, deg_p, refinement_level_ref, want_global_discretization_error, want_local_discretization_error );
-    string prefix = define_prefix( m, "direct", structure, loading, mesh_size, method, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, want_local_improvement, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment );
+    string filename = set_filename( m, "direct", structure, loading, mesh_size, method, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, want_local_improvement, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment );
     
     /// Maillage du pb de reference associe au pb direct
     /// ------------------------------------------------
@@ -276,9 +276,9 @@ int main( int argc, char **argv ) {
     Vec<T> theta_elem_init;
     Vec< Vec<T> > dep_hat;
     
-    /// ---------------------------------------------------------------------------------------------------------------- ///
-    /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe au pb direct ///
-    /// ---------------------------------------------------------------------------------------------------------------- ///
+    /// --------------------------------------------------------------------------------------------------------------- ///
+    /// Construction d'un champ de contrainte admissible & Calcul d'un estimateur d'erreur globale associe au pb direct ///
+    /// --------------------------------------------------------------------------------------------------------------- ///
     
     if ( want_global_estimation or want_local_estimation )
         calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_init, theta_elem, theta_elem_init, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment );
@@ -293,7 +293,7 @@ int main( int argc, char **argv ) {
         if ( interest_quantity == "SIF" or interest_quantity == "stress_intensity_factor" )
             set_mesh_crown( m_crown, m, pos_crack_tip, radius_Ri, radius_Re, spread_cut );
         TF f_crown( m_crown );
-        define_extractor( m, m_crown, f, f_crown, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, want_local_enrichment, display_vtu_crown, prefix );
+        define_extractor( m, m_crown, f, f_crown, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, angle_crack, radius_Ri, radius_Re, want_local_enrichment, display_vtu_crown, filename );
         
         /// ---------------------------------------------------- ///
         /// Calcul de la quantite d'interet locale approchee I_h ///
@@ -370,7 +370,7 @@ int main( int argc, char **argv ) {
         /// ----------------------
         TM m_adjoint;
         set_mesh_adjoint( m_adjoint, m, interest_quantity, direction_extractor, want_local_refinement, l_min_refinement, k_refinement, pointwise_interest_quantity, elem_list_interest_quantity, elem_list_adjoint_interest_quantity, node_interest_quantity, node_adjoint_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, want_local_enrichment, nb_layers_nodes_enrichment, elem_list_adjoint_enrichment_zone_1, elem_list_adjoint_enrichment_zone_2, face_list_adjoint_enrichment_zone_12, node_list_adjoint_enrichment );
-        string prefix_adjoint = define_prefix( m_adjoint, "adjoint", structure, loading, mesh_size, method, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, want_local_improvement, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment );
+        string filename_adjoint = set_filename( m_adjoint, "adjoint", structure, loading, mesh_size, method, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, want_local_improvement, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment );
         
         /// Formulation du pb adjoint
         /// -------------------------
@@ -408,9 +408,9 @@ int main( int argc, char **argv ) {
         /// -----------------------------------------------------------------
         calcul_norm_dep( m_adjoint, f_adjoint, "adjoint" );
         
-        /// ----------------------------------------------------------------------------------------------------------------- ///
-        /// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale associe au pb adjoint ///
-        /// ----------------------------------------------------------------------------------------------------------------- ///
+        /// ---------------------------------------------------------------------------------------------------------------- ///
+        /// Construction d'un champ de contrainte admissible & Calcul d'un estimateur d'erreur globale associe au pb adjoint ///
+        /// ---------------------------------------------------------------------------------------------------------------- ///
         
         T theta_adjoint = 0.;
         T theta_adjoint_init = 0.;
@@ -445,21 +445,21 @@ int main( int argc, char **argv ) {
         /// Calcul ameliore des bornes d'erreur sur la quantite d'interet locale I ///
         /// ---------------------------------------------------------------------- ///
         if ( want_local_improvement )
-            calcul_enhanced_local_error_bounds( m, m_adjoint, f, f_adjoint, structure, deg_p, method, method_adjoint, local_improvement, shape, k_min, k_max, k_opt, interest_quantity, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, theta, theta_adjoint, dep_hat, dep_adjoint_hat, I_h, I_hh, integration_k, integration_nb_points, want_introduction_sigma_hat_m, want_solve_eig_local_improvement, use_mask_eig_local_improvement, display_vtu_lambda, display_vtu_adjoint_lambda, prefix, prefix_adjoint );
+            calcul_enhanced_local_error_bounds( m, m_adjoint, f, f_adjoint, structure, deg_p, method, method_adjoint, local_improvement, shape, k_min, k_max, k_opt, interest_quantity, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, spread_cut, theta, theta_adjoint, dep_hat, dep_adjoint_hat, I_h, I_hh, integration_k, integration_nb_points, want_introduction_sigma_hat_m, want_solve_eig_local_improvement, use_mask_eig_local_improvement, display_vtu_lambda, display_vtu_adjoint_lambda, filename, filename_adjoint );
         
         /// ---------------------- ///
         /// Sauvegarde / Affichage ///
         /// ---------------------- ///
         
         if ( display_vtu )
-            display( m, prefix );
+            display( m, filename );
         else
-            save( m, prefix );
+            save( m, filename );
         
         if ( display_vtu_adjoint )
-            display( m_adjoint, prefix_adjoint );
+            display( m_adjoint, filename_adjoint );
         else
-            save( m_adjoint, prefix_adjoint );
+            save( m_adjoint, filename_adjoint );
         
     }
     else {
@@ -468,9 +468,9 @@ int main( int argc, char **argv ) {
         /// ---------------------- ///
         
         if ( display_vtu )
-            display( m, prefix );
+            display( m, filename );
         else
-            save( m, prefix );
+            save( m, filename );
     }
     
     t_total.stop();

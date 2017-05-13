@@ -4,7 +4,7 @@
 // Description: Global/Goal-oriented error estimation methods for PGD
 //
 //
-// Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2012
+// Author: Pled Florent <florent.pled@univ-paris-est.fr>, (C) 2017
 //
 // Copyright: See COPYING file that comes with this distribution
 //
@@ -23,6 +23,7 @@
 #include "EESPT/Construct_standard_force_fluxes_EESPT.h"
 #include "EESPT/Construct_standard_force_fluxes_EESPT_PGD.h"
 #include "ECRE/Calcul_error_estimate_prolongation_condition_PGD.h"
+#include "SPET/Calcul_error_estimate_partition_unity_PGD.h"
 #include "Calcul_global_error_estimation.h"
 #include "Calcul_goal_oriented_error_estimation.h"
 #include "PGD/PGD.h"
@@ -87,7 +88,7 @@ int main( int argc, char **argv ) {
     /// Global error estimation method
     /// ------------------------------
     static const bool want_global_estimation = 1; // calcul d'un estimateur d'erreur globale (au sens de la norme energetique)
-    static const string method = "EET"; //methode de construction de champs admissibles pour le pb direct : EET, SPET, EESPT
+    static const string method = "SPET"; //methode de construction de champs admissibles pour le pb direct : EET, SPET, EESPT
     static const string method_adjoint = "EET"; // methode de construction de champs admissibles pour le pb adjoint : EET, SPET, EESPT
     static const unsigned cost_function = 0; // fonction-cout pour les methodes EET, EESPT :
     // 0 : norme matricielle sans coefficient de ponderation (matrice identite)
@@ -169,15 +170,15 @@ int main( int argc, char **argv ) {
     /// Verification equilibrium / solver
     /// ---------------------------------
     static const bool verif_eq = 0; // verification de l'equilibre global elements finis
-    static const bool verif_compatibility_conditions = 0; // verification des conditions de compatibilite (equilibre elements finis) (methode EET)
-    static const bool verif_eq_force_fluxes = 0; // verification de l'equilibre des densites d'effort (methodes EET, EESPT)
+    static const bool verif_compatibility_conditions = 1; // verification des conditions de compatibilite (equilibre elements finis) (methode EET)
+    static const bool verif_eq_force_fluxes = 1; // verification de l'equilibre des densites d'effort (methodes EET, EESPT)
     static const T tol_compatibility_conditions = 1e-6; // tolerance pour la verification des conditions de compatibilite (equilibre elements finis) (methode EET)
     static const T tol_eq_force_fluxes = 1e-6; // tolerance pour la verification de l'equilibre des densites d'effort (methodes EET, EESPT)
     
-    static const bool verif_solver = 0; // verification de la resolution des pbs locaux (methodes EET, SPET, EESPT)
-    static const bool verif_solver_minimisation = 0; // verification de la resolution des pbs de minimisation (methodes EET, EESPT)
-    static const bool verif_solver_enhancement = 0; // verification de la resolution des pbs locaux (amelioration des methodes EET, EESPT)
-    static const bool verif_solver_minimisation_enhancement = 0; // verification de la resolution des pbs de minimisation (amelioration des methodes EET, EESPT)
+    static const bool verif_solver = 1; // verification de la resolution des pbs locaux (methodes EET, SPET, EESPT)
+    static const bool verif_solver_minimisation = 1; // verification de la resolution des pbs de minimisation (methodes EET, EESPT)
+    static const bool verif_solver_enhancement = 1; // verification de la resolution des pbs locaux (amelioration des methodes EET, EESPT)
+    static const bool verif_solver_minimisation_enhancement = 1; // verification de la resolution des pbs de minimisation (amelioration des methodes EET, EESPT)
     static const T tol_solver = 1e-6; // tolerance pour la verification de la resolution des pbs locaux (methodes EET, SPET, EESPT)
     static const T tol_solver_minimisation = 1e-6; // tolerance pour la verification de la resolution des pbs de minimisation (methodes EET, EESPT)
     static const T tol_solver_enhancement = 1e-6; // tolerance pour la verification de la resolution des pbs locaux (amelioration des methodes EET EESPT)
@@ -207,7 +208,7 @@ int main( int argc, char **argv ) {
     /// -------------------------------
     TM m;
     set_mesh( m, structure, mesh_size, loading, deg_p, refinement_level_ref, want_global_discretization_error, want_local_discretization_error );
-    string prefix = define_prefix( m, "direct", structure, loading, mesh_size, method, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, want_local_improvement, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment );
+    string filename = set_filename( m, "direct", structure, loading, mesh_size, method, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, val_geometric_criterium, val_estimator_criterium, geometric_criterium, want_global_discretization_error, want_local_discretization_error, want_global_estimation, want_local_estimation, interest_quantity, direction_extractor, pointwise_interest_quantity, elem_list_interest_quantity, node_interest_quantity, pos_interest_quantity, pos_crack_tip, radius_Ri, radius_Re, want_local_improvement, local_improvement, shape, k_min, k_max, k_opt, want_local_enrichment, nb_layers_nodes_enrichment );
     
     /// Formulation en espace du pb direct
     /// ----------------------------------
@@ -321,14 +322,24 @@ int main( int argc, char **argv ) {
     /// Construction d'un champ de contrainte admissible particulier
     /// ------------------------------------------------------------
     
+    // EET and EESPT methods
     Vec<bool> elem_flag_enh;
     Vec<bool> face_flag_enh;
     Vec<bool> elem_flag_bal;
-    
     bool enhancement = 0;
     bool balancing = 0;
     
-    Vec< Vec< Vec<T> > > force_fluxes_standard;
+    // SPET method
+    Vec<unsigned> connect_node_to_vertex_node;
+    unsigned nb_vertex_nodes;
+    Vec< Vec<unsigned> > elem_list_vertex_node;
+    Vec< Vec<unsigned> > face_type;
+    Vec<unsigned> nb_points_elem;
+    Vec<unsigned> nb_points_patch;
+    Vec< Vec< Vec<unsigned> > > patch_elem;
+    Vec< Vec< Vec<unsigned> > > constrained_points_list_patch;
+    Vec<unsigned> nb_constraints_patch;
+    
     Vec< Mat<T, Sym<> > > K_hat;
     Vec< Vec<T> > F_hat;
     Vec< Vec<T> > dep_space_part_hat;
@@ -340,17 +351,27 @@ int main( int argc, char **argv ) {
         /// Construction d'un champ de contrainte admissible particulier
         /// ------------------------------------------------------------
         
-        if (method == "EET")
-            construct_standard_force_fluxes_EET( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, force_fluxes_standard, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions );
-        else if (method == "EESPT")
-            construct_standard_force_fluxes_EESPT( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, force_fluxes_standard, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation );
-        
-        if ( verif_eq_force_fluxes )
-            check_equilibrium_force_fluxes( m, f, "direct", force_fluxes_standard, tol_eq_force_fluxes, want_local_enrichment );
-        
-        construct_K_hat( m, f, K_hat );
-        construct_F_hat( m, f, "direct", balancing, elem_flag_bal, elem_flag_enh, force_fluxes_standard, F_hat, want_local_enrichment );
-        construct_dep_hat( m, f, solver, K_hat, F_hat, dep_space_part_hat, verif_solver, tol_solver );
+        if ( method == "EET" or method == "EESPT" ) {
+            Vec< Vec< Vec<T> > > force_fluxes_standard;
+            if ( method == "EET" )
+                construct_standard_force_fluxes_EET( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, force_fluxes_standard, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions );  
+            else if ( method == "EESPT")
+                construct_standard_force_fluxes_EESPT( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, force_fluxes_standard, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation );
+            
+            if ( verif_eq_force_fluxes )
+                check_equilibrium_force_fluxes( m, f, "direct", force_fluxes_standard, tol_eq_force_fluxes, want_local_enrichment );
+            
+            construct_K_hat( m, f, K_hat );
+            construct_F_hat( m, f, "direct", balancing, elem_flag_bal, elem_flag_enh, force_fluxes_standard, F_hat, want_local_enrichment );
+            construct_dep_hat( m, f, solver, K_hat, F_hat, dep_space_part_hat, verif_solver, tol_solver );
+        }
+        else if ( method == "SPET" ) {
+            set_patch( m, f, nb_vertex_nodes, face_type, connect_node_to_vertex_node, elem_list_vertex_node, patch_elem, nb_points_elem, nb_points_patch, constrained_points_list_patch, nb_constraints_patch );
+            
+            construct_K_hat( m, f, nb_vertex_nodes, connect_node_to_vertex_node, elem_list_vertex_node, patch_elem, nb_points_patch, constrained_points_list_patch, K_hat );
+            construct_F_hat( m, f, "direct", nb_vertex_nodes, face_type, connect_node_to_vertex_node, elem_list_vertex_node, patch_elem, nb_points_patch, constrained_points_list_patch, F_hat, want_local_enrichment );
+            construct_dep_hat( m, f, solver, nb_vertex_nodes, connect_node_to_vertex_node, elem_list_vertex_node, patch_elem, nb_points_patch, nb_points_elem, K_hat, F_hat, dep_space_part_hat, verif_solver, tol_solver );
+        }
     }
     
     Vec<T, max_mode > theta, theta_PGD, theta_dis;
@@ -381,7 +402,7 @@ int main( int argc, char **argv ) {
         
         solve_space( m, f, n, F_space, F_param, K_param, elem_group, dep_param, dep_space );
         
-        string filename = prefix + "_mode" + to_string(n+1) + "_space_iter";
+        string filename = filename + "_mode" + to_string(n+1) + "_space_iter";
         dp_space[ n ].add_mesh_iter( m, filename, lp_space, k );
         
         /// Processus iteratif : Algorithme de point fixe
@@ -410,7 +431,7 @@ int main( int argc, char **argv ) {
 //                cout << dep_param[ p ][ n ] << endl << endl;
 //            }
             
-            filename = prefix + "_mode" + to_string(n+1) + "_space_iter";
+            filename = filename + "_mode" + to_string(n+1) + "_space_iter";
             dp_space[ n ].add_mesh_iter( m, filename, lp_space, k );
             
             /// Stationnarite du produit mode en espace * modes en parametre dans le processus iteratif
@@ -465,28 +486,33 @@ int main( int argc, char **argv ) {
                 }
             }
             
-            Vec< Vec< Vec<T> > > force_fluxes_standard_mode;
-            if (method == "EET")
-                construct_standard_force_fluxes_EET_PGD( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, force_fluxes_standard_mode, dep_space_FE[ n ], elem_group, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions );
-//            else if (method == "SPET")  
-            else if (method == "EESPT")
-                construct_standard_force_fluxes_EESPT_PGD( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, force_fluxes_standard, dep_space_FE[ n ], elem_group, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation );
-            
-            if ( verif_eq_force_fluxes )
-                check_equilibrium_force_fluxes( m, f, "direct", force_fluxes_standard_mode, tol_eq_force_fluxes, want_local_enrichment );
-            
-            construct_F_hat( m, f, "direct", balancing, elem_flag_bal, elem_flag_enh, force_fluxes_standard_mode, F_hat, want_local_enrichment );
-            construct_dep_hat( m, f, solver, K_hat, F_hat, dep_space_hat[ n ], verif_solver, tol_solver );
+            if ( method == "EET" or method == "EESPT" ) {
+                Vec< Vec< Vec<T> > > force_fluxes_standard_mode;
+                if ( method == "EET" )
+                    construct_standard_force_fluxes_EET_PGD( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, force_fluxes_standard_mode, dep_space_FE[ n ], elem_group, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions );
+                else if ( method == "EESPT" )
+                    construct_standard_force_fluxes_EESPT_PGD( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, force_fluxes_standard_mode, dep_space_FE[ n ], elem_group, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation );
+                
+                if ( verif_eq_force_fluxes )
+                    check_equilibrium_force_fluxes( m, f, "direct", force_fluxes_standard_mode, tol_eq_force_fluxes, want_local_enrichment );
+                
+                construct_F_hat( m, f, "direct", balancing, elem_flag_bal, elem_flag_enh, force_fluxes_standard_mode, F_hat, want_local_enrichment );
+                construct_dep_hat( m, f, solver, K_hat, F_hat, dep_space_hat[ n ], verif_solver, tol_solver );
+            }
+            else if ( method == "SPET" ) {
+                construct_F_hat( m, f, "direct", nb_vertex_nodes, face_type, connect_node_to_vertex_node, elem_list_vertex_node, patch_elem, nb_points_patch, constrained_points_list_patch, F_hat, want_local_enrichment );
+                construct_dep_hat( m, f, solver, nb_vertex_nodes, connect_node_to_vertex_node, elem_list_vertex_node, patch_elem, nb_points_patch, nb_points_elem, K_hat, F_hat, dep_space_hat[ n ], verif_solver, tol_solver );
+            }
             
             /// Calcul d'un estimateur d'erreur globale
             /// ---------------------------------------
             
             set_load_conditions( m, structure, loading, mesh_size );
             
-            if (method == "EET" || method == "EESPT")
-                calcul_error_estimate_prolongation_condition_PGD( m, f, "direct", "EET", theta[ n ],  theta_PGD[ n ], theta_dis[ n ], theta_elem[ n ], theta_elem_PGD[ n ], theta_elem_dis[ n ], dep_space, dep_param, dep_space_part, dep_space_FE, dep_space_hat, dep_space_part_hat, elem_group, n, want_global_discretization_error, want_local_discretization_error );
-//            else if (method == "SPET")
-                
+            if ( method == "EET" or method == "EESPT" )
+                calcul_error_estimate_prolongation_condition_PGD( m, f, "direct", method, theta[ n ],  theta_PGD[ n ], theta_dis[ n ], theta_elem[ n ], theta_elem_PGD[ n ], theta_elem_dis[ n ], dep_space, dep_param, dep_space_part, dep_space_FE, dep_space_hat, dep_space_part_hat, elem_group, n, want_global_discretization_error, want_local_discretization_error );
+            else if ( method == "SPET" )
+                calcul_error_estimate_partition_unity_PGD( m, f, "direct", method, theta[ n ], theta_PGD[ n ], theta_dis[ n ], theta_elem[ n ], theta_elem_PGD[ n ], theta_elem_dis[ n ], dep_space, dep_param, dep_space_part, dep_space_FE, dep_space_hat, dep_space_part_hat, elem_group, n, want_global_discretization_error, want_local_discretization_error );
             
             t_CRE.stop();
             cout << "temps de calcul de la methode d'estimation d'erreur globale " << method << " = " << t_CRE.res << endl << endl;
@@ -503,7 +529,7 @@ int main( int argc, char **argv ) {
         f.update_variables();
         f.call_after_solve();
         
-        filename = prefix + "_mode";
+        filename = filename + "_mode";
         dp.add_mesh_iter( m, filename, lp, n+1 );
         
         if ( n >= max_mode-1 ) { // if ( error_indicator < tol_convergence_criterium_mode or n >= max_mode-1 ) {
@@ -522,15 +548,15 @@ int main( int argc, char **argv ) {
     mp.cd_cwd();
     for (unsigned n=0;n<nb_modes;++n) {
         // Paraview
-        string filename = prefix + "_mode" + to_string(n+1) + "_space";
+        string filename_mode = filename + "_mode" + to_string(n+1) + "_space";
         if ( display_pvd_space )
-            dp_space[ n ].exec( filename );
+            dp_space[ n ].exec( filename_mode );
         else
-            dp_space[ n ].make_pvd_file( filename );
+            dp_space[ n ].make_pvd_file( filename_mode );
         
         for (unsigned p=0;p<elem_group.size()-1;++p) {
             // Matlab
-            string output = "'" + prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1);
+            string output = "'" + filename + "_mode" + to_string(n+1) + "_param" + to_string(p+1);
             string xlabel = "'$p_" + to_string(p+1) + "$'";
             string ylabel = "'$\\gamma_{" + to_string(p+1) + "," + to_string(n+1) + "}$'";
             string params = ",'LineStyle','-','Color',getfacecolor(" + to_string(p+4) + "),'LineWidth',1";
@@ -550,7 +576,7 @@ int main( int argc, char **argv ) {
             mp.close();
             
             // Gnuplot
-//            output = "'gp_" + prefix + "_mode" + to_string(n+1) + "_param" + to_string(p+1);
+//            output = "'gp_" + filename + "_mode" + to_string(n+1) + "_param" + to_string(p+1);
 //            params = "notitle w l lt " + to_string(p+1) + " lw 1";
 //            bool jump_lines = false;
 ////            save_plot( vals_param[p], dep_param[ p ][ n ], (output + ".tex'").c_str(), xlabel.c_str(), ylabel.c_str(), params.c_str() );
@@ -562,7 +588,6 @@ int main( int argc, char **argv ) {
         }
     }
     
-    string filename = prefix;
     if ( display_pvd )
         dp.exec( filename );
     else
@@ -577,7 +602,7 @@ int main( int argc, char **argv ) {
             theta_2_dis[ n ] = pow( theta_dis[ n ], 2 );
         }
         // Matlab
-        string output = "'" + prefix + "_estimates_global";
+        string output = "'" + filename + "_estimates_global";
         string xlabel = "'$m$'";
         string ylabel = "'Error'";
         string legend = "'$E^2_{\\mathrm{CRE}}$','$\\eta^2_{\\mathrm{PGD}}$','$\\eta^2_{\\mathrm{dis}}$'";
@@ -603,7 +628,7 @@ int main( int argc, char **argv ) {
     }
     
     if ( want_eval_PGD )
-        eval_PGD( m_param, m, f, "direct", structure, boundary_condition_D, loading, mesh_size, elem_group, nb_vals, vals_param, nb_modes, dep_space, dep_param, prefix, display_pvd_eval );
+        eval_PGD( m_param, m, f, "direct", structure, boundary_condition_D, loading, mesh_size, elem_group, nb_vals, vals_param, nb_modes, dep_space, dep_param, filename, display_pvd_eval );
     
     t.stop();
     cout << "temps de calcul de la resolution du pb direct = " << t.res << endl << endl;

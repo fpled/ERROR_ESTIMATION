@@ -18,21 +18,22 @@
 using namespace LMT;
 using namespace std;
 
-/// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale pour les methodes basees sur la condition de prolongement (EET,EESPT)
-/// -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+/// Construction d'un champ de contrainte admissible & Calcul d'un estimateur d'erreur globale pour les methodes basees sur la condition de prolongement (EET,EESPT)
+/// ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T, class TV, class TVV>
 void calcul_error_estimate_prolongation_condition( TM &m, const TF &f, const string &pb, const string &method, T &theta, TV &theta_elem, const TVV &dep_hat, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool disp = false ) {
     
-    /// ------------------------------------------------------------------------------------------------------- ///
-    /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale ///
-    /// ------------------------------------------------------------------------------------------------------- ///
+    /// ------------------------------------------------------------------------------------------------------ ///
+    /// Construction d'un champ de contrainte admissible par element & Calcul d'un estimateur d'erreur globale ///
+    /// ------------------------------------------------------------------------------------------------------ ///
     
     if ( disp ) {
-        cout << "Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale" << endl;
-        cout << "-------------------------------------------------------------------------------------------------------" << endl << endl;
+        cout << "Construction d'un champ de contrainte admissible par element & Calcul d'un estimateur d'erreur globale" << endl;
+        cout << "------------------------------------------------------------------------------------------------------" << endl << endl;
     }
     
     theta = 0.;
+    
     theta_elem.resize( m.elem_list.size() );
     theta_elem.set( 0. );
     

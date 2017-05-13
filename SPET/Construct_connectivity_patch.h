@@ -18,14 +18,14 @@
 using namespace LMT;
 using namespace std;
 
-/// Construction de la table de connectivite de chaque patch : nb_unk_patch[ j ] pour chaque noeud sommet j du maillage
-///                                                            nb_unk_elem[ n ] pour chaque element n du maillage
-///                                                            nb_unk_face[ n ] pour chaque face k du maillage
+/// Construction de la table de connectivite de chaque patch : nb_points_patch[ j ] pour chaque noeud sommet j du maillage
+///                                                            nb_points_elem[ n ] pour chaque element n du maillage
+///                                                            nb_points_face[ k ] pour chaque face k du maillage
 ///                                                            patch_elem[ j ][ n ][ i ] pour chaque noeud i de chaque element n du patch j
-///                                                            patch_face[ j ][ n ][ i ] pour chaque noeud i de chaque face k du patch j
+///                                                            patch_face[ j ][ k ][ i ] pour chaque noeud i de chaque face k du patch j
 /// ---------------------------------------------------------------------------------------------------------------------------------------
 template<class TM>
-void construct_connectivity_patch( const TM &m, const unsigned &nb_vertex_nodes, Vec< Vec<unsigned> > &face_list_patch, const Vec<unsigned> &child_cpt, const Vec< Vec<unsigned> > &child_list, const Vec<unsigned> &elem_cpt_vertex_node, const Vec< Vec<unsigned> > &elem_list_vertex_node, Vec<unsigned> &nb_points_face, Vec<unsigned> &nb_points_elem, Vec<unsigned> &nb_points_patch, Vec< Vec< Vec<unsigned> > > &patch_face, Vec< Vec< Vec<unsigned> > > &patch_elem, const bool disp = false ) {
+void construct_connectivity_patch( const TM &m, const unsigned &nb_vertex_nodes, const Vec< Vec<unsigned> > &face_type, Vec< Vec<unsigned> > &face_list_patch, const Vec<unsigned> &child_cpt, const Vec< Vec<unsigned> > &child_list, const Vec<unsigned> &elem_cpt_vertex_node, const Vec< Vec<unsigned> > &elem_list_vertex_node, Vec<unsigned> &nb_points_face, Vec<unsigned> &nb_points_elem, Vec<unsigned> &nb_points_patch, Vec< Vec< Vec<unsigned> > > &patch_face, Vec< Vec< Vec<unsigned> > > &patch_elem, const bool disp = false ) {
     
     static const unsigned dim = TM::dim;
     typedef typename TM::TNode::T T;
@@ -51,7 +51,6 @@ void construct_connectivity_patch( const TM &m, const unsigned &nb_vertex_nodes,
         cout << "Construction du nombre d'inconnues associees a chaque element et a chaque face" << endl << endl;
     
     nb_points_elem.resize( m.elem_list.size(), 0 );
-    
     nb_points_face.resize( m.sub_mesh(Number<1>()).elem_list.size(), 0 );
     
     apply( m.elem_list, Calc_Nb_Points_Elem(), nb_points_elem ); // nb_points_elem[ n ] contient le nb de points associees aux vecteurs e_i pour chaque element n du maillage
@@ -143,7 +142,6 @@ void construct_connectivity_patch( const TM &m, const unsigned &nb_vertex_nodes,
         cout << "Construction de la table de connectivite de chaque patch : patch_elem et patch_face" << endl << endl;
     
     patch_elem.resize( nb_vertex_nodes );
-    
     patch_face.resize( nb_vertex_nodes );
     
     for (unsigned j=0;j<nb_vertex_nodes;++j) {

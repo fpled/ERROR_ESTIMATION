@@ -130,7 +130,7 @@ struct Apply_Criterium_Enhancement {
             if ( *method == "EET" ) {
                 elem.enhancement_EET = 1;
             }
-            if ( *method == "EESPT" ) {
+            else if ( *method == "EESPT" ) {
                 elem.enhancement_EESPT = 1;
             }
             (*elem_flag_enh)[ elem.number ] = 1;

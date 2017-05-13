@@ -207,7 +207,7 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
                         f.add_constraint( "node["+to_string(i)+"].dep[1] - 1", penalty_val );
                     }
                 }
-                else if (pb == "adjoint" ) {
+                else if ( pb == "adjoint" ) {
                     if ( m.node_list[i].pos[0] < 1e-6 ) {
                         f.add_constraint( "node["+to_string(i)+"].dep[1]", penalty_val );
                     }

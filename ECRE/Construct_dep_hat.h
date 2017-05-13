@@ -13,13 +13,12 @@
 #ifndef Construct_dep_hat_h
 #define Construct_dep_hat_h
 
-#include "ECRE.h"
-
 using namespace LMT;
 using namespace std;
 
+/// Resolution des problemes locaux K_hat[ n ] * dep_hat[ n ] = F_hat[ n ] pour chaque element n du maillage
 /// Construction des vecteurs dep_hat[ n ] pour chaque element n du maillage
-/// ------------------------------------------------------------------------
+/// --------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T, class TVV, class TTVV, class TMatV>
 void construct_dep_hat( const TM &m, const TF &f, const string &solver, TMatV &K_hat, TVV &F_hat, TTVV &dep_hat, const bool verif_solver = false, const T tol_solver = 1e-6, const bool disp = false ) {
     
@@ -50,6 +49,8 @@ void construct_dep_hat( const TM &m, const TF &f, const string &solver, TMatV &K
             TMatSparseCholMod K_hat_CholMod = K_hat_sym;
             K_hat_CholMod.get_factorization();
             dep_hat[ n ] = K_hat_CholMod.solve( F_hat[ n ] );
+            K_hat_sym.clear();
+            K_hat_CholMod.clear();
             #endif
         }
         else if ( solver == "LDL" ) {
@@ -61,6 +62,9 @@ void construct_dep_hat( const TM &m, const TF &f, const string &solver, TMatV &K
             Vec<int> Pivots;
             ls.get_factorization( K_hat_LDL, Ker, Pivots );
             ls.solve( dep_hat[ n ] );
+            Ker.free();
+            Pivots.free();
+            K_hat_LDL.clear();
             #endif
         }
         else if ( solver == "UMFPACK" ) {
@@ -68,12 +72,14 @@ void construct_dep_hat( const TM &m, const TF &f, const string &solver, TMatV &K
             TMatGenSparseUMFPACK K_hat_UMFPACK = K_hat[ n ];
             K_hat_UMFPACK.get_factorization();
             dep_hat[ n ] = K_hat_UMFPACK.solve( F_hat[ n ] );
+            K_hat_UMFPACK.clear();
             #endif
         }
         else if ( solver == "CholFactorize" ) {
             TMatSymSparse K_hat_Chol = K_hat[ n ];
             chol_factorize( K_hat_Chol );
             solve_using_chol_factorize( K_hat_Chol, F_hat[ n ], dep_hat[ n ] );
+            K_hat_Chol.clear();
         }
         else if ( solver == "LUFactorize" ) {
             TMatSymSparse K_hat_sym = K_hat[ n ];
@@ -81,14 +87,21 @@ void construct_dep_hat( const TM &m, const TF &f, const string &solver, TMatV &K
 //            Vec<int> vector_permutation;
             lu_factorize( K_hat_LU/*, vector_permutation*/ );
             solve_using_lu_factorize( K_hat_LU, /*vector_permutation,*/ F_hat[ n ], dep_hat[ n ] );
+            K_hat_sym.clear();
+            K_hat_LU.clear();
         }
         else if ( solver == "Inv" ) {
             TMatSymSparse K_hat_Inv = K_hat[ n ];
             dep_hat[ n ] = inv( K_hat_Inv ) * F_hat[ n ];
+            K_hat_Inv.clear();
         }
         else {
             cerr << "Bing. Error : solveur " << solver << " pour la resolution des pbs locaux non implemente" << endl << endl;
         }
+//        if ( not( disp ) and not( verif_solver ) ) {
+//            K_hat[ n ].clear();
+//            F_hat[ n ].free();
+//        }
     }
     
     t.stop();

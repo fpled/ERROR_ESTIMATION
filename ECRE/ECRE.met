@@ -39,12 +39,12 @@ def calc_elem_matrix_K_hat( list_f, rep )
         dep_hat_test := e->new_variable( "{\\hat{U}}^{\\ast}", interpolation_type = "enriched_nodal", deg = deg_p + deg_k, nb_dim = [ e->dim ], sym = sym_dep_hat_test, interpolation_base = admissible_field_base )
         epsilon_hat_expr := e->grad_sym( dep_hat_expr )
         epsilon_hat_test := e->grad_sym( dep_hat_test )
-        sigma_hat_expr := sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_expr := sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         residual := Op( 0 )
 
         e->assume_const_jac = true
         epsilon_hat_test_const_jac := e->grad_sym( dep_hat_test )
-        sigma_hat_expr_const_jac := sigma_hooke_iso( e->grad_sym( dep_hat_expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_expr_const_jac := sigma_hooke_iso( e->grad_sym( dep_hat_expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         e->assume_const_jac = hyp_const_jac
         degre_poly := ( sigma_hat_expr_const_jac : epsilon_hat_test_const_jac ).poly_deg( e->var_inter )
 
@@ -165,22 +165,22 @@ def calc_elem_vector_F_hat( list_f, rep )
         e->assume_const_jac = true
         epsilon_hat_test_const_jac := e->grad_sym( dep_hat_test )
         e->assume_const_jac = hyp_const_jac
-        degre_poly_1 := ( ( child_cast(f)->pre_sigma.expr + sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) : epsilon_hat_test_const_jac + dot( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr, dep_hat_test ) ).poly_deg( e->var_inter )
+        degre_poly_1 := ( ( child_cast(f)->pre_sigma.expr + sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) : epsilon_hat_test_const_jac + dot( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr, dep_hat_test ) ).poly_deg( e->var_inter )
         degre_poly_2 := ( dot( f_vol_std, dep_hat_test ) ).poly_deg( e->var_inter )
 
         if integration_type == "gauss_num"
             if integration_lang == "metil"
-                residual = e->gauss_num_integration( ( child_cast(f)->pre_sigma.expr + sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) : epsilon_hat_test + dot( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr, dep_hat_test ), order_diff = degre_poly_1 )
+                residual = e->gauss_num_integration( ( child_cast(f)->pre_sigma.expr + sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) : epsilon_hat_test + dot( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr, dep_hat_test ), order_diff = degre_poly_1 )
                 if want_local_enrichment
                     residual_handbook = e->gauss_num_integration( - child_cast(f)->sigma_handbook_PUM_zone_2.expr : epsilon_hat_test, order_diff = degre_poly_handbook )
                 residual_std = e->gauss_num_integration( dot( f_vol_std, dep_hat_test ), order_diff = degre_poly_2 )
             else if integration_lang == "cpp"
-                residual = ( ( child_cast(f)->pre_sigma.expr + sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) : epsilon_hat_test + dot( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr, dep_hat_test ) ) * e->jac
+                residual = ( ( child_cast(f)->pre_sigma.expr + sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) : epsilon_hat_test + dot( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr, dep_hat_test ) ) * e->jac
                 if want_local_enrichment
                     residual_handbook = ( - child_cast(f)->sigma_handbook_PUM_zone_2.expr : epsilon_hat_test ) * e->jac
                 residual_std = dot( f_vol_std, dep_hat_test ) * e->jac
         else if integration_type == "formal"
-            residual = e->integration( ( child_cast(f)->pre_sigma.expr + sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) : epsilon_hat_test + dot( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr, dep_hat_test ), order_diff = degre_poly_1 )
+            residual = e->integration( ( child_cast(f)->pre_sigma.expr + sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) : epsilon_hat_test + dot( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr, dep_hat_test ), order_diff = degre_poly_1 )
             if want_local_enrichment
                 residual_handbook = e->integration( - child_cast(f)->sigma_handbook_PUM_zone_2.expr : epsilon_hat_test, order_diff = degre_poly_handbook )
             residual_std = e->integration( dot( f_vol_std, dep_hat_test ), order_diff = degre_poly_2 )
@@ -362,7 +362,7 @@ def calc_elem_error_estimate_EET_EESPT( list_f, rep )
         sym_dep_hat_expr := Vec[ Op ]()
         dep_hat_expr := e->new_variable( "\\hat{U}", interpolation_type = "enriched_nodal", deg = deg_p + deg_k, nb_dim = [ e->dim ], sym = sym_dep_hat_expr, interpolation_base = admissible_field_base )
         epsilon_hat_expr := e->grad_sym( dep_hat_expr )
-        sigma_hat_expr := sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_expr := sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         sym_dep_hat := Vec[ Op ]()
         for i in 0 .. sym_dep_hat_expr.size
             sy := Op()
@@ -391,11 +391,11 @@ def calc_elem_error_estimate_EET_EESPT( list_f, rep )
 
         e->assume_const_jac = true
         epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
-        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
-        sigma_hat_const_jac := sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_const_jac := sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         e->assume_const_jac = hyp_const_jac
-        degre_poly := ( ( sigma_hat_const_jac - sigma_const_jac ) : eps_hooke_iso( ( sigma_hat_const_jac - sigma_const_jac ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ).poly_deg( e->var_inter )
+        degre_poly := ( ( sigma_hat_const_jac - sigma_const_jac ) : eps_hooke_iso( ( sigma_hat_const_jac - sigma_const_jac ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ).poly_deg( e->var_inter )
 
         if integration_type == "gauss_num" and integration_lang == "cpp"
             file_ <<< "    Vec<double> poids;"
@@ -403,11 +403,11 @@ def calc_elem_error_estimate_EET_EESPT( list_f, rep )
             file_ <<< "    gauss_points( $(e->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
         if integration_type == "gauss_num"
             if integration_lang == "metil"
-                theta = e->gauss_num_integration( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly )
+                theta = e->gauss_num_integration( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ), order_diff = degre_poly )
             else if integration_lang == "cpp"
-                theta = ( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) * e->jac
+                theta = ( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) * e->jac
         else if integration_type == "formal"
-            theta = e->integration( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly )
+            theta = e->integration( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ), order_diff = degre_poly )
         if integration_type == "gauss_num" and integration_lang == "cpp"
             file_ <<< "    for (unsigned n=0; n<poids.size(); ++n) {"
             file_ <<< "        Vec<double> var_inter( valeurs[ n ] );"
@@ -441,17 +441,17 @@ def calc_elem_error_estimate_EET_EESPT( list_f, rep )
         file_ <<< "#endif"
     return file_names
 
-# Methode qui genere un fichier calc_elem_error_estimate_EET_EESPT_EF_$(f->name).$(e->dim).$(e->name).h pour construire un champ de contrainte admissible au sens EF et calculer la contribution d'un element a l'estimateur d'erreur
-#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-def calc_elem_error_estimate_EET_EESPT_EF( list_f, rep )
+# Methode qui genere un fichier calc_elem_error_estimate_FE_$(f->name).$(e->dim).$(e->name).h pour construire un champ de contrainte admissible au sens EF et calculer la contribution d'un element a l'estimateur d'erreur
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_elem_error_estimate_FE( list_f, rep )
     file_names := Vec[String]()
     for f in list_f
         e := child_cast( f->pe )
-        file_name_ := "calc_elem_error_estimate_EET_EESPT_EF_$(f->name).$(e->dim).$(e->name).h"
+        file_name_ := "calc_elem_error_estimate_FE_$(f->name).$(e->dim).$(e->name).h"
         file_names.push_back( file_name_ )
-        file_ := File( rep + "/calc_elem_error_estimate_EET_EESPT_EF_$(f->name).$(e->dim).$(e->name).h", "w" )
-        file_ <<< "#ifndef calc_elem_error_estimate_EET_EESPT_EF_$(f->name)_$(e->dim)_$(e->name)_h"
-        file_ <<< "#define calc_elem_error_estimate_EET_EESPT_EF_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ := File( rep + "/calc_elem_error_estimate_FE_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_elem_error_estimate_FE_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_elem_error_estimate_FE_$(f->name)_$(e->dim)_$(e->name)_h"
         if integration_type == "gauss_num" and integration_lang == "cpp"
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_NodalElement.h\""
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Bar.h\""
@@ -467,7 +467,7 @@ def calc_elem_error_estimate_EET_EESPT_EF( list_f, rep )
         f_new->name = Tf_new
         f_new->make_matrices( @e_new, integration_type, e_new->assume_const_jac, degre_poly_handbook )
         file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class S, class T>"
-        file_ <<< "void calc_elem_error_estimate_EET_EESPT_EF( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const TTVV &vectors, const TTVV &new_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &new_indices, const S &method, Vec<T> &theta_elem, T &theta ) {"
+        file_ <<< "void calc_elem_error_estimate_FE( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const TTVV &vectors, const TTVV &new_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &new_indices, const S &method, Vec<T> &theta_elem, T &theta ) {"
         file_ <<< "    #define PNODE(N) elem.node(N)"
         deg_p := max( e->order_interpolation )
         e_var_inter := e_new->var_inter_for_pos( e->pos, 1 )
@@ -477,18 +477,18 @@ def calc_elem_error_estimate_EET_EESPT_EF( list_f, rep )
 
         e->assume_const_jac = true
         epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
-        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         e->assume_const_jac = hyp_const_jac
         e_new->assume_const_jac = true
         epsilon_new_const_jac := e_new->grad_sym( f_new->dep.expr )
-        sigma_new_const_jac := sigma_hooke_iso( epsilon_new_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_new_const_jac := sigma_hooke_iso( epsilon_new_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         e_new->assume_const_jac = hyp_const_jac
-        degre_poly := ( ( sigma_new_const_jac - sigma_const_jac ) : eps_hooke_iso( ( sigma_new_const_jac - sigma_const_jac ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ).poly_deg( e->var_inter )
+        degre_poly := ( ( sigma_const_jac - sigma_new_const_jac ) : eps_hooke_iso( ( sigma_const_jac - sigma_new_const_jac ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ).poly_deg( e->var_inter )
         
         if integration_type == "gauss_num"
-            theta = e->gauss_num_integration( ( child_cast(f)->sigma.expr - sigma_new_proj ) : eps_hooke_iso( ( child_cast(f)->sigma.expr - sigma_new_proj ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly )
+            theta = e->gauss_num_integration( ( child_cast(f)->sigma.expr - sigma_new_proj ) : eps_hooke_iso( ( child_cast(f)->sigma.expr - sigma_new_proj ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ), order_diff = degre_poly )
         else if integration_type == "formal"
-            theta = e->integration( ( child_cast(f)->sigma.expr - sigma_new_proj ) : eps_hooke_iso( ( child_cast(f)->sigma.expr - sigma_new_proj ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly )
+            theta = e->integration( ( child_cast(f)->sigma.expr - sigma_new_proj ) : eps_hooke_iso( ( child_cast(f)->sigma.expr - sigma_new_proj ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ), order_diff = degre_poly )
         cw := CodeWriterAlt( "T" )
         cw.add( "theta_elem[ elem.number ]", theta, reassign )
         file_ <<<<
@@ -537,7 +537,7 @@ def calc_elem_error_estimate_init_EET_EESPT( list_f, rep )
         sym_dep_hat_expr := Vec[ Op ]()
         dep_hat_expr := e->new_variable( "\\hat{U}", interpolation_type = "enriched_nodal", deg = deg_p + deg_k, nb_dim = [ e->dim ], sym = sym_dep_hat_expr, interpolation_base = admissible_field_base )
         epsilon_hat_expr := e->grad_sym( dep_hat_expr )
-        sigma_hat_expr := sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_expr := sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         sym_dep_hat := Vec[ Op ]()
         for i in 0 .. sym_dep_hat_expr.size
             sy := Op()
@@ -545,7 +545,7 @@ def calc_elem_error_estimate_init_EET_EESPT( list_f, rep )
             sym_dep_hat.push_back( sy )
         sigma_hat := sigma_hat_expr.subs( sym_dep_hat_expr, sym_dep_hat )
         sigma_hat_const_in_elem := sigma_hat.subs( e->var_inter, e->get_center_of_var_inter() )
-        sigma_hat_init := sigma_hat - child_cast(f)->pre_sigma.expr + sigma_hooke_iso( child_cast(f)->pre_epsilon_init.expr, child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ) - sigma_hooke_iso( child_cast(f)->pre_epsilon_init.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_init := sigma_hat - child_cast(f)->pre_sigma.expr + sigma_hooke_iso( child_cast(f)->pre_epsilon_init.expr, child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, hyp_plane_2D ) - sigma_hooke_iso( child_cast(f)->pre_epsilon_init.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         sigma_hat_init_const_in_elem := sigma_hat_init.subs( e->var_inter, e->get_center_of_var_inter() )
         cw_0 := CodeWriterAlt( "T" )
         cw_0.add( "sigma_hat", sigma_hat_const_in_elem, reassign )
@@ -573,11 +573,11 @@ def calc_elem_error_estimate_init_EET_EESPT( list_f, rep )
 
         e->assume_const_jac = true
         epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
-        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
-        sigma_hat_const_jac := sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_const_jac := sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         e->assume_const_jac = hyp_const_jac
-        degre_poly := ( ( sigma_hat_const_jac - sigma_const_jac ) : eps_hooke_iso( ( sigma_hat_const_jac - sigma_const_jac ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ).poly_deg( e->var_inter )
+        degre_poly := ( ( sigma_hat_const_jac - sigma_const_jac ) : eps_hooke_iso( ( sigma_hat_const_jac - sigma_const_jac ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ).poly_deg( e->var_inter )
 
         if integration_type == "gauss_num" and integration_lang == "cpp"
             file_ <<< "    Vec<double> poids;"
@@ -585,14 +585,14 @@ def calc_elem_error_estimate_init_EET_EESPT( list_f, rep )
             file_ <<< "    gauss_points( $(e->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
         if integration_type == "gauss_num"
             if integration_lang == "metil"
-                theta = e->gauss_num_integration( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly )
-                theta_init = e->gauss_num_integration( ( sigma_hat_init - child_cast(f)->sigma_init.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
+                theta = e->gauss_num_integration( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ), order_diff = degre_poly )
+                theta_init = e->gauss_num_integration( ( sigma_hat_init - child_cast(f)->sigma_init.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, hyp_plane_2D ), order_diff = degre_poly )
             else if integration_lang == "cpp"
-                theta = ( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) * e->jac
-                theta_init = ( ( sigma_hat_init - child_cast(f)->sigma_init.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ) ) * e->jac
+                theta = ( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) * e->jac
+                theta_init = ( ( sigma_hat_init - child_cast(f)->sigma_init.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, hyp_plane_2D ) ) * e->jac
         else if integration_type == "formal"
-            theta = e->integration( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly )
-            theta_init = e->integration( ( sigma_hat_init - child_cast(f)->sigma_init.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D ), order_diff = degre_poly )
+            theta = e->integration( ( sigma_hat - child_cast(f)->sigma.expr ) : eps_hooke_iso( ( sigma_hat - child_cast(f)->sigma.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ), order_diff = degre_poly )
+            theta_init = e->integration( ( sigma_hat_init - child_cast(f)->sigma_init.expr ) : eps_hooke_iso( ( sigma_hat_init - child_cast(f)->sigma_init.expr ), child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, hyp_plane_2D ), order_diff = degre_poly )
         if integration_type == "gauss_num" and integration_lang == "cpp"
             file_ <<< "    for (unsigned n=0; n<poids.size(); ++n) {"
             file_ <<< "        Vec<double> var_inter( valeurs[ n ] );"

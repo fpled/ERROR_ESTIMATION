@@ -299,29 +299,29 @@ int main( int argc, char **argv ) {
     display_mesh_carac( m );
 //    display_mesh( m );
 
-//    save( m, "aorta_Tetra", Vec<std::string>("pos") );
-//    write_mesh_vtk( "aorta_Tetra.vtk", m, Vec<std::string>("pos") );
-//    write_avs( m, "aorta_Tetra.avs", Vec<std::string>("pos"), Ascii() );
+//    save( m, "RESULTS/aorta_Tetra", Vec<std::string>("pos") );
+//    write_mesh_vtk( "RESULTS/aorta_Tetra.vtk", m, Vec<std::string>("pos") );
+//    write_avs( m, "RESULTS/aorta_Tetra.avs", Vec<std::string>("pos"), Ascii() );
 
-//    save( m, "aorta_Tetra_level_set_cut", Vec<std::string>("phi_crown_int","phi_crown_ext") );
-//    write_mesh_vtk( "aorta_Tetra_level_set_cut.vtk", m, Vec<std::string>("phi_crown_int","phi_crown_ext") );
-//    write_avs( m, "aorta_Tetra_level_set_cut.avs", Vec<std::string>("phi_crown_int","phi_crown_ext"), Ascii() );
+//    save( m, "RESULTS/aorta_Tetra_level_set_cut", Vec<std::string>("phi_crown_int","phi_crown_ext") );
+//    write_mesh_vtk( "RESULTS/aorta_Tetra_level_set_cut.vtk", m, Vec<std::string>("phi_crown_int","phi_crown_ext") );
+//    write_avs( m, "RESULTS/aorta_Tetra_level_set_cut.avs", Vec<std::string>("phi_crown_int","phi_crown_ext"), Ascii() );
 
-//    save( m, "aorta_Tetra_level_set_refinement_cut", Vec<std::string>("phi_crown_int","phi_crown_ext") );
-//    write_mesh_vtk( "aorta_Tetra_level_set_refinement_cut.vtk", m, Vec<std::string>("phi_crown_int","phi_crown_ext") );
-//    write_avs( m, "aorta_Tetra_level_set_refinement_cut.avs", Vec<std::string>("phi_crown_int","phi_crown_ext"), Ascii() );
+//    save( m, "RESULTS/aorta_Tetra_level_set_refinement_cut", Vec<std::string>("phi_crown_int","phi_crown_ext") );
+//    write_mesh_vtk( "RESULTS/aorta_Tetra_level_set_refinement_cut.vtk", m, Vec<std::string>("phi_crown_int","phi_crown_ext") );
+//    write_avs( m, "RESULTS/aorta_Tetra_level_set_refinement_cut.avs", Vec<std::string>("phi_crown_int","phi_crown_ext"), Ascii() );
 
-//    save( m, "aorta_Tetra_sep_mesh_level_set_cut", Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext") );
-//    write_mesh_vtk( "aorta_Tetra_sep_mesh_level_set_cut.vtk", m, Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext") );
-//    write_avs( m, "aorta_Tetra_sep_mesh_level_set_cut.avs", Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext"), Ascii() );
+//    save( m, "RESULTS/aorta_Tetra_sep_mesh_level_set_cut", Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext") );
+//    write_mesh_vtk( "RESULTS/aorta_Tetra_sep_mesh_level_set_cut.vtk", m, Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext") );
+//    write_avs( m, "RESULTS/aorta_Tetra_sep_mesh_level_set_cut.avs", Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext"), Ascii() );
 
-//    save( m, "aorta_Tetra_refinement_sep_mesh_level_set_cut", Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext") );
-//    write_mesh_vtk( "aorta_Tetra_refinement_sep_mesh_level_set_cut.vtk", m, Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext") );
-//    write_avs( m, "aorta_Tetra_refinement_sep_mesh_level_set_cut.avs", Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext"), Ascii() );
+//    save( m, "RESULTS/aorta_Tetra_refinement_sep_mesh_level_set_cut", Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext") );
+//    write_mesh_vtk( "RESULTS/aorta_Tetra_refinement_sep_mesh_level_set_cut.vtk", m, Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext") );
+//    write_avs( m, "RESULTS/aorta_Tetra_refinement_sep_mesh_level_set_cut.avs", Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext"), Ascii() );
 
-    save( m, "aorta_Tetra_refinement_level_set_cut", Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext") );
-    write_mesh_vtk( "aorta_Tetra_refinement_level_set_cut.vtk", m, Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext") );
-    write_avs( m, "aorta_Tetra_refinement_level_set_cut.avs", Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext"), Ascii() );
+    save( m, "RESULTS/aorta_Tetra_refinement_level_set_cut", Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext") );
+    write_mesh_vtk( "RESULTS/aorta_Tetra_refinement_level_set_cut.vtk", m, Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext") );
+    write_avs( m, "RESULTS/aorta_Tetra_refinement_level_set_cut.avs", Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext"), Ascii() );
 
     return 0;
 }

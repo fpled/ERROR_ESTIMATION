@@ -1,16 +1,16 @@
 //
 // C++ Interface: Construct_standard_force_fluxes_EESPT_PGD
 //
-// Description: construction standard des densites d'effort par la methode EESPT dans le cadre PGD
+// Description: construction standard des densites d'effort par la methode EESPT dans le cadre des methodes PGD
 //
 //
-// Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2017
+// Author: Pled Florent <florent.pled@univ-paris-est.fr>, (C) 2017
 //
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#ifndef Construct_standard_force_fluxes_EESPT_h
-#define Construct_standard_force_fluxes_EESPT_h
+#ifndef Construct_standard_force_fluxes_EESPT_PGD_h
+#define Construct_standard_force_fluxes_EESPT_PGD_h
 
 #include "EESPT.h"
 #include "../CONNECTIVITY/Calcul_connectivity.h"

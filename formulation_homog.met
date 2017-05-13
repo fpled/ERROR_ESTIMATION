@@ -11,14 +11,14 @@ import "VERIFICATION/Verification.met"
 import "Handbook_functions.met"
 import "INTEREST_QUANTITY/Interest_quantity.met"
 
-# Choix de la methode de construction de champs admissibles pour le calcul d'un estimateur de l'erreur globale : want_EET, want_SPET, want_EESPT := true
-# Calcul de l'erreur de discretisation : want_discretization_error := true
-# Choix de la version amelioree pour les methodes de construction de champs admissibles EET et/ou EESPT: want_enhancement := true
-# Calcul d'un estimateur de l'erreur locale sur une quantite d'interet : want_local_estimation := true
-# Calcul d'un estimateur ameliore de l'erreur locale sur une quantite d'interet : want_local_improvement_steklov, want_local_improvement_rayleigh := true
-# Calcul du probleme aux valeurs propres generalisees pour le calcul des constantes impliquees dans l'amelioration d'erreur locale : want_compute_eig := true
-# Calcul avec fonctions d'enrichissement (handbook) d'un estimateur de l'erreur locale sur une quantite d'interet : want_local_enrichment := true
-#------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Global error estimation method based on the construction of admissible fields: want_EET, want_SPET, want_EESPT := true
+# Computation of the true discretization error: want_discretization_error := true
+# Enhanced method for the construction of admissible fields in EET/EESPT methods: want_enhancement := true
+# Goal-oriented error estimation method based on extraction (adjoint-based) techniques: want_local_estimation := true
+# Improved bounding technique for the computation of local error bounds on quantities of interest: want_local_improvement_steklov, want_local_improvement_rayleigh := true
+# Solution of generalized eigenvalue problems for the computation of constants involved in improved bounding techniques: want_solve_eig := true
+# Local enrichment based on handbook techniques for goal-oriented error estimation method : want_local_enrichment := true
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 want_discretization_error := false
 want_method_EET := true
 want_method_SPET := false
@@ -27,7 +27,7 @@ want_enhancement := false
 want_local_estimation := false
 want_local_improvement_steklov := false
 want_local_improvement_rayleigh := false
-want_compute_eig := false
+want_solve_eig := false
 want_local_enrichment := false
 
 if not ( want_method_EET or want_method_EESPT )
@@ -35,60 +35,60 @@ if not ( want_method_EET or want_method_EESPT )
 if not want_local_estimation
     want_local_improvement_steklov = false
     want_local_improvement_rayleigh = false
-    want_compute_eig = false
+    want_solve_eig = false
     want_local_enrichment = false
 
-# Choix du type d'hypothese en 2D : plane stress, plane strain
+# Assumption for 2D plane problems: plane stress, plane strain
 #-------------------------------------------------------------
-#type_stress_2D := "plane stress"
-type_stress_2D := "plane strain"
+#hyp_plane_2D := "plane stress"
+hyp_plane_2D := "plane strain"
 
-# Choix de la methode de prise en compte des conditions aux limites de Dirichlet (en deplacement) pour le pb direct : lagrange, penalty
-#--------------------------------------------------------------------------------------------------------------------------------------
+# Method for the Dirichlet (displacement) boundary conditions imposed in the direct problem: lagrange, penalty
+#-------------------------------------------------------------------------------------------------------------
 boundary_condition := "penalty"
 
-# Choix de la base d'approximation : lagrange, hierarchical
-#----------------------------------------------------------
+# Approximation basis for the finite element analysis: lagrange, hierarchical
+#----------------------------------------------------------------------------
 base := "lagrange"
 
-# Choix de la base pour construire les densites d'effort : lagrange, hierarchical
-#--------------------------------------------------------------------------------
+# Approximation basis for the construction of tractions in EET and EESPT methods: lagrange, hierarchical
+#-------------------------------------------------------------------------------------------------------
 force_fluxes_base := "lagrange"
 
-# Choix de la base pour projeter les densites d'effort dans la methode EESPT : canonical, lagrange, hierarchical
-#---------------------------------------------------------------------------------------------------------------
+# Approximation basis for the projection of tractions in EESPT method: canonical, lagrange, hierarchical
+#-------------------------------------------------------------------------------------------------------
 projection_base_EESPT := "lagrange"
 
-# Choix de la base d'approximation pour construire le champ de contrainte admissible : lagrange, hierarchical
-#------------------------------------------------------------------------------------------------------------
+# Approximation basis for the construction of admissible fields: lagrange, hierarchical
+#--------------------------------------------------------------------------------------
 admissible_field_base := "lagrange"
 
-# Enrichissement du degre de l'analyse elements finis p -> p+k pour la resolution des problemes locaux elementaires/par patch
-#----------------------------------------------------------------------------------------------------------------------------
+# Refinement/Enrichment of the interpolation degree of the finite element analysis from p to p+k for the solution of local problems (defined over elements or patches of elements)
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 deg_k := 3
 
-# Choix de la technique d'integration : formal, gauss_num
-#--------------------------------------------------------
+# Integration technique: formal, gauss_num
+#-----------------------------------------
 integration_type := "gauss_num"
 
-# Pour la technique d'integration gauss_num, choix du langage pour l'integration des fonctions de degres eleves (p+k) : metil, cpp
-#---------------------------------------------------------------------------------------------------------------------------------
+# For gauss_num integration technique, langage for the integration of functions of high degree (interpolation of degree p+k) : metil, cpp
+#----------------------------------------------------------------------------------------------------------------------------------------
 integration_lang := "cpp"
 
-# Choix du degre polynomial pour integration des fonctions d'enrichissement (handbook)
-#-------------------------------------------------------------------------------------
+# Polynomial degree for the integration of enrichment (handbook) functions
+#-------------------------------------------------------------------------
 degre_poly_handbook := 1
 if want_local_enrichment
     degre_poly_handbook = 10
 
-# Hyptothese sur le jacobien : false, true
-#-----------------------------------------
+# Hypothesis on jacobian : false, true
+#-------------------------------------
 hyp_const_jac := true
 if integration_type == "gauss_num"
     hyp_const_jac = false
 
-# Formulation elastique lineaire
-#-------------------------------
+# Linear elasticity formulation
+#------------------------------
 class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     dep := Variable[[dim]]( interpolation="nodal", interpolation_base=base, default_value=0, unit="m", unknown=true, tex_name = "U" )
     f_nodal := Variable[[dim]]( interpolation="nodal", interpolation_base=base, default_value=0, unit="N/m", tex_name = "F_n" )
@@ -97,7 +97,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     density := Variable( interpolation="global", default_value=1, unit="kg/m^3", tex_name = "\\rho" )
     young := Variable( interpolation="global", default_value=1, unit="N/m^2", tex_name = "E" )
     poisson := Variable( interpolation="global", default_value=0.3, unit="1", tex_name = "\\nu" )
-    la := Variable( interpolation="global", default_value=lame_coeff_lambda( young.default_value, poisson.default_value, dim, type_stress_2D ), unit="N/m^2", tex_name = "\\lambda" )
+    la := Variable( interpolation="global", default_value=lame_coeff_lambda( young.default_value, poisson.default_value, dim, hyp_plane_2D ), unit="N/m^2", tex_name = "\\lambda" )
     mu := Variable( interpolation="global", default_value=lame_coeff_mu( young.default_value, poisson.default_value ), unit="N/m^2", tex_name = "\\mu" )
     epsilon := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="1", tex_name = "\\epsilon" )
     sigma := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma" )
@@ -170,7 +170,7 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     pre_epsilon_init := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="1", tex_name = "\\tilde{\\epsilon}_{\\text{init}}" )
     young_init := Variable( interpolation="elementary", default_value=1, unit="N/m^2", tex_name = "E_{\\text{init}}" )
     poisson_init := Variable( interpolation="elementary", default_value=0.3, unit="1", tex_name = "\\nu_{\\text{init}}" )
-    la_init := Variable( interpolation="elementary", default_value=lame_coeff_lambda( young_init.default_value, poisson_init.default_value, dim, type_stress_2D ), unit="N/m^2", tex_name = "\\lambda_{\\text{init}}" )
+    la_init := Variable( interpolation="elementary", default_value=lame_coeff_lambda( young_init.default_value, poisson_init.default_value, dim, hyp_plane_2D ), unit="N/m^2", tex_name = "\\lambda_{\\text{init}}" )
     mu_init := Variable( interpolation="elementary", default_value=lame_coeff_mu( young_init.default_value, poisson_init.default_value ), unit="N/m^2", tex_name = "\\mu_{\\text{init}}" )
     sigma_init := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma_{\\text{init}}" )
     sigma_von_mises_init := Variable( interpolation="elementary", unit="N/m^2", tex_name = "\\sigma_{\\text{Von Mises init}}" )
@@ -194,8 +194,8 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     is_on_skin := Variable( interpolation="nodal", interpolation_base=base, default_value=0, unit="", tex_name = "is on skin" )
     normal := Variable[[dim]]( interpolation="nodal", interpolation_base=base, default_value=0, unit="1", tex_name = "normal" )
 
-    # Definition de la formulation
-    # ----------------------------
+    # Definition of the formulation
+    # -----------------------------
     def formulation( e )
 
         if boundary_condition == "lagrange"
@@ -204,14 +204,14 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
 
         pos := e.pos
         epsilon = grad_sym( dep.expr )
-        sigma = hooke_iso( young.expr, poisson.expr, dim, type_stress_2D ) : epsilon.expr
+        sigma = hooke_iso( young.expr, poisson.expr, dim, hyp_plane_2D ) : epsilon.expr
         sigma_von_mises = von_mises( sigma.expr )
 
         epsilon_eig_expr := Mat[ Op, Sym[dim] ]()
         epsilon_eig_test := Mat[ Op, Sym[dim] ]()
         pos_dot_normal := Op()
         residual_eig_eq := Vec[ Op, dim*(dim+1)/2 ]()
-        if want_compute_eig and ( want_local_improvement_steklov or want_local_improvement_rayleigh )
+        if want_solve_eig and ( want_local_improvement_steklov or want_local_improvement_rayleigh )
             pe = &e
             for pc_, num_child in pe->children( 1 ), 0...
                 pc := child_cast( pc_ )
@@ -237,11 +237,11 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
             Galerkin_vector := Galerkin_vector_function( dim, OM, mu.expr, phi_handbook_pointwise_force_in_infinite_domain.expr, phi_handbook_pointwise_pre_epsilon_in_infinite_domain.expr, phi_handbook_pointwise_pre_sigma_in_infinite_domain.expr )
             dep_handbook_ := dep_handbook_function( e, Galerkin_vector, la.expr, mu.expr )
             epsilon_handbook = grad_sym( dep_handbook_ )
-            sigma_handbook = hooke_iso( young.expr, poisson.expr, dim, type_stress_2D ) : epsilon_handbook.expr
+            sigma_handbook = hooke_iso( young.expr, poisson.expr, dim, hyp_plane_2D ) : epsilon_handbook.expr
 
             dep_handbook_PUM = dep_handbook_PUM_function( e, dep_handbook_, phi_nodal_handbook.expr, base )
             epsilon_handbook_PUM = grad_sym( dep_handbook_PUM.expr )
-            sigma_handbook_PUM = hooke_iso( young.expr, poisson.expr, dim, type_stress_2D ) : epsilon_handbook_PUM.expr
+            sigma_handbook_PUM = hooke_iso( young.expr, poisson.expr, dim, hyp_plane_2D ) : epsilon_handbook_PUM.expr
             sigma_handbook_PUM_zone_2 = sigma_handbook_PUM.expr * phi_elem_handbook_zone_2.expr
 
             pe = &e
@@ -253,30 +253,30 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
         epsilon_tot = epsilon.expr + epsilon_handbook_PUM.expr
         sigma_tot = sigma.expr + sigma_handbook_PUM.expr
 
-        sigma_init = hooke_iso( young_init.expr, poisson_init.expr, dim, type_stress_2D ) : epsilon.expr
+        sigma_init = hooke_iso( young_init.expr, poisson_init.expr, dim, hyp_plane_2D ) : epsilon.expr
         sigma_von_mises_init = von_mises( sigma_init.expr )
 
         residual := sigma.expr : epsilon.test * dV - dot( f_vol.expr, dep.test ) * dV - dot( f_surf.expr, dep.test ) * dS - dot( f_nodal.expr, dep.test ) * dN
 
-        residual_extractor := - ( pre_sigma.expr + sigma_hooke_iso( pre_epsilon.expr, young.expr, poisson.expr, type_stress_2D ) ) : epsilon.test * dV - dot( pre_f_vol.expr, dep.test ) * dV - dot( pre_f_surf.expr, dep.test ) * dS - dot( pre_f_nodal.expr, dep.test ) * dN
+        residual_extractor := - ( pre_sigma.expr + sigma_hooke_iso( pre_epsilon.expr, young.expr, poisson.expr, hyp_plane_2D ) ) : epsilon.test * dV - dot( pre_f_vol.expr, dep.test ) * dV - dot( pre_f_surf.expr, dep.test ) * dS - dot( pre_f_nodal.expr, dep.test ) * dN
 
         residual_enrichment := sigma_handbook_PUM_zone_2.expr : epsilon.test * dV_handbook + dot( f_surf_handbook, dep.test ) * phi_elem_handbook_zone_1.expr * phi_surf_handbook_zone_12.expr * diF_handbook
 
-        residual_eig := sigma.expr : epsilon.test * dV_eig_B + ( sigma_hooke_iso( epsilon_eig_expr, young.expr, poisson.expr, type_stress_2D ) : epsilon_eig_test ) * phi_local_improvement_steklov.expr * dS_eig_A + sigma.expr : epsilon.test * pos_dot_normal * phi_local_improvement_rayleigh.expr * dS_eig_A
+        residual_eig := sigma.expr : epsilon.test * dV_eig_B + ( sigma_hooke_iso( epsilon_eig_expr, young.expr, poisson.expr, hyp_plane_2D ) : epsilon_eig_test ) * phi_local_improvement_steklov.expr * dS_eig_A + sigma.expr : epsilon.test * pos_dot_normal * phi_local_improvement_rayleigh.expr * dS_eig_A
         for n in 0 .. dim*(dim+1)/2
             residual_eig += residual_eig_eq[ n ] * dS_eig_C[ n ]
         
         return residual + residual_extractor + residual_enrichment + residual_eig
 
-# Nom du probleme
-#----------------
+# Problem name
+#-------------
 pb_name := "error_estimation_homog"
 
-# Liste de formulations
-#----------------------
+# List of formulations
+#---------------------
 formList := [ FormulationElasticity ]
 
-# Liste d'elements
+# List of elements
 #-----------------
 #elemList := [ Triangle ]
 #elemList := [ Quad ]
@@ -285,8 +285,8 @@ formList := [ FormulationElasticity ]
 elemList := [ Hexa ]
 #elemList := [ Tetra, Hexa ]
 
-# Liste de fonctions
-#-------------------
+# List of functions
+#------------------
 funcList_material_properties := [ calc_material_coefficients, calc_material_coefficients_init ]
 
 funcList_discretization_error := [ add_elem_norm_dep, add_elem_norm_dep_init, calc_elem_discretization_error ]
@@ -295,7 +295,7 @@ funcList_force_fluxes_standard_EET := [ construct_correspondance_node_to_vertex_
 
 funcList_force_fluxes_enhancement_EET := [ reset_nodal_vector_b_hat, calc_elem_vector_F_hat_enh, calc_elem_matrix_A_enh, calc_elem_vector_d_enh, calc_elem_matrix_L_enh, calc_elem_vector_b_enh, calc_glob_matrix_A_enh, calc_glob_vector_d_enh, calc_glob_matrix_L_enh, calc_glob_vector_b_enh, calc_glob_matrix_C_enh, calc_glob_vector_q_enh, calc_glob_matrix_P_enh ]
 
-funcList_SPET := [ construct_correspondance_node_to_vertex_node, calc_nb_points_elem, calc_nb_points_face, calc_pos_elem, calc_pos_face, calc_vertex_nodal_matrix_K, calc_vertex_nodal_vector_F, calc_elem_vector_E, calc_elem_error_estimate_init_SPET, add_elem_norm_dep, add_elem_norm_dep_init ]
+funcList_SPET := [ construct_correspondance_node_to_vertex_node, calc_nb_points_elem, calc_nb_points_face, calc_pos_elem, calc_pos_face, calc_vertex_nodal_matrix_K_hat, calc_vertex_nodal_vector_F_hat, calc_elem_vector_dep_hat, calc_elem_error_estimate_init_SPET, add_elem_norm_dep, add_elem_norm_dep_init ]
 
 funcList_force_fluxes_standard_EESPT := [ construct_correspondance_node_to_vertex_node, calc_face_ind_EESPT, calc_vertex_nodal_ind_EESPT, calc_vertex_nodal_matrix_A, calc_vertex_nodal_vector_R, remove_kernel, get_elem_deg, calc_skin_elem_matrix_B_p_1, calc_skin_elem_vector_Q_p_1, calc_vertex_nodal_vector_lambda_F_p_1, calc_vertex_nodal_vector_lambda_F_p_2, calc_vertex_nodal_matrix_M, calc_skin_elem_force_fluxes, check_elem_eq_force_fluxes ]
 
@@ -341,4 +341,4 @@ for func_name in funcList
     if not ( func_name in funcList_all_in_one )
         funcList_all_in_one.push_back( func_name )
 
-write_legacy_lmtpp_code( pb_name, formList, elemList, assume_const_jac_in_elems = hyp_const_jac, funcList = funcList_all_in_one, want_eig = want_compute_eig, integration_type = integration_type, degre_poly_handbook = degre_poly_handbook )
+write_legacy_lmtpp_code( pb_name, formList, elemList, assume_const_jac_in_elems = hyp_const_jac, funcList = funcList_all_in_one, want_eig = want_solve_eig, integration_type = integration_type, degre_poly_handbook = degre_poly_handbook )

@@ -182,11 +182,11 @@ def calc_elem_matrix_A_enh( list_f, rep )
         sym_dep_hat_expr := Vec[ Op ]()
         dep_hat_expr := e->new_variable( "\\hat{U}", interpolation_type = "enriched_nodal", deg = deg_p + deg_k, nb_dim = [ e->dim ], sym = sym_dep_hat_expr, interpolation_base = admissible_field_base )
         epsilon_hat_expr := e->grad_sym( dep_hat_expr )
-        sigma_hat_expr := sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_expr := sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
 
         e->assume_const_jac = true
         epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
-        sigma_hat_const_jac := sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_const_jac := sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         e->assume_const_jac = hyp_const_jac
         degre_poly := ( sigma_hat_const_jac : epsilon_hat_const_jac ).poly_deg( e->var_inter )
 
@@ -220,11 +220,11 @@ def calc_elem_matrix_A_enh( list_f, rep )
                                 A := Op( 0 )
                                 if integration_type == "gauss_num"
                                     if integration_lang == "metil"
-                                        A = e->gauss_num_integration( sigma_hat : eps_hooke_iso( sigma_hat_bis, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly )
+                                        A = e->gauss_num_integration( sigma_hat : eps_hooke_iso( sigma_hat_bis, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ), order_diff = degre_poly )
                                     else if integration_lang == "cpp"
-                                        A = ( sigma_hat : eps_hooke_iso( sigma_hat_bis, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) * e->jac
+                                        A = ( sigma_hat : eps_hooke_iso( sigma_hat_bis, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) * e->jac
                                 else if integration_type == "formal"
-                                    A = e->integration( sigma_hat : eps_hooke_iso( sigma_hat_bis, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly )
+                                    A = e->integration( sigma_hat : eps_hooke_iso( sigma_hat_bis, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ), order_diff = degre_poly )
                                 if integration_type == "gauss_num" and integration_lang == "cpp"
                                     file_ <<< "        for (unsigned n=0; n<poids.size(); ++n) {"
                                     file_ <<< "            Vec<double> var_inter( valeurs[ n ] );"
@@ -273,7 +273,7 @@ def calc_elem_vector_d_enh( list_f, rep )
         sym_dep_hat_expr := Vec[ Op ]()
         dep_hat_expr := e->new_variable( "\\hat{U}", interpolation_type = "enriched_nodal", deg = deg_p + deg_k, nb_dim = [ e->dim ], sym = sym_dep_hat_expr, interpolation_base = admissible_field_base )
         epsilon_hat_expr := e->grad_sym( dep_hat_expr )
-        sigma_hat_expr := sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_expr := sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         sym_dep_hat := Vec[ Op ]()
         for i in 0 .. sym_dep_hat_expr.size
             sy := Op()
@@ -284,11 +284,11 @@ def calc_elem_vector_d_enh( list_f, rep )
 
         e->assume_const_jac = true
         epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
-        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
-        sigma_hat_const_jac := sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_const_jac := sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         e->assume_const_jac = hyp_const_jac
-        degre_poly := ( sigma_hat_const_jac : eps_hooke_iso( ( sigma_const_jac - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) - sigma_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ).poly_deg( e->var_inter )
+        degre_poly := ( sigma_hat_const_jac : eps_hooke_iso( ( sigma_const_jac - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) - sigma_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ).poly_deg( e->var_inter )
         if want_local_enrichment
             degre_poly = degre_poly_handbook
 
@@ -311,11 +311,11 @@ def calc_elem_vector_d_enh( list_f, rep )
                     D := Op( 0 )
                     if integration_type == "gauss_num"
                         if integration_lang == "metil"
-                            D = e->gauss_num_integration( sigma_hat_enh : eps_hooke_iso( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) - sigma_hat, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly )
+                            D = e->gauss_num_integration( sigma_hat_enh : eps_hooke_iso( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) - sigma_hat, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ), order_diff = degre_poly )
                         else if integration_lang == "cpp"
-                            D = ( sigma_hat_enh : eps_hooke_iso( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) - sigma_hat, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) * e->jac
+                            D = ( sigma_hat_enh : eps_hooke_iso( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) - sigma_hat, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) * e->jac
                     else if integration_type == "formal"
-                        D = e->integration( sigma_hat_enh : eps_hooke_iso( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) - sigma_hat, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), order_diff = degre_poly )
+                        D = e->integration( sigma_hat_enh : eps_hooke_iso( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) - sigma_hat, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ), order_diff = degre_poly )
                     if integration_type == "gauss_num" and integration_lang == "cpp"
                         file_ <<< "        for (unsigned n=0; n<poids.size(); ++n) {"
                         file_ <<< "            Vec<double> var_inter( valeurs[ n ] );"

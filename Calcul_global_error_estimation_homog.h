@@ -32,7 +32,7 @@ using namespace std;
 /// Calcul d'un estimateur d'erreur globale
 /// ---------------------------------------
 template<class TF, class TM, class T, class TV, class TVV>
-void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const string &method, const unsigned &cost_function, const T &penalty_val_N, const string &solver, const string &solver_minimisation, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const string &geometric_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, T &theta, T &theta_init, TV &theta_elem, TV &theta_elem_init, TVV &dep_hat, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool verif_eq_force_fluxes = false, const T tol_eq_force_fluxes = 1e-6, const bool verif_solver = false, const T tol_solver = 1e-6, const bool verif_solver_enhancement = false, const T tol_solver_enhancement = 1e-6, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_solver_minimisation_enhancement = false, const T tol_solver_minimisation_enhancement = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const bool disp = false ) {
+void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const string &method, const unsigned &cost_function, const T &penalty_val_N, const string &solver, const string &solver_minimisation, const bool &enhancement_with_geometric_criterium, const bool &enhancement_with_estimator_criterium, const string &geometric_criterium, const T &val_geometric_criterium, const T &val_estimator_criterium, T &theta, T &theta_init, TV &theta_elem, TV &theta_elem_init, TVV &dep_hat, const bool verif_compatibility_conditions = false, const T tol_compatibility_conditions = 1e-6, const bool verif_eq_force_fluxes = false, const T tol_eq_force_fluxes = 1e-6, const bool verif_solver = false, const T tol_solver = 1e-6, const bool verif_solver_enhancement = false, const T tol_solver_enhancement = 1e-6, const bool verif_solver_minimisation = false, const T tol_solver_minimisation = 1e-6, const bool verif_solver_minimisation_enhancement = false, const T tol_solver_minimisation_enhancement = 1e-6, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool want_local_enrichment = false, const unsigned &iter = 0, const bool disp = false ) {
     
     theta = 0.;
     theta_init = 0.;
@@ -43,7 +43,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
     
     if ( method.find("EET") != string::npos ) {
         
-        display_method( pb, "EET", cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, solver, solver_minimisation );
+        display_method( pb, "EET", cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, solver, solver_minimisation, iter );
         
         TicToc t_EET;
         t_EET.start();
@@ -106,7 +106,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// Construction d'un champ de contrainte admissible & Calcul d'un estimateur d'erreur globale
             /// ------------------------------------------------------------------------------------------
             
-            calcul_error_estimate_prolongation_condition( m, f, pb, "EET", theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error );
+            calcul_error_estimate_prolongation_condition( m, f, pb, "EET", theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error, disp );
             
             if ( enhancement_with_estimator_criterium ) {
                 
@@ -168,7 +168,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// Construction d'un champ de contrainte admissible & Calcul d'un estimateur d'erreur globale
             /// ------------------------------------------------------------------------------------------
             
-            calcul_error_estimate_prolongation_condition( m, f, pb, "EET", theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error );
+            calcul_error_estimate_prolongation_condition( m, f, pb, "EET", theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error, disp );
             
         }
         
@@ -183,15 +183,52 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
     
     if ( method.find("SPET") != string::npos ) {
         
-        display_method( pb, "SPET", cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, solver, solver_minimisation );
+        display_method( pb, "SPET", cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, solver, solver_minimisation, iter );
         
         TicToc t_SPET;
         t_SPET.start();
         
-        /// Calcul d'un estimateur d'erreur globale
-        /// ---------------------------------------
+        /// Construction de la table de connectivite et des contraintes cinematiques sur chaque patch
+        /// -----------------------------------------------------------------------------------------
+        Vec<unsigned> connect_node_to_vertex_node;
+        unsigned nb_vertex_nodes;
+        Vec< Vec<unsigned> > elem_list_vertex_node;
+        Vec< Vec<unsigned> > face_type;
         
-        calcul_error_estimate_partition_unity( m, f, pb, solver, "SPET", theta, theta_init, theta_elem, theta_elem_init, dep_hat, verif_solver, tol_solver, want_global_discretization_error, want_local_discretization_error, want_local_enrichment );
+        Vec<unsigned> nb_points_elem;
+        Vec<unsigned> nb_points_patch;
+        Vec< Vec< Vec<unsigned> > > patch_elem;
+        Vec< Vec< Vec<unsigned> > > constrained_points_list_patch;
+        Vec<unsigned> nb_constraints_patch;
+        set_patch( m, f, nb_vertex_nodes, face_type, connect_node_to_vertex_node, elem_list_vertex_node, patch_elem, nb_points_elem, nb_points_patch, constrained_points_list_patch, nb_constraints_patch );
+        
+        /// Resolution des problemes locaux auto-equilibres par patch
+        /// ---------------------------------------------------------
+        
+        Vec< Mat<T, Sym<> > > K_hat;
+        Vec< Vec<T> > F_hat;
+        
+        construct_K_hat( m, f, nb_vertex_nodes, connect_node_to_vertex_node, elem_list_vertex_node, patch_elem, nb_points_patch, constrained_points_list_patch, K_hat );
+        
+        construct_F_hat( m, f, pb, nb_vertex_nodes, face_type, connect_node_to_vertex_node, elem_list_vertex_node, patch_elem, nb_points_patch, constrained_points_list_patch, F_hat, want_local_enrichment );
+        
+        face_type.free();
+        constrained_points_list_patch.free();
+        
+        construct_dep_hat( m, f, solver, nb_vertex_nodes, connect_node_to_vertex_node, elem_list_vertex_node, patch_elem, nb_points_patch, nb_points_elem, K_hat, F_hat, dep_hat, verif_solver, tol_solver );
+        
+        connect_node_to_vertex_node.free();
+        elem_list_vertex_node.free();
+        patch_elem.free();
+        nb_points_patch.free();
+        nb_points_elem.free();
+        K_hat.free();
+        F_hat.free();
+        
+        /// Construction d'un champ de contrainte admissible & Calcul d'un estimateur d'erreur globale
+        /// ------------------------------------------------------------------------------------------
+        
+        calcul_error_estimate_partition_unity( m, f, pb, "SPET", theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error, disp );
         
         t_SPET.stop();
         cout << "temps de calcul de la methode d'estimation d'erreur globale SPET = " << t_SPET.res << endl << endl;
@@ -204,7 +241,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
     
     if ( method.find("EESPT") != string::npos ) {
         
-        display_method( pb, "EESPT", cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, solver, solver_minimisation );
+        display_method( pb, "EESPT", cost_function, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, solver, solver_minimisation, iter );
         
         TicToc t_EESPT;
         t_EESPT.start();
@@ -266,7 +303,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// Construction d'un champ de contrainte admissible & Calcul d'un estimateur d'erreur globale
             /// ------------------------------------------------------------------------------------------
             
-            calcul_error_estimate_prolongation_condition( m, f, pb, "EESPT", theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error );
+            calcul_error_estimate_prolongation_condition( m, f, pb, "EESPT", theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error, disp );
             
             if ( enhancement_with_estimator_criterium ) {
                 
@@ -328,7 +365,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// Construction d'un champ de contrainte admissible & Calcul d'un estimateur d'erreur globale
             /// ------------------------------------------------------------------------------------------
             
-            calcul_error_estimate_prolongation_condition( m, f, pb, "EESPT", theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error );
+            calcul_error_estimate_prolongation_condition( m, f, pb, "EESPT", theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error, disp );
             
         }
         

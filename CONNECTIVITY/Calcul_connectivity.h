@@ -19,7 +19,7 @@ using namespace std;
 
 /// Compteur du nb de faces connectees a l'element n du maillage : child_cpt[ n ]
 /// Liste des faces connectees a l'element n du maillage : child_list[ n ]
-/// --------------------------------------------------------------------------------
+/// -----------------------------------------------------------------------------
 template<class TM>
 void construct_child( TM &m, Vec<unsigned> &child_cpt, Vec< Vec<unsigned> > &child_list, const bool display = false ) {
     child_cpt.resize( m.elem_list.size() );
@@ -41,7 +41,7 @@ void construct_child( TM &m, Vec<unsigned> &child_cpt, Vec< Vec<unsigned> > &chi
 
 /// Compteur du nb d'elements connectes au noeud i du maillage : elem_cpt_node[ i ]
 /// Liste des elements connectes au noeud i du maillage : elem_list_node[ i ]
-/// --------------------------------------------------------------------------------
+/// -------------------------------------------------------------------------------
 template<class TM>
 void construct_elems_connected_to_node( const TM &m, Vec<unsigned> &elem_cpt_node, Vec< Vec<unsigned> > &elem_list_node, const bool disp = false ) {
     elem_cpt_node.resize( m.node_list.size() );
@@ -61,7 +61,7 @@ void construct_elems_connected_to_node( const TM &m, Vec<unsigned> &elem_cpt_nod
 
 /// Compteur du nb de faces connectees au noeud i du maillage : face_cpt_node[ i ]
 /// Liste des faces connectees au noeud i du maillage : face_list_node[ i ]
-/// -------------------------------------------------------------------------------
+/// ------------------------------------------------------------------------------
 template<class TM>
 void construct_faces_connected_to_node( TM &m, Vec<unsigned> &face_cpt_node, Vec< Vec<unsigned> > &face_list_node, const bool disp = false ) {
     face_cpt_node.resize( m.node_list.size() );
@@ -82,7 +82,7 @@ void construct_faces_connected_to_node( TM &m, Vec<unsigned> &face_cpt_node, Vec
 
 /// Compteur du nb de noeuds connectes a l'element n du maillage : node_cpt_elem[ n ]
 /// Liste des noeuds connectes a l'element n du maillage : node_list_elem[ n ]
-/// ----------------------------------------------------------------------------------
+/// ---------------------------------------------------------------------------------
 template<class TM>
 void construct_nodes_connected_to_elem( const TM &m, Vec<unsigned> &node_cpt_elem, Vec< Vec<unsigned> > &node_list_elem, const bool disp = false ) {
     node_cpt_elem.resize( m.elem_list.size() );
@@ -102,7 +102,7 @@ void construct_nodes_connected_to_elem( const TM &m, Vec<unsigned> &node_cpt_ele
 
 /// Compteur du nb de noeuds connectes a la face k du maillage : node_cpt_face[ k ]
 /// Liste des noeuds connectes a la face k du maillage : node_list_face[ k ]
-/// --------------------------------------------------------------------------------
+/// -------------------------------------------------------------------------------
 template<class TM>
 void construct_nodes_connected_to_face( TM &m, Vec<unsigned> &node_cpt_face, Vec< Vec<unsigned> > &node_list_face, const bool disp  = false ) {
     node_cpt_face.resize( m.sub_mesh(Number<1>()).elem_list.size() );
@@ -149,7 +149,7 @@ unsigned match_node_to_vertex_node( const TM &m, Vec<bool> &correspondance_node_
 
 /// Compteur du nb d'elements connectes au noeud sommet j du maillage : elem_cpt_vertex_node[ j ]
 /// Liste des elements connectes au noeud i du maillage : elem_list_vertex_node[ j ]
-/// ----------------------------------------------------------------------------------------------
+/// ---------------------------------------------------------------------------------------------
 template<class TM>
 void construct_elems_connected_to_vertex_node( const TM &m, const unsigned &nb_vertex_nodes, const Vec<bool> &correspondance_node_to_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, Vec<unsigned> &elem_cpt_vertex_node, Vec< Vec<unsigned> > &elem_list_vertex_node, const bool disp = false ) {
     elem_cpt_vertex_node.resize( nb_vertex_nodes );
@@ -172,7 +172,7 @@ void construct_elems_connected_to_vertex_node( const TM &m, const unsigned &nb_v
 
 /// Compteur du nb de faces connectees au noeud sommet j du maillage : face_cpt_vertex_node[ j ]
 /// Liste des faces connectees au noeud i du maillage : face_list_vertex_node[ j ]
-/// ---------------------------------------------------------------------------------------------
+/// --------------------------------------------------------------------------------------------
 template<class TM>
 void construct_faces_connected_to_vertex_node( TM &m, const unsigned &nb_vertex_nodes, const Vec<bool> &correspondance_node_to_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, Vec<unsigned> &face_cpt_vertex_node, Vec< Vec<unsigned> > &face_list_vertex_node, const bool disp = false ) {
     face_cpt_vertex_node.resize( nb_vertex_nodes );
@@ -196,7 +196,7 @@ void construct_faces_connected_to_vertex_node( TM &m, const unsigned &nb_vertex_
 
 /// Compteur du nb de noeuds sommets connectes a l'element n du maillage : vertex_node_cpt_elem[ n ]
 /// Liste des noeuds sommets connectes a l'element n du maillage : vertex_node_list_elem[ n ]
-/// -------------------------------------------------------------------------------------------------
+/// ------------------------------------------------------------------------------------------------
 template<class TM>
 void construct_vertex_nodes_connected_to_elem( const TM &m, const Vec<bool> &correspondance_node_to_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, Vec<unsigned> &vertex_node_cpt_elem, Vec< Vec<unsigned> > &vertex_node_list_elem, const bool disp = false ) {
     vertex_node_cpt_elem.resize( m.elem_list.size() );
@@ -219,7 +219,7 @@ void construct_vertex_nodes_connected_to_elem( const TM &m, const Vec<bool> &cor
 
 /// Compteur du nb de noeuds sommets connectes a la face k du maillage : vertex_node_cpt_face[ k ]
 /// Liste des noeuds sommets connectes a la face k du maillage : vertex_node_list_face[ k ]
-/// -----------------------------------------------------------------------------------------------
+/// ----------------------------------------------------------------------------------------------
 template<class TM>
 void construct_vertex_nodes_connected_to_face( TM &m, const Vec<bool> &correspondance_node_to_vertex_node, const Vec<unsigned> &connect_node_to_vertex_node, Vec<unsigned> &vertex_node_cpt_face, Vec< Vec<unsigned> > &vertex_node_list_face, const bool disp = false ) {
     vertex_node_cpt_face.resize( m.sub_mesh(Number<1>()).elem_list.size() );

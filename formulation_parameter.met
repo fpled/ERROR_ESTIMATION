@@ -1,15 +1,15 @@
 import "LMT/LmtppFormulation.met"
 import "PGD/PGD.met"
 
-# Formulation associee a l'espace des parametres
-#-----------------------------------------------
+# Parameter formulation
+#----------------------
 class FormulationParam[ dim ] inherits LmtppFormulation[ dim ]
     dep     := Variable[[dim]]( interpolation="nodal", interpolation_base="lagrange", default_value=0, unit="m", unknown=true, tex_name = "U" )
     fun     := Variable( interpolation="nodal", interpolation_base="lagrange", default_value=0, unit="", tex_name = "f" )
     phi     := Variable( interpolation="global", default_value=0, unit="", tex_name = "\\phi" )
 
-    # Definition de la formulation
-    # ----------------------------
+    # Definition of the formulation
+    # -----------------------------
     def formulation( e )
 
         pos := e.pos
@@ -18,15 +18,15 @@ class FormulationParam[ dim ] inherits LmtppFormulation[ dim ]
 
         return residual
 
-# Nom du probleme
-#----------------
+# Problem name
+#-------------
 pb_name := "parameter"
 
-# Liste de formulations
-#----------------------
+# List of formulations
+#---------------------
 formList := [ FormulationParam ]
 
-# Liste d'elements
+# List of elements
 #-----------------
 elemList := [ Bar ]
 

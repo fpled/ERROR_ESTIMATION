@@ -49,8 +49,8 @@ struct Calcul_Elem_Vector_F_hat {
     }
 };
 
-/// Construction de la matrice sigma_hat et Calcul d'un estimateur d'erreur globale au carre theta
-/// ----------------------------------------------------------------------------------------------
+/// Construction de la matrice sigma_hat & Calcul d'un estimateur d'erreur globale au carre theta
+/// ---------------------------------------------------------------------------------------------
 template<class TE, class TM, class TF, class TTWW, class TTVV, class S, class TTV, class TT>
 void calc_elem_error_estimate_EET_EESPT( TE &elem, const TM &m, const TF &f, const TTWW &vectors, const Vec<unsigned> &indices, const TTVV &dep_hat, const S &method, TTV &theta_elem, TT &theta ) {}
 
@@ -73,8 +73,11 @@ struct Calc_Elem_Error_Estimate_EET_EESPT {
     }
 };
 
+template<class TE, class TM, class TF, class TTWW, class S, class TTV, class TT>
+void calc_elem_error_estimate_FE( TE &elem, const TM &m, const TF &f, const TTWW &vectors, const TTWW &new_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &new_indices, const S &method, TTV &theta_elem, TT &theta ) {}
+
 template<class TV, class TVV>
-struct Calc_Elem_Error_Estimate_EET_EESPT_FE {
+struct Calc_Elem_Error_Estimate_FE {
     const TVV* dep;
     const Vec< Vec<unsigned> >* elem_group;
     const string* method;
@@ -90,11 +93,14 @@ struct Calc_Elem_Error_Estimate_EET_EESPT_FE {
             elem.ecre_elem_EET = 0.0;
             elem.theta_elem_EET = 0.0;
         }
-        if ( *method == "EESPT" ) {
+        else if ( *method == "EESPT" ) {
             elem.ecre_elem_EESPT = 0.0;
             elem.theta_elem_EESPT = 0.0;
         }
-        calc_elem_error_estimate_EET_EESPT_EF( elem, m, f, f.vectors, vectors, ind, ind, *method, *theta_elem, theta );
+        else if ( *method == "SPET" ) {
+            elem.theta_elem_SPET = 0.0;
+        }
+        calc_elem_error_estimate_FE( elem, m, f, f.vectors, vectors, ind, ind, *method, *theta_elem, theta );
     }
 };
 

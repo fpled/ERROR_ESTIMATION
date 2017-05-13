@@ -97,7 +97,7 @@ void calcul_standard_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
 /// Calcul ameliore des bornes d'erreur sur la quantite d'interet locale (avec ou sans introduction de sigma_hat_m)
 /// ---------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T, class TVV, class Pvec>
-void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, const TF &f_adjoint, const string &structure, const unsigned &deg_p, const string &method, const string &method_adjoint, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const string &interest_quantity, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool &spread_cut, const T &theta, const T &theta_adjoint, const TVV &dep_hat, const TVV &dep_adjoint_hat, const T &I_h, const T &I_hh, const string &integration_k, const unsigned &integration_nb_points, const bool want_introduction_sigma_hat_m = true, const bool want_solve_eig_local_improvement = false, const bool use_mask_eig_local_improvement = false, const bool display_vtu_lambda = false, const bool display_vtu_adjoint_lambda = false, const string &prefix = "paraview_direct", const string &prefix_adjoint = "paraview_adjoint", const bool disp = false ) {
+void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, const TF &f_adjoint, const string &structure, const unsigned &deg_p, const string &method, const string &method_adjoint, const string &local_improvement, const string &shape, const T &k_min, const T &k_max, const T &k_opt, const string &interest_quantity, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &radius_Ri, const T &radius_Re, const bool &spread_cut, const T &theta, const T &theta_adjoint, const TVV &dep_hat, const TVV &dep_adjoint_hat, const T &I_h, const T &I_hh, const string &integration_k, const unsigned &integration_nb_points, const bool want_introduction_sigma_hat_m = true, const bool want_solve_eig_local_improvement = false, const bool use_mask_eig_local_improvement = false, const bool display_vtu_lambda = false, const bool display_vtu_adjoint_lambda = false, const string &filename = "paraview_direct", const string &filename_adjoint = "paraview_adjoint", const bool disp = false ) {
     
     static const unsigned dim = TM::dim;
     
@@ -513,26 +513,26 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
         calcul_error_estimate_lambda( m, m_lambda_min, f, f_lambda_min, "direct", method, shape, k_min, theta_lambda_min, dep_hat, dep_hat_lambda_min );
         calcul_error_estimate_lambda( m, m_lambda_max, f, f_lambda_max, "direct", method, shape, k_max, theta_lambda_max, dep_hat, dep_hat_lambda_max );
         
-        const string prefix_lambda_min = prefix + "_lambda_min_" + to_string( k_min );
-        const string prefix_lambda_max = prefix + "_lambda_max_" + to_string( k_max );
+        const string filename_lambda_min = filename + "_lambda_min_" + to_string( k_min );
+        const string filename_lambda_max = filename + "_lambda_max_" + to_string( k_max );
         if ( display_vtu_lambda ) {
-            display( m_lambda_min, prefix_lambda_min );
-            display( m_lambda_max, prefix_lambda_max );
+            display( m_lambda_min, filename_lambda_min );
+            display( m_lambda_max, filename_lambda_max );
         }
         else {
-            save( m_lambda_min, prefix_lambda_min );
-            save( m_lambda_max, prefix_lambda_max );
+            save( m_lambda_min, filename_lambda_min );
+            save( m_lambda_max, filename_lambda_max );
         }
     }
     else if ( local_improvement == "rayleigh" ) {
         dep_hat_lambda_opt.resize( m_lambda_opt.elem_list.size() );
         calcul_error_estimate_lambda( m, m_lambda_opt, f, f_lambda_opt, "direct", method, shape, k_opt, theta_lambda_opt, dep_hat, dep_hat_lambda_opt );
         
-        const string prefix_lambda_opt = prefix + "_lambda_opt_" + to_string( k_opt );
+        const string filename_lambda_opt = filename + "_lambda_opt_" + to_string( k_opt );
         if ( display_vtu_lambda )
-            display( m_lambda_opt, prefix_lambda_opt );
+            display( m_lambda_opt, filename_lambda_opt );
         else
-            save( m_lambda_opt, prefix_lambda_opt );
+            save( m_lambda_opt, filename_lambda_opt );
     }
     
     Vec< Vec<T> > dep_adjoint_hat_lambda_min, dep_adjoint_hat_lambda_opt;
@@ -541,21 +541,21 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
         dep_adjoint_hat_lambda_min.resize( m_adjoint_lambda_min.elem_list.size() );
         calcul_error_estimate_lambda( m_adjoint, m_adjoint_lambda_min, f_adjoint, f_adjoint_lambda_min, "adjoint", method_adjoint, shape, k_min, theta_adjoint_lambda_min, dep_adjoint_hat, dep_adjoint_hat_lambda_min );
         
-        const string prefix_adjoint_lambda_min = prefix_adjoint + "_lambda_min_" + to_string( k_min );
+        const string filename_adjoint_lambda_min = filename_adjoint + "_lambda_min_" + to_string( k_min );
         if ( display_vtu_adjoint_lambda )
-            display( m_adjoint_lambda_min, prefix_adjoint_lambda_min );
+            display( m_adjoint_lambda_min, filename_adjoint_lambda_min );
         else
-            save( m_adjoint_lambda_min, prefix_adjoint_lambda_min );
+            save( m_adjoint_lambda_min, filename_adjoint_lambda_min );
     }
     else if ( local_improvement == "rayleigh" ) {
         dep_adjoint_hat_lambda_opt.resize( m_adjoint_lambda_opt.elem_list.size() );
         calcul_error_estimate_lambda( m_adjoint, m_adjoint_lambda_opt, f_adjoint, f_adjoint_lambda_opt, "adjoint", method, shape, k_opt, theta_adjoint_lambda_opt, dep_adjoint_hat, dep_adjoint_hat_lambda_opt );
         
-        string prefix_adjoint_lambda_opt = prefix_adjoint + "_lambda_opt_" + to_string( k_opt );
+        string filename_adjoint_lambda_opt = filename_adjoint + "_lambda_opt_" + to_string( k_opt );
         if ( display_vtu_adjoint_lambda )
-            display( m_adjoint_lambda_opt, prefix_adjoint_lambda_opt );
+            display( m_adjoint_lambda_opt, filename_adjoint_lambda_opt );
         else
-            save( m_adjoint_lambda_opt, prefix_adjoint_lambda_opt );
+            save( m_adjoint_lambda_opt, filename_adjoint_lambda_opt );
     }
     
     T gamma;

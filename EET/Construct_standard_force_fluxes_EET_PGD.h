@@ -1,10 +1,10 @@
 //
 // C++ Interface: Construct_standard_force_fluxes_EET_PGD
 //
-// Description: construction standard des densites d'effort par la methode EET dans le cadre PGD
+// Description: construction standard des densites d'effort par la methode EET dans le cadre des methodes PGD
 //
 //
-// Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2017
+// Author: Pled Florent <florent.pled@univ-paris-est.fr>, (C) 2017
 //
 // Copyright: See COPYING file that comes with this distribution
 //

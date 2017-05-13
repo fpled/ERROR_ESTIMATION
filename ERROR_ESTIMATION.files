@@ -39,6 +39,12 @@ EET/EET.met
 ENHANCEMENT/Construct_enhanced_force_fluxes_EET_EESPT.h
 ENHANCEMENT/Enhancement_EET_EESPT.h
 ENHANCEMENT/Enhancement_EET_EESPT.met
+SPET/Calcul_error_estimate_partition_unity_PGD.h
+SPET/Construct_F_hat.h
+SPET/Construct_K_hat.h
+SPET/Construct_dep_hat.h
+SPET/Construct_kinematic_constraints_patch.h
+SPET/Set_patch.h
 generated/Bar.1.met
 generated/Bar.2.met
 generated/Bar.3.met

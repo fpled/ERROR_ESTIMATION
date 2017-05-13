@@ -104,14 +104,14 @@ e.pos_nodes[3] = [110 22] # 33
 
 # young := 1
 # poisson := 0.3
-# type_stress_2D := "plane stress"
+# hyp_plane_2D := "plane stress"
 
 # pos_handbook := Vec[ Op, dim ]()
 # for d in 0 .. dim
     # pos_handbook[ d ] = 0.2
 # OM := e.pos - pos_handbook
-# mu := lame_coeff_lambda( young, poisson, dim, type_stress_2D )
-# la := lame_coeff_lambda( young, poisson, dim, type_stress_2D )
+# mu := lame_coeff_lambda( young, poisson, dim, hyp_plane_2D )
+# la := lame_coeff_lambda( young, poisson, dim, hyp_plane_2D )
 # sym_phi := Vec[Op]()
 # phi_nodal_handbook := e.new_variable( "\\phi", nb_dim = [1], sym = sym_phi, interpolation_type = "nodal" )
 # base := "lagrange"
@@ -133,13 +133,13 @@ e.pos_nodes[3] = [110 22] # 33
 # Galerkin_vector := Galerkin_vector_function( dim, OM, mu,phi_handbook_pointwise_force_in_infinite_domain, phi_handbook_pointwise_pre_epsilon_in_infinite_domain, phi_handbook_pointwise_pre_sigma_in_infinite_domain )
 # dep_handbook_ := dep_handbook_function( e, Galerkin_vector, la, mu )
 # epsilon_handbook := e.grad_sym( dep_handbook_ )
-# # sigma_handbook := sigma_hooke_iso( epsilon_handbook, young, poisson, type_stress_2D )
-# sigma_handbook := hooke_iso( young, poisson, dim, type_stress_2D ) : epsilon_handbook
+# # sigma_handbook := sigma_hooke_iso( epsilon_handbook, young, poisson, hyp_plane_2D )
+# sigma_handbook := hooke_iso( young, poisson, dim, hyp_plane_2D ) : epsilon_handbook
 
 # dep_handbook_PUM := dep_handbook_PUM_function( e, dep_handbook_, phi_nodal_handbook, base )
 # epsilon_handbook_PUM := e.grad_sym( dep_handbook_PUM )
-# # sigma_handbook_PUM := sigma_hooke_iso( epsilon_handbook_PUM, young, poisson, type_stress_2D )
-# sigma_handbook_PUM := hooke_iso( young, poisson, dim, type_stress_2D ) : epsilon_handbook_PUM
+# # sigma_handbook_PUM := sigma_hooke_iso( epsilon_handbook_PUM, young, poisson, hyp_plane_2D )
+# sigma_handbook_PUM := hooke_iso( young, poisson, dim, hyp_plane_2D ) : epsilon_handbook_PUM
 
 # GM := e.pos - e.barycenter
 # for face_ in e.children( 1 )
@@ -1279,7 +1279,7 @@ for gamma_ in e.children( 1 )
 
 #young := 1
 #poisson := 0.3
-#type_stress_2D := "plane stress"
+#hyp_plane_2D := "plane stress"
 #admissible_field_base := "canonical"
 #integration_type := "gauss_num"
 #integration_lang := "metil"
@@ -1302,15 +1302,15 @@ for gamma_ in e.children( 1 )
 #dep_hat_test := e.new_variable( "{\\hat{U}}^{\\ast}", interpolation_type = "canonical", deg = deg_p + deg_k, nb_dim = [ e.dim ], sym = sym_dep_hat_test )
 #epsilon_hat_expr := e.grad_sym( dep_hat_expr )
 #epsilon_hat_test := e.grad_sym( dep_hat_test )
-#sigma_hat_expr := sigma_hooke_iso( epsilon_hat_expr, young, poisson, type_stress_2D )
-#H := hooke_iso( young, poisson, e.dim, type_stress_2D )
+#sigma_hat_expr := sigma_hooke_iso( epsilon_hat_expr, young, poisson, hyp_plane_2D )
+#H := hooke_iso( young, poisson, e.dim, hyp_plane_2D )
 #H.display_tex()
 #infon H
 
 # H_simplified := Tensor[ Float96, [e.dim,e.dim,e.dim,e.dim] ]( H )
 # infon H_simplified
 # eps := Mat[ Op, Gen[e.dim,e.dim] ]( function = x => symbol("e_{$(x)}") )
-# s := sigma_hooke_iso( eps, young, poisson, type_stress_2D )
+# s := sigma_hooke_iso( eps, young, poisson, hyp_plane_2D )
 # s.display_tex()
 # -> sigma.diff( epsilon )
 # for ind_s, val_s in s
@@ -1329,7 +1329,7 @@ for gamma_ in e.children( 1 )
 
 #e.assume_const_jac = true
 #epsilon_hat_test_const_jac := e.grad_sym( dep_hat_test )
-#sigma_hat_expr_const_jac := sigma_hooke_iso( e.grad_sym( dep_hat_expr ), young, poisson, type_stress_2D )
+#sigma_hat_expr_const_jac := sigma_hooke_iso( e.grad_sym( dep_hat_expr ), young, poisson, hyp_plane_2D )
 #e.assume_const_jac = hyp_const_jac
 #degre_poly := ( sigma_hat_expr_const_jac : epsilon_hat_test_const_jac ).poly_deg( e.var_inter )
 #infon degre_poly

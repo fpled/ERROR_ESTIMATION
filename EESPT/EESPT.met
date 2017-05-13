@@ -127,7 +127,7 @@ def calc_vertex_nodal_vector_R( list_f, rep )
         e := child_cast( f->pe )
         file_name := "calc_vertex_nodal_vector_R_$(f->name).$(e->dim).$(e->name).h"
         file_names.push_back( file_name )
-        file_ := File( rep + "/calc_vertex_nodal_vector_R_$(f->name).$(e->dim).$(e->name).h", "w")
+        file_ := File( rep + "/calc_vertex_nodal_vector_R_$(f->name).$(e->dim).$(e->name).h", "w" )
         file_ <<< "#ifndef calc_vertex_nodal_vector_R_$(f->name)_$(e->dim)_$(e->name)_h"
         file_ <<< "#define calc_vertex_nodal_vector_R_$(f->name)_$(e->dim)_$(e->name)_h"
         if integration_type == "gauss_num" and integration_lang == "cpp"
@@ -163,24 +163,24 @@ def calc_vertex_nodal_vector_R( list_f, rep )
                 degre_poly := Op( 0 )
                 if deg_p == 1 # si le degre de l'analyse element finis p = 1
                     v_n := v.subs( e->var_inter, e->points[ n ] )
-                    degre_poly = ( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) : e->grad_sym( lambda_n * v_n ) - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v_n ) ).poly_deg( e->var_inter )
+                    degre_poly = ( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) : e->grad_sym( lambda_n * v_n ) - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v_n ) ).poly_deg( e->var_inter )
                     if degre_poly < 0
                         e->assume_const_jac = true
-                        sigma_const_jac := sigma_hooke_iso( e->grad_sym( child_cast(f)->dep.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
-                        R_const_jac := ( sigma_const_jac - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) : e->grad_sym( lambda_n * v_n ) - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v_n )
+                        sigma_const_jac := sigma_hooke_iso( e->grad_sym( child_cast(f)->dep.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
+                        R_const_jac := ( sigma_const_jac - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) : e->grad_sym( lambda_n * v_n ) - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v_n )
                         e->assume_const_jac = hyp_const_jac
                         degre_poly = R_const_jac.poly_deg( e->var_inter )
                     if integration_type == "gauss_num"
                         if integration_lang == "metil"
-                            residual = e->gauss_num_integration( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) : e->grad_sym( lambda_n * v_n ) - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v_n ), order_diff = degre_poly )
+                            residual = e->gauss_num_integration( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) : e->grad_sym( lambda_n * v_n ) - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v_n ), order_diff = degre_poly )
                             if want_local_enrichment
                                 residual_handbook = e->gauss_num_integration( child_cast(f)->sigma_handbook_PUM_zone_2.expr : e->grad_sym( lambda_n * v_n ), order_diff = degre_poly_handbook )
                         else if integration_lang == "cpp"
-                            residual = ( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) : e->grad_sym( lambda_n * v_n ) - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v_n ) ) * e->jac
+                            residual = ( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) : e->grad_sym( lambda_n * v_n ) - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v_n ) ) * e->jac
                             if want_local_enrichment
                                 residual_handbook = ( child_cast(f)->sigma_handbook_PUM_zone_2.expr : e->grad_sym( lambda_n * v_n ) ) * e->jac
                     else if integration_type == "formal"
-                        residual = e->integration( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) : e->grad_sym( lambda_n * v_n ) - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v_n ), order_diff = degre_poly )
+                        residual = e->integration( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) : e->grad_sym( lambda_n * v_n ) - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v_n ), order_diff = degre_poly )
                         if want_local_enrichment
                             residual_handbook = e->integration( child_cast(f)->sigma_handbook_PUM_zone_2.expr : e->grad_sym( lambda_n * v_n ), order_diff = degre_poly_handbook )
                     residual_nodal = - dot( child_cast(f)->f_nodal.expr + child_cast(f)->pre_f_nodal.expr, lambda_n * v_n ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
@@ -190,24 +190,24 @@ def calc_vertex_nodal_vector_R( list_f, rep )
                         if want_local_enrichment
                             R_handbook.push_back( residual_handbook.diff( unk_v ) )
                 else # si le degre de l'analyse elements finis p >= 2
-                    degre_poly = ( ( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) : e->grad_sym( lambda_n * v )  - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v ) ) ).poly_deg( e->var_inter )
+                    degre_poly = ( ( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) : e->grad_sym( lambda_n * v )  - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v ) ) ).poly_deg( e->var_inter )
                     if degre_poly < 0
                         e->assume_const_jac = true
-                        sigma_const_jac := sigma_hooke_iso( e->grad_sym( child_cast(f)->dep.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
-                        R_const_jac := ( sigma_const_jac - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) : e->grad_sym( lambda_n * v ) - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v )
+                        sigma_const_jac := sigma_hooke_iso( e->grad_sym( child_cast(f)->dep.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
+                        R_const_jac := ( sigma_const_jac - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) : e->grad_sym( lambda_n * v ) - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v )
                         e->assume_const_jac = hyp_const_jac
                         degre_poly = R_const_jac.poly_deg( e->var_inter )
                     if integration_type == "gauss_num"
                         if integration_lang == "metil"
-                            residual = e->gauss_num_integration( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) : e->grad_sym( lambda_n * v ) - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v ), order_diff = degre_poly )
+                            residual = e->gauss_num_integration( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) : e->grad_sym( lambda_n * v ) - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v ), order_diff = degre_poly )
                             if want_local_enrichment
                                 residual_handbook = e->gauss_num_integration( child_cast(f)->sigma_handbook_PUM_zone_2.expr : e->grad_sym( lambda_n * v ), order_diff = degre_poly_handbook )
                         else if integration_lang == "cpp"
-                            residual = ( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) : e->grad_sym( lambda_n * v ) - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v ) ) * e->jac
+                            residual = ( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) : e->grad_sym( lambda_n * v ) - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v ) ) * e->jac
                             if want_local_enrichment
                                 residual_handbook = ( child_cast(f)->sigma_handbook_PUM_zone_2.expr : e->grad_sym( lambda_n * v ) ) * e->jac
                     else if integration_type == "formal"
-                        residual = e->integration( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) ) : e->grad_sym( lambda_n * v ) - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v ), order_diff = degre_poly )
+                        residual = e->integration( ( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ) : e->grad_sym( lambda_n * v ) - dot( ( child_cast(f)->f_vol.expr + child_cast(f)->pre_f_vol.expr ), lambda_n * v ), order_diff = degre_poly )
                         if want_local_enrichment
                             residual_handbook = e->integration( child_cast(f)->sigma_handbook_PUM_zone_2.expr : e->grad_sym( lambda_n * v ), order_diff = degre_poly_handbook )
                     residual_nodal = - dot( child_cast(f)->f_nodal.expr + child_cast(f)->pre_f_nodal.expr, lambda_n * v ).subs( e->var_inter, e->points[ n ] ) / nb_elems_node
@@ -487,7 +487,7 @@ def calc_skin_elem_vector_Q_p_1( list_f, rep )
                 face := child_cast( face_ )
                 face_node_numbers_to_vertex_node_numbers := face->node_numbers_to_vertex_node_numbers
                 eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)", tex_name = "\\eta" )
-                Pi_sigma := 1/eta * e->projection_on_child_elem( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), face ) * face->normal
+                Pi_sigma := 1/eta * e->projection_on_child_elem( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ), face ) * face->normal
                 Pi_sigma_N := 1/eta * child_cast(f)->f_surf.expr
                 Pi_sigma_handbook := 1/eta * e->projection_on_child_elem( child_cast(f)->sigma_handbook_PUM_zone_2.expr, face ) * face->normal
                 Pi_sigma_N_handbook := 1/eta *  e->projection_on_child_elem( child_cast(f)->sigma_handbook.expr, face ) * face->normal
@@ -612,7 +612,7 @@ def calc_vertex_nodal_vector_lambda_F_p_2( list_f, rep )
                 face := child_cast( face_ )
                 face_node_numbers_to_vertex_node_numbers := face->node_numbers_to_vertex_node_numbers
                 eta := symbol( "(m.sub_mesh(Number<1>()).get_parents_of_EA( m.get_children_of( elem, Number<1>() )[ $( face->num_child ) ] )[ 0 ] == &elem ? 1 : -1)", tex_name = "\\eta" )
-                Pi_sigma := 1/eta * e->projection_on_child_elem( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), face ) * face->normal
+                Pi_sigma := 1/eta * e->projection_on_child_elem( child_cast(f)->sigma.expr - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ), face ) * face->normal
                 Pi_sigma_N := 1/eta * child_cast(f)->f_surf.expr
                 Pi_sigma_handbook := 1/eta * e->projection_on_child_elem( child_cast(f)->sigma_handbook_PUM_zone_2.expr, face ) * face->normal
                 Pi_sigma_N_handbook := 1/eta * e->projection_on_child_elem( child_cast(f)->sigma_handbook.expr, face ) * face->normal
@@ -637,8 +637,8 @@ def calc_vertex_nodal_vector_lambda_F_p_2( list_f, rep )
                             degre_poly := ( lambda_n_Pi_sigma[ d ] ).poly_deg( face->var_inter )
                             if degre_poly < 0
                                 e->assume_const_jac = true
-                                sigma_const_jac := sigma_hooke_iso( e->grad_sym( child_cast(f)->dep.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
-                                lambda_n_Pi_sigma_const_jac := lambda_n * e->projection_on_child_elem( sigma_const_jac - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ), face ) * face->normal
+                                sigma_const_jac := sigma_hooke_iso( e->grad_sym( child_cast(f)->dep.expr ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
+                                lambda_n_Pi_sigma_const_jac := lambda_n * e->projection_on_child_elem( sigma_const_jac - child_cast(f)->pre_sigma.expr - sigma_hooke_iso( child_cast(f)->pre_epsilon.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ), face ) * face->normal
                                 e->assume_const_jac = hyp_const_jac
                                 degre_poly = ( lambda_n_Pi_sigma_const_jac[ d ] ).poly_deg( face->var_inter )
                             degre_poly_N := ( lambda_n_Pi_sigma_N[ d ] ).poly_deg( face->var_inter )

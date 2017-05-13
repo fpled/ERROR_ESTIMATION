@@ -24,7 +24,7 @@ def calc_material_coefficients( list_f, rep )
         file_ <<< "namespace LMT {"
         file_ <<< "template<class TM, class TF>"
         file_ <<< "void calc_material_coefficients( TM &m, TF &f, Number<$(e->dim)> ) {"
-        coeff_la := lame_coeff_lambda( child_cast(f)->young.expr, child_cast(f)->poisson.expr, e->dim, type_stress_2D )
+        coeff_la := lame_coeff_lambda( child_cast(f)->young.expr, child_cast(f)->poisson.expr, e->dim, hyp_plane_2D )
         coeff_mu := lame_coeff_mu( child_cast(f)->young.expr, child_cast(f)->poisson.expr )
         cw := CodeWriterAlt( "T" )
         if child_cast(f)->young.interpolation == "global" and child_cast(f)->poisson.interpolation == "global"
@@ -68,7 +68,7 @@ def calc_material_coefficients_init( list_f, rep )
         file_ <<< "namespace LMT {"
         file_ <<< "template<class TM, class TF>"
         file_ <<< "void calc_material_coefficients_init( TM &m, TF &f, Number<$(e->dim)> ) {"
-        coeff_la := lame_coeff_lambda( child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, e->dim, type_stress_2D )
+        coeff_la := lame_coeff_lambda( child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, e->dim, hyp_plane_2D )
         coeff_mu := lame_coeff_mu( child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr )
         cw := CodeWriterAlt( "T" )
         if child_cast(f)->young_init.interpolation == "global" and child_cast(f)->poisson_init.interpolation == "global"

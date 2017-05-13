@@ -40,7 +40,7 @@ void partition_elem_list( TM &m, const string &structure, Vec< Vec<unsigned> > &
             }
             /// Inclusions circulaires 2D
             /// -------------------------
-            else if (structure == "circular_inclusions") {
+            else if ( structure == "circular_inclusions" ) {
                 elem_group.resize(4);
                 for (unsigned n=0;n<m.elem_list.size();++n) {
                     if ( pow(center( *m.elem_list[n] )[0] - 0.2, 2) + pow(center( *m.elem_list[n] )[1] - 0.2, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.2 )^2 + ( y - 0.2 )^2 = (0.1)^2
@@ -59,7 +59,7 @@ void partition_elem_list( TM &m, const string &structure, Vec< Vec<unsigned> > &
         else if ( dim == 3 ) {
             /// Inclusions spheriques 3D
             /// ------------------------
-            if (structure == "spherical_inclusions") {
+            if ( structure == "spherical_inclusions" ) {
                 elem_group.resize(4);
                 for (unsigned n=0;n<m.elem_list.size();++n) {
                     if ( pow(center( *m.elem_list[n] )[0] - 0.2, 2) + pow(center( *m.elem_list[n] )[1] - 0.2, 2) + pow(center( *m.elem_list[n] )[2] - 0.2, 2) < pow(0.1 + 1e-6, 2) ) // ( x - 0.2 )^2 + ( y - 0.2 )^2 + ( z - 0.2 )^2 = (0.1)^2
@@ -339,11 +339,9 @@ struct Construct_Space_Pb {
 /// Evaluation de la solution PGD pour un jeu connu de parametres
 /// -------------------------------------------------------------
 template<class TM_param, class TM, class TF, class TVV, class TTVV, class TTVVV>
-void eval_PGD( TM_param &m_param, TM &m, TF &f, const string &pb, const string &structure, const string &boundary_condition_D, const string &loading, const string &mesh_size, const Vec< Vec<unsigned> > &elem_group, const unsigned &nb_vals, const TVV &vals_param, const unsigned &nb_modes, const TTVV &dep_space, const TTVVV &dep_param, const string &prefix, const bool display_pvd = false ) {
+void eval_PGD( TM_param &m_param, TM &m, TF &f, const string &pb, const string &structure, const string &boundary_condition_D, const string &loading, const string &mesh_size, const Vec< Vec<unsigned> > &elem_group, const unsigned &nb_vals, const TVV &vals_param, const unsigned &nb_modes, const TTVV &dep_space, const TTVVV &dep_param, const string &filename = "paraview", const bool display_pvd = false ) {
     
     typedef typename TM::TNode::T T;
-    
-//    string prefix = define_prefix( m, pb, structure, loading, mesh_size );
     
     Vec< DisplayParaview > dp;
     dp.resize( nb_vals );
@@ -375,10 +373,10 @@ void eval_PGD( TM_param &m_param, TM &m, TF &f, const string &pb, const string &
         
         f.solve();
         
-        string prefix_ = prefix + "_space_REF_params";
+        string filename_ = filename + "_space_REF_params";
         for (unsigned p=0;p<elem_group.size()-1;++p)
-            prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
-        dp[ i ].add_mesh_iter( m, prefix_, lp, 0 );
+            filename_ += '_' + to_string( vals_param[p][ ind[p] ] );
+        dp[ i ].add_mesh_iter( m, filename_, lp, 0 );
         
         f.vectors[0].set( 0. );
         for (unsigned n=0;n<nb_modes;++n) {
@@ -390,18 +388,18 @@ void eval_PGD( TM_param &m_param, TM &m, TF &f, const string &pb, const string &
         f.update_variables();
         f.call_after_solve();
         
-        prefix_ = prefix + "_space_PGD_params";
+        filename_ = filename + "_space_PGD_params";
         for (unsigned p=0;p<elem_group.size()-1;++p)
-            prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
-        dp[ i ].add_mesh_iter( m, prefix_, lp, 1 );
+            filename_ += '_' + to_string( vals_param[p][ ind[p] ] );
+        dp[ i ].add_mesh_iter( m, filename_, lp, 1 );
         
-        prefix_ = prefix + "_space_params";
+        filename_ = filename + "_space_params";
         for (unsigned p=0;p<elem_group.size()-1;++p)
-            prefix_ += '_' + to_string( vals_param[p][ ind[p] ] );
+            filename_ += '_' + to_string( vals_param[p][ ind[p] ] );
         if ( display_pvd )
-            dp[ i ].exec( prefix_ );
+            dp[ i ].exec( filename_ );
         else
-            dp[ i ].make_pvd_file( prefix_ );
+            dp[ i ].make_pvd_file( filename_ );
     }
     
 }

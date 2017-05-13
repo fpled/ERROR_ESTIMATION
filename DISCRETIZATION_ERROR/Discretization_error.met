@@ -30,7 +30,7 @@ def add_elem_norm_dep( list_f, rep )
 
         e->assume_const_jac = true
         epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
-        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         norm_dep_const_jac := epsilon_const_jac : sigma_const_jac
         e->assume_const_jac = hyp_const_jac
         degre_poly := norm_dep_const_jac.poly_deg( e->var_inter )
@@ -71,7 +71,7 @@ def add_elem_norm_dep_init( list_f, rep )
 
         e->assume_const_jac = true
         epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
-        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, type_stress_2D )
+        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, hyp_plane_2D )
         norm_dep_const_jac := epsilon_const_jac : sigma_const_jac
         e->assume_const_jac = hyp_const_jac
         degre_poly := norm_dep_const_jac.poly_deg( e->var_inter )
@@ -107,7 +107,7 @@ def calc_elem_discretization_error( list_f, rep )
         deg_p := max( e->order_interpolation )
         e->assume_const_jac = true
         epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
-        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         e->assume_const_jac = hyp_const_jac
 
         for _f_ref in list_f
@@ -165,7 +165,7 @@ def calc_elem_discretization_error( list_f, rep )
                 epsilon_proj_const_jac := ( epsilon_const_jac ).subs( e->var_inter, e_var_inter )
                 sigma_proj_const_jac := ( sigma_const_jac ).subs( e->var_inter, e_var_inter )
                 epsilon_ref_const_jac := e_ref->grad_sym( f_ref->dep.expr )
-                sigma_ref_const_jac := sigma_hooke_iso( epsilon_ref_const_jac, f_ref->young.expr, f_ref->poisson.expr, type_stress_2D )
+                sigma_ref_const_jac := sigma_hooke_iso( epsilon_ref_const_jac, f_ref->young.expr, f_ref->poisson.expr, hyp_plane_2D )
                 discretization_error_ref_const_jac := ( epsilon_ref_const_jac - epsilon_proj_const_jac ) : ( sigma_ref_const_jac - sigma_proj_const_jac )
                 e_ref->assume_const_jac = hyp_const_jac
                 degre_poly := discretization_error_ref_const_jac.poly_deg( e_ref->var_inter )

@@ -31,7 +31,7 @@ def calc_interest_quantity_mean_sigma_epsilon( list_f, rep )
 
         e->assume_const_jac = true
         epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
-        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         I_const_jac := ( sigma_const_jac : child_cast(f)->pre_epsilon.expr ) + ( child_cast(f)->pre_sigma.expr : epsilon_const_jac )
         e->assume_const_jac = hyp_const_jac
         degre_poly := I_const_jac.poly_deg( e->var_inter )
@@ -209,7 +209,7 @@ def calc_interest_quantity_SIF( list_f, rep )
     for f in list_f
         e := child_cast( f->pe )
         deg_p := max( e->order_interpolation )
-        kappa := parameter_kappa( child_cast(f)->poisson.expr, e->dim, type_stress_2D )
+        kappa := parameter_kappa( child_cast(f)->poisson.expr, e->dim, hyp_plane_2D )
         pos_crack_tip := Vec[ Op, e->dim ]()
         for d in 0 .. e->dim
             pos_crack_tip[ d ] = symbol( "pos_crack_tip[ $d ]", tex_name = "P_{$d}" )
@@ -248,20 +248,20 @@ def calc_interest_quantity_SIF( list_f, rep )
         # u_tilde_II.display_tex( "u_tilde_II" )
         sigma_tilde_I := Mat[ Op, Gen[e->dim,e->dim] ]()
         sigma_tilde_I = mat * sigma_tilde_I_ * trans( mat )
-        # sigma_tilde_I := sigma_hooke_iso( e->grad_sym( u_tilde_I ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        # sigma_tilde_I := sigma_hooke_iso( e->grad_sym( u_tilde_I ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         # sigma_tilde_I.display_tex( "sigma_tilde_I" )
         sigma_tilde_II := Mat[ Op, Gen[e->dim,e->dim] ]()
         sigma_tilde_II = mat * sigma_tilde_II_ * trans( mat )
-        # sigma_tilde_II := sigma_hooke_iso( e->grad_sym( u_tilde_II ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        # sigma_tilde_II := sigma_hooke_iso( e->grad_sym( u_tilde_II ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         # sigma_tilde_II.display_tex( "sigma_tilde_II" )
         R_i := symbol( "radius_Ri", tex_name = "R_i" )
         R_e := symbol( "radius_Re", tex_name = "R_e" )
         phi := ( R_e - r ) / ( R_e - R_i )
         epsilon_tilde_I := e->grad_sym( phi * u_tilde_I )
-        extractor_pre_sigma_I := sigma_hooke_iso( epsilon_tilde_I, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) - phi * sigma_tilde_I
+        extractor_pre_sigma_I := sigma_hooke_iso( epsilon_tilde_I, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) - phi * sigma_tilde_I
         extractor_pre_sigma_I_const_in_elem := extractor_pre_sigma_I.subs( e->var_inter, e->get_center_of_var_inter() )
         epsilon_tilde_II := e->grad_sym( phi * u_tilde_II )
-        extractor_pre_sigma_II := sigma_hooke_iso( epsilon_tilde_II, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D ) - phi * sigma_tilde_II
+        extractor_pre_sigma_II := sigma_hooke_iso( epsilon_tilde_II, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) - phi * sigma_tilde_II
         extractor_pre_sigma_II_const_in_elem := extractor_pre_sigma_II.subs( e->var_inter, e->get_center_of_var_inter() )
         extractor_pre_f_vol_I := Vec[ Op, e->dim ]()
         extractor_pre_f_vol_I = - sigma_tilde_I * e->grad( phi )
@@ -381,7 +381,7 @@ def calc_elem_correction_interest_quantity_wo_sigma_hat_m( list_f, rep )
             for d in 0 .. e->dim
                 sym_dep_hat_expr.push_back( coeffs_dep_hat_expr[ d ][ x ] )
         epsilon_hat_expr := e->grad_sym( dep_hat_expr )
-        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
 
         sym_dep_hat := Vec[ Op ]()
         for i in 0 .. sym_dep_hat_expr.size
@@ -392,9 +392,9 @@ def calc_elem_correction_interest_quantity_wo_sigma_hat_m( list_f, rep )
 
         e->assume_const_jac = true
         epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
-        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
-        sigma_hat_const_jac := sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_const_jac := sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         e->assume_const_jac = hyp_const_jac
 
         for _f_adjoint in list_f
@@ -519,7 +519,7 @@ def calc_elem_correction_interest_quantity_w_sigma_hat_m( list_f, rep )
             for d in 0 .. e->dim
                 sym_dep_hat_expr.push_back( coeffs_dep_hat_expr[ d ][ x ] )
         epsilon_hat_expr := e->grad_sym( dep_hat_expr )
-        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
 
         sym_dep_hat := Vec[ Op ]()
         for i in 0 .. sym_dep_hat_expr.size
@@ -530,9 +530,9 @@ def calc_elem_correction_interest_quantity_w_sigma_hat_m( list_f, rep )
 
         e->assume_const_jac = true
         epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
-        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
-        sigma_hat_const_jac := corr_SPET * sigma_const_jac + sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_const_jac := corr_SPET * sigma_const_jac + sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         e->assume_const_jac = hyp_const_jac
 
         for _f_adjoint in list_f
@@ -567,7 +567,7 @@ def calc_elem_correction_interest_quantity_w_sigma_hat_m( list_f, rep )
                     for d in 0 .. e_adjoint->dim
                         sym_dep_adjoint_hat_expr.push_back( coeffs_dep_adjoint_hat_expr[ d ][ x ] )
                 epsilon_adjoint_hat_expr := e_adjoint->grad_sym( dep_adjoint_hat_expr )
-                sigma_adjoint_hat_expr := corr_SPET_adjoint * f_adjoint->sigma.expr + sigma_hooke_iso( epsilon_adjoint_hat_expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D )
+                sigma_adjoint_hat_expr := corr_SPET_adjoint * f_adjoint->sigma.expr + sigma_hooke_iso( epsilon_adjoint_hat_expr, f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D )
                 sym_dep_adjoint_hat := Vec[ Op ]()
                 for i in 0 .. sym_dep_adjoint_hat_expr.size
                     sy := Op()
@@ -588,25 +588,25 @@ def calc_elem_correction_interest_quantity_w_sigma_hat_m( list_f, rep )
                 sigma_proj_const_jac := ( sigma_const_jac ).subs( e->var_inter, e_var_inter )
                 sigma_hat_proj_const_jac := ( sigma_hat_const_jac ).subs( e->var_inter, e_var_inter )
                 epsilon_adjoint_const_jac := e_adjoint->grad_sym( f_adjoint->dep.expr )
-                sigma_adjoint_const_jac := sigma_hooke_iso( epsilon_adjoint_const_jac, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D )
+                sigma_adjoint_const_jac := sigma_hooke_iso( epsilon_adjoint_const_jac, f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D )
                 epsilon_adjoint_hat_const_jac := e_adjoint->grad_sym( dep_adjoint_hat_expr )
-                sigma_adjoint_hat_const_jac := corr_SPET_adjoint * sigma_adjoint_const_jac + sigma_hooke_iso( epsilon_adjoint_hat_const_jac, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D )
+                sigma_adjoint_hat_const_jac := corr_SPET_adjoint * sigma_adjoint_const_jac + sigma_hooke_iso( epsilon_adjoint_hat_const_jac, f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D )
                 e_adjoint->assume_const_jac = hyp_const_jac
-                degre_poly := ( ( sigma_hat_proj_const_jac - sigma_proj_const_jac ) : eps_hooke_iso( ( sigma_adjoint_hat_const_jac + sigma_adjoint_const_jac ), f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ) ).poly_deg( e_adjoint->var_inter )
+                degre_poly := ( ( sigma_hat_proj_const_jac - sigma_proj_const_jac ) : eps_hooke_iso( ( sigma_adjoint_hat_const_jac + sigma_adjoint_const_jac ), f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D ) ).poly_deg( e_adjoint->var_inter )
 
                 if integration_type == "gauss_num"
                     if integration_lang == "metil"
-                        corr_I_hh = 1/2 * ( e_adjoint->gauss_num_integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_adjoint_hat + f_adjoint->sigma.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly ) )
+                        corr_I_hh = 1/2 * ( e_adjoint->gauss_num_integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_adjoint_hat + f_adjoint->sigma.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D ), order_diff = degre_poly ) )
                         if want_local_enrichment
-                            corr_I_hh_handbook = e_adjoint->gauss_num_integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( f_adjoint->sigma_handbook_PUM.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_handbook )
+                            corr_I_hh_handbook = e_adjoint->gauss_num_integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( f_adjoint->sigma_handbook_PUM.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D ), order_diff = degre_poly_handbook )
                     else if integration_lang == "cpp"
-                        corr_I_hh = 1/2 * ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_adjoint_hat + f_adjoint->sigma.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ) ) * e_adjoint->jac
+                        corr_I_hh = 1/2 * ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_adjoint_hat + f_adjoint->sigma.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D ) ) * e_adjoint->jac
                         if want_local_enrichment
-                            corr_I_hh_handbook = ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( f_adjoint->sigma_handbook_PUM.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ) ) * e_adjoint->jac
+                            corr_I_hh_handbook = ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( f_adjoint->sigma_handbook_PUM.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D ) ) * e_adjoint->jac
                 else if integration_type == "formal"
-                    corr_I_hh = 1/2 * ( e_adjoint->integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_adjoint_hat + f_adjoint->sigma.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly ) )
+                    corr_I_hh = 1/2 * ( e_adjoint->integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_adjoint_hat + f_adjoint->sigma.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D ), order_diff = degre_poly ) )
                     if want_local_enrichment
-                        corr_I_hh_handbook = e_adjoint->integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( f_adjoint->sigma_handbook_PUM.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly_handbook )
+                        corr_I_hh_handbook = e_adjoint->integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( f_adjoint->sigma_handbook_PUM.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D ), order_diff = degre_poly_handbook )
                 if integration_type == "gauss_num" and integration_lang == "cpp"
                     file_ <<< "    Vec<double> poids;"
                     file_ <<< "    Vec<Vec<double, $(e_adjoint->dim)> > valeurs;"
@@ -693,7 +693,7 @@ def calc_elem_error_estimate_lambda( list_f, rep )
             for d in 0 .. e->dim
                 sym_dep_hat_expr.push_back( coeffs_dep_hat_expr[ d ][ x ] )
         epsilon_hat_expr := e->grad_sym( dep_hat_expr )
-        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
 
         sym_dep_hat := Vec[ Op ]()
         for i in 0 .. sym_dep_hat_expr.size
@@ -756,16 +756,16 @@ def calc_elem_error_estimate_lambda( list_f, rep )
 
         e->assume_const_jac = true
         epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
-        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
-        sigma_hat_const_jac := corr_SPET * sigma_const_jac + sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_const_jac := corr_SPET * sigma_const_jac + sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         e->assume_const_jac = hyp_const_jac
         e_lambda->assume_const_jac = true
         epsilon_proj_const_jac := ( epsilon_const_jac ).subs( e->var_inter, e_var_inter )
         sigma_proj_const_jac := ( sigma_const_jac ).subs( e->var_inter, e_var_inter )
         sigma_hat_proj_const_jac := ( sigma_hat_const_jac ).subs( e->var_inter, e_var_inter )
         e_lambda->assume_const_jac = hyp_const_jac
-        degre_poly := ( ( sigma_hat_proj_const_jac - sigma_const_jac ) : eps_hooke_iso( sigma_hat_proj_const_jac - sigma_const_jac, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ) ).poly_deg( e_lambda->var_inter )
+        degre_poly := ( ( sigma_hat_proj_const_jac - sigma_const_jac ) : eps_hooke_iso( sigma_hat_proj_const_jac - sigma_const_jac, f_lambda->young.expr, f_lambda->poisson.expr, hyp_plane_2D ) ).poly_deg( e_lambda->var_inter )
         
         if integration_type == "gauss_num" and integration_lang == "cpp"
             file_ <<< "        Vec<double> poids;"
@@ -773,11 +773,11 @@ def calc_elem_error_estimate_lambda( list_f, rep )
             file_ <<< "        gauss_points( $(e_lambda->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
         if integration_type == "gauss_num"
             if integration_lang == "metil"
-                theta = e_lambda->gauss_num_integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ), order_diff = degre_poly )
+                theta = e_lambda->gauss_num_integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_lambda->young.expr, f_lambda->poisson.expr, hyp_plane_2D ), order_diff = degre_poly )
             else if integration_lang == "cpp"
-                theta = ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ) ) * e_lambda->jac
+                theta = ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_lambda->young.expr, f_lambda->poisson.expr, hyp_plane_2D ) ) * e_lambda->jac
         else if integration_type == "formal"
-            theta = e_lambda->integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ), order_diff = degre_poly )
+            theta = e_lambda->integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_lambda->young.expr, f_lambda->poisson.expr, hyp_plane_2D ), order_diff = degre_poly )
         if integration_type == "gauss_num" and integration_lang == "cpp"
             file_ <<< "        for (unsigned n=0; n<poids.size(); ++n) {"
             file_ <<< "            Vec<double> var_inter( valeurs[ n ] );"
@@ -882,7 +882,7 @@ def calc_elem_weighted_error_estimate_lambda( list_f, rep )
             for d in 0 .. e->dim
                 sym_dep_hat_expr.push_back( coeffs_dep_hat_expr[ d ][ x ] )
         epsilon_hat_expr := e->grad_sym( dep_hat_expr )
-        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
 
         sym_dep_hat := Vec[ Op ]()
         for i in 0 .. sym_dep_hat_expr.size
@@ -901,16 +901,16 @@ def calc_elem_weighted_error_estimate_lambda( list_f, rep )
 
         e->assume_const_jac = true
         epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
-        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
-        sigma_hat_const_jac := corr_SPET * sigma_const_jac + sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_const_jac := corr_SPET * sigma_const_jac + sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         e->assume_const_jac = hyp_const_jac
         e_lambda->assume_const_jac = true
         epsilon_proj_const_jac := ( epsilon_const_jac ).subs( e->var_inter, e_var_inter )
         sigma_hat_proj_const_jac := ( sigma_hat_const_jac ).subs( e->var_inter, e_var_inter )
         e_lambda->assume_const_jac = hyp_const_jac
-        degre_poly_1 := ( sigma_hat_proj_const_jac : eps_hooke_iso( sigma_hat_proj_const_jac, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ) ).poly_deg( e_lambda->var_inter )
-        degre_poly_2 := ( epsilon_proj_const_jac : sigma_hooke_iso( epsilon_proj_const_jac, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ) ).poly_deg( e_lambda->var_inter )
+        degre_poly_1 := ( sigma_hat_proj_const_jac : eps_hooke_iso( sigma_hat_proj_const_jac, f_lambda->young.expr, f_lambda->poisson.expr, hyp_plane_2D ) ).poly_deg( e_lambda->var_inter )
+        degre_poly_2 := ( epsilon_proj_const_jac : sigma_hooke_iso( epsilon_proj_const_jac, f_lambda->young.expr, f_lambda->poisson.expr, hyp_plane_2D ) ).poly_deg( e_lambda->var_inter )
         degre_poly_3 := ( sigma_hat_proj_const_jac : epsilon_proj_const_jac ).poly_deg( e_lambda->var_inter )
         degre_poly := max( degre_poly_1, degre_poly_2, degre_poly_3 )
 
@@ -920,11 +920,11 @@ def calc_elem_weighted_error_estimate_lambda( list_f, rep )
             file_ <<< "    gauss_points( $(e_lambda->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
         if integration_type == "gauss_num"
             if integration_lang == "metil"
-                weighted_theta = e_lambda->gauss_num_integration( pow( r_min / r, 1/h ) * ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ) ), order_diff = degre_poly )
+                weighted_theta = e_lambda->gauss_num_integration( pow( r_min / r, 1/h ) * ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_lambda->young.expr, f_lambda->poisson.expr, hyp_plane_2D ) ), order_diff = degre_poly )
             else if integration_lang == "cpp"
-                weighted_theta = pow( r_min / r, 1/h ) * ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ) ) * e_lambda->jac
+                weighted_theta = pow( r_min / r, 1/h ) * ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_lambda->young.expr, f_lambda->poisson.expr, hyp_plane_2D ) ) * e_lambda->jac
         else if integration_type == "formal"
-            weighted_theta = e_lambda->integration( pow( r_min / r, 1/h ) * ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ) ), order_diff = degre_poly )
+            weighted_theta = e_lambda->integration( pow( r_min / r, 1/h ) * ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_lambda->young.expr, f_lambda->poisson.expr, hyp_plane_2D ) ), order_diff = degre_poly )
         if integration_type == "gauss_num" and integration_lang == "cpp"
             file_ <<< "    for (unsigned n=0; n<poids.size(); ++n) {"
             file_ <<< "        Vec<double> var_inter( valeurs[ n ] );"
@@ -997,7 +997,7 @@ def calc_skin_elem_error_estimate_lambda_boundary( list_f, rep )
             for d in 0 .. e->dim
                 sym_dep_hat_expr.push_back( coeffs_dep_hat_expr[ d ][ x ] )
         epsilon_hat_expr := e->grad_sym( dep_hat_expr )
-        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
 
         sym_dep_hat := Vec[ Op ]()
         for i in 0 .. sym_dep_hat_expr.size
@@ -1031,11 +1031,11 @@ def calc_skin_elem_error_estimate_lambda_boundary( list_f, rep )
                 file_ <<< "        gauss_points( $(face_lambda->name_for_gauss_point)(), $(degre_poly), poids_face, valeurs_face );"
             if integration_type == "gauss_num"
                 if integration_lang == "metil"
-                    theta_face = face_lambda->gauss_num_integration( dot( u, face_lambda->normal ) * e_lambda->projection_on_child_elem( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ), face_lambda ), order_diff = degre_poly )
+                    theta_face = face_lambda->gauss_num_integration( dot( u, face_lambda->normal ) * e_lambda->projection_on_child_elem( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_lambda->young.expr, f_lambda->poisson.expr, hyp_plane_2D ), face_lambda ), order_diff = degre_poly )
                 else if integration_lang == "cpp"
-                    theta_face = dot( u, face_lambda->normal ) * e_lambda->projection_on_child_elem( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ), face_lambda ) * face_lambda->jac
+                    theta_face = dot( u, face_lambda->normal ) * e_lambda->projection_on_child_elem( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_lambda->young.expr, f_lambda->poisson.expr, hyp_plane_2D ), face_lambda ) * face_lambda->jac
             else if integration_type == "formal"
-                theta_face = face_lambda->integration( dot( u, face_lambda->normal ) * e_lambda->projection_on_child_elem( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_lambda->young.expr, f_lambda->poisson.expr, type_stress_2D ), face_lambda ), order_diff = degre_poly )
+                theta_face = face_lambda->integration( dot( u, face_lambda->normal ) * e_lambda->projection_on_child_elem( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_lambda->young.expr, f_lambda->poisson.expr, hyp_plane_2D ), face_lambda ), order_diff = degre_poly )
             file_ <<< "        T theta_boundary_tmp = 0.;"
             if integration_type == "gauss_num" and integration_lang == "cpp"
                 file_ <<< "        for (unsigned n=0; n<poids_face.size(); ++n) {"
@@ -1100,7 +1100,7 @@ def calc_elem_correction_interest_quantity_lambda( list_f, rep )
             for d in 0 .. e->dim
                 sym_dep_hat_expr.push_back( coeffs_dep_hat_expr[ d ][ x ] )
         epsilon_hat_expr := e->grad_sym( dep_hat_expr )
-        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
 
         sym_dep_hat := Vec[ Op ]()
         for i in 0 .. sym_dep_hat_expr.size
@@ -1111,9 +1111,9 @@ def calc_elem_correction_interest_quantity_lambda( list_f, rep )
 
         e->assume_const_jac = true
         epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
-        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
-        sigma_hat_const_jac := corr_SPET * sigma_const_jac + sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_const_jac := corr_SPET * sigma_const_jac + sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         e->assume_const_jac = hyp_const_jac
 
         for _f_adjoint in list_f
@@ -1148,7 +1148,7 @@ def calc_elem_correction_interest_quantity_lambda( list_f, rep )
                     for d in 0 .. e_adjoint->dim
                         sym_dep_adjoint_hat_expr.push_back( coeffs_dep_adjoint_hat_expr[ d ][ x ] )
                 epsilon_adjoint_hat_expr := e_adjoint->grad_sym( dep_adjoint_hat_expr )
-                sigma_adjoint_hat_expr := corr_SPET_adjoint * f_adjoint->sigma.expr + sigma_hooke_iso( epsilon_adjoint_hat_expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D )
+                sigma_adjoint_hat_expr := corr_SPET_adjoint * f_adjoint->sigma.expr + sigma_hooke_iso( epsilon_adjoint_hat_expr, f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D )
 
                 sym_dep_adjoint_hat := Vec[ Op ]()
                 for i in 0 .. sym_dep_adjoint_hat_expr.size
@@ -1169,11 +1169,11 @@ def calc_elem_correction_interest_quantity_lambda( list_f, rep )
                 sigma_proj_const_jac := ( sigma_const_jac ).subs( e->var_inter, e_var_inter )
                 sigma_hat_proj_const_jac := ( sigma_hat_const_jac ).subs( e->var_inter, e_var_inter )
                 epsilon_adjoint_const_jac := e_adjoint->grad_sym( f_adjoint->dep.expr )
-                sigma_adjoint_const_jac := sigma_hooke_iso( epsilon_adjoint_const_jac, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D )
+                sigma_adjoint_const_jac := sigma_hooke_iso( epsilon_adjoint_const_jac, f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D )
                 epsilon_adjoint_hat_const_jac := e_adjoint->grad_sym( dep_adjoint_hat_expr )
-                sigma_adjoint_hat_const_jac := corr_SPET_adjoint * sigma_adjoint_const_jac + sigma_hooke_iso( epsilon_adjoint_hat_const_jac, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D )
+                sigma_adjoint_hat_const_jac := corr_SPET_adjoint * sigma_adjoint_const_jac + sigma_hooke_iso( epsilon_adjoint_hat_const_jac, f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D )
                 e_adjoint->assume_const_jac = hyp_const_jac
-                degre_poly := ( ( sigma_hat_proj_const_jac - sigma_proj_const_jac ) : eps_hooke_iso( sigma_adjoint_hat_const_jac - sigma_proj_const_jac, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ) ).poly_deg( e_adjoint->var_inter )
+                degre_poly := ( ( sigma_hat_proj_const_jac - sigma_proj_const_jac ) : eps_hooke_iso( sigma_adjoint_hat_const_jac - sigma_proj_const_jac, f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D ) ).poly_deg( e_adjoint->var_inter )
 
                 if integration_type == "gauss_num" and integration_lang == "cpp"
                     file_ <<< "    Vec<double> poids;"
@@ -1181,11 +1181,11 @@ def calc_elem_correction_interest_quantity_lambda( list_f, rep )
                     file_ <<< "    gauss_points( $(e_adjoint->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
                 if integration_type == "gauss_num"
                     if integration_lang == "metil"
-                        corr_I_hhh = 1/2 * ( e_adjoint->gauss_num_integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_adjoint_hat - f_adjoint->sigma.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly ) )
+                        corr_I_hhh = 1/2 * ( e_adjoint->gauss_num_integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_adjoint_hat - f_adjoint->sigma.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D ), order_diff = degre_poly ) )
                     else if integration_lang == "cpp"
-                        corr_I_hhh = 1/2 * ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_adjoint_hat - f_adjoint->sigma.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ) ) * e_adjoint->jac
+                        corr_I_hhh = 1/2 * ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_adjoint_hat - f_adjoint->sigma.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D ) ) * e_adjoint->jac
                 else if integration_type == "formal"
-                    corr_I_hhh = 1/2 * ( e_adjoint->integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_adjoint_hat - f_adjoint->sigma.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly ) )
+                    corr_I_hhh = 1/2 * ( e_adjoint->integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_adjoint_hat - f_adjoint->sigma.expr, f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D ), order_diff = degre_poly ) )
                 file_ <<< "    Vec<Vec<typename TM::TNode::T, $(e->dim)>, $(e->nb_nodes) > pos_nodes;"
                 file_ <<< "    for (unsigned i=0;i<elem.nb_nodes;++i)"
                 file_ <<< "        pos_nodes[i] = elem.pos(i);"
@@ -1247,7 +1247,7 @@ def calc_elem_error_estimate_proj_on_adjoint( list_f, rep )
             for d in 0 .. e->dim
                 sym_dep_hat_expr.push_back( coeffs_dep_hat_expr[ d ][ x ] )
         epsilon_hat_expr := e->grad_sym( dep_hat_expr )
-        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_expr := corr_SPET * child_cast(f)->sigma.expr + sigma_hooke_iso( epsilon_hat_expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
 
         sym_dep_hat := Vec[ Op ]()
         for i in 0 .. sym_dep_hat_expr.size
@@ -1258,9 +1258,9 @@ def calc_elem_error_estimate_proj_on_adjoint( list_f, rep )
 
         e->assume_const_jac = true
         epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
-        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         epsilon_hat_const_jac := e->grad_sym( dep_hat_expr )
-        sigma_hat_const_jac := corr_SPET * sigma_const_jac + sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, type_stress_2D )
+        sigma_hat_const_jac := corr_SPET * sigma_const_jac + sigma_hooke_iso( epsilon_hat_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         e->assume_const_jac = hyp_const_jac
 
         for _f_adjoint in list_f
@@ -1289,7 +1289,7 @@ def calc_elem_error_estimate_proj_on_adjoint( list_f, rep )
                 sigma_proj_const_jac := ( sigma_const_jac ).subs( e->var_inter, e_var_inter )
                 sigma_hat_proj_const_jac := ( sigma_hat_const_jac ).subs( e->var_inter, e_var_inter )
                 e_adjoint->assume_const_jac = hyp_const_jac
-                degre_poly := ( ( sigma_hat_proj_const_jac - sigma_proj_const_jac ) : eps_hooke_iso( sigma_hat_proj_const_jac - sigma_proj_const_jac, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ) ).poly_deg( e_adjoint->var_inter )
+                degre_poly := ( ( sigma_hat_proj_const_jac - sigma_proj_const_jac ) : eps_hooke_iso( sigma_hat_proj_const_jac - sigma_proj_const_jac, f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D ) ).poly_deg( e_adjoint->var_inter )
 
                 if integration_type == "gauss_num" and integration_lang == "cpp"
                     file_ <<< "    Vec<double> poids;"
@@ -1297,11 +1297,11 @@ def calc_elem_error_estimate_proj_on_adjoint( list_f, rep )
                     file_ <<< "    gauss_points( $(e_adjoint->name_for_gauss_point)(), $(degre_poly), poids, valeurs );"
                 if integration_type == "gauss_num"
                     if integration_lang == "metil"
-                        theta_proj = e_adjoint->gauss_num_integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly )
+                        theta_proj = e_adjoint->gauss_num_integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D ), order_diff = degre_poly )
                     else if integration_lang == "cpp"
-                        theta_proj = ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ) ) * e_adjoint->jac
+                        theta_proj = ( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D ) ) * e_adjoint->jac
                 else if integration_type == "formal"
-                    theta_proj = e_adjoint->integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_adjoint->young.expr, f_adjoint->poisson.expr, type_stress_2D ), order_diff = degre_poly )
+                    theta_proj = e_adjoint->integration( ( sigma_hat_proj - sigma_proj ) : eps_hooke_iso( sigma_hat_proj - sigma_proj, f_adjoint->young.expr, f_adjoint->poisson.expr, hyp_plane_2D ), order_diff = degre_poly )
                 if integration_type == "gauss_num" and integration_lang == "cpp"
                     file_ <<< "    for (unsigned n=0; n<poids.size(); ++n) {"
                     file_ <<< "        Vec<double> var_inter( valeurs[ n ] );"

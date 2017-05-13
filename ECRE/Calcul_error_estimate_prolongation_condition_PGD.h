@@ -1,10 +1,10 @@
 //
 // C++ Interface: Calcul_error_estimate_prolongation_condition_PGD
 //
-// Description: calcul d'un champ de contrainte admissible et d'un estimateur theta de l'erreur globale pour les methodes basees sur la condition de prolongement (EET,EESPT)
+// Description: calcul d'un champ de contrainte admissible et d'un estimateur theta de l'erreur globale pour les methodes basees sur la condition de prolongement (EET,EESPT) dans le cadre des methodes PGD
 //
 //
-// Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2017
+// Author: Pled Florent <florent.pled@univ-paris-est.fr>, (C) 2017
 //
 // Copyright: See COPYING file that comes with this distribution
 //
@@ -18,23 +18,24 @@
 using namespace LMT;
 using namespace std;
 
-/// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale pour les methodes basees sur la condition de prolongement (EET,EESPT)
-/// -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+/// Construction d'un champ de contrainte admissible & Calcul d'un estimateur d'erreur globale pour les methodes basees sur la condition de prolongement (EET,EESPT)
+/// ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T, class TV, class TVV, class TTVV, class TTVVV, class TTTVVV>
 void calcul_error_estimate_prolongation_condition_PGD( TM &m, TF &f, const string &pb, const string &method, T &theta, T &theta_PGD, T &theta_dis, TV &theta_elem, TV &theta_elem_PGD, TV &theta_elem_dis, const TTVV &dep_space, const TTVVV &dep_param, const TV &dep_space_part, const TTTVVV &dep_space_FE, const TTTVVV &dep_space_hat, const TVV &dep_space_part_hat, const Vec< Vec<unsigned> > &elem_group, const unsigned &nb_modes, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool disp = false ) {
     
-    /// ------------------------------------------------------------------------------------------ ///
-    /// Construction d'un champ de contrainte admissible - Calcul d'un estimateur d'erreur globale ///
-    /// ------------------------------------------------------------------------------------------ ///
+    /// ------------------------------------------------------------------------------------------------------ ///
+    /// Construction d'un champ de contrainte admissible par element & Calcul d'un estimateur d'erreur globale ///
+    /// ------------------------------------------------------------------------------------------------------ ///
     
     if ( disp ) {
-        cout << "Construction d'un champ de contrainte admissible - Calcul d'un estimateur d'erreur globale" << endl;
+        cout << "Construction d'un champ de contrainte admissible & Calcul d'un estimateur d'erreur globale" << endl;
         cout << "------------------------------------------------------------------------------------------" << endl << endl;
     }
     
     theta = 0.;
     theta_PGD = 0.;
     theta_dis = 0.;
+    
     theta_elem.resize( m.elem_list.size() );
     theta_elem_PGD.resize( m.elem_list.size() );
     theta_elem_dis.resize( m.elem_list.size() );
@@ -70,13 +71,13 @@ void calcul_error_estimate_prolongation_condition_PGD( TM &m, TF &f, const strin
         dep_hat += dep_hat_mode;
     }
     
-    Calc_Elem_Error_Estimate_EET_EESPT_FE<TV,TVV> calc_elem_error_estimate_EET_EESPT_FE;
-    calc_elem_error_estimate_EET_EESPT_FE.dep = &dep;
-    calc_elem_error_estimate_EET_EESPT_FE.elem_group = &elem_group;
-    calc_elem_error_estimate_EET_EESPT_FE.method = &method;
-    calc_elem_error_estimate_EET_EESPT_FE.theta_elem = &theta_elem_PGD;
+    Calc_Elem_Error_Estimate_FE<TV,TVV> calc_elem_error_estimate_FE;
+    calc_elem_error_estimate_FE.dep = &dep;
+    calc_elem_error_estimate_FE.elem_group = &elem_group;
+    calc_elem_error_estimate_FE.method = &method;
+    calc_elem_error_estimate_FE.theta_elem = &theta_elem_PGD;
     
-    apply( m.elem_list, calc_elem_error_estimate_EET_EESPT_FE, m, f, theta_PGD );
+    apply( m.elem_list, calc_elem_error_estimate_FE, m, f, theta_PGD );
     
     Calc_Elem_Error_Estimate_EET_EESPT<TV,TVV> calc_elem_error_estimate_EET_EESPT;
     calc_elem_error_estimate_EET_EESPT.dep_hat = &dep_hat;

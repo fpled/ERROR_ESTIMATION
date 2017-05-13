@@ -36,10 +36,12 @@ void construct_K_hat( const TM &m, const TF &f, TMatV &K_hat, const bool disp = 
     if ( disp )
         cout << "temps de calcul du remplissage des matrices associees aux pbs locaux par element = " << t.res << endl << endl;
     
-//    for (unsigned n=0;n<m.elem_list.size();++n) {
-//        cout << "matrice K_hat de l'element " << n << " :" << endl;
-//        cout << K_hat[ n ] << endl;
-//    }
+    if ( disp ) {
+        for (unsigned n=0;n<m.elem_list.size();++n) {
+            cout << "matrice K_hat de l'element " << n << " :" << endl;
+            cout << K_hat[ n ] << endl;
+        }
+    }
 }
 
 #endif // Construct_K_hat_h

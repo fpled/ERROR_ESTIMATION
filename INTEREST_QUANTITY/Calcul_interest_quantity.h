@@ -29,7 +29,7 @@ using namespace std;
 /// Definition de l'extracteur
 /// --------------------------
 template<class TM, class TF, class T, class Pvec>
-void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re, const bool want_local_enrichment = false, const bool display_vtu_crown = false, const string &prefix = "paraview" ) {
+void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list_interest_quantity, const unsigned &node_interest_quantity, const Pvec &pos_interest_quantity, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re, const bool want_local_enrichment = false, const bool display_vtu_crown = false, const string &filename = "paraview" ) {
     
     static const unsigned dim = TM::dim;
     
@@ -147,11 +147,11 @@ void define_extractor( TM &m, TM &m_crown, const TF &f, TF &f_crown, const strin
             
             apply( m_crown.elem_list, define_extractor_SIF, m_crown, f_crown );
             
-            const string prefix_crown = prefix + "_crown";
+            const string filename_crown = filename + "_crown";
             if ( display_vtu_crown )
-                display( m_crown, prefix_crown );
+                display( m_crown, filename_crown );
             else
-                save( m_crown, prefix_crown );
+                save( m_crown, filename_crown );
         }
         else {
             cerr << "Arret brutal, car la dimension " << dim << " pour la quantite d'interet " << interest_quantity << " n'est pas implementee..." << endl << endl;
@@ -311,16 +311,16 @@ void calcul_correction_interest_quantity( TM &m, TM &m_adjoint, const TF &f, con
         cout << "temps de calcul de la correction I_hh sur la quantite d'interet = " << t.res << endl << endl;
 }
 
-/// Construction d'un champ de contrainte admissible et Calcul d'un estimateur d'erreur globale sur la structure extraite, Affichage de l'estimateur
-/// -------------------------------------------------------------------------------------------------------------------------------------------------
+/// Construction d'un champ de contrainte admissible & Calcul d'un estimateur d'erreur globale sur la structure extraite, Affichage de l'estimateur
+/// -----------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T, class TVV>
 void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const T &k, T &theta_lambda, const TVV &dep_hat, TVV &dep_hat_lambda, const bool disp = false ) {
     
     typedef Vec<T> TV;
     
-    /// --------------------------------------------------------------------------------------------------------------------------------- ///
-    /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale sur la structure extraite ///
-    /// --------------------------------------------------------------------------------------------------------------------------------- ///
+    /// -------------------------------------------------------------------------------------------------------------------------------- ///
+    /// Construction d'un champ de contrainte admissible par element & Calcul d'un estimateur d'erreur globale sur la structure extraite ///
+    /// -------------------------------------------------------------------------------------------------------------------------------- ///
     
     /// Construction de la correspondance entre maillages extraits et maillages initiaux direct/adjoint
     /// -----------------------------------------------------------------------------------------------
@@ -394,9 +394,9 @@ void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f
 template<class TM, class TF, class T, class TVV, class Pvec>
 void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const T &h, const Pvec &domain_center, const Vec<T> &domain_length, const T &k_min, T &weighted_theta_lambda, const TVV &dep_hat, const bool disp = false ) {
     
-    /// ----------------------------------------------------------------------------------------------------------------------------------------- ///
-    /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur pondere d'erreur globale sur la structure extraite ///
-    /// ----------------------------------------------------------------------------------------------------------------------------------------- ///
+    /// ---------------------------------------------------------------------------------------------------------------------------------------- ///
+    /// Construction d'un champ de contrainte admissible par element & Calcul d'un estimateur pondere d'erreur globale sur la structure extraite ///
+    /// ---------------------------------------------------------------------------------------------------------------------------------------- ///
     
     /// Construction de la correspondance entre maillages extraits et maillages initiaux direct/adjoint
     /// -----------------------------------------------------------------------------------------------
@@ -452,16 +452,16 @@ void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF 
         cout << "temps de calcul de l'estimateur pondere d'erreur globale au carre (technique " << method << ") sur la structure extraite associee au pb " << pb << " de type " << shape << " = " << t.res << endl << endl;
 }
 
-/// Construction d'un champ de contrainte admissible, Calcul d'un estimateur d'erreur globale sur le bord de la structure extraite, Affichage de l'estimateur
-/// ---------------------------------------------------------------------------------------------------------------------------------------------------------
+/// Construction d'un champ de contrainte admissible & Calcul d'un estimateur d'erreur globale sur le bord de la structure extraite, Affichage de l'estimateur
+/// ----------------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T, class TVV, class Pvec>
 void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF &f, TF &f_lambda, const string &pb, const string &method, const string &shape, const Pvec &domain_center, const T &k, T &theta_lambda_boundary, const TVV &dep_hat, const bool disp = false ) {
     
     typedef Vec<T> TV;
     
-    /// -------------------------------------------------------------------------------------------------------------------------------------------- ///
-    /// Construction d'un champ de contrainte admissible par element et Calcul d'un estimateur d'erreur globale sur le bord de la structure extraite ///
-    /// -------------------------------------------------------------------------------------------------------------------------------------------- ///
+    /// ------------------------------------------------------------------------------------------------------------------------------------------- ///
+    /// Construction d'un champ de contrainte admissible par element & Calcul d'un estimateur d'erreur globale sur le bord de la structure extraite ///
+    /// ------------------------------------------------------------------------------------------------------------------------------------------- ///
     
     /// Construction de la correspondance entre maillages extraits et maillages initiaux direct/adjoint
     /// -----------------------------------------------------------------------------------------------
