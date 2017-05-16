@@ -165,8 +165,8 @@ class FormulationElasticity[ dim ] inherits LmtppFormulation[ dim ]
     sigma_hat_init := Variable[[dim,dim],sym=true]( interpolation="elementary", unit="N/m^2", tex_name = "\\hat{\\sigma}_{\\text{init}}" )
     ecre_init := Variable( interpolation="global", default_value=0, unit="1", tex_name = "{e_{\\text{cre}}}_{\\text{init}}" )
     ecre_elem_init := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{e_{\\text{cre}}^{\\text{elem}}}_{\\text{init}}^2" )
-    theta_init := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\theta_{\\text{init}}" )
-    theta_elem_init := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}_{\text{init}}}^2" )
+    error_estimate_init := Variable( interpolation="global", default_value=0, unit="1", tex_name = "\\theta_{\\text{init}}" )
+    error_estimate_elem_init := Variable( interpolation="elementary", default_value=0, unit="1", tex_name = "{\\theta^{\\text{elem}}_{\text{init}}}^2" )
 
     is_on_skin := Variable( interpolation="nodal", interpolation_base=base, default_value=0, unit="", tex_name = "is on skin" )
     normal := Variable[[dim]]( interpolation="nodal", interpolation_base=base, default_value=0, unit="1", tex_name = "normal" )
