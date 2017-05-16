@@ -92,7 +92,7 @@ struct Calcul_Vertex_Nodal_Matrix_K_hat {
 /// Construction des vecteurs F_hat[ j ] pour chaque noeud sommet j du maillage
 /// ---------------------------------------------------------------------------
 template<class TE, class TM, class TF, class TVV, class TV, class TVVV, class TTWW, class S, class B, class TTVV>
-void calc_vertex_nodal_vector_F_hat( const TE &elem, const TM &m, const TF &f, const TVV &elem_list_vertex_node, const TVV &face_type, const TV &connect_node_to_vertex_node, const TVVV &patch_elem, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, TTVV &F_hat ) {}
+void calc_vertex_nodal_vector_F_hat( const TE &elem, const TM &m, const TF &f, const TV &connect_node_to_vertex_node, const TVV &elem_list_vertex_node, const TVV &face_type, const TVVV &patch_elem, const TTWW &vectors, const Vec<unsigned> &indices, const S &pb, const B &want_local_enrichment, TTVV &F_hat ) {}
 
 struct Calcul_Vertex_Nodal_Vector_F_hat {
     const Vec<unsigned>* connect_node_to_vertex_node;
