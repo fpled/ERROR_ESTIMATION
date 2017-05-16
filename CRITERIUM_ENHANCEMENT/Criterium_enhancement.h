@@ -109,12 +109,11 @@ struct Calcul_Estimator_Ratio {
 /// Construction des vecteurs elem_flag_enh, face_flag_enh, node_flag_enh
 /// Construction des vecteurs elem_list_enh, face_list_enh, node_list_enh
 /// ------------------------------------------------------------------------
-template<class TE, class TM, class S, class B, class TTV, class T, class BV, class TV>
-void apply_criterium_enhancement( TE &e, const TM &m, const S &method, const B &enhancement_with_estimator_criterium, const B &enhancement_with_geometric_criterium, const TTV &estimator_ratio, const TTV &geometric_ratio, const T &val_estimator_criterium, const T &val_geometric_criterium, BV &elem_flag_enh, BV &face_flag_enh, BV &node_flag_enh, TV &elem_list_enh, TV &face_list_enh, TV &node_list_enh ) {}
+template<class TE, class TM, class B, class TTV, class T, class BV, class TV>
+void apply_criterium_enhancement( TE &e, const TM &m, const B &enhancement_with_estimator_criterium, const B &enhancement_with_geometric_criterium, const TTV &estimator_ratio, const TTV &geometric_ratio, const T &val_estimator_criterium, const T &val_geometric_criterium, BV &elem_flag_enh, BV &face_flag_enh, BV &node_flag_enh, TV &elem_list_enh, TV &face_list_enh, TV &node_list_enh ) {}
 
 template<class T>
 struct Apply_Criterium_Enhancement {
-    const string* method;
     const bool* enhancement_with_estimator_criterium;
     const bool* enhancement_with_geometric_criterium;
     const Vec<T>* estimator_ratio;
@@ -127,12 +126,7 @@ struct Apply_Criterium_Enhancement {
     Vec<unsigned>* node_list_enh;
     template<class TE, class TM> void operator()( TE &elem, const TM &m, Vec<unsigned> &elem_list_enh, Vec<unsigned> &face_list_enh ) const {
         if ( ( *enhancement_with_estimator_criterium and not( *enhancement_with_geometric_criterium ) and (*estimator_ratio)[ elem.number ] >= *val_estimator_criterium ) or ( not( *enhancement_with_estimator_criterium ) and *enhancement_with_geometric_criterium and (*geometric_ratio)[ elem.number ] <= *val_geometric_criterium ) or ( *enhancement_with_estimator_criterium and *enhancement_with_geometric_criterium and (*geometric_ratio)[ elem.number ] <= *val_geometric_criterium and (*estimator_ratio)[ elem.number ] >= *val_estimator_criterium ) ) {
-            if ( *method == "EET" ) {
-                elem.enhancement_EET = 1;
-            }
-            else if ( *method == "EESPT" ) {
-                elem.enhancement_EESPT = 1;
-            }
+            elem.enhancement = 1;
             (*elem_flag_enh)[ elem.number ] = 1;
             elem_list_enh.push_back( elem.number );
             for (unsigned k=0;k<NbChildrenElement<typename TE::NE,1>::res;++k) {

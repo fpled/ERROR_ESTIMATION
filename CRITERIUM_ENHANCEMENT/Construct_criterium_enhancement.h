@@ -225,7 +225,6 @@ void apply_criterium_enhancement( TM &m, const string &method, const bool &enhan
     }
     
     Apply_Criterium_Enhancement<T> apply_criterium_enhancement;
-    apply_criterium_enhancement.method = &method;
     apply_criterium_enhancement.enhancement_with_estimator_criterium = &enhancement_with_estimator_criterium;
     apply_criterium_enhancement.enhancement_with_geometric_criterium = &enhancement_with_geometric_criterium;
     apply_criterium_enhancement.estimator_ratio = &estimator_ratio;

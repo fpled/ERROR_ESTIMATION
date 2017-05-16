@@ -41,6 +41,7 @@ ENHANCEMENT/Enhancement_EET_EESPT.h
 ENHANCEMENT/Enhancement_EET_EESPT.met
 SPET/Calcul_error_estimate_partition_unity_PGD.h
 SPET/Construct_F_hat.h
+SPET/Construct_F_hat_PGD.h
 SPET/Construct_K_hat.h
 SPET/Construct_dep_hat.h
 SPET/Construct_kinematic_constraints_patch.h

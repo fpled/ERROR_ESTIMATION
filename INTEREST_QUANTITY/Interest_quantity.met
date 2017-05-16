@@ -743,15 +743,7 @@ def calc_elem_error_estimate_lambda( list_f, rep )
         file_ <<< "$(cw_0.to_string( 8 ))"
         file_ <<<<
                     // elem_lambda.sigma = sigma_proj_tmp;
-                    if ( method == "EET" ) {
-                        elem_lambda.sigma_hat_EET = sigma_hat_proj_tmp;
-                    }
-                    if ( method == "SPET" ) {
-                        elem_lambda.sigma_hat_SPET = sigma_hat_proj_tmp;
-                    }
-                    if ( method == "EESPT" ) {
-                        elem_lambda.sigma_hat_EESPT = sigma_hat_proj_tmp;
-                    }
+                    elem_lambda.sigma_hat = sigma_hat_proj_tmp;
         theta := Op( 0 )
 
         e->assume_const_jac = true
@@ -798,29 +790,12 @@ def calc_elem_error_estimate_lambda( list_f, rep )
         file_ <<< "    theta += theta_elem[ elem_lambda.number ];"
         file_ <<< "    }"
         file_ <<<<
-                if ( method == "EET" ) {
-                    if ( same_element ) {
-                        theta_elem[ elem_lambda.number ] = elem.theta_elem_EET;
-                        theta += theta_elem[ elem_lambda.number ];
-                    }
-                    elem_lambda.ecre_elem_EET = theta_elem[ elem_lambda.number ] / 2;
-                    elem_lambda.theta_elem_EET = theta_elem[ elem_lambda.number ];
+                if ( same_element ) {
+                    theta_elem[ elem_lambda.number ] = elem.error_estimate_elem;
+                    theta += theta_elem[ elem_lambda.number ];
                 }
-                if ( method == "SPET" ) {
-                    if ( same_element ) {
-                        theta_elem[ elem_lambda.number ] = elem.theta_elem_SPET;
-                        theta += theta_elem[ elem_lambda.number ];
-                    }
-                    elem_lambda.theta_elem_SPET = theta_elem[ elem_lambda.number ];
-                }
-                if ( method == "EESPT" ) {
-                    if ( same_element ) {
-                        theta_elem[ elem_lambda.number ] = elem.theta_elem_EESPT;
-                        theta += theta_elem[ elem_lambda.number ];
-                    }
-                    elem_lambda.ecre_elem_EESPT = theta_elem[ elem_lambda.number ] / 2;
-                    elem_lambda.theta_elem_EESPT = theta_elem[ elem_lambda.number ];
-                }
+                elem_lambda.ecre_elem = theta_elem[ elem_lambda.number ] / 2;
+                elem_lambda.error_estimate_elem = theta_elem[ elem_lambda.number ];
         file_ <<< "    #undef PNODE"
         file_ <<< "}"
         file_ <<< "}"

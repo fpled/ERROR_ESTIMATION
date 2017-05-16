@@ -47,6 +47,12 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     
     if ( disp ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {
+            T ecre_elem = theta_elem[ n ] / 2.;
+            T ecre_elem_init = theta_elem_init[ n ] / 2.;
+//            cout << "contribution a la mesure globale de l'erreur en relation de comportement au carre de l'element " << n << " :" << endl;
+//            cout << "ecre_elem^2 = " << ecre_elem << endl;
+//            cout << "ecre_elem_init^2 = " << ecre_elem_init << endl;
+            
             cout << "contribution a l'estimateur d'erreur globale au carre de l'element " << n << " :" << endl;
             cout << "theta_elem^2 = " << theta_elem[ n ] << endl;
             cout << "theta_elem_init^2 = " << theta_elem_init[ n ] << endl;
@@ -54,8 +60,26 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
         cout << endl;
     }
     
+    T ecre = theta / 2.;
+    T ecre_init = theta_init / 2.;
+//    cout << "mesure globale de l'erreur en relation de comportement au carre :" << endl;
+//    cout << "ecre^2 = " << ecre << endl;
+//    cout << "ecre_init^2 = " << ecre_init << endl << endl;
+    
+    ecre = sqrt( ecre );
+    ecre_init = sqrt( ecre_init );
     theta = sqrt( theta );
-    m.theta_SPET = theta;
+    theta_init = sqrt( theta_init );
+    
+    m.ecre = ecre;
+    m.ecre_init = ecre_init;
+    m.error_estimate = theta;
+    m.error_estimate_init = theta_init;
+    
+//    cout << "mesure globale de l'erreur en relation de comportement :" << endl;
+//    cout << "ecre = " << ecre << endl;
+//    cout << "ecre_init = " << ecre_init << endl << endl;
+    
     cout << "estimateur d'erreur globale :" << endl;
     cout << "theta = " << theta << endl;
     cout << "theta_init = " << theta_init << endl;
@@ -63,10 +87,10 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
     cout << "theta_init / norm(u_h_init) = " << theta_init / m.norm_dep_init * 100. << " %" << endl << endl;
     
     if ( pb == "direct" and want_global_discretization_error ) {
-        m.eff_index_SPET = theta / m.discretization_error;
+        m.eff_index = theta / m.discretization_error;
         cout << "indice d'efficacite global :" << endl;
         cout << "eta = theta / e" << endl;
-        cout << "    = " << m.eff_index_SPET << endl << endl;
+        cout << "    = " << m.eff_index << endl << endl;
     }
     
     if ( pb == "direct" and want_local_discretization_error ) {
@@ -74,7 +98,7 @@ void calcul_error_estimate_partition_unity( TM &m, const TF &f, const string &pb
         eff_index_elem.resize( m.elem_list.size() );
         eff_index_elem.set( 0. );
         
-        apply( m.elem_list, Calcul_Elem_Effectivity_Index(), method, eff_index_elem );
+        apply( m.elem_list, Calcul_Elem_Effectivity_Index(), eff_index_elem );
         
         if ( disp ) {
             for (unsigned n=0;n<m.elem_list.size();++n) {

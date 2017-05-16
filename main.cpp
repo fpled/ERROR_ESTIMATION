@@ -97,7 +97,7 @@ int main( int argc, char **argv ) {
     
     /// Adaptive remeshing (mesh refinement)
     /// ------------------------------------
-    static const bool want_remesh = 1; // remaillage adaptatif (raffinement du maillage)
+    static const bool want_remesh = 0; // remaillage adaptatif (raffinement du maillage)
     static const T tol_remesh = 1e-2; // tolerance pour le critère d'arrêt de l'algorithme de remaillage
     static const unsigned max_iter_remesh = 10; // nb d'iterations max de l'algorithme de remaillage
     static const T k_remesh = 0.25; // rapport maximal entre la contribution élémentaire au carré à l'erreur estimée et la contribution élémentaire maximale au carré des barres qui ne seront pas divisées
@@ -170,7 +170,7 @@ int main( int argc, char **argv ) {
     /// Display outputs
     /// ---------------
     static const bool display_vtu = 0;
-    static const bool display_pvd = 1;
+    static const bool display_pvd = 0;
     static const bool display_vtu_adjoint = 0;
     static const bool display_vtu_lambda = 0;
     static const bool display_vtu_adjoint_lambda = 0;
@@ -285,12 +285,7 @@ int main( int argc, char **argv ) {
         
         calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment );
         
-        if ( method.find("EET") != string::npos )
-            smoothing( m, ExtractDM< theta_nodal_DM >(), ExtractDM< theta_elem_EET_DM >() );
-        else if ( method.find("SPET") != string::npos )
-            smoothing( m, ExtractDM< theta_nodal_DM >(), ExtractDM< theta_elem_SPET_DM >() );
-        else if ( method.find("EESPT") != string::npos )
-            smoothing( m, ExtractDM< theta_nodal_DM >(), ExtractDM< theta_elem_EESPT_DM >() );
+        smoothing( m, ExtractDM< error_estimate_nodal_DM >(), ExtractDM< error_estimate_elem_DM >() );
         
         unsigned iter = 0;
         if ( want_remesh )
@@ -343,12 +338,7 @@ int main( int argc, char **argv ) {
             
             calcul_global_error_estimation( f, m, "direct", method, cost_function, penalty_val_N, solver, solver_minimisation, enhancement_with_geometric_criterium, enhancement_with_estimator_criterium, geometric_criterium, val_geometric_criterium, val_estimator_criterium, theta, theta_elem, dep_hat, verif_compatibility_conditions, tol_compatibility_conditions, verif_eq_force_fluxes, tol_eq_force_fluxes, verif_solver, tol_solver, verif_solver_enhancement, tol_solver_enhancement, verif_solver_minimisation, tol_solver_minimisation, verif_solver_minimisation_enhancement, tol_solver_minimisation_enhancement, want_global_discretization_error, want_local_discretization_error, want_local_enrichment, iter );
             
-            if ( method.find("EET") != string::npos )
-                smoothing( m, ExtractDM< theta_nodal_DM >(), ExtractDM< theta_elem_EET_DM >() );
-            else if ( method.find("SPET") != string::npos )
-                smoothing( m, ExtractDM< theta_nodal_DM >(), ExtractDM< theta_elem_SPET_DM >() );
-            else if ( method.find("EESPT") != string::npos )
-                smoothing( m, ExtractDM< theta_nodal_DM >(), ExtractDM< theta_elem_EESPT_DM >() );
+            smoothing( m, ExtractDM< error_estimate_nodal_DM >(), ExtractDM< error_estimate_elem_DM >() );
             
 //            display( m, filename + "_adapt_" + to_string( iter )  );
             dp.add_mesh_iter( m, filename + "_adapt", lp, iter );

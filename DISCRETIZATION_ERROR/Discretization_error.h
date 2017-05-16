@@ -70,19 +70,9 @@ struct Set_Elem_Discretization_Error {
 /// Calcul de l'indice d'efficacite local
 /// -------------------------------------
 struct Calcul_Elem_Effectivity_Index {
-    template<class TE, class TV> void operator()( TE &elem, const string &method, TV &eff_index_elem ) const {
-        if ( method == "EET" ) {
-            elem.eff_index_elem_EET = sqrt( elem.theta_elem_EET / elem.discretization_error_elem );
-            eff_index_elem[ elem.number ] = elem.eff_index_elem_EET;
-        }
-        else if ( method == "SPET" ) {
-            elem.eff_index_elem_SPET = sqrt( elem.theta_elem_SPET / elem.discretization_error_elem );
-            eff_index_elem[ elem.number ] = elem.eff_index_elem_SPET;
-        }
-        else if ( method == "EESPT" ) {
-            elem.eff_index_elem_EESPT = sqrt( elem.theta_elem_EESPT / elem.discretization_error_elem );
-            eff_index_elem[ elem.number ] = elem.eff_index_elem_EESPT;
-        }
+    template<class TE, class TV> void operator()( TE &elem, TV &eff_index_elem ) const {
+        elem.eff_index_elem = sqrt( elem.error_estimate_elem / elem.discretization_error_elem );
+        eff_index_elem[ elem.number ] = elem.eff_index_elem;
     }
 };
 

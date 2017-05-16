@@ -142,8 +142,8 @@ struct Calcul_Elem_Vector_Dep_hat {
     }
 };
 
-/// Construction de la matrice sigma_hat & Calcul d'un estimateur d'erreur globale au carre theta
-/// ---------------------------------------------------------------------------------------------
+/// Construction d'un champ admissible sigma_hat & Calcul d'un estimateur d'erreur globale au carre theta
+/// -----------------------------------------------------------------------------------------------------
 template<class TE, class TM, class TF, class TTVV, class TTWW, class TTV, class TT>
 void calc_elem_error_estimate_SPET( TE &elem, const TM &m, const TF &f, const TTVV &dep_hat, const TTWW &vectors, const Vec<unsigned> &indices, TTV &theta_elem, TT &theta ) {}
 
@@ -154,6 +154,31 @@ struct Calcul_Elem_Error_Estimate_SPET {
     template<class TE, class TM, class TF, class T> void operator()( TE &elem, const TM &m, const TF &f, T &theta ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
         calc_elem_error_estimate_SPET( elem, m, f, *dep_hat, f.vectors, ind, *theta_elem, theta );
+    }
+};
+
+template<class TV, class TVV>
+struct Calcul_Elem_Error_Estimate_SPET_Dis {
+    const TVV* dep;
+    const Vec< Vec<unsigned> >* elem_group;
+    const TVV* dep_hat;
+    TV* theta_elem;
+    template<class TE, class TM, class TF, class T> void operator()( TE &elem, const TM &m, const TF &f, T &theta ) const {
+        Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
+        Vec<Vec<typename TE::T>,TF::nb_vectors> vectors;
+        for (unsigned g=0;g<(*elem_group).size();++g) {
+            if ( find( (*elem_group)[g], _1 == elem.number ) )
+                vectors[0] = (*dep)[g];
+        }
+        calc_elem_error_estimate_SPET( elem, m, f, *dep_hat, f.vectors, ind, *theta_elem, theta );
+    }
+};
+
+struct Calc_Elem_Error_Estimate_SPET_PGD {
+    template<class TE, class TV> void operator()( TE &elem, TV &theta_elem ) const {
+        elem.ecre_elem = elem.ecre_elem_PGD + elem.ecre_elem_dis;
+        elem.error_estimate_elem = elem.error_estimate_elem_PGD + elem.error_estimate_elem_dis;
+        theta_elem[ elem.number ] = elem.ecre_elem;
     }
 };
 

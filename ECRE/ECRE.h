@@ -1,7 +1,7 @@
 //
 // C++ Interface: ECRE
 //
-// Description: construction de champs admissibles, methodes EESPT et EET : calcul d'un champ admissible et d'un estimateur theta d'erreur globale
+// Description: construction de champs admissibles, methodes EESPT et EET : calcul d'un champ admissible et d'un estimateur d'erreur globale
 //
 //
 // Author: Pled Florent <pled@lmt.ens-cachan.fr>, (C) 2009
@@ -49,88 +49,68 @@ struct Calcul_Elem_Vector_F_hat {
     }
 };
 
-/// Construction de la matrice sigma_hat & Calcul d'un estimateur d'erreur globale au carre theta
-/// ---------------------------------------------------------------------------------------------
-template<class TE, class TM, class TF, class TTWW, class TTVV, class S, class TTV, class TT>
-void calc_elem_error_estimate_EET_EESPT( TE &elem, const TM &m, const TF &f, const TTWW &vectors, const Vec<unsigned> &indices, const TTVV &dep_hat, const S &method, TTV &theta_elem, TT &theta ) {}
+/// Construction d'un champ admissible sigma_hat & Calcul d'un estimateur d'erreur globale au carre theta
+/// -----------------------------------------------------------------------------------------------------
+template<class TE, class TM, class TF, class TTWW, class TTVV, class TTV, class TT>
+void calc_elem_error_estimate( TE &elem, const TM &m, const TF &f, const TTWW &vectors, const Vec<unsigned> &indices, const TTVV &dep_hat, TTV &theta_elem, TT &theta ) {}
 
 template<class TV, class TVV>
-struct Calc_Elem_Error_Estimate_EET_EESPT {
+struct Calc_Elem_Error_Estimate {
     const TVV* dep_hat;
-    const string* method;
     TV* theta_elem;
     template<class TE, class TM, class TF, class T> void operator()( TE &elem, const TM &m, const TF &f, T &theta ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
-        if ( *method == "EET" ) {
-            elem.ecre_elem_EET = 0.0;
-            elem.theta_elem_EET = 0.0;
-        }
-        if ( *method == "EESPT" ) {
-            elem.ecre_elem_EESPT = 0.0;
-            elem.theta_elem_EESPT = 0.0;
-        }
-        calc_elem_error_estimate_EET_EESPT( elem, m, f, f.vectors, ind, *dep_hat, *method, *theta_elem, theta );
+        elem.ecre_elem = 0.0;
+        elem.error_estimate_elem = 0.0;
+        calc_elem_error_estimate( elem, m, f, f.vectors, ind, *dep_hat, *theta_elem, theta );
     }
 };
 
-template<class TE, class TM, class TF, class TTWW, class S, class TTV, class TT>
-void calc_elem_error_estimate_FE( TE &elem, const TM &m, const TF &f, const TTWW &vectors, const TTWW &new_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &new_indices, const S &method, TTV &theta_elem, TT &theta ) {}
+template<class TE, class TM, class TF, class TTWW, class TTV, class TT>
+void calc_elem_error_estimate_PGD( TE &elem, const TM &m, const TF &f, const TTWW &vectors, const TTWW &FE_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &FE_indices, TTV &theta_elem_PGD, TT &theta_PGD ) {}
 
 template<class TV, class TVV>
-struct Calc_Elem_Error_Estimate_FE {
+struct Calc_Elem_Error_Estimate_PGD {
     const TVV* dep;
     const Vec< Vec<unsigned> >* elem_group;
-    const string* method;
-    TV* theta_elem;
-    template<class TE, class TM, class TF, class T> void operator()( TE &elem, const TM &m, const TF &f, T &theta ) const {
+    TV* theta_elem_PGD;
+    template<class TE, class TM, class TF, class T> void operator()( TE &elem, const TM &m, const TF &f, T &theta_PGD ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
         Vec<Vec<typename TE::T>,TF::nb_vectors> vectors;
         for (unsigned g=0;g<(*elem_group).size();++g) {
             if ( find( (*elem_group)[g], _1 == elem.number ) )
                 vectors[0] = (*dep)[g];
         }
-        if ( *method == "EET" ) {
-            elem.ecre_elem_EET = 0.0;
-            elem.theta_elem_EET = 0.0;
-        }
-        else if ( *method == "EESPT" ) {
-            elem.ecre_elem_EESPT = 0.0;
-            elem.theta_elem_EESPT = 0.0;
-        }
-        else if ( *method == "SPET" ) {
-            elem.theta_elem_SPET = 0.0;
-        }
-        calc_elem_error_estimate_FE( elem, m, f, f.vectors, vectors, ind, ind, *method, *theta_elem, theta );
+        elem.ecre_elem_PGD = 0.0;
+        elem.error_estimate_elem_PGD = 0.0;
+        calc_elem_error_estimate_PGD( elem, m, f, f.vectors, vectors, ind, ind, *theta_elem_PGD, theta_PGD );
     }
 };
 
-template<class TE, class TM, class TF, class TTWW, class TTVV, class S, class TTV, class TT>
-void calc_elem_error_estimate_init_EET_EESPT( TE &elem, const TM &m, const TF &f, const TTWW &vectors, const Vec<unsigned> &indices, const TTVV &dep_hat, const S &method, TTV &theta_elem, TTV &theta_elem_init, TT &theta, TT &theta_init ) {}
+struct Calc_Elem_Error_Estimate_Dis {
+    template<class TE, class TV> void operator()( TE &elem, TV &theta_elem_dis ) const {
+        elem.ecre_elem_dis = elem.ecre_elem - elem.ecre_elem_PGD;
+        elem.error_estimate_elem_dis = elem.error_estimate_elem - elem.error_estimate_elem_PGD;
+        theta_elem_dis[ elem.number ] = elem.ecre_elem_dis;
+    }
+};
+
+template<class TE, class TM, class TF, class TTWW, class TTVV, class TTV, class TT>
+void calc_elem_error_estimate_init( TE &elem, const TM &m, const TF &f, const TTWW &vectors, const Vec<unsigned> &indices, const TTVV &dep_hat, TTV &theta_elem, TTV &theta_elem_init, TT &theta, TT &theta_init ) {}
 
 template<class T, class TV, class TVV>
-struct Calc_Elem_Error_Estimate_Init_EET_EESPT {
+struct Calc_Elem_Error_Estimate_Init {
     const TVV* dep_hat;
-    const string* method;
     TV* theta_elem;
     TV* theta_elem_init;
     T* theta_init;
     template<class TE, class TM, class TF> void operator()( TE &elem, const TM &m, const TF &f, T &theta ) const {
         Vec<unsigned,TE::nb_nodes+1+TF::nb_global_unknowns> ind = f.indices_for_element( elem );
-        if ( *method == "EET" ) {
-            elem.ecre_elem_EET = 0.0;
-            elem.ecre_elem_init_EET = 0.0;
-            
-            elem.theta_elem_EET = 0.0;
-            elem.theta_elem_init_EET = 0.0;
-        }
-        if ( *method == "EESPT" ) {
-            elem.ecre_elem_EESPT = 0.0;
-            elem.ecre_elem_init_EESPT = 0.0;
-            
-            elem.theta_elem_EESPT = 0.0;
-            elem.theta_elem_init_EESPT = 0.0;
-        }
-        calc_elem_error_estimate_init_EET_EESPT( elem, m, f, f.vectors, ind, *dep_hat, *method, *theta_elem, *theta_elem_init, theta, *theta_init );
+        elem.ecre_elem = 0.0;
+        elem.ecre_elem_init = 0.0;
+        elem.error_estimate_elem = 0.0;
+        elem.error_estimate_elem_init = 0.0;
+        calc_elem_error_estimate_init( elem, m, f, f.vectors, ind, *dep_hat, *theta_elem, *theta_elem_init, theta, *theta_init );
     }
 };
 

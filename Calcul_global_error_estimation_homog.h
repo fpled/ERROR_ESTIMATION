@@ -15,15 +15,19 @@
 #include "EET/Construct_standard_force_fluxes_EET.h"
 #include "EESPT/Construct_standard_force_fluxes_EESPT.h"
 #include "ENHANCEMENT/Construct_enhanced_force_fluxes_EET_EESPT.h"
+#include "CRITERIUM_ENHANCEMENT/Construct_criterium_enhancement.h"
 #include "ECRE/Construct_K_hat.h"
 #include "ECRE/Construct_F_hat.h"
 #include "ECRE/Construct_dep_hat.h"
 #include "ECRE/Calcul_error_estimate_prolongation_condition.h"
 #include "ECRE/Calcul_error_estimate_prolongation_condition_homog.h"
+#include "SPET/Set_patch.h"
+#include "SPET/Construct_K_hat.h"
+#include "SPET/Construct_F_hat.h"
+#include "SPET/Construct_dep_hat.h"
 #include "SPET/Calcul_error_estimate_partition_unity.h"
 #include "SPET/Calcul_error_estimate_partition_unity_homog.h"
 #include "VERIFICATION/Verification.h"
-#include "CRITERIUM_ENHANCEMENT/Construct_criterium_enhancement.h"
 #include "Display.h"
 
 using namespace LMT;
@@ -106,7 +110,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// Construction d'un champ de contrainte admissible & Calcul d'un estimateur d'erreur globale
             /// ------------------------------------------------------------------------------------------
             
-            calcul_error_estimate_prolongation_condition( m, f, pb, "EET", theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error, disp );
+            calcul_error_estimate_prolongation_condition( m, f, pb, theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error, disp );
             
             if ( enhancement_with_estimator_criterium ) {
                 
@@ -168,7 +172,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// Construction d'un champ de contrainte admissible & Calcul d'un estimateur d'erreur globale
             /// ------------------------------------------------------------------------------------------
             
-            calcul_error_estimate_prolongation_condition( m, f, pb, "EET", theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error, disp );
+            calcul_error_estimate_prolongation_condition( m, f, pb, theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error, disp );
             
         }
         
@@ -303,7 +307,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// Construction d'un champ de contrainte admissible & Calcul d'un estimateur d'erreur globale
             /// ------------------------------------------------------------------------------------------
             
-            calcul_error_estimate_prolongation_condition( m, f, pb, "EESPT", theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error, disp );
+            calcul_error_estimate_prolongation_condition( m, f, pb, theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error, disp );
             
             if ( enhancement_with_estimator_criterium ) {
                 
@@ -365,7 +369,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
             /// Construction d'un champ de contrainte admissible & Calcul d'un estimateur d'erreur globale
             /// ------------------------------------------------------------------------------------------
             
-            calcul_error_estimate_prolongation_condition( m, f, pb, "EESPT", theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error, disp );
+            calcul_error_estimate_prolongation_condition( m, f, pb, theta, theta_init, theta_elem, theta_elem_init, dep_hat, want_global_discretization_error, want_local_discretization_error, disp );
             
         }
         

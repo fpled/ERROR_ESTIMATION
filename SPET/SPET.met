@@ -488,10 +488,10 @@ def calc_elem_error_estimate_SPET( list_f, rep )
         sigma_hat := child_cast(f)->sigma.expr + sigma_hooke_iso( e->grad_sym( dep_hat_e ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         sigma_hat_const_in_elem := sigma_hat.subs( e->var_inter, e->get_center_of_var_inter() )
         cw_0 := CodeWriterAlt( "T" )
-        cw_0.add( "elem.sigma_hat_SPET", sigma_hat_const_in_elem, reassign )
+        cw_0.add( "elem.sigma_hat", sigma_hat_const_in_elem, reassign )
         file_ <<< "    {"
         file_ <<< "$(cw_0.to_string( 4 ))"
-        file_ <<< "    elem.sigma_hat_tot_SPET = elem.sigma_hat_SPET + elem.sigma_handbook_PUM;"
+        file_ <<< "    elem.sigma_hat_tot = elem.sigma_hat + elem.sigma_handbook_PUM;"
         file_ <<< "    }"
         theta := Op( 0 )
 
@@ -530,7 +530,8 @@ def calc_elem_error_estimate_SPET( list_f, rep )
                     }
         file_ <<<<
                 theta += theta_elem[ elem.number ];
-                elem.theta_elem_SPET = theta_elem[ elem.number ];
+                elem.ecre_elem = theta_elem[ elem.number ] / 2;
+                elem.error_estimate_elem = theta_elem[ elem.number ];
         file_ <<< "    #undef PNODE"
         file_ <<< "}"
         file_ <<< "}"
@@ -574,11 +575,11 @@ def calc_elem_error_estimate_init_SPET( list_f, rep )
         sigma_hat_init := sigma_hat - child_cast(f)->pre_sigma.expr + sigma_hooke_iso( child_cast(f)->pre_epsilon_init.expr, child_cast(f)->young_init.expr, child_cast(f)->poisson_init.expr, hyp_plane_2D ) - sigma_hooke_iso( child_cast(f)->pre_epsilon_init.expr, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         sigma_hat_init_const_in_elem := sigma_hat_init.subs( e->var_inter, e->get_center_of_var_inter() )
         cw_0 := CodeWriterAlt( "T" )
-        cw_0.add( "elem.sigma_hat_SPET", sigma_hat_const_in_elem, reassign )
-        cw_0.add( "elem.sigma_hat_init_SPET", sigma_hat_init_const_in_elem, reassign )
+        cw_0.add( "elem.sigma_hat", sigma_hat_const_in_elem, reassign )
+        cw_0.add( "elem.sigma_hat_init", sigma_hat_init_const_in_elem, reassign )
         file_ <<< "    {"
         file_ <<< "$(cw_0.to_string( 4 ))"
-        file_ <<< "    elem.sigma_hat_tot_SPET = elem.sigma_hat_SPET + elem.sigma_handbook_PUM;"
+        file_ <<< "    elem.sigma_hat_tot = elem.sigma_hat + elem.sigma_handbook_PUM;"
         file_ <<< "    }"
         theta := Op( 0 )
         theta_init := Op( 0 )
@@ -628,8 +629,10 @@ def calc_elem_error_estimate_init_SPET( list_f, rep )
         file_ <<<<
                 theta += theta_elem[ elem.number ];
                 theta_init += theta_elem_init[ elem.number ];
-                elem.theta_elem_SPET = theta_elem[ elem.number ];
-                elem.theta_elem_init_SPET = theta_elem_init[ elem.number ];
+                elem.ecre_elem = theta_elem[ elem.number ] / 2;
+                elem.ecre_elem_init = theta_elem_init[ elem.number ] / 2;
+                elem.error_estimate_elem = theta_elem[ elem.number ];
+                elem.error_estimate_elem_init = theta_elem_init[ elem.number ];
         file_ <<< "    #undef PNODE"
         file_ <<< "}"
         file_ <<< "}"

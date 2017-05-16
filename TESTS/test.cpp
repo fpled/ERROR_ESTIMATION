@@ -242,25 +242,25 @@ int main( int argc, char **argv ) {
 //    level_set_cut( m, ExtractDM< phi_domain_DM >(), spread_cut );
 
 //    for( unsigned i = 0 ; i < m.node_list.size(); ++i )
-//        m.node_list[i].theta_nodal = sin( std::sqrt( i ) * 5. );
-//    refinement_if_nodal_field_sup( m, ExtractDM< theta_nodal_DM >(), 0.75, spread_cut );
+//        m.node_list[i].error_estimate_nodal = sin( std::sqrt( i ) * 5. );
+//    refinement_if_nodal_field_sup( m, ExtractDM< error_estimate_nodal_DM >(), 0.75, spread_cut );
 
 //    for( unsigned i = 0 ; i < m.node_list.size(); ++i )
-//        m.node_list[i].theta_nodal = sin( std::sqrt( i ) * 5. );
-//    refinement_if_constraints_or_nodal_field_sup( m, f, ExtractDM< theta_nodal_DM >(), 0.75, spread_cut );
+//        m.node_list[i].error_estimate_nodal = sin( std::sqrt( i ) * 5. );
+//    refinement_if_constraints_or_nodal_field_sup( m, f, ExtractDM< error_estimate_nodal_DM >(), 0.75, spread_cut );
 
 //    for( unsigned n = 0 ; n < m.elem_list.size(); ++n )
-//        m.elem_list[n]->set_field( "theta_elem_EET", sin( std::sqrt( n ) * 5. ) );
-//    refinement_if_elem_field_sup( m, theta_elem_EET_DM(), 0.75, spread_cut );
+//        m.elem_list[n]->set_field( "error_estimate_elem", sin( std::sqrt( n ) * 5. ) );
+//    refinement_if_elem_field_sup( m, error_estimate_elem_DM(), 0.75, spread_cut );
 
 //    for( unsigned n = 0 ; n < m.elem_list.size(); ++n )
-//        m.elem_list[n]->set_field( "theta_elem_EET", sin( std::sqrt( n ) * 5. ) );
-//    refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_EET_DM(), 0.75, spread_cut );
+//        m.elem_list[n]->set_field( "error_estimate_elem", sin( std::sqrt( n ) * 5. ) );
+//    refinement_if_constraints_or_elem_field_sup( m, f, error_estimate_elem_DM(), 0.75, spread_cut );
 
 //    for( unsigned n = 0 ; n < m.elem_list.size(); ++n )
-//        m.elem_list[n]->set_field( "theta_elem_EET", sin( std::sqrt( n ) * 5. ) );
-//    smoothing( m, ExtractDM< theta_nodal_DM >(), ExtractDM< theta_elem_EET_DM >() );
-//    refinement_if_nodal_field_sup( m, ExtractDM< theta_nodal_DM >(), 0.75, spread_cut );
+//        m.elem_list[n]->set_field( "theta_elem", sin( std::sqrt( n ) * 5. ) );
+//    smoothing( m, ExtractDM< error_estimate_nodal_DM >(), ExtractDM< error_estimate_elem_DM >() );
+//    refinement_if_nodal_field_sup( m, ExtractDM< error_estimate_nodal_DM >(), 0.75, spread_cut );
 
 //    divide( m );
 

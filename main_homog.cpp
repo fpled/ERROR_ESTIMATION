@@ -164,7 +164,7 @@ int main( int argc, char **argv ) {
     /// Display outputs
     /// ---------------
     static const bool display_vtu = 0;
-    static const bool display_pvd = 1;
+    static const bool display_pvd = 0;
     static const bool display_vtu_adjoint = 0;
     static const bool display_vtu_lambda = 0;
     static const bool display_vtu_adjoint_lambda = 0;

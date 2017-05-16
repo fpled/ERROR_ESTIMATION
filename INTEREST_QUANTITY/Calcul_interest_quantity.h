@@ -367,17 +367,8 @@ void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f
 //    }
     
     theta_lambda = sqrt( theta_lambda );
-    if ( method == "EET" ) {
-        m_lambda.ecre_EET = theta_lambda / sqrt(2.);
-        m_lambda.theta_EET = theta_lambda;
-    }
-    if ( method == "EESPT" ) {
-        m_lambda.ecre_EESPT = theta_lambda / sqrt(2.);
-        m_lambda.theta_EESPT = theta_lambda;
-    }
-    if ( method == "SPET" ) {
-        m_lambda.theta_SPET = theta_lambda;
-    }
+    m_lambda.ecre = theta_lambda / sqrt(2.);
+    m_lambda.error_estimate = theta_lambda;
     
     if ( disp ) {
         cout << "estimateur d'erreur globale sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " :" << endl;

@@ -336,17 +336,17 @@ def calc_elem_vector_F_hat( list_f, rep )
         file_ <<< "#endif"
     return file_names
 
-# Methode qui genere un fichier calc_elem_error_estimate_EET_EESPT_$(f->name).$(e->dim).$(e->name).h pour construire un champ de contrainte admissible et calculer la contribution d'un element a l'estimateur d'erreur
-#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-def calc_elem_error_estimate_EET_EESPT( list_f, rep )
+# Methode qui genere un fichier calc_elem_error_estimate_$(f->name).$(e->dim).$(e->name).h pour construire un champ de contrainte admissible et calculer la contribution d'un element a l'estimateur d'erreur
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_elem_error_estimate( list_f, rep )
     file_names := Vec[String]()
     for f in list_f
         e := child_cast( f->pe )
-        file_name_ := "calc_elem_error_estimate_EET_EESPT_$(f->name).$(e->dim).$(e->name).h"
+        file_name_ := "calc_elem_error_estimate_$(f->name).$(e->dim).$(e->name).h"
         file_names.push_back( file_name_ )
-        file_ := File( rep + "/calc_elem_error_estimate_EET_EESPT_$(f->name).$(e->dim).$(e->name).h", "w" )
-        file_ <<< "#ifndef calc_elem_error_estimate_EET_EESPT_$(f->name)_$(e->dim)_$(e->name)_h"
-        file_ <<< "#define calc_elem_error_estimate_EET_EESPT_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ := File( rep + "/calc_elem_error_estimate_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_elem_error_estimate_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_elem_error_estimate_$(f->name)_$(e->dim)_$(e->name)_h"
         if integration_type == "gauss_num" and integration_lang == "cpp"
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_NodalElement.h\""
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Bar.h\""
@@ -355,8 +355,8 @@ def calc_elem_error_estimate_EET_EESPT( list_f, rep )
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Tetra.h\""
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
         file_ <<< "namespace LMT {"
-        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class S, class T>"
-        file_ <<< "void calc_elem_error_estimate_EET_EESPT( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const TTVV &vectors, const Vec<unsigned> &indices, const Vec< Vec<T> > &dep_hat, const S &method, Vec<T> &theta_elem, T &theta ) {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class T>"
+        file_ <<< "void calc_elem_error_estimate( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const TTVV &vectors, const Vec<unsigned> &indices, const Vec< Vec<T> > &dep_hat, Vec<T> &theta_elem, T &theta ) {"
         file_ <<< "    #define PNODE(N) elem.node(N)"
         deg_p := max( e->order_interpolation )
         sym_dep_hat_expr := Vec[ Op ]()
@@ -378,14 +378,8 @@ def calc_elem_error_estimate_EET_EESPT( list_f, rep )
                 {
         file_ <<< "$(cw_0.to_string( 4 ))"
         file_ <<<<
-                if ( method == "EET" ) {
-                    elem.sigma_hat_EET = sigma_hat;
-                    elem.sigma_hat_tot_EET = sigma_hat + elem.sigma_handbook_PUM;
-                }
-                if ( method == "EESPT" ) {
-                    elem.sigma_hat_EESPT = sigma_hat;
-                    elem.sigma_hat_tot_EESPT = sigma_hat + elem.sigma_handbook_PUM;
-                }
+                elem.sigma_hat = sigma_hat;
+                elem.sigma_hat_tot = sigma_hat + elem.sigma_handbook_PUM;
                 }
         theta := Op( 0 )
 
@@ -427,31 +421,25 @@ def calc_elem_error_estimate_EET_EESPT( list_f, rep )
                     }
         file_ <<<<
                 theta += theta_elem[ elem.number ];
-                if ( method == "EET" ) {
-                    elem.ecre_elem_EET = theta_elem[ elem.number ] / 2;
-                    elem.theta_elem_EET = theta_elem[ elem.number ];
-                }
-                if ( method == "EESPT" ) {
-                    elem.ecre_elem_EESPT = theta_elem[ elem.number ] / 2;
-                    elem.theta_elem_EESPT = theta_elem[ elem.number ];
-                }
+                elem.ecre_elem = theta_elem[ elem.number ] / 2;
+                elem.error_estimate_elem = theta_elem[ elem.number ];
         file_ <<< "    #undef PNODE"
         file_ <<< "}"
         file_ <<< "}"
         file_ <<< "#endif"
     return file_names
 
-# Methode qui genere un fichier calc_elem_error_estimate_FE_$(f->name).$(e->dim).$(e->name).h pour construire un champ de contrainte admissible au sens EF et calculer la contribution d'un element a l'estimateur d'erreur
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-def calc_elem_error_estimate_FE( list_f, rep )
+# Methode qui genere un fichier calc_elem_error_estimate_PGD_$(f->name).$(e->dim).$(e->name).h pour construire un champ de contrainte admissible au sens EF et calculer la contribution d'un element a l'estimateur d'erreur
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+def calc_elem_error_estimate_PGD( list_f, rep )
     file_names := Vec[String]()
     for f in list_f
         e := child_cast( f->pe )
-        file_name_ := "calc_elem_error_estimate_FE_$(f->name).$(e->dim).$(e->name).h"
+        file_name_ := "calc_elem_error_estimate_PGD_$(f->name).$(e->dim).$(e->name).h"
         file_names.push_back( file_name_ )
-        file_ := File( rep + "/calc_elem_error_estimate_FE_$(f->name).$(e->dim).$(e->name).h", "w" )
-        file_ <<< "#ifndef calc_elem_error_estimate_FE_$(f->name)_$(e->dim)_$(e->name)_h"
-        file_ <<< "#define calc_elem_error_estimate_FE_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ := File( rep + "/calc_elem_error_estimate_PGD_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_elem_error_estimate_PGD_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_elem_error_estimate_PGD_$(f->name)_$(e->dim)_$(e->name)_h"
         if integration_type == "gauss_num" and integration_lang == "cpp"
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_NodalElement.h\""
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Bar.h\""
@@ -460,35 +448,46 @@ def calc_elem_error_estimate_FE( list_f, rep )
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Tetra.h\""
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
         file_ <<< "namespace LMT {"
-        e_new := new SymbolicElement[ e->name, e->dim ]( name_elem = "elem", tex_symbol_pos = "P", node_numbers_to_node_numbers_in_parent_cpp = range(e->nb_nodes).map( e->corr_cpp ) )
-        e_new->assume_const_jac = e->assume_const_jac
-        Tf_new := f->name
-        f_new := new FormulationElasticity[ e_new->dim ]( @e_new, "new_" )
-        f_new->name = Tf_new
-        f_new->make_matrices( @e_new, integration_type, e_new->assume_const_jac, degre_poly_handbook )
-        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class S, class T>"
-        file_ <<< "void calc_elem_error_estimate_FE( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const TTVV &vectors, const TTVV &new_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &new_indices, const S &method, Vec<T> &theta_elem, T &theta ) {"
+        e_FE := new SymbolicElement[ e->name, e->dim ]( name_elem = "elem", tex_symbol_pos = "P", node_numbers_to_node_numbers_in_parent_cpp = range(e->nb_nodes).map( e->corr_cpp ) )
+        e_FE->assume_const_jac = e->assume_const_jac
+        Tf_FE := f->name
+        f_FE := new FormulationElasticity[ e_FE->dim ]( @e_FE, "FE_" )
+        f_FE->name = Tf_FE
+        f_FE->make_matrices( @e_FE, integration_type, e_FE->assume_const_jac, degre_poly_handbook )
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class T>"
+        file_ <<< "void calc_elem_error_estimate_PGD( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const TTVV &vectors, const TTVV &FE_vectors, const Vec<unsigned> &indices, const Vec<unsigned> &FE_indices, Vec<T> &theta_elem, T &theta ) {"
         file_ <<< "    #define PNODE(N) elem.node(N)"
         deg_p := max( e->order_interpolation )
-        e_var_inter := e_new->var_inter_for_pos( e->pos, 1 )
-        epsilon_new_proj := ( f_new->epsilon.expr ).subs( e_new->var_inter, e_var_inter )
-        sigma_new_proj := ( f_new->sigma.expr ).subs( e_new->var_inter, e_var_inter )
+        e_var_inter := e_FE->var_inter_for_pos( e->pos, 1 )
+        epsilon_FE_proj := ( f_FE->epsilon.expr ).subs( e_FE->var_inter, e_var_inter )
+        sigma_FE_proj := ( f_FE->sigma.expr ).subs( e_FE->var_inter, e_var_inter )
+        sigma_FE_const_in_elem := ( f_FE->sigma.expr ).subs( e_FE->var_inter, e_FE->get_center_of_var_inter() )
+        cw_0 := CodeWriterAlt( "T" )
+        cw_0.add( "sigma_FE", sigma_FE_const_in_elem, reassign )
+        file_ <<<<
+                Mat<T, Sym<>, SparseLine<> > sigma_FE;
+                sigma_FE.resize( $(e->dim) );
+                {
+        file_ <<< "$(cw_0.to_string( 4 ))"
+        file_ <<<<
+                elem.sigma_FE = sigma_FE;
+                }
         theta := Op( 0 )
 
         e->assume_const_jac = true
         epsilon_const_jac := e->grad_sym( child_cast(f)->dep.expr )
         sigma_const_jac := sigma_hooke_iso( epsilon_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
         e->assume_const_jac = hyp_const_jac
-        e_new->assume_const_jac = true
-        epsilon_new_const_jac := e_new->grad_sym( f_new->dep.expr )
-        sigma_new_const_jac := sigma_hooke_iso( epsilon_new_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
-        e_new->assume_const_jac = hyp_const_jac
-        degre_poly := ( ( sigma_const_jac - sigma_new_const_jac ) : eps_hooke_iso( ( sigma_const_jac - sigma_new_const_jac ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ).poly_deg( e->var_inter )
+        e_FE->assume_const_jac = true
+        epsilon_FE_const_jac := e_FE->grad_sym( f_FE->dep.expr )
+        sigma_FE_const_jac := sigma_hooke_iso( epsilon_FE_const_jac, child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D )
+        e_FE->assume_const_jac = hyp_const_jac
+        degre_poly := ( ( sigma_const_jac - sigma_FE_const_jac ) : eps_hooke_iso( ( sigma_const_jac - sigma_FE_const_jac ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ) ).poly_deg( e->var_inter )
         
         if integration_type == "gauss_num"
-            theta = e->gauss_num_integration( ( child_cast(f)->sigma.expr - sigma_new_proj ) : eps_hooke_iso( ( child_cast(f)->sigma.expr - sigma_new_proj ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ), order_diff = degre_poly )
+            theta = e->gauss_num_integration( ( child_cast(f)->sigma.expr - sigma_FE_proj ) : eps_hooke_iso( ( child_cast(f)->sigma.expr - sigma_FE_proj ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ), order_diff = degre_poly )
         else if integration_type == "formal"
-            theta = e->integration( ( child_cast(f)->sigma.expr - sigma_new_proj ) : eps_hooke_iso( ( child_cast(f)->sigma.expr - sigma_new_proj ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ), order_diff = degre_poly )
+            theta = e->integration( ( child_cast(f)->sigma.expr - sigma_FE_proj ) : eps_hooke_iso( ( child_cast(f)->sigma.expr - sigma_FE_proj ), child_cast(f)->young.expr, child_cast(f)->poisson.expr, hyp_plane_2D ), order_diff = degre_poly )
         cw := CodeWriterAlt( "T" )
         cw.add( "theta_elem[ elem.number ]", theta, reassign )
         file_ <<<<
@@ -497,31 +496,25 @@ def calc_elem_error_estimate_FE( list_f, rep )
                 }
         file_ <<<<
                 theta += theta_elem[ elem.number ];
-                if ( method == "EET" ) {
-                    elem.ecre_elem_EET = theta_elem[ elem.number ] / 2;
-                    elem.theta_elem_EET = theta_elem[ elem.number ];
-                }
-                if ( method == "EESPT" ) {
-                    elem.ecre_elem_EESPT = theta_elem[ elem.number ] / 2;
-                    elem.theta_elem_EESPT = theta_elem[ elem.number ];
-                }
+                elem.ecre_elem_PGD = theta_elem[ elem.number ] / 2;
+                elem.error_estimate_elem_PGD = theta_elem[ elem.number ];
         file_ <<< "    #undef PNODE"
         file_ <<< "}"
         file_ <<< "}"
         file_ <<< "#endif"
     return file_names
 
-# Methode qui genere un fichier calc_elem_error_estimate_init_EET_EESPT_$(f->name).$(e->dim).$(e->name).h pour construire un champ de contrainte admissible et calculer la contribution d'un element a l'estimateur d'erreur
+# Methode qui genere un fichier calc_elem_error_estimate_init_$(f->name).$(e->dim).$(e->name).h pour construire un champ de contrainte admissible et calculer la contribution d'un element a l'estimateur d'erreur
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-def calc_elem_error_estimate_init_EET_EESPT( list_f, rep )
+def calc_elem_error_estimate_init( list_f, rep )
     file_names := Vec[String]()
     for f in list_f
         e := child_cast( f->pe )
-        file_name_ := "calc_elem_error_estimate_init_EET_EESPT_$(f->name).$(e->dim).$(e->name).h"
+        file_name_ := "calc_elem_error_estimate_init_$(f->name).$(e->dim).$(e->name).h"
         file_names.push_back( file_name_ )
-        file_ := File( rep + "/calc_elem_error_estimate_init_EET_EESPT_$(f->name).$(e->dim).$(e->name).h", "w" )
-        file_ <<< "#ifndef calc_elem_error_estimate_init_EET_EESPT_$(f->name)_$(e->dim)_$(e->name)_h"
-        file_ <<< "#define calc_elem_error_estimate_init_EET_EESPT_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ := File( rep + "/calc_elem_error_estimate_init_$(f->name).$(e->dim).$(e->name).h", "w" )
+        file_ <<< "#ifndef calc_elem_error_estimate_init_$(f->name)_$(e->dim)_$(e->name)_h"
+        file_ <<< "#define calc_elem_error_estimate_init_$(f->name)_$(e->dim)_$(e->name)_h"
         if integration_type == "gauss_num" and integration_lang == "cpp"
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_NodalElement.h\""
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Bar.h\""
@@ -530,8 +523,8 @@ def calc_elem_error_estimate_init_EET_EESPT( list_f, rep )
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_simplex_Tetra.h\""
             file_ <<< "#include \"../../LMT/include/mesh/gauss_point_for_Hexa.h\""
         file_ <<< "namespace LMT {"
-        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class S, class T>"
-        file_ <<< "void calc_elem_error_estimate_init_EET_EESPT( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const TTVV &vectors, const Vec<unsigned> &indices, const Vec< Vec<T> > &dep_hat, const S &method, Vec<T> &theta_elem, Vec<T> &theta_elem_init, T &theta, T &theta_init ) {"
+        file_ <<< "template<class TN, class TNG, class TD, unsigned NET, class TM, class TF, class TTVV, class T>"
+        file_ <<< "void calc_elem_error_estimate_init( Element<$(e->name),TN,TNG,TD,NET> &elem, const TM &m, const TF &f, const TTVV &vectors, const Vec<unsigned> &indices, const Vec< Vec<T> > &dep_hat, Vec<T> &theta_elem, Vec<T> &theta_elem_init, T &theta, T &theta_init ) {"
         file_ <<< "    #define PNODE(N) elem.node(N)"
         deg_p := max( e->order_interpolation )
         sym_dep_hat_expr := Vec[ Op ]()
@@ -557,16 +550,9 @@ def calc_elem_error_estimate_init_EET_EESPT( list_f, rep )
                 {
         file_ <<< "$(cw_0.to_string( 4 ))"
         file_ <<<<
-                if ( method == "EET" ) {
-                    elem.sigma_hat_EET = sigma_hat;
-                    elem.sigma_hat_tot_EET = sigma_hat + elem.sigma_handbook_PUM;
-                    elem.sigma_hat_init_EET = sigma_hat_init;
-                }
-                if ( method == "EESPT" ) {
-                    elem.sigma_hat_EESPT = sigma_hat;
-                    elem.sigma_hat_tot_EESPT = sigma_hat + elem.sigma_handbook_PUM;
-                    elem.sigma_hat_init_EESPT = sigma_hat_init;
-                }
+                elem.sigma_hat = sigma_hat;
+                elem.sigma_hat_tot = sigma_hat + elem.sigma_handbook_PUM;
+                elem.sigma_hat_init = sigma_hat_init;
                 }
         theta := Op( 0 )
         theta_init := Op( 0 )
@@ -617,18 +603,10 @@ def calc_elem_error_estimate_init_EET_EESPT( list_f, rep )
         file_ <<<<
                 theta += theta_elem[ elem.number ];
                 theta_init += theta_elem_init[ elem.number ];
-                if ( method == "EET" ) {
-                    elem.ecre_elem_EET = theta_elem[ elem.number ] / 2;
-                    elem.ecre_elem_init_EET = theta_elem_init[ elem.number ] / 2;
-                    elem.theta_elem_EET = theta_elem[ elem.number ];
-                    elem.theta_elem_init_EET = theta_elem_init[ elem.number ];
-                }
-                if ( method == "EESPT" ) {
-                    elem.ecre_elem_EESPT = theta_elem[ elem.number ] / 2;
-                    elem.ecre_elem_init_EESPT = theta_elem_init[ elem.number ] / 2;
-                    elem.theta_elem_EESPT = theta_elem[ elem.number ];
-                    elem.theta_elem_init_EESPT = theta_elem_init[ elem.number ];
-                }
+                elem.ecre_elem = theta_elem[ elem.number ] / 2;
+                elem.ecre_elem_init = theta_elem_init[ elem.number ] / 2;
+                elem.error_estimate_elem = theta_elem[ elem.number ];
+                elem.error_estimate_elem_init = theta_elem_init[ elem.number ];
         file_ <<< "    #undef PNODE"
         file_ <<< "}"
         file_ <<< "}"

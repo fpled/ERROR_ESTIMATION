@@ -1165,12 +1165,7 @@ bool adapt_mesh( TM &m, const TF &f, const string &structure, const string &meth
     if ( dim == 3 and structure.find("test_specimen") != string::npos ) {
         /// Raffinement du maillage autour des noeuds contraints (bord de Dirichlet) et des elements contribuant majoritairement a l'erreur estimee
         /// ---------------------------------------------------------------------------------------------------------------------------------------
-        if ( method.find("EET") != string::npos )
-            res = refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_EET_DM(), k, spread_cut );
-        else if ( method.find("SPET") != string::npos )
-            res = refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_SPET_DM(), k, spread_cut );
-        else if ( method.find("EESPT") != string::npos )
-            res = refinement_if_constraints_or_elem_field_sup( m, f, theta_elem_EESPT_DM(), k, spread_cut );
+        res = refinement_if_constraints_or_elem_field_sup( m, f, error_estimate_elem_DM(), k, spread_cut );
         if ( res and disp ) {
             cout << "Adaptation de maillage #" << iter << endl;
             cout << "--------------------------" << endl << endl;
@@ -1184,7 +1179,7 @@ bool adapt_mesh( TM &m, const TF &f, const string &structure, const string &meth
         }
         /// Raffinement du maillage autour des noeuds contraints (bord de Dirichlet) et des noeuds contribuant majoritairement a l'erreur estimee lissee
         /// --------------------------------------------------------------------------------------------------------------------------------------------
-//        res = refinement_if_constraints_or_nodal_field_sup( m, f, ExtractDM< theta_nodal_DM >(), k, spread_cut );
+//        res = refinement_if_constraints_or_nodal_field_sup( m, f, ExtractDM< error_estimate_nodal_DM >(), k, spread_cut );
 //        if ( res and disp ) {
 //            cout << "Adaptation de maillage #" << iter << endl;
 //            cout << "--------------------------" << endl << endl;
@@ -1217,12 +1212,7 @@ bool adapt_mesh( TM &m, const TF &f, const string &structure, const string &meth
     else {
         /// Raffinement du maillage autour des elements contribuant majoritairement a l'erreur estimee
         /// ------------------------------------------------------------------------------------------
-        if ( method.find("EET") != string::npos )
-            res = refinement_if_elem_field_sup( m, theta_elem_EET_DM(), k, spread_cut );
-        else if ( method.find("SPET") != string::npos )
-            res = refinement_if_elem_field_sup( m, theta_elem_SPET_DM(), k, spread_cut );
-        else if ( method.find("EESPT") != string::npos )
-            res = refinement_if_elem_field_sup( m, theta_elem_EESPT_DM(), k, spread_cut );
+        res = refinement_if_elem_field_sup( m, error_estimate_elem_DM(), k, spread_cut );
         if ( res and disp ) {
             cout << "Adaptation de maillage #" << iter << endl;
             cout << "--------------------------" << endl << endl;
@@ -1234,7 +1224,7 @@ bool adapt_mesh( TM &m, const TF &f, const string &structure, const string &meth
         }
         /// Raffinement du maillage autour des noeuds contribuant majoritairement a l'erreur estimee lissee
         /// -----------------------------------------------------------------------------------------------
-//        res = refinement_if_nodal_field_sup( m, ExtractDM< theta_nodal_DM >(), k, spread_cut );
+//        res = refinement_if_nodal_field_sup( m, ExtractDM< error_estimate_nodal_DM >(), k, spread_cut );
 //        if ( res and disp ) {
 //            cout << "Adaptation de maillage #" << iter << endl;
 //            cout << "--------------------------" << endl << endl;
