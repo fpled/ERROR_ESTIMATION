@@ -14,6 +14,7 @@
 
 #include "LMT/include/mesh/ReaderINP.h"
 #include "LMT/include/util/Hdf.h"
+#include "Material_properties.h"
 //#include "CONNECTIVITY/Connectivity.h"
 #include "INTEREST_QUANTITY/Interest_quantity.h"
 
@@ -59,7 +60,7 @@ void display_constraints( const TF &f ) {
 /// Creation des conditions aux limites de Dirichlet
 /// ------------------------------------------------
 template<class TF, class TM>
-void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const string &pb, const string &structure, const string &loading, const unsigned adapt = 0, const bool disp = false ) {
+void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const string &pb, const string &structure, const string &loading, const unsigned &iter = 0, const bool disp = false ) {
     
     static const unsigned dim = TM::dim;
     typedef typename TM::TNode::T T;
@@ -596,16 +597,16 @@ void set_constraints( TF &f, TM &m, const string &boundary_condition_D, const st
             TM mesh;
             string filename = "MESH/TEST_SPECIMEN_3D/" + structure + "_Tetra.inp";
 //            string filename = "MESH/TEST_SPECIMEN_3D/" + structure + "_Hexa.inp";
-//            if ( adapt ) {
+//            if ( iter ) {
 //                size_t off = structure.rfind( "_" );
 //                string str = structure.substr( off+1 );
 //                istringstream buffer(str);
 //                unsigned N; buffer >> N;
-//                N *= unsigned(2*adapt);
+//                N *= unsigned(2*iter);
 //                str = to_string( N );
-//                string structure_adapt = structure;
-//                structure_adapt = structure_adapt.replace( off+1, string::npos, str );
-//                filename = "MESH/TEST_SPECIMEN_3D/" + structure_adapt + "_Hexa.inp";
+//                string structure_iter = structure;
+//                structure_iter = structure_iter.replace( off+1, string::npos, str );
+//                filename = "MESH/TEST_SPECIMEN_3D/" + structure_iter + "_Hexa.inp";
 //            }
             ReaderINP<TM> RI( mesh, filename.c_str() );
             

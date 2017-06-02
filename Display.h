@@ -61,7 +61,7 @@ void display_method( const string &pb, const string &method, const unsigned &cos
 /// Display quantity of interest and zone of interest
 /// -------------------------------------------------
 template<class T, class Pvec>
-void display_interest_quantity( const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list, const unsigned &node, const Pvec &pos, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re, const unsigned iter = 0 ) {
+void display_interest_quantity( const string &interest_quantity, const string &direction_extractor, const string &pointwise_interest_quantity, const Vec<unsigned> &elem_list, const unsigned &node, const Pvec &pos, const Pvec &pos_crack_tip, const T &angle_crack, const T &radius_Ri, const T &radius_Re, const unsigned &iter = 0 ) {
     
     cout << "Quantite d'interet locale" << endl;
     cout << "-------------------------" << endl << endl;

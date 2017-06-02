@@ -9,9 +9,10 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-
 #ifndef PGD_h
 #define PGD_h
+
+#include "../Material_properties.h"
 
 using namespace LMT;
 using namespace std;
@@ -76,10 +77,52 @@ void partition_elem_list( TM &m, const string &structure, Vec< Vec<unsigned> > &
     }
 }
 
+/// Construction des opérateurs et du second membre en espace
+/// ---------------------------------------------------------
+template<class TM, class TF, class TV, class TMatV>
+void assemble_space( TM &m, TF &f, TV &F_space, TMatV &K_space, const Vec< Vec<unsigned> > &elem_group ) {
+    f.allocate_matrices();
+    f.shift();
+    f.assemble( false, true );
+    F_space = f.sollicitation;
+    K_space.resize( elem_group.size() );
+    for (unsigned g=0;g<elem_group.size();++g) {
+        for (unsigned j=0;j<m.elem_list.size();++j) {
+            if ( find( elem_group[g], _1 == j ) )
+                m.elem_list[j]->set_field( "alpha", 1. );
+            else
+                m.elem_list[j]->set_field( "alpha", 0. );
+        }
+        f.assemble( true, false );
+        K_space[g] = f.matrices(Number<0>());
+    }
+    set_field_alternativeontype( m, Number<1>(), 1., alpha_DM() );
+}
+
+/// Construction des opérateurs et seconds membres en parametre
+/// -----------------------------------------------------------
+template<class TM_param, class TF_param, class TVV, class TMatVV>
+void assemble_param( TM_param &m_param, TF_param &f_param, TVV &F_param, TMatVV &K_param, const Vec< Vec<unsigned> > &elem_group ) {
+    F_param.resize( elem_group.size()-1 );
+    K_param.resize( elem_group.size()-1 );
+    for (unsigned p=0;p<elem_group.size()-1;++p) {
+        f_param[p].allocate_matrices();
+        f_param[p].shift();
+        f_param[p].assemble( false, true );
+        F_param[p] = f_param[p].sollicitation;
+        m_param[p].phi = 0;
+        f_param[p].assemble( true, false );
+        K_param[p][0] = f_param[p].matrices(Number<0>());
+        m_param[p].phi = 1;
+        f_param[p].assemble( true, false );
+        K_param[p][1] = f_param[p].matrices(Number<0>());
+    }
+}
+
 /// Construction et resolution du pb en espace
 /// ------------------------------------------
 template<class TM, class TF, class TV, class TVV, class TMatVV, class TTVVV, class TTVV>
-void solve_space( TM &m, TF &f, const unsigned &n, const TV &F_space, const TVV &F_param, const TMatVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVVV &dep_param, TTVV &dep_space, const bool want_normalization = false ) {
+void solve_space( TM &m, TF &f, const unsigned &mode, const TV &F_space, const TVV &F_param, const TMatVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVVV &dep_param, TTVV &dep_space, const bool want_normalization = false ) {
     
     typedef typename TM::TNode::T T;
     
@@ -87,15 +130,15 @@ void solve_space( TM &m, TF &f, const unsigned &n, const TV &F_space, const TVV 
     /// ----------------------------
     f.sollicitation = F_space;
     for (unsigned p=0;p<elem_group.size()-1;++p)
-        f.sollicitation *= dot( F_param[p], dep_param[ p ][ n ] );
-    for (unsigned i=0;i<n;++i) {
+        f.sollicitation *= dot( F_param[p], dep_param[ p ][ mode ] );
+    for (unsigned i=0;i<mode;++i) {
         for (unsigned g=0;g<elem_group.size();++g) {
             T alpha = 1.;
             for (unsigned p=0;p<elem_group.size()-1;++p) {
-                if ( g == p )
-                    alpha *= dot( dep_param[ p ][ i ], K_param[p][1] * dep_param[ p ][ n ] );
+                if ( p == g )
+                    alpha *= dot( dep_param[ p ][ i ], K_param[p][1] * dep_param[ p ][ mode ] );
                 else
-                    alpha *= dot( dep_param[ p ][ i ], K_param[p][0] * dep_param[ p ][ n ] );
+                    alpha *= dot( dep_param[ p ][ i ], K_param[p][0] * dep_param[ p ][ mode ] );
             }
             for (unsigned j=0;j<elem_group[g].size();++j)
                 m.elem_list[ elem_group[g][j] ]->set_field( "alpha", alpha );
@@ -107,61 +150,60 @@ void solve_space( TM &m, TF &f, const unsigned &n, const TV &F_space, const TVV 
     for (unsigned g=0;g<elem_group.size();++g) {
         T alpha = 1.;
         for (unsigned p=0;p<elem_group.size()-1;++p) {
-            if ( g == p )
-                alpha *= dot( dep_param[ p ][ n ], K_param[p][1] * dep_param[ p ][ n ] );
+            if ( p == g )
+                alpha *= dot( dep_param[ p ][ mode ], K_param[p][1] * dep_param[ p ][ mode ] );
             else
-                alpha *= dot( dep_param[ p ][ n ], K_param[p][0] * dep_param[ p ][ n ] );
+                alpha *= dot( dep_param[ p ][ mode ], K_param[p][0] * dep_param[ p ][ mode ] );
         }
         for (unsigned j=0;j<elem_group[g].size();++j)
             m.elem_list[ elem_group[g][j] ]->set_field( "alpha", alpha );
     }
     f.assemble( true, false );
+    set_field_alternativeontype( m, Number<1>(), 1., alpha_DM() );
     
     /// Resolution du pb en espace
     /// --------------------------
     f.solve_system();
     f.update_variables();
-    f.call_after_solve();
     
     /// Fonction en espace
     /// ------------------
-    dep_space[ n ] = f.vectors[0];
+    dep_space[ mode ] = f.vectors[0];
     
     /// Normalisation
     /// -------------
     if ( want_normalization ) {
-        for (unsigned j=0;j<m.elem_list.size();++j)
-            m.elem_list[j]->set_field( "alpha", 1. );
+        // set_field_alternativeontype( m, Number<1>(), 1., alpha_DM() );
         f.assemble( true, false );
-        dep_space[ n ] /= sqrt( dot( dep_space[ n ], f.matrices(Number<0>()) * dep_space[ n ] ) );
+        dep_space[ mode ] /= sqrt( dot( dep_space[ mode ], f.matrices(Number<0>()) * dep_space[ mode ] ) );
     }
 }
 
 /// Construction et resolution du pb en parametre
 /// ---------------------------------------------
 template<class TM_param, class TF_param, class TV, class TVV, class TMatV, class TMatVV, class TTVV, class TTVVV>
-void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const unsigned &n, const TV &F_space, const TVV &F_param, const TMatV &K_space, const TMatVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVV &dep_space, TTVVV &dep_param, const bool want_normalization = false ) {
+void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const unsigned &mode, const TV &F_space, const TVV &F_param, const TMatV &K_space, const TMatVV &K_param, const Vec< Vec<unsigned> > &elem_group, const TTVV &dep_space, TTVVV &dep_param, const bool want_normalization = false ) {
     
     typedef typename TM_param::TNode::T T;
     typedef Mat<T, Sym<>, SparseLine<> > TMatSymSparse;
     
     /// Construction du pb en parametre
     /// -------------------------------
-    T gamma = dot( F_space, dep_space[ n ] );
+    T gamma = dot( F_space, dep_space[ mode ] );
     for (unsigned q=0;q<elem_group.size()-1;++q) {
         if ( q != p )
-            gamma *= dot( F_param[q], dep_param[ q ][ n ] );
+            gamma *= dot( F_param[q], dep_param[ q ][ mode ] );
     }
     f_param.sollicitation = F_param[p] * gamma;
-    for (unsigned i=0;i<n;++i) {
+    for (unsigned i=0;i<mode;++i) {
         for (unsigned g=0;g<elem_group.size();++g) {
-            T alpha = dot( dep_space[ i ], K_space[g] * dep_space[ n ] );
+            T alpha = dot( dep_space[ i ], K_space[g] * dep_space[ mode ] );
             for (unsigned q=0;q<elem_group.size()-1;++q) {
                 if ( q != p ) {
                     if ( g == q )
-                        alpha *= dot( dep_param[ q ][ i ], K_param[q][1] * dep_param[ q ][ n ] );
+                        alpha *= dot( dep_param[ q ][ i ], K_param[q][1] * dep_param[ q ][ mode ] );
                     else
-                        alpha *= dot( dep_param[ q ][ i ], K_param[q][0] * dep_param[ q ][ n ] );
+                        alpha *= dot( dep_param[ q ][ i ], K_param[q][0] * dep_param[ q ][ mode ] );
                 }
             }
             if ( g == p )
@@ -173,13 +215,13 @@ void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const
     TMatSymSparse K = f_param.matrices(Number<0>());
     K.clear();
     for (unsigned g=0;g<elem_group.size();++g) {
-        T alpha = dot( dep_space[ n ], K_space[g] * dep_space[ n ] );
+        T alpha = dot( dep_space[ mode ], K_space[g] * dep_space[ mode ] );
         for (unsigned q=0;q<elem_group.size()-1;++q) {
             if ( q != p ) {
                 if ( g == q )
-                    alpha *= dot( dep_param[ q ][ n ], K_param[q][1] * dep_param[ q ][ n ] );
+                    alpha *= dot( dep_param[ q ][ mode ], K_param[q][1] * dep_param[ q ][ mode ] );
                 else
-                    alpha *= dot( dep_param[ q ][ n ], K_param[q][0] * dep_param[ q ][ n ] );
+                    alpha *= dot( dep_param[ q ][ mode ], K_param[q][0] * dep_param[ q ][ mode ] );
             }
         }
         if ( g == p )
@@ -193,39 +235,38 @@ void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const
     /// -----------------------------
     f_param.solve_system();
     f_param.update_variables();
-    f_param.call_after_solve();
     
     /// Resolution explicite du pb en parametre
     /// ---------------------------------------
 //    for (unsigned j=0;j<m_param.node_list.size();++j) {
 //        m_param.node_list[ j ].fun = m_param.node_list[ j ].pos[ 0 ];
-//        dep_param[ p ][ n ][ j ] = gamma;
-//        for (unsigned i=0;i<n;++i) {
+//        dep_param[ p ][ mode ][ j ] = gamma;
+//        for (unsigned i=0;i<mode;++i) {
 //            for (unsigned g=0;g<elem_group.size();++g) {
-//                T alpha = dot( dep_space[ i ], K_space[g] * dep_space[ n ] );
+//                T alpha = dot( dep_space[ i ], K_space[g] * dep_space[ mode ] );
 //                for (unsigned q=0;q<elem_group.size()-1;++q) {
 //                    if ( q != p ) {
-//                        if ( g == q )
-//                            alpha *= dot( dep_param[ q ][ i ], K_param[q][1] * dep_param[ q ][ n ] );
+//                        if ( q == g )
+//                            alpha *= dot( dep_param[ q ][ i ], K_param[q][1] * dep_param[ q ][ mode ] );
 //                        else
-//                            alpha *= dot( dep_param[ q ][ i ], K_param[q][0] * dep_param[ q ][ n ] );
+//                            alpha *= dot( dep_param[ q ][ i ], K_param[q][0] * dep_param[ q ][ mode ] );
 //                    }
 //                }
 //                if ( g == p )
-//                    dep_param[ p ][ n ][ j ] -= alpha * m_param.node_list[ j ].fun * dep_param[ p ][ i ][ j ];
+//                    dep_param[ p ][ mode ][ j ] -= alpha * m_param.node_list[ j ].fun * dep_param[ p ][ i ][ j ];
 //                else
-//                    dep_param[ p ][ n ][ j ] -= alpha * dep_param[ p ][ i ][ j ];
+//                    dep_param[ p ][ mode ][ j ] -= alpha * dep_param[ p ][ i ][ j ];
 //            }
 //        }
 //        T delta = 0.;
 //        for (unsigned g=0;g<elem_group.size();++g) {
-//            T alpha = dot( dep_space[ n ], K_space[g] * dep_space[ n ] );
+//            T alpha = dot( dep_space[ mode ], K_space[g] * dep_space[ mode ] );
 //            for (unsigned q=0;q<elem_group.size()-1;++q) {
 //                if ( q != p ) {
-//                    if ( g == q )
-//                        alpha *= dot( dep_param[ q ][ n ], K_param[q][1] * dep_param[ q ][ n ] );
+//                    if ( q == g )
+//                        alpha *= dot( dep_param[ q ][ mode ], K_param[q][1] * dep_param[ q ][ mode ] );
 //                    else
-//                        alpha *= dot( dep_param[ q ][ n ], K_param[q][0] * dep_param[ q ][ n ] );
+//                        alpha *= dot( dep_param[ q ][ mode ], K_param[q][0] * dep_param[ q ][ mode ] );
 //                }
 //            }
 //            if ( g == p )
@@ -233,17 +274,17 @@ void solve_param( TM_param &m_param, TF_param &f_param, const unsigned &p, const
 //            else
 //                delta += alpha;
 //        }
-//        dep_param[ p ][ n ][ j ] /= delta;
+//        dep_param[ p ][ mode ][ j ] /= delta;
 //    }
     
     /// Fonction en parametre
     /// ---------------------
-    dep_param[ p ][ n ] = f_param.vectors[0];
+    dep_param[ p ][ mode ] = f_param.vectors[0];
     
     /// Normalisation
     /// -------------
     if ( want_normalization )
-        dep_param[ p ][ n ] /= sqrt( dot( dep_param[ p ][ n ], K_param[p][1] * dep_param[ p ][ n ] ) );
+        dep_param[ p ][ mode ] /= sqrt( dot( dep_param[ p ][ mode ], K_param[p][1] * dep_param[ p ][ mode ] ) );
 }
 
 /// Calcul de l'indicateur de stagnation
@@ -291,6 +332,8 @@ void calc_stagnation_indicator( TM &m, TF &f, const unsigned &mode, const TMatVV
     f.assemble( true, false );
     stagnation_indicator -= 2 * dot( dep_space[ mode ], f.matrices(Number<0>()) * dep_space_old );
     stagnation_indicator = sqrt( fabs( stagnation_indicator ) );
+    
+    set_field_alternativeontype( m, Number<1>(), 1., alpha_DM() );
 }
 
 /// Calcul de l'indicateur d'erreur
@@ -322,7 +365,35 @@ void calc_error_indicator( TM &m, TF &f, const unsigned &mode, const TV &F_space
         }
     }
     error_indicator = fabs( residual ) / fabs( sollicitation );
+    
+    set_field_alternativeontype( m, Number<1>(), 1., alpha_DM() );
 }
+
+/// Construction du champ de deplacement EF en espace
+/// -------------------------------------------------
+template<class TM, class TVV, class TMatVV, class TTVVV, class TTVV, class TV, class TTTVV>
+void construct_dep_space_FE( const TM &m, const TVV &F_param, const TMatVV &K_param, const Vec< Vec<unsigned> > &elem_group, unsigned &mode, const TTVVV &dep_param, const TTVV &dep_space, const TV &dep_space_FE_part, TTTVV &dep_space_FE ) {
+    
+    typedef typename TM::TNode::T T;
+    
+    dep_space_FE.resize( elem_group.size() );
+    for (unsigned g=0;g<elem_group.size();++g) {
+        dep_space_FE[ g ] = - dep_space_FE_part;
+        for (unsigned p=0;p<elem_group.size()-1;++p)
+            dep_space_FE[ g ] *= dot( F_param[p], dep_param[ p ][ mode ] );
+        for (unsigned i=0;i<mode+1;++i) {
+            T alpha = 1.;
+            for (unsigned p=0;p<elem_group.size()-1;++p) {
+                if ( p == g )
+                    alpha *= dot( dep_param[ p ][ mode ], K_param[p][1] * dep_param[ p ][ i ] );
+                else
+                    alpha *= dot( dep_param[ p ][ mode ], K_param[p][0] * dep_param[ p ][ i ] );
+            }
+            dep_space_FE[ g ] += alpha * dep_space[ i ];
+        }
+    }
+}
+
 
 /// Construction des coefficients alpha, gamma associes au pb spatial
 /// -----------------------------------------------------------------
@@ -339,7 +410,7 @@ struct Construct_Space_Pb {
 /// Evaluation de la solution PGD pour un jeu connu de parametres
 /// -------------------------------------------------------------
 template<class TM_param, class TM, class TF, class TVV, class TTVV, class TTVVV>
-void eval_PGD( TM_param &m_param, TM &m, TF &f, const string &pb, const string &structure, const string &boundary_condition_D, const string &loading, const string &mesh_size, const Vec< Vec<unsigned> > &elem_group, const unsigned &nb_vals, const TVV &vals_param, const unsigned &nb_modes, const TTVV &dep_space, const TTVVV &dep_param, const string &filename = "paraview", const bool display_pvd = false ) {
+void eval_PGD( TM_param &m_param, TM &m, TF &f, const string &pb, const string &structure, const string &boundary_condition_D, const string &loading, const string &mesh_size, const Vec< Vec<unsigned> > &elem_group, const unsigned &nb_vals, const TVV &vals_param, const unsigned &mode, const TTVV &dep_space, const TTVVV &dep_param, const string &filename = "paraview", const bool display_pvd = false ) {
     
     typedef typename TM::TNode::T T;
     
@@ -352,6 +423,7 @@ void eval_PGD( TM_param &m_param, TM &m, TF &f, const string &pb, const string &
     for (unsigned i=0;i<nb_vals;++i) {
         Vec<unsigned> ind;
         ind.resize( elem_group.size()-1 );
+        // generate pseudo-random integral number ind[p] in the range between 0 and m_param[p].node_list.size()-1
         for (unsigned p=0;p<elem_group.size()-1;++p)
             ind[p] = rand() % m_param[p].node_list.size();
         
@@ -371,6 +443,7 @@ void eval_PGD( TM_param &m_param, TM &m, TF &f, const string &pb, const string &
         for (unsigned j=0;j<elem_group.back().size();++j)
             m.elem_list[ elem_group.back()[j] ]->set_field( "alpha", 1. );
         
+        // Reference FE solution
         f.solve();
         
         string filename_ = filename + "_space_REF_params";
@@ -378,8 +451,9 @@ void eval_PGD( TM_param &m_param, TM &m, TF &f, const string &pb, const string &
             filename_ += '_' + to_string( vals_param[p][ ind[p] ] );
         dp[ i ].add_mesh_iter( m, filename_, lp, 0 );
         
+        // PGD solution
         f.vectors[0].set( 0. );
-        for (unsigned n=0;n<nb_modes;++n) {
+        for (unsigned n=0;n<mode+1;++n) {
             Vec<T> dep_mode = dep_space[ n ];
             for (unsigned p=0;p<elem_group.size()-1;++p)
                 dep_mode *= dep_param[ p ][ n ][ ind[p] ];
@@ -402,6 +476,7 @@ void eval_PGD( TM_param &m_param, TM &m, TF &f, const string &pb, const string &
             dp[ i ].make_pvd_file( filename_ );
     }
     
+    set_field_alternativeontype( m, Number<1>(), 1., alpha_DM() );
 }
 
 #endif // PGD_h

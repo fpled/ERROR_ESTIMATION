@@ -12,6 +12,7 @@
 #ifndef Material_properties_homog_h
 #define Material_properties_homog_h
 
+#include "Material_properties.h"
 #include "LMT/include/util/Hdf.h"
 
 using namespace LMT;

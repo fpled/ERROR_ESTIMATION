@@ -29,7 +29,8 @@ void set_field_alternativeontype( TM &m, Number<0>, const T &val, const DM &dm )
     ed( m ) = val;
 }
 
-template<class TM, class T, class DM> void set_field_alternativeontype( TM &m, Number<1>, const T &val, const DM &dm ) {
+template<class TM, class T, class DM>
+void set_field_alternativeontype( TM &m, Number<1>, const T &val, const DM &dm ) {
     for (unsigned n=0;n<m.elem_list.size();++n)
         m.elem_list[n]->set_field( dm.name(), val ); // m.elem_list[n]->set_field( DM::name(), val );
 }
@@ -103,6 +104,31 @@ void set_material_properties( TF &f, TM &m, const string &structure ) {
                 poisson = 0.3;
                 density = 7820;
             }
+            /// Inclusions circulaires 2D
+            /// -------------------------
+//            else if ( structure == "circular_inclusions" ) {
+//                young = 1;
+//                // generate pseudo-random double numbers in the range between 1 and 10
+//                // Vec<T,3> alpha = Vec<T,3>::random() * (10-1) + 1;
+//                // generate pseudo-random integral numbers in the range between 1 and 10
+//                Vec<int,3> alpha;
+//                for (unsigned i=0;i<alpha.size();++i) alpha[i] = rand() % 10 + 1;
+//                Vec<T,3> young_eff = alpha * young;
+//                for (unsigned n=0;n<m.elem_list.size();++n) {
+//                    if ( pow(center( *m.elem_list[n] )[0] - 0.2, 2) + pow(center( *m.elem_list[n] )[1] - 0.2, 2) < pow(0.1 + 1e-6, 2) ) { // ( x - 0.2 )^2 + ( y - 0.2 )^2 = (0.1)^2
+//                        m.elem_list[n]->set_field( "young", young_eff[0] );
+//                    }
+//                    else if ( pow(center( *m.elem_list[n] )[0] - 0.6, 2) + pow(center( *m.elem_list[n] )[1] - 0.3, 2) < pow(0.1 + 1e-6, 2) ) { // ( x - 0.6 )^2 + ( y - 0.3 )^2 = (0.1)^2
+//                        m.elem_list[n]->set_field( "young", young_eff[1] );
+//                    }
+//                    else if ( pow(center( *m.elem_list[n] )[0] - 0.4, 2) + pow(center( *m.elem_list[n] )[1] - 0.7, 2) < pow(0.1 + 1e-6, 2) ) { // ( x - 0.4 )^2 + ( y - 0.7 )^2 = (0.1)^2
+//                        m.elem_list[n]->set_field( "young", young_eff[2] );
+//                    }
+//                    else {
+//                        m.elem_list[n]->set_field( "young", young );
+//                    }
+//                }
+//            }
             /// Carre 2D
             /// --------
             else if ( structure.find("square") != string::npos ) {
@@ -126,6 +152,7 @@ void set_material_properties( TF &f, TM &m, const string &structure ) {
                     }
                 }
             }
+            
         }
         /// Dimension 3
         /// -----------
@@ -163,6 +190,31 @@ void set_material_properties( TF &f, TM &m, const string &structure ) {
                 T K = 1300e6;
                 T n = 0.44;
             }
+            /// Inclusions spheriques 3D
+            /// ------------------------
+//            else if ( structure == "spherical_inclusions" ) {
+//                young = 1;
+//                // generate pseudo-random double numbers in the range between 1 and 10
+//                // Vec<T,3> alpha = Vec<T,3>::random() * (10-1) + 1;
+//                // generate pseudo-random integral numbers in the range between 1 and 10
+//                Vec<int,3> alpha;
+//                for (unsigned i=0;i<alpha.size();++i) alpha[i] = rand() % 10 + 1;
+//                Vec<T,3> young_eff = alpha * young;
+//                for (unsigned n=0;n<m.elem_list.size();++n) {
+//                    if ( pow(center( *m.elem_list[n] )[0] - 0.2, 2) + pow(center( *m.elem_list[n] )[1] - 0.2, 2) + pow(center( *m.elem_list[n] )[2] - 0.2, 2) < pow(0.1 + 1e-6, 2) ) { // ( x - 0.2 )^2 + ( y - 0.2 )^2 + ( z - 0.2 )^2 = (0.1)^2
+//                        m.elem_list[n]->set_field( "young", young_eff[0] );
+//                    }
+//                    else if ( pow(center( *m.elem_list[n] )[0] - 0.6, 2) + pow(center( *m.elem_list[n] )[1] - 0.3, 2) + pow(center( *m.elem_list[n] )[2] - 0.5, 2) < pow(0.1 + 1e-6, 2) ) { // ( x - 0.6 )^2 + ( y - 0.3 )^2 + ( z - 0.5 )^2 = (0.1)^2
+//                        m.elem_list[n]->set_field( "young", young_eff[1] );
+//                    }
+//                    else if ( pow(center( *m.elem_list[n] )[0] - 0.4, 2) + pow(center( *m.elem_list[n] )[1] - 0.7, 2) + pow(center( *m.elem_list[n] )[2] - 0.8, 2) < pow(0.1 + 1e-6, 2) ) { // ( x - 0.4 )^2 + ( y - 0.7 )^2 + ( z - 0.8 )^2 = (0.1)^2
+//                        m.elem_list[n]->set_field( "young", young_eff[2] );
+//                    }
+//                    else {
+//                        m.elem_list[n]->set_field( "young", young );
+//                    }
+//                }
+//            }
             /// Hashin's coated shpere 3D
             /// -------------------------
             else if ( structure.find("hashin") != string::npos ) {
@@ -209,8 +261,12 @@ void set_material_properties( TF &f, TM &m, const string &structure ) {
                 }
             }
         }
-
+        
+        // if structure does not contain square and hashin
+        // if structure contains square or hashin, but not init
         if ( ( structure.find("square") == string::npos and structure.find("hashin") == string::npos ) or ( ( structure.find("square") != string::npos or structure.find("hashin") != string::npos ) and structure.find("init") == string::npos ) ) {
+            // if structure does not contain circular_inclusions and spherical_inclusions
+            // if ( structure.find("circular_inclusions") == string::npos and structure.find("spherical_inclusions") == string::npos )
             set_field_alternativeontype( m, Number< AreSameType< typename ExtractDM<young_DM>::ReturnType<TM>::T, void >::res >(), young, young_DM() );
             set_field_alternativeontype( m, Number< AreSameType< typename ExtractDM<poisson_DM>::ReturnType<TM>::T, void >::res >(), poisson, poisson_DM() );
         }

@@ -75,7 +75,7 @@ int main( int argc, char **argv ) {
     /// Global error estimation method
     /// ------------------------------
     static const bool want_global_estimation = 1; // calcul d'un estimateur d'erreur globale (au sens de la norme energetique)
-    static const string method = "SPET"; //methode de construction de champs admissibles pour le pb direct : EET, SPET, EESPT
+    static const string method = "EET"; //methode de construction de champs admissibles pour le pb direct : EET, SPET, EESPT
     static const string method_adjoint = "EET"; // methode de construction de champs admissibles pour le pb adjoint : EET, SPET, EESPT
     static const unsigned cost_function = 0; // fonction-cout pour les methodes EET, EESPT :
     // 0 : norme matricielle sans coefficient de ponderation (matrice identite)
@@ -254,8 +254,8 @@ int main( int argc, char **argv ) {
 //    f.shift();
 //    f.assemble();
 ////    f.solve_system();
+////    f.update_variables();
 //    f.get_initial_conditions();
-//    f.update_variables();
 //    f.call_after_solve();
     
     /// Verification de l'equilibre du pb direct
@@ -289,7 +289,7 @@ int main( int argc, char **argv ) {
         
         unsigned iter = 0;
         if ( want_remesh )
-            dp.add_mesh_iter( m, filename + "_adapt", lp, iter );
+            dp.add_mesh_iter( m, filename + "_mesh", lp, iter );
         
         /// ------------------------------------------- ///
         /// Adaptation du maillage associe au pb direct ///
@@ -299,6 +299,10 @@ int main( int argc, char **argv ) {
             
             f.set_mesh( &m );
             f.init();
+            
+            /// Proprietes materiaux du pb direct
+            /// ---------------------------------
+            //set_material_properties( f, m, structure );
             
             /// Conditions aux limites du pb direct
             /// -----------------------------------
@@ -340,12 +344,12 @@ int main( int argc, char **argv ) {
             
             smoothing( m, ExtractDM< error_estimate_nodal_DM >(), ExtractDM< error_estimate_elem_DM >() );
             
-//            display( m, filename + "_adapt_" + to_string( iter )  );
-            dp.add_mesh_iter( m, filename + "_adapt", lp, iter );
+//            display( m, filename + "_mesh_" + to_string( iter )  );
+            dp.add_mesh_iter( m, filename + "_mesh", lp, iter );
             
             if ( iter >= max_iter_remesh ) {
-                write_avs( m, filename + "_adapt_" + to_string( iter ) + ".avs", Vec<std::string>("pos"), Ascii() );
-//                save( m, filename + "_adapt_" + to_string( iter ), Vec<std::string>("pos") );
+                write_avs( m, filename + "_mesh_" + to_string( iter ) + ".avs", Vec<std::string>("pos"), Ascii() );
+//                save( m, filename + "_mesh_" + to_string( iter ), Vec<std::string>("pos") );
                 break;
             }
             
@@ -357,9 +361,9 @@ int main( int argc, char **argv ) {
         
         if ( want_remesh ) {
             if ( display_pvd )
-                dp.exec( filename + "_adapt" );
+                dp.exec( filename + "_mesh" );
             else
-                dp.make_pvd_file( filename + "_adapt" );
+                dp.make_pvd_file( filename + "_mesh" );
         }
     }
     

@@ -22,7 +22,7 @@ using namespace std;
 /// Calcul d'un champ de contrainte admissible & Calcul d'un estimateur theta de l'erreur globale pour la methode basee sur la partition de l'unite (SPET)
 /// ------------------------------------------------------------------------------------------------------------------------------------------------------
 template<class TM, class TF, class T, class TV, class TVV, class TTVV, class TTVVV, class TTTVVV>
-void calcul_error_estimate_partition_unity_PGD( TM &m, TF &f, const string &pb, T &theta, T &theta_PGD, T &theta_dis, TV &theta_elem, TV &theta_elem_PGD, TV &theta_elem_dis, const TTVV &dep_space, const TTVVV &dep_param, const TV &dep_space_FE_part, const TTTVVV &dep_space_FE, const TVV &dep_space_hat_part, const TTTVVV &dep_space_hat, const Vec< Vec<unsigned> > &elem_group, const unsigned &nb_modes, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool disp = false ) {
+void calcul_error_estimate_partition_unity_PGD( TM &m, TF &f, const string &pb, T &theta, T &theta_PGD, T &theta_dis, TV &theta_elem, TV &theta_elem_PGD, TV &theta_elem_dis, const TTVV &dep_space, const TTVVV &dep_param, const TV &dep_space_FE_part, const TTTVVV &dep_space_FE, const TVV &dep_space_hat_part, const TTTVVV &dep_space_hat, const Vec< Vec<unsigned> > &elem_group, const unsigned &mode, const bool want_global_discretization_error = false, const bool want_local_discretization_error = false, const bool disp = false ) {
     
     /// ------------------------------------------------------------------------------------------------------ ///
     /// Construction d'un champ de contrainte admissible par element & Calcul d'un estimateur d'erreur globale ///
@@ -46,7 +46,7 @@ void calcul_error_estimate_partition_unity_PGD( TM &m, TF &f, const string &pb, 
     
     // PGD approximation
     f.vectors[0].set( 0. );
-    for (unsigned n=0;n<nb_modes;++n) {
+    for (unsigned n=0;n<mode+1;++n) {
         TV dep_mode = dep_space[ n ];
         for (unsigned p=0;p<elem_group.size()-1;++p)
             dep_mode *= dep_param[ p ][ n ][ 0 ];
@@ -58,7 +58,7 @@ void calcul_error_estimate_partition_unity_PGD( TM &m, TF &f, const string &pb, 
     dep_FE.resize( elem_group.size() );
     for (unsigned g=0;g<elem_group.size();++g) {
         dep_FE[ g ] = dep_space_FE_part;
-        for (unsigned n=0;n<nb_modes;++n) {
+        for (unsigned n=0;n<mode+1;++n) {
             TV dep_FE_mode = dep_space_FE[ n ][ g ];
             for (unsigned p=0;p<elem_group.size()-1;++p)
                 dep_FE_mode *= dep_param[ p ][ n ][ 0 ];
@@ -75,7 +75,7 @@ void calcul_error_estimate_partition_unity_PGD( TM &m, TF &f, const string &pb, 
     
     // Admissible approximation - FE approximation
     TVV dep_hat = dep_space_hat_part;
-    for (unsigned n=0;n<nb_modes;++n) {
+    for (unsigned n=0;n<mode+1;++n) {
         TVV dep_hat_mode = dep_space_hat[ n ];
         for (unsigned p=0;p<elem_group.size()-1;++p)
             dep_hat_mode *= dep_param[ p ][ n ][ 0 ];
