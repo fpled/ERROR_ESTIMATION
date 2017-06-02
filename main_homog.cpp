@@ -250,8 +250,8 @@ int main( int argc, char **argv ) {
     f.shift();
     f.assemble();
 //    f.solve_system();
+//    f.update_variables();
     f.get_initial_conditions();
-    f.update_variables();
     f.call_after_solve();
     
     /// Verification de l'equilibre du pb direct
