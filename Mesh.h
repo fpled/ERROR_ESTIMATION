@@ -1193,12 +1193,7 @@ bool adapt_mesh( TM &m, const TF &f, const string &structure, const string &meth
 //        }
         /// Raffinement du maillage autour des elements contribuant majoritairement a l'erreur estimee
         /// ------------------------------------------------------------------------------------------
-//        if ( method.find("EET") != string::npos )
-//            res = refinement_if_elem_field_sup( m, theta_elem_EET_DM(), k, spread_cut );
-//        else if ( method.find("SPET") != string::npos )
-//            res = refinement_if_elem_field_sup( m, theta_elem_SPET_DM(), k, spread_cut );
-//        else if ( method.find("EESPT") != string::npos )
-//            res = refinement_if_elem_field_sup( m, theta_elem_EESPT_DM(), k, spread_cut );
+//        res = refinement_if_elem_field_sup( m, error_estimate_elem_DM(), k, spread_cut );
 //        if ( res and disp ) {
 //            cout << "Adaptation de maillage #" << iter << endl;
 //            cout << "--------------------------" << endl << endl;

@@ -43,7 +43,7 @@
 #include "LMT/include/containers/matcholamd.h"
 #include "LMT/include/containers/conjugate_gradient.h"
 #include "LMT/include/containers/MatWithTinyBlocks.h"
-#include "LMT/include/meshless/meshtransfert.h"
+#include "LMT/include/mesh/interpolation.h"
 
 #include "LMT/include/util/MKL_direct_solver.h"
 #include "LMT/include/util/MKL_iterative_solver.h"
@@ -55,7 +55,7 @@ using namespace std;
 int main( int argc, char **argv ) {
     TicToc t_total;
     t_total.start();
-    static const unsigned dim = 2;
+    static const unsigned dim = 3;
     static const bool wont_add_nz = true;
     typedef Mesh<Mesh_carac_space<double,dim> > TM;
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
@@ -66,7 +66,7 @@ int main( int argc, char **argv ) {
     typedef TM_param::Pvec Pvec_param;
     typedef TM::TElemListPtr TElemListPtr;
     typedef Mat<T, Sym<>, SparseLine<> > TMatSymSparse;
-    static const string structure = "circular_inclusions"; // structure
+    static const string structure = "spherical_inclusions"; // structure
     // 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes,
     //      square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
     // 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes,
@@ -123,6 +123,7 @@ int main( int argc, char **argv ) {
     /// ------------------------------------
     static const bool want_remesh = 1; // remaillage adaptatif (raffinement du maillage)
     static const T tol_remesh = 1e-2; // tolerance pour le critère d'arrêt de l'algorithme de remaillage
+    static const unsigned max_mesh = 6; // nb d'etapes de remaillage max
     static const unsigned max_iter_remesh = 10; // nb d'iterations max de l'algorithme de remaillage
     static const T k_remesh = 0.25; // rapport maximal entre la contribution élémentaire au carré à l'erreur estimée et la contribution élémentaire maximale au carré des barres qui ne seront pas divisées
     static const bool spread_cut_remesh = true; // propagation du raffinement au reste du maillage (étendue de la coupe si l'arête coupée n'est pas la plus longue de l'élément)
@@ -360,12 +361,13 @@ int main( int argc, char **argv ) {
         }
     }
     
-    Vec<T, max_mode > theta, theta_PGD, theta_dis;
+    Vec<T, max_mode+max_mesh > theta, theta_PGD, theta_dis;
     theta.set( 0. );
     theta_PGD.set( 0. );
     theta_dis.set( 0. );
-    Vec< Vec<T>, max_mode > theta_elem, theta_elem_PGD, theta_elem_dis;
-    Vec< Vec< Vec<T> >, max_mode > dep_space_hat, dep_space_FE;
+    Vec<unsigned> modes;
+    Vec< Vec<T>, max_mode+max_mesh > theta_elem, theta_elem_PGD, theta_elem_dis;
+    Vec< Vec< Vec<T> >, max_mode+max_mesh > dep_space_hat, dep_space_FE;
     
     unsigned mode = 0;
     unsigned mesh = 0;
@@ -390,7 +392,10 @@ int main( int argc, char **argv ) {
         solve_space( m, f, mode, F_space, F_param, K_param, elem_group, dep_param, dep_space );
         
         string filename_mode;
-        filename_mode = filename + "_mode" + to_string(mode+1) + "_space_iter";
+        if ( want_remesh )
+            filename_mode = filename + "_mode" + to_string(mode+1) + "_space_mesh" + to_string(mesh) + "_iter";
+        else
+            filename_mode = filename + "_mode" + to_string(mode+1) + "_space_iter";
         dp_space[ mode ].add_mesh_iter( m, filename_mode, lp_space, iter );
         
         /// Processus iteratif : Algorithme de point fixe
@@ -419,7 +424,6 @@ int main( int argc, char **argv ) {
 //                cout << dep_param[ p ][ mode ] << endl << endl;
 //            }
             
-            filename_mode = filename + "_mode" + to_string(mode+1) + "_space_iter";
             dp_space[ mode ].add_mesh_iter( m, filename_mode, lp_space, iter );
             
             /// Stationnarite du produit mode en espace * modes en parametre dans le processus iteratif
@@ -427,7 +431,7 @@ int main( int argc, char **argv ) {
             T stagnation_indicator = 0.;
             calc_stagnation_indicator( m, f, mode, K_param, elem_group, dep_space, dep_param, dep_space_old, dep_param_old, stagnation_indicator );
             
-            cout << "Iteration " << iter << " : stagnation = " << stagnation_indicator << endl;
+            cout << "Iteration #" << iter << " : stagnation = " << stagnation_indicator << endl;
             if ( iter >= max_iter ) { // if ( stagnation_indicator < tol_convergence_criterium_iter or iter >= max_iter )
                 cout << endl;
                 break;
@@ -443,8 +447,10 @@ int main( int argc, char **argv ) {
         cout << "Nb d'iterations = " << iter << " : residu = " << residual << ", erreur = " << error_indicator << endl << endl;
         
         t_mode.stop();
-        cout << "temps de calcul du mode " << mode+1 << " = " << t_mode.res << endl << endl;
+        cout << "temps de calcul du mode #" << mode+1 << " = " << t_mode.res << endl << endl;
         
+        /// Estimation d'erreur globale
+        /// ---------------------------
         if ( want_global_estimation or want_local_estimation ) {
             
             TicToc t_CRE;
@@ -455,7 +461,7 @@ int main( int argc, char **argv ) {
             reset_load_conditions( m );
             set_field_alternativeontype( m, Number<1>(), 1., alpha_DM() );
             
-             construct_dep_space_FE( m, F_param, K_param, elem_group, mode, dep_param, dep_space, dep_space_FE_part, dep_space_FE[ mode ] );
+            construct_dep_space_FE( m, F_param, K_param, elem_group, mode, dep_param, dep_space, dep_space_FE_part, dep_space_FE[ mode ] );
             
             if ( method == "EET" or method == "EESPT" ) {
                 Vec< Vec< Vec<T> > > force_fluxes_standard;
@@ -480,17 +486,21 @@ int main( int argc, char **argv ) {
             set_load_conditions( m, structure, loading, mesh_size );
             
             if ( method == "EET" or method == "EESPT" )
-                calcul_error_estimate_prolongation_condition_PGD( m, f, "direct", theta[ mode ],  theta_PGD[ mode ], theta_dis[ mode ], theta_elem[ mode ], theta_elem_PGD[ mode ], theta_elem_dis[ mode ], dep_space, dep_param, dep_space_FE_part, dep_space_FE, dep_space_hat_part, dep_space_hat, elem_group, mode, want_global_discretization_error, want_local_discretization_error );
+                calcul_error_estimate_prolongation_condition_PGD( m, f, "direct", theta[ mode+mesh ],  theta_PGD[ mode+mesh ], theta_dis[ mode+mesh ], theta_elem[ mode+mesh ], theta_elem_PGD[ mode+mesh ], theta_elem_dis[ mode+mesh ], dep_space, dep_param, dep_space_FE_part, dep_space_FE, dep_space_hat_part, dep_space_hat, elem_group, mode, want_global_discretization_error, want_local_discretization_error );
             else if ( method == "SPET" )
-                calcul_error_estimate_partition_unity_PGD( m, f, "direct", theta[ mode ], theta_PGD[ mode ], theta_dis[ mode ], theta_elem[ mode ], theta_elem_PGD[ mode ], theta_elem_dis[ mode ], dep_space, dep_param, dep_space_FE_part, dep_space_FE, dep_space_hat_part, dep_space_hat, elem_group, mode, want_global_discretization_error, want_local_discretization_error );
+                calcul_error_estimate_partition_unity_PGD( m, f, "direct", theta[ mode+mesh ], theta_PGD[ mode+mesh ], theta_dis[ mode+mesh ], theta_elem[ mode+mesh ], theta_elem_PGD[ mode+mesh ], theta_elem_dis[ mode+mesh ], dep_space, dep_param, dep_space_FE_part, dep_space_FE, dep_space_hat_part, dep_space_hat, elem_group, mode, want_global_discretization_error, want_local_discretization_error );
             
             smoothing( m, ExtractDM< error_estimate_nodal_DM >(), ExtractDM< error_estimate_elem_DM >() );
+            
+            modes.push_back( mode+1 );;
             
             t_CRE.stop();
             cout << "temps de calcul de la methode d'estimation d'erreur globale " << method << " = " << t_CRE.res << endl << endl;
             
         }
-
+        
+        /// Solution PGD
+        /// ------------
         f.vectors[0].set( 0. );
         for (unsigned n=0;n<mode+1;++n) {
             Vec<T> dep_mode = dep_space[ n ];
@@ -503,19 +513,23 @@ int main( int argc, char **argv ) {
         f.call_after_solve();
         
         if ( want_remesh )
-            dp.add_mesh_iter( m, filename + "_mode_" + to_string(mode+1) + "_mesh", lp, mesh );
+            dp.add_mesh_iter( m, filename + "_solution_mode_" + to_string(mode+1) + "_mesh_" + to_string(mesh) + "_iter", lp, mode+1+mesh );
         else
-            dp.add_mesh_iter( m, filename + "_mode", lp, mode+1 );
+            dp.add_mesh_iter( m, filename + "_solution_mode", lp, mode+1 );
         
-        
-        if ( want_remesh and theta_PGD[ mode ] < theta_dis[ mode ] ) {
+        if ( want_remesh and theta_PGD[ mode+mesh ] < theta_dis[ mode+mesh ] ) {
             
             /// Adaptation du maillage associe au pb direct
             /// -------------------------------------------
             
-            TF f_old = f;
+            ++mesh;
+            theta_PGD[ mode+mesh ] = theta_PGD[ mode+mesh-1 ];
+            theta_dis[ mode+mesh ] = theta_dis[ mode+mesh-1 ];
+            
             TM m_old = m;
-            while ( theta_PGD[ mode ] < theta_dis[ mode ] and adapt_mesh( m, f, structure, method, ++mesh, max_iter_remesh, k_remesh, spread_cut_remesh ) ) {
+            unsigned iter_remesh = 0;
+            
+            while ( theta_PGD[ mode+mesh ] < theta_dis[ mode+mesh ] and adapt_mesh( m, f, structure, method, ++iter_remesh, max_iter_remesh, k_remesh, spread_cut_remesh ) ) {
                 
                 f.set_mesh( &m );
                 f.init();
@@ -527,7 +541,7 @@ int main( int argc, char **argv ) {
                 /// Conditions aux limites du pb direct
                 /// -----------------------------------
                 f.erase_constraints();
-                set_constraints( f, m, boundary_condition_D, "direct", structure, loading, mesh );
+                set_constraints( f, m, boundary_condition_D, "direct", structure, loading, iter_remesh );
                 reset_load_conditions( m );
                 set_load_conditions( m, structure, loading, mesh_size );
                 
@@ -539,26 +553,130 @@ int main( int argc, char **argv ) {
                 /// ---------------------------------------------------------
                 assemble_space( m, f, F_space, K_space, elem_group );
                 
-                /// Data transfer to updated mesh
-                /// -----------------------------
-                MeshTransfer<TM,TM> mt( &m_old, &m );
-                cout << dep_space_FE_part.size() << endl;
-                f_old.vectors[0] = dep_space_FE_part;
-                f_old.update_variables();
-                f_old.call_after_solve();
-                //display( m_old, filename + "_FE_part_mesh_" + to_string( iter-1 ) );
-                dep_space_FE_part = mt.transfer( dep_space_FE_part );
-                cout << dep_space_FE_part.size() << endl;
-                f.vectors[0] = dep_space_FE_part;
-                f.update_variables();
-                f.call_after_solve();
-                //display( m, filename + "_FE_part_mesh_" + to_string( iter ) );
+                /// Construction d'une solution elements finis en espace particuliere du pb direct
+                /// ------------------------------------------------------------------------------
+                f.solve();
+                dep_space_FE_part = f.vectors[0];
                 
-                for (unsigned n=0;n<mode+1;++n) {
-                    dep_space[ n ]  = mt.transfer( dep_space[ n ] );
+                /// Verification de l'equilibre elements finis du pb direct
+                /// -------------------------------------------------------
+                if ( verif_eq )
+                    check_equilibrium( f, "direct" );
+                
+                /// Calcul de la norme du champ de deplacement approche du pb direct
+                /// ----------------------------------------------------------------
+                calcul_norm_dep( m, f, "direct" );
+                
+                /// Construction d'un champ de contrainte admissible particulier
+                /// ------------------------------------------------------------
+                if ( method == "EET" or method == "EESPT" ) {
+                    Vec< Vec< Vec<T> > > force_fluxes_standard;
+                    if ( method == "EET" )
+                        construct_standard_force_fluxes_EET( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, force_fluxes_standard, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions );  
+                    else if ( method == "EESPT")
+                        construct_standard_force_fluxes_EESPT( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, force_fluxes_standard, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation );
+                    
+                    if ( verif_eq_force_fluxes )
+                        check_equilibrium_force_fluxes( m, f, "direct", force_fluxes_standard, tol_eq_force_fluxes, want_local_enrichment );
+                    
+                    construct_K_hat( m, f, K_hat );
+                    construct_F_hat( m, f, "direct", balancing, elem_flag_bal, elem_flag_enh, force_fluxes_standard, F_hat, want_local_enrichment );
+                    construct_dep_hat( m, f, solver, K_hat, F_hat, dep_space_hat_part, verif_solver, tol_solver );
+                }
+                else if ( method == "SPET" ) {
+                    set_patch( m, f, nb_vertex_nodes, face_type, connect_node_to_vertex_node, elem_list_vertex_node, patch_elem, nb_points_elem, nb_points_patch, constrained_points_list_patch, nb_constraints_patch );
+                    
+                    construct_K_hat( m, f, nb_vertex_nodes, connect_node_to_vertex_node, elem_list_vertex_node, patch_elem, nb_points_patch, constrained_points_list_patch, K_hat );
+                    construct_F_hat( m, f, "direct", nb_vertex_nodes, face_type, connect_node_to_vertex_node, elem_list_vertex_node, patch_elem, nb_points_patch, constrained_points_list_patch, F_hat, want_local_enrichment );
+                    construct_dep_hat( m, f, solver, nb_vertex_nodes, connect_node_to_vertex_node, elem_list_vertex_node, patch_elem, nb_points_patch, nb_points_elem, K_hat, F_hat, dep_space_hat_part, verif_solver, tol_solver );
                 }
                 
+                /// Projection des modes precedents sur le nouveau maillage
+                /// -------------------------------------------------------
+//                Mat<T, Gen<>, SparseLine<> > P;
+//                interpolation_matrix( m_old, m, P );
+//                for (unsigned n=0;n<mode;++n)
+//                    dep_space[ n ]  = P*dep_space[ n ];
+                
+                /// Construction et resolution des pbs en espace associes aux differents modes
+                /// --------------------------------------------------------------------------
+                for (unsigned n=0;n<mode+1;++n)
+                    solve_space( m, f, n, F_space, F_param, K_param, elem_group, dep_param, dep_space );
+                
+                /// Estimation d'erreur globale
+                /// ---------------------------
+                TicToc t_CRE;
+                t_CRE.start();
+                
+                /// Construction des champs de contrainte admissibles a zero associes aux differents modes
+                /// --------------------------------------------------------------------------------------
+                reset_load_conditions( m );
+                set_field_alternativeontype( m, Number<1>(), 1., alpha_DM() );
+                
+                for (unsigned n=0;n<mode+1;++n) {
+                    construct_dep_space_FE( m, F_param, K_param, elem_group, n, dep_param, dep_space, dep_space_FE_part, dep_space_FE[ n ] );
+                    
+                    if ( method == "EET" or method == "EESPT" ) {
+                        Vec< Vec< Vec<T> > > force_fluxes_standard;
+                        if ( method == "EET" )
+                            construct_standard_force_fluxes_EET_PGD( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, force_fluxes_standard, dep_space_FE[ n ], elem_group, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation, verif_compatibility_conditions, tol_compatibility_conditions );
+                        else if ( method == "EESPT" )
+                            construct_standard_force_fluxes_EESPT_PGD( m, f, "direct", cost_function, enhancement, face_flag_enh, solver_minimisation, penalty_val_N, force_fluxes_standard, dep_space_FE[ n ], elem_group, want_local_enrichment, verif_solver_minimisation, tol_solver_minimisation );
+                        
+                        if ( verif_eq_force_fluxes )
+                            check_equilibrium_force_fluxes( m, f, "direct", force_fluxes_standard, tol_eq_force_fluxes, want_local_enrichment );
+                        
+                        construct_F_hat( m, f, "direct", balancing, elem_flag_bal, elem_flag_enh, force_fluxes_standard, F_hat, want_local_enrichment );
+                        construct_dep_hat( m, f, solver, K_hat, F_hat, dep_space_hat[ n ], verif_solver, tol_solver );
+                    }
+                    else if ( method == "SPET" ) {
+                        construct_F_hat_PGD( m, f, "direct", nb_vertex_nodes, face_type, connect_node_to_vertex_node, elem_list_vertex_node, patch_elem, nb_points_patch, constrained_points_list_patch, F_hat, dep_space_FE[ n ], elem_group, want_local_enrichment );
+                        construct_dep_hat( m, f, solver, nb_vertex_nodes, connect_node_to_vertex_node, elem_list_vertex_node, patch_elem, nb_points_patch, nb_points_elem, K_hat, F_hat, dep_space_hat[ n ], verif_solver, tol_solver );
+                    }
+                }
+                
+                /// Calcul d'un estimateur d'erreur globale associe au pb direct
+                /// ------------------------------------------------------------
+                set_load_conditions( m, structure, loading, mesh_size );
+                
+                if ( method == "EET" or method == "EESPT" )
+                    calcul_error_estimate_prolongation_condition_PGD( m, f, "direct", theta[ mode+mesh ],  theta_PGD[ mode+mesh ], theta_dis[ mode+mesh ], theta_elem[ mode+mesh ], theta_elem_PGD[ mode+mesh ], theta_elem_dis[ mode+mesh ], dep_space, dep_param, dep_space_FE_part, dep_space_FE, dep_space_hat_part, dep_space_hat, elem_group, mode, want_global_discretization_error, want_local_discretization_error );
+                else if ( method == "SPET" )
+                    calcul_error_estimate_partition_unity_PGD( m, f, "direct", theta[ mode+mesh ], theta_PGD[ mode+mesh ], theta_dis[ mode+mesh ], theta_elem[ mode+mesh ], theta_elem_PGD[ mode+mesh ], theta_elem_dis[ mode+mesh ], dep_space, dep_param, dep_space_FE_part, dep_space_FE, dep_space_hat_part, dep_space_hat, elem_group, mode, want_global_discretization_error, want_local_discretization_error );
+                
+                smoothing( m, ExtractDM< error_estimate_nodal_DM >(), ExtractDM< error_estimate_elem_DM >() );
+                
+                t_CRE.stop();
+                cout << "temps de calcul de la methode d'estimation d'erreur globale " << method << " = " << t_CRE.res << endl << endl;
             }
+            
+            modes.push_back( mode+1 );
+            
+            /// Modes PGD
+            /// ---------
+            for (unsigned n=0;n<mode+1;++n) {
+                f.vectors[0] = dep_space[ n ];
+                f.update_variables();
+                
+                filename_mode = filename + "_mode" + to_string(n+1) + "_space_mesh" + to_string(mesh) + "_iter";
+                dp_space[ n ].add_mesh_iter( m, filename_mode, lp_space, iter+mesh );
+            }
+            
+            /// Solution PGD
+            /// ------------
+            f.vectors[0].set( 0. );
+            for (unsigned n=0;n<mode+1;++n) {
+                Vec<T> dep_mode = dep_space[ n ];
+                for (unsigned p=0;p<elem_group.size()-1;++p)
+                    dep_mode *= dep_param[ p ][ n ][ 0 ];
+                f.vectors[0] +=  dep_mode;
+            }
+            f.update_variables();
+            set_field_alternativeontype( m, Number<1>(), 1., alpha_DM() );
+            f.call_after_solve();
+            
+            if ( want_remesh )
+                dp.add_mesh_iter( m, filename + "_solution_mode_" + to_string(mode+1) + "_mesh_" + to_string(mesh) + "_iter", lp, mode+1+mesh );
         }
         
         if ( mode+1 >= max_mode ) { // if ( error_indicator < tol_convergence_criterium_mode or mode+1 >= max_mode ) {
@@ -617,18 +735,24 @@ int main( int argc, char **argv ) {
     }
     
     if ( display_pvd )
-        dp.exec( filename );
+        dp.exec( filename + "_solution" );
     else
-        dp.make_pvd_file( filename );
+        dp.make_pvd_file( filename + "_solution" );
     
     if ( want_global_estimation or want_local_estimation ) {
-        Vec<unsigned> modes = range(1,mode+2);
-        Vec<T, max_mode > theta_2, theta_2_PGD, theta_2_dis;
-        for (unsigned n=0;n<mode+1;++n) {
+        Vec<T> theta_2, theta_2_PGD, theta_2_dis;
+        theta_2.resize( modes.size(), 0. );
+        theta_2_PGD.resize( modes.size(), 0. );
+        theta_2_dis.resize( modes.size(), 0. );
+        for (unsigned n=0;n<modes.size();++n) {
             theta_2[ n ] = pow( theta[ n ], 2 );
             theta_2_PGD[ n ] = pow( theta_PGD[ n ], 2 );
             theta_2_dis[ n ] = pow( theta_dis[ n ], 2 );
         }
+        cout << modes << endl;
+        cout << theta_2 << endl;
+        cout << theta_2_PGD << endl;
+        cout << theta_2_dis << endl;
         // Matlab
         string output = "'" + filename + "_estimates_global";
         string xlabel = "'$m$'";

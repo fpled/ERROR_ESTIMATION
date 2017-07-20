@@ -30,6 +30,7 @@
 #include "LMT/include/util/MKL_iterative_solver.h"
 #include "LMT/include/util/MUMPS_solver.h"
 
+#include "LMT/include/mesh/interpolation.h"
 #include "LMT/include/mesh/meshcaracstd.h"
 
 using namespace LMT;
@@ -186,7 +187,7 @@ struct HyperPlan {
 };
 
 int main( int argc, char **argv ) {
-    static const unsigned dim = 3;
+    static const unsigned dim = 2;
     static const bool wont_add_nz = true;
 //    typedef Mesh<MeshCaracStd<dim,2> > TM;
     typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
@@ -196,32 +197,38 @@ int main( int argc, char **argv ) {
     typedef TM::TNode::T T;
 
     TM m;
-//    T lx = 1., ly = 1., lz = 1.;
-//    make_rect( m, Triangle(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 5, 5 ) );
+    T lx = 1., ly = 1., lz = 1.;
+    make_rect( m, Triangle(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 5, 5 ) );
 //    make_rect( m, Quad(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 5, 5 ) );
 //    make_rect( m, Tetra(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 5, 5, 5 ) );
 //    make_rect( m, Hexa(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 5, 5, 5 ) ); replace_Hexa_by_Tetra( m );
 //    make_rect( m, Triangle(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 21, 5 ) );
 //    make_rect( m, Tetra(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 21, 5, 5 ) );
-    read_msh_2( m, "MESH/AORTA_3D/aorta_Tetra.msh" );
+//    read_msh_2( m, "MESH/AORTA_3D/aorta_Tetra.msh" );
     display_mesh_carac( m );
 
-//    TF f( m );
+    TF f( m );
 
-//    for(unsigned i = 0; i < m.node_list.size(); ++i ) {
-//        if ( ( m.node_list[ i ].pos[ 0 ] < 1e-6 ) or ( m.node_list[ i ].pos[ 0 ] > lx - 1e-6 ) ) {
-//            for( int d = 0; d < dim; ++d )
-//                f.add_constraint( "sin( node[" + to_string( i ) + "].dep[" + to_string( d ) + "] ) - " + to_string( 0.1 * m.node_list[ i ].pos[ 0 ] * ( d == 0 ) ), 1e5 );
-//        }
-//    }
+    for(unsigned i = 0; i < m.node_list.size(); ++i ) {
+        if ( ( m.node_list[ i ].pos[ 0 ] < 1e-6 ) or ( m.node_list[ i ].pos[ 0 ] > lx - 1e-6 ) ) {
+            for( int d = 0; d < dim; ++d )
+                f.add_constraint( "sin( node[" + to_string( i ) + "].dep[" + to_string( d ) + "] ) - " + to_string( 0.1 * m.node_list[ i ].pos[ 0 ] * ( d == 0 ) ), 1e5 );
+        }
+    }
 
-//    f.solve();
+    f.solve();
 
 //    display_mesh( m );
 
 //    PRINT( generate( m.node_list, ExtractDM<pos_DM>() ) );
 //    PRINT( generate( m.node_list, ExtractDMi<pos_DM>( 0 ) ) );
 //    PRINT( generate( m.node_list, ExtractDMi<pos_DM>( 1 ) ) );
+    
+    Vec<T> dep_old = f.vectors[0];
+    PRINTN( generate( m.node_list, ExtractDM<dep_DM>() ) );
+    PRINTN( dep_old );
+    
+    TM m_old = m;
 
     bool spread_cut = false;
 
@@ -233,9 +240,9 @@ int main( int argc, char **argv ) {
 
 //    while ( refinement_circle( m, 0.01, 0.2, Pvec( 0.3, 0.5 ), 0.1, spread_cut ) );
 
-//    for( unsigned i = 0 ; i < m.node_list.size(); ++i )
-//        m.node_list[i].phi_domain = sin( std::sqrt( i ) * 5. );
-//    level_set_refinement( m, ExtractDM< phi_domain_DM >(), spread_cut );
+    for( unsigned i = 0 ; i < m.node_list.size(); ++i )
+        m.node_list[i].phi_domain = sin( std::sqrt( i ) * 5. );
+    level_set_refinement( m, ExtractDM< phi_domain_DM >(), spread_cut );
 
 //    for( unsigned i = 0 ; i < m.node_list.size(); ++i )
 //        m.node_list[i].phi_domain = sin( std::sqrt( i ) * 5. );
@@ -270,34 +277,48 @@ int main( int argc, char **argv ) {
 //    replace_Hexa_by_Tetra( m );
 //    replace_Wedge_by_Tetra( m );
 
-    /// création d'un plan qui passe par le point P et dont la normale est nor
-    Pvec nor( 0., -1., 0. );
-    Pvec P( 0., 26.5, 0. );
-    HyperPlan<T,dim> plan( nor, P );
-    refinement( m, plan );
-//    sep_mesh( m, plan );
-    /// création d'un plan_ qui passe par le point P_ et dont la normale est nor_
-    Pvec nor_( 0., 1., 0. );
-    Pvec P_( 0., 35.5, 0. );
-    HyperPlan<T,dim> plan_( nor_, P_ );
-    refinement( m, plan_ );
-//    sep_mesh( m, plan_ );
+//    /// création d'un plan qui passe par le point P et dont la normale est nor
+//    Pvec nor( 0., -1., 0. );
+//    Pvec P( 0., 26.5, 0. );
+//    HyperPlan<T,dim> plan( nor, P );
+//    refinement( m, plan );
+////    sep_mesh( m, plan );
+//    /// création d'un plan_ qui passe par le point P_ et dont la normale est nor_
+//    Pvec nor_( 0., 1., 0. );
+//    Pvec P_( 0., 35.5, 0. );
+//    HyperPlan<T,dim> plan_( nor_, P_ );
+//    refinement( m, plan_ );
+////    sep_mesh( m, plan_ );
 
-    for( unsigned i = 0 ; i < m.node_list.size(); ++i ) {
-        m.node_list[i].phi_crown_int = m.node_list[ i ].pos[ 1 ] - 26.5;
-        m.node_list[i].phi_crown_ext = 35.5 - m.node_list[ i ].pos[ 1 ];
-    }
-//    level_set_refinement( m, ExtractDM< phi_crown_int_DM >(), spread_cut );
-//    level_set_refinement( m, ExtractDM< phi_crown_ext_DM >(), spread_cut );
-    level_set_cut( m, ExtractDM< phi_crown_int_DM >(), spread_cut );
-    level_set_cut( m, ExtractDM< phi_crown_ext_DM >(), spread_cut );
+//    for( unsigned i = 0 ; i < m.node_list.size(); ++i ) {
+//        m.node_list[i].phi_crown_int = m.node_list[ i ].pos[ 1 ] - 26.5;
+//        m.node_list[i].phi_crown_ext = 35.5 - m.node_list[ i ].pos[ 1 ];
+//    }
+////    level_set_refinement( m, ExtractDM< phi_crown_int_DM >(), spread_cut );
+////    level_set_refinement( m, ExtractDM< phi_crown_ext_DM >(), spread_cut );
+//    level_set_cut( m, ExtractDM< phi_crown_int_DM >(), spread_cut );
+//    level_set_cut( m, ExtractDM< phi_crown_ext_DM >(), spread_cut );
 
-    for( unsigned i = 0; i < m.node_list.size(); ++i ) {
-        m.node_list[ i ].phi_domain = sgn( plan( m.node_list[ i ].pos ) ) * sgn( plan_( m.node_list[ i ].pos ) );
-    }
+//    for( unsigned i = 0; i < m.node_list.size(); ++i ) {
+//        m.node_list[ i ].phi_domain = sgn( plan( m.node_list[ i ].pos ) ) * sgn( plan_( m.node_list[ i ].pos ) );
+//    }
 
     display_mesh_carac( m );
 //    display_mesh( m );
+    
+    Mat<T, Gen<>, SparseLine<> > P;
+    interpolation_matrix( m_old, m, P );
+    PRINTN( P );
+    
+    f.set_mesh( &m );
+    f.init();
+    f.get_initial_conditions();
+    Vec<T> dep = f.vectors[0];
+    Vec<T> dep_transfert = P*dep_old;
+    PRINTN( generate( m.node_list, ExtractDM<dep_DM>() ) );
+    PRINTN( dep );
+    PRINTN( dep_transfert );
+    PRINTN( norm_2( dep-dep_transfert ) );
 
 //    save( m, "RESULTS/aorta_Tetra", Vec<std::string>("pos") );
 //    write_mesh_vtk( "RESULTS/aorta_Tetra.vtk", m, Vec<std::string>("pos") );
@@ -319,9 +340,9 @@ int main( int argc, char **argv ) {
 //    write_mesh_vtk( "RESULTS/aorta_Tetra_refinement_sep_mesh_level_set_cut.vtk", m, Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext") );
 //    write_avs( m, "RESULTS/aorta_Tetra_refinement_sep_mesh_level_set_cut.avs", Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext"), Ascii() );
 
-    save( m, "RESULTS/aorta_Tetra_refinement_level_set_cut", Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext") );
-    write_mesh_vtk( "RESULTS/aorta_Tetra_refinement_level_set_cut.vtk", m, Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext") );
-    write_avs( m, "RESULTS/aorta_Tetra_refinement_level_set_cut.avs", Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext"), Ascii() );
+//    save( m, "RESULTS/aorta_Tetra_refinement_level_set_cut", Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext") );
+//    write_mesh_vtk( "RESULTS/aorta_Tetra_refinement_level_set_cut.vtk", m, Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext") );
+//    write_avs( m, "RESULTS/aorta_Tetra_refinement_level_set_cut.avs", Vec<std::string>("phi_domain","phi_crown_int","phi_crown_ext"), Ascii() );
 
     return 0;
 }

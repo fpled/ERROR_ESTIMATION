@@ -240,10 +240,10 @@ formList := [ FormulationElasticity ]
 
 # List of elements
 #-----------------
-elemList := [ Triangle ]
+#elemList := [ Triangle ]
 #elemList := [ Quad ]
 #elemList := [ Triangle, Quad ]
-#elemList := [ Tetra ]
+elemList := [ Tetra ]
 #elemList := [ Hexa ]
 #elemList := [ Tetra, Hexa ]
 
