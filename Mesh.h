@@ -25,6 +25,7 @@
 
 #include "LMT/include/mesh/remove_lonely_nodes.h" // sert a retirer les noeuds seuls d'un maillage
 #include "LMT/include/mesh/refinement.h" // sert a raffiner un maillage selon un critere donne
+#include "LMT/include/mesh/refinementdelaunay.h" // sert a raffiner un maillage selon un critere donne
 #include "LMT/include/mesh/sep_mesh.h" // sert a redefinir la peau d'un maillage selon un critere donne
 #include "LMT/include/mesh/replace_Quad_by_Triangle.h" // sert a retirer tous les Quad d'un maillage et les remplacer par des Triangle
 #include "LMT/include/mesh/replace_Hexa_by_Tetra.h" // sert a retirer tous les Hexa d'un maillage et les remplacer par des Tetra
