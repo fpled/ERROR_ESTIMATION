@@ -492,7 +492,7 @@ int main( int argc, char **argv ) {
             
             smoothing( m, ExtractDM< error_estimate_nodal_DM >(), ExtractDM< error_estimate_elem_DM >() );
             
-            modes.push_back( mode+1 );;
+            modes.push_back( mode+1 );
             
             t_CRE.stop();
             cout << "temps de calcul de la methode d'estimation d'erreur globale " << method << " = " << t_CRE.res << endl << endl;

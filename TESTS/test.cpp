@@ -187,7 +187,7 @@ struct HyperPlan {
 };
 
 int main( int argc, char **argv ) {
-    static const unsigned dim = 2;
+    static const unsigned dim = 3;
     static const bool wont_add_nz = true;
 //    typedef Mesh<MeshCaracStd<dim,2> > TM;
     typedef Mesh<Mesh_carac_error_estimation<double,dim> > TM;
@@ -198,13 +198,14 @@ int main( int argc, char **argv ) {
 
     TM m;
     T lx = 1., ly = 1., lz = 1.;
-    make_rect( m, Triangle(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 5, 5 ) );
+//    make_rect( m, Triangle(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 5, 5 ) );
 //    make_rect( m, Quad(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 5, 5 ) );
 //    make_rect( m, Tetra(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 5, 5, 5 ) );
 //    make_rect( m, Hexa(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 5, 5, 5 ) ); replace_Hexa_by_Tetra( m );
 //    make_rect( m, Triangle(), Pvec( 0., 0. ), Pvec( lx, ly ), Pvec( 21, 5 ) );
 //    make_rect( m, Tetra(), Pvec( 0., 0., 0. ), Pvec( lx, ly, lz ), Pvec( 21, 5, 5 ) );
 //    read_msh_2( m, "MESH/AORTA_3D/aorta_Tetra.msh" );
+    read_msh_2( m, "MESH/SPHERICAL_INCLUSIONS_3D/spherical_inclusions_Tetra.msh" );
     display_mesh_carac( m );
 
     TF f( m );
@@ -224,25 +225,28 @@ int main( int argc, char **argv ) {
 //    PRINT( generate( m.node_list, ExtractDMi<pos_DM>( 0 ) ) );
 //    PRINT( generate( m.node_list, ExtractDMi<pos_DM>( 1 ) ) );
     
-    Vec<T> dep_old = f.vectors[0];
-    PRINTN( generate( m.node_list, ExtractDM<dep_DM>() ) );
-    PRINTN( dep_old );
+//    Vec<T> dep_old = f.vectors[0];
+//    PRINTN( generate( m.node_list, ExtractDM<dep_DM>() ) );
+//    PRINTN( dep_old );
     
-    TM m_old = m;
+//    TM m_old = m;
 
     bool spread_cut = false;
 
 //    refinement_if_constraints( m, f, spread_cut );
 
 //    while ( refinement_if_length_sup( m, 0.05, spread_cut ) );
+    
+//    refinement_if_length_sup( m, 0.05, spread_cut );
+    refinementdelaunay_if_length_sup<dim,TM,T>( m, 0.05 );
 
 //    while ( refinement_point( m, 0.01, 0.2, Pvec( 0.2, 0.5 ), spread_cut ) );
 
 //    while ( refinement_circle( m, 0.01, 0.2, Pvec( 0.3, 0.5 ), 0.1, spread_cut ) );
 
-    for( unsigned i = 0 ; i < m.node_list.size(); ++i )
-        m.node_list[i].phi_domain = sin( std::sqrt( i ) * 5. );
-    level_set_refinement( m, ExtractDM< phi_domain_DM >(), spread_cut );
+//    for( unsigned i = 0 ; i < m.node_list.size(); ++i )
+//        m.node_list[i].phi_domain = sin( std::sqrt( i ) * 5. );
+//    level_set_refinement( m, ExtractDM< phi_domain_DM >(), spread_cut );
 
 //    for( unsigned i = 0 ; i < m.node_list.size(); ++i )
 //        m.node_list[i].phi_domain = sin( std::sqrt( i ) * 5. );
@@ -304,21 +308,21 @@ int main( int argc, char **argv ) {
 //    }
 
     display_mesh_carac( m );
-//    display_mesh( m );
+    display_mesh( m );
     
-    Mat<T, Gen<>, SparseLine<> > P;
-    interpolation_matrix( m_old, m, P );
-    PRINTN( P );
+//    Mat<T, Gen<>, SparseLine<> > P;
+//    interpolation_matrix( m_old, m, P );
+//    PRINTN( P );
     
-    f.set_mesh( &m );
-    f.init();
-    f.get_initial_conditions();
-    Vec<T> dep = f.vectors[0];
-    Vec<T> dep_transfert = P*dep_old;
-    PRINTN( generate( m.node_list, ExtractDM<dep_DM>() ) );
-    PRINTN( dep );
-    PRINTN( dep_transfert );
-    PRINTN( norm_2( dep-dep_transfert ) );
+//    f.set_mesh( &m );
+//    f.init();
+//    f.get_initial_conditions();
+//    Vec<T> dep = f.vectors[0];
+//    Vec<T> dep_transfert = P*dep_old;
+//    PRINTN( generate( m.node_list, ExtractDM<dep_DM>() ) );
+//    PRINTN( dep );
+//    PRINTN( dep_transfert );
+//    PRINTN( norm_2( dep-dep_transfert ) );
 
 //    save( m, "RESULTS/aorta_Tetra", Vec<std::string>("pos") );
 //    write_mesh_vtk( "RESULTS/aorta_Tetra.vtk", m, Vec<std::string>("pos") );
