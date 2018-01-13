@@ -1,8 +1,8 @@
 import "EF/std_elements.met"
 import "../Handbook_functions.met"
 
-dim := 2
-e := SymbolicElement[ Quad_16, dim ]()
+dim := 3
+e := SymbolicElement[ Tetra_10, dim ]()
 #face := SymbolicElement[ Bar, dim ]()
 infon e.get_name()
 infon e.get_order_interpolation()
@@ -377,7 +377,7 @@ e.pos_nodes[3] = [110 22] # 33
 # infon dep_hat_test[0].poly_deg( e.var_inter )
 
 
-# (e.get_shape_functions( "lagrange" )).display_tex()
+(e.get_shape_functions( "lagrange" )).display_tex()
 # (e.get_generic_shape_functions( "lagrange", 1 )).display_tex()
 # (e.get_generic_shape_functions( "lagrange", 2 )).display_tex()
 # (e.get_generic_shape_functions( "lagrange", 3 )).display_tex()
