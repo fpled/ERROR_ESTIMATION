@@ -401,7 +401,7 @@ void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF 
     TicToc t;
     t.start();
     
-    /// Calcul d'un estimateur pondere wieghted_theta de l'erreur globale sur les maillages extraits des maillages initiaux direct/adjoint
+    /// Calcul d'un estimateur pondere weighted_theta de l'erreur globale sur les maillages extraits des maillages initiaux direct/adjoint
     /// ----------------------------------------------------------------------------------------------------------------------------------
     f_lambda.allocate_matrices();
     f_lambda.shift();
