@@ -19,10 +19,10 @@ import "INTEREST_QUANTITY/Interest_quantity.met"
 # Solution of generalized eigenvalue problems for the computation of constants involved in improved bounding techniques: want_solve_eig := true
 # Local enrichment based on handbook techniques for goal-oriented error estimation method : want_local_enrichment := true
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-want_discretization_error := true
+want_discretization_error := false
 want_method_EET := true
-want_method_SPET := true
-want_method_EESPT := true
+want_method_SPET := false
+want_method_EESPT := false
 want_enhancement := false
 want_local_estimation := false
 want_local_improvement_steklov := false
@@ -243,8 +243,8 @@ formList := [ FormulationElasticity ]
 #elemList := [ Triangle ]
 #elemList := [ Quad ]
 #elemList := [ Triangle, Quad ]
-elemList := [ Tetra ]
-#elemList := [ Hexa ]
+#elemList := [ Tetra ]
+elemList := [ Hexa ]
 #elemList := [ Tetra, Hexa ]
 
 # List of functions
