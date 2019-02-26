@@ -97,7 +97,7 @@ int main( int argc, char **argv ) {
     
     /// Adaptive remeshing (mesh refinement)
     /// ------------------------------------
-    static const bool want_remesh = 1; // remaillage adaptatif (raffinement du maillage)
+    static const bool want_remesh = 0; // remaillage adaptatif (raffinement du maillage)
     static const T tol_remesh = 1e-2; // tolerance pour le critère d'arrêt de l'algorithme de remaillage
     static const unsigned max_iter_remesh = 10; // nb d'iterations max de l'algorithme de remaillage
     static const T k_remesh = 0.25; // rapport maximal entre la contribution élémentaire au carré à l'erreur estimée et la contribution élémentaire maximale au carré des barres qui ne seront pas divisées
