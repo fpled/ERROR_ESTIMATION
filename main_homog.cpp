@@ -213,7 +213,7 @@ int main( int argc, char **argv ) {
         t_ref.start();
         f_ref.solve();
         t_ref.stop();
-        cout << "temps de calcul de la resolution du pb de reference associe au pb direct = " << t_ref.res << endl << endl;
+        cout << "temps de calcul de la resolution du pb de reference associe au pb direct = " << t_ref.res << " s" << endl << endl;
         
         /// Verification de l'equilibre du pb de reference associe au pb direct
         /// -------------------------------------------------------------------
@@ -244,7 +244,7 @@ int main( int argc, char **argv ) {
 //    t.start();
 //    f.solve();
 //    t.stop();
-//    cout << "temps de calcul de la resolution du pb direct = " << t.res << endl << endl;
+//    cout << "temps de calcul de la resolution du pb direct = " << t.res << " s" << endl << endl;
     
     f.allocate_matrices();
     f.shift();
@@ -335,7 +335,7 @@ int main( int argc, char **argv ) {
             t_local_ref.start();
             f_local_ref.solve();
             t_local_ref.stop();
-            cout << "temps de calcul de la resolution du pb de reference local associe au pb direct = " << t_local_ref.res << endl << endl;
+            cout << "temps de calcul de la resolution du pb de reference local associe au pb direct = " << t_local_ref.res << " s" << endl << endl;
             
             /// Verification de l'equilibre du pb de reference local associe au pb direct
             /// -------------------------------------------------------------------------
@@ -394,7 +394,7 @@ int main( int argc, char **argv ) {
         t_adjoint.start();
         f_adjoint.solve();
         t_adjoint.stop();
-        cout << "temps de calcul de la resolution du pb adjoint = " << t_adjoint.res << endl << endl;
+        cout << "temps de calcul de la resolution du pb adjoint = " << t_adjoint.res << " s" << endl << endl;
         
         if ( want_local_enrichment )
             calcul_dep_tot_after_solve( m_adjoint );
@@ -474,6 +474,6 @@ int main( int argc, char **argv ) {
     }
     
     t_total.stop();
-    cout << "temps de calcul total = " << t_total.res << endl << endl;
+    cout << "temps de calcul total = " << t_total.res << " s" << endl << endl;
     
 }

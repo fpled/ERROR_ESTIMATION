@@ -248,9 +248,9 @@ void calcul_interest_quantity( const TM &m, const TM &m_crown, const TF &f, cons
     t.stop();
     if ( disp ) {
         if ( pb == "direct" )
-            cout << "temps de calcul de la quantite d'interet approchee I_h = " << t.res << endl << endl;
+            cout << "temps de calcul de la quantite d'interet approchee I_h = " << t.res << " s" << endl << endl;
         else if ( pb == "reference" )
-            cout << "temps de calcul de la quantite d'interet (quasi-)exacte I_ex = " << t.res << endl << endl;
+            cout << "temps de calcul de la quantite d'interet (quasi-)exacte I_ex = " << t.res << " s" << endl << endl;
     }
 }
 
@@ -308,7 +308,7 @@ void calcul_correction_interest_quantity( TM &m, TM &m_adjoint, const TF &f, con
     
     t.stop();
     if ( disp )
-        cout << "temps de calcul de la correction I_hh sur la quantite d'interet = " << t.res << endl << endl;
+        cout << "temps de calcul de la correction I_hh sur la quantite d'interet = " << t.res << " s" << endl << endl;
 }
 
 /// Construction d'un champ de contrainte admissible & Calcul d'un estimateur d'erreur globale sur la structure extraite, Affichage de l'estimateur
@@ -377,7 +377,7 @@ void calcul_error_estimate_lambda( const TM &m, TM &m_lambda, const TF &f, TF &f
     
     t.stop();
     if ( disp )
-        cout << "temps de calcul de l'estimateur d'erreur globale sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " = " << t.res << endl << endl;
+        cout << "temps de calcul de l'estimateur d'erreur globale sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " = " << t.res << " s" << endl << endl;
 }
 
 /// Calcul d'un estimateur pondere d'erreur globale weighted_theta
@@ -440,7 +440,7 @@ void calcul_weighted_error_estimate_lambda( const TM &m, TM &m_lambda, const TF 
     
     t.stop();
     if ( disp )
-        cout << "temps de calcul de l'estimateur pondere d'erreur globale au carre (technique " << method << ") sur la structure extraite associee au pb " << pb << " de type " << shape << " = " << t.res << endl << endl;
+        cout << "temps de calcul de l'estimateur pondere d'erreur globale au carre (technique " << method << ") sur la structure extraite associee au pb " << pb << " de type " << shape << " = " << t.res << " s" << endl << endl;
 }
 
 /// Construction d'un champ de contrainte admissible & Calcul d'un estimateur d'erreur globale sur le bord de la structure extraite, Affichage de l'estimateur
@@ -510,7 +510,7 @@ void calcul_error_estimate_lambda_boundary( const TM &m, TM &m_lambda, const TF 
     
     t.stop();
     if ( disp )
-        cout << "temps de calcul de l'estimateur d'erreur globale sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " = " << t.res << endl << endl;
+        cout << "temps de calcul de l'estimateur d'erreur globale sur la structure extraite associee au pb " << pb << " de type " << shape << " et de taille " << k << " = " << t.res << " s" << endl << endl;
 }
 
 /// Calcul du terme gamma pour le calcul des bornes locales ameliorees
@@ -600,7 +600,7 @@ void calcul_gamma( TM &m, TM m_adjoint, TM &m_adjoint_lambda_, const TF &f, cons
     
     t.stop();
     if ( disp )
-        cout << "temps de calcul de la quantite gamma = " << t.res << endl << endl;
+        cout << "temps de calcul de la quantite gamma = " << t.res << " s" << endl << endl;
 }
 
 /// Calcul de la correction I_hhh sur la quantite d'interet locale I pour le calcul des bornes locales ameliorees
@@ -638,7 +638,7 @@ void calcul_correction_interest_quantity_lambda( const TM &m_lambda_min, const T
     
     t.stop();
     if ( disp )
-        cout << "temps de calcul de la correction I_hhh sur la quantite d'interet = " << t.res << endl << endl;
+        cout << "temps de calcul de la correction I_hhh sur la quantite d'interet = " << t.res << " s" << endl << endl;
 }
 
 /// Calcul de la constante h pour le calcul des bornes locales ameliorees

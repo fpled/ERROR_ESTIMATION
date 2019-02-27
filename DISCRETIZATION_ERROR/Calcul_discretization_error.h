@@ -166,7 +166,7 @@ void calcul_discretization_error( TM &m, TM &m_ref, const TF &f, const TF &f_ref
                 cout << "e / norm(u_h) = " << m.discretization_error / m.norm_dep * 100. << " %" << endl << endl;
                 
                 t.stop();
-                cout << "temps de calcul de la mesure de l'erreur de discretisation globale = " << t.res << endl << endl;
+                cout << "temps de calcul de la mesure de l'erreur de discretisation globale = " << t.res << " s" << endl << endl;
             }
             
             if ( want_local_discretization_error ) {
@@ -208,7 +208,7 @@ void calcul_discretization_error( TM &m, TM &m_ref, const TF &f, const TF &f_ref
                 cout << "e / norm(u_h) ≈ " << sqrt( sum_discretization_error_elem ) / m.norm_dep * 100. << " %" << endl << endl;
                 
                 t.stop();
-                cout << "temps de calcul des mesures (elementaires) de l'erreur de discretisation locale = " << t.res << endl << endl;
+                cout << "temps de calcul des mesures (elementaires) de l'erreur de discretisation locale = " << t.res << " s" << endl << endl;
                 
                 /// Calcul approche de la mesure de l'erreur de discretisation globale comme somme de contributions locales
                 /// -------------------------------------------------------------------------------------------------------

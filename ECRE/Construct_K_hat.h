@@ -34,7 +34,7 @@ void construct_K_hat( const TM &m, const TF &f, TMatV &K_hat, const bool disp = 
     
     t.stop();
     if ( disp )
-        cout << "temps de calcul du remplissage des matrices associees aux pbs locaux par element = " << t.res << endl << endl;
+        cout << "temps de calcul du remplissage des matrices associees aux pbs locaux par element = " << t.res << " s" << endl << endl;
     
     if ( disp ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {

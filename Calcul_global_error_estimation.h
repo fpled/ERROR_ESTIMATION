@@ -174,7 +174,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
         }
         
         t_EET.stop();
-        cout << "temps de calcul de la methode d'estimation d'erreur globale EET = " << t_EET.res << endl << endl;
+        cout << "temps de calcul de la methode d'estimation d'erreur globale EET = " << t_EET.res << " s" << endl << endl;
         
     }
     
@@ -232,7 +232,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
         calcul_error_estimate_partition_unity( m, f, pb, "SPET", theta, theta_elem, dep_hat, want_global_discretization_error, want_local_discretization_error, disp );
         
         t_SPET.stop();
-        cout << "temps de calcul de la methode d'estimation d'erreur globale SPET = " << t_SPET.res << endl << endl;
+        cout << "temps de calcul de la methode d'estimation d'erreur globale SPET = " << t_SPET.res << " s" << endl << endl;
         
     }
     
@@ -371,7 +371,7 @@ void calcul_global_error_estimation( TF &f, TM &m, const string &pb, const strin
         }
         
         t_EESPT.stop();
-        cout << "temps de calcul de la methode d'estimation d'erreur globale EESPT = " << t_EESPT.res << endl << endl;
+        cout << "temps de calcul de la methode d'estimation d'erreur globale EESPT = " << t_EESPT.res << " s" << endl << endl;
         
     }
 }

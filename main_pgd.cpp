@@ -447,7 +447,7 @@ int main( int argc, char **argv ) {
         cout << "Nb d'iterations = " << iter << " : residu = " << residual << ", erreur = " << error_indicator << endl << endl;
         
         t_mode.stop();
-        cout << "temps de calcul du mode #" << mode+1 << " = " << t_mode.res << endl << endl;
+        cout << "temps de calcul du mode #" << mode+1 << " = " << t_mode.res << " s" << endl << endl;
         
         /// Estimation d'erreur globale
         /// ---------------------------
@@ -495,7 +495,7 @@ int main( int argc, char **argv ) {
             modes.push_back( mode+1 );
             
             t_CRE.stop();
-            cout << "temps de calcul de la methode d'estimation d'erreur globale " << method << " = " << t_CRE.res << endl << endl;
+            cout << "temps de calcul de la methode d'estimation d'erreur globale " << method << " = " << t_CRE.res << " s" << endl << endl;
             
         }
         
@@ -647,7 +647,7 @@ int main( int argc, char **argv ) {
                 smoothing( m, ExtractDM< error_estimate_nodal_DM >(), ExtractDM< error_estimate_elem_DM >() );
                 
                 t_CRE.stop();
-                cout << "temps de calcul de la methode d'estimation d'erreur globale " << method << " = " << t_CRE.res << endl << endl;
+                cout << "temps de calcul de la methode d'estimation d'erreur globale " << method << " = " << t_CRE.res << " s" << endl << endl;
             }
             
             modes.push_back( mode+1 );
@@ -783,9 +783,9 @@ int main( int argc, char **argv ) {
         eval_PGD( m_param, m, f, "direct", structure, boundary_condition_D, loading, mesh_size, elem_group, nb_vals, vals_param, mode, dep_space, dep_param, filename, display_pvd_eval );
     
     t.stop();
-    cout << "temps de calcul de la resolution du pb direct = " << t.res << endl << endl;
+    cout << "temps de calcul de la resolution du pb direct = " << t.res << " s" << endl << endl;
     
     t_total.stop();
-    cout << "temps de calcul total = " << t_total.res << endl << endl;
+    cout << "temps de calcul total = " << t_total.res << " s" << endl << endl;
     
 }

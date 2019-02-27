@@ -825,7 +825,7 @@ void construct_standard_force_fluxes_EESPT_PGD( TM &m, const TF &f, const string
     
     t_solve_minimization.stop();
     if ( disp )
-        cout << "temps de calcul de la resolution des pbs de minimisation = " << t_solve_minimization.res << endl << endl;
+        cout << "temps de calcul de la resolution des pbs de minimisation = " << t_solve_minimization.res << " s" << endl << endl;
     
     if ( disp ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {
@@ -947,7 +947,7 @@ void construct_standard_force_fluxes_EESPT_PGD( TM &m, const TF &f, const string
     connect_node_to_vertex_node.free();
     
     t_force_fluxes_std.stop();
-    cout << "temps de calcul de la construction standard des densites d'effort = " << t_force_fluxes_std.res << endl << endl;
+    cout << "temps de calcul de la construction standard des densites d'effort = " << t_force_fluxes_std.res << " s" << endl << endl;
     
 }
 

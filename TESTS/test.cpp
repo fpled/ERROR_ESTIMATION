@@ -110,7 +110,7 @@ int main( int argc, char **argv ) {
     t.start();
     f.solve();
     t.stop();
-    cout << "temps de calcul de la resolution du pb direct = " << t.res << endl << endl;
+    cout << "temps de calcul de la resolution du pb direct = " << t.res << " s" << endl << endl;
 
 //    f.allocate_matrices();
 //    f.shift();

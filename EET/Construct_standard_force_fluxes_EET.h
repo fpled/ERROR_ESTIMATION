@@ -812,7 +812,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     
     t_solve_minimization.stop();
     if ( disp )
-        cout << "temps de calcul de la resolution des pbs de minimisation = " << t_solve_minimization.res << endl << endl;
+        cout << "temps de calcul de la resolution des pbs de minimisation = " << t_solve_minimization.res << " s" << endl << endl;
     
     if ( disp ) {
         for (unsigned i=0;i<m.node_list.size();++i) {
@@ -992,7 +992,7 @@ void construct_standard_force_fluxes_EET( TM &m, const TF &f, const string &pb, 
     }
     
     t_force_fluxes_std.stop();
-    cout << "temps de calcul de la construction standard des densites d'effort = " << t_force_fluxes_std.res << endl << endl;
+    cout << "temps de calcul de la construction standard des densites d'effort = " << t_force_fluxes_std.res << " s" << endl << endl;
     
 }
 

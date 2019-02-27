@@ -105,7 +105,7 @@ void construct_dep_hat( const TM &m, const TF &f, const string &solver, TMatV &K
     }
     
     t.stop();
-    cout << "temps de calcul de la resolution des pbs locaux par element = " << t.res << endl << endl;
+    cout << "temps de calcul de la resolution des pbs locaux par element = " << t.res << " s" << endl << endl;
     
     if ( disp ) {
         for (unsigned n=0;n<m.elem_list.size();++n) {

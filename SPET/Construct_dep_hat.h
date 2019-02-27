@@ -117,7 +117,7 @@ void construct_dep_hat( const TM &m, const TF &f, const string &solver, const un
     }
     
     t.stop();
-    cout << "temps de calcul de la resolution des pbs locaux auto-equilibres par patch = " << t.res << endl << endl;
+    cout << "temps de calcul de la resolution des pbs locaux auto-equilibres par patch = " << t.res << " s" << endl << endl;
     
     if ( disp ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {

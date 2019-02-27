@@ -63,7 +63,7 @@ void construct_K_hat( const TM &m, const TF &f, const unsigned &nb_vertex_nodes,
     
     t.stop();
     if ( disp )
-        cout << "temps de calcul du remplissage des matrices associees aux pbs locaux auto-equilibres par patch = " << t.res << endl << endl;
+        cout << "temps de calcul du remplissage des matrices associees aux pbs locaux auto-equilibres par patch = " << t.res << " s" << endl << endl;
     
     if ( disp ) {
         for (unsigned j=0;j<nb_vertex_nodes;++j) {

@@ -269,7 +269,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
                 
                 t_eig_gen.stop();
                 if ( disp )
-                    cout << "temps de calcul de la resolution du pb aux valeurs propres generalisees = " << t_eig_gen.res << endl << endl;
+                    cout << "temps de calcul de la resolution du pb aux valeurs propres generalisees = " << t_eig_gen.res << " s" << endl << endl;
                 
                 T generalized_eig_val_eq = generalized_eig_val[ 0 ];
                 Vec<T> residual_vec = C * generalized_eig_vec.row( 0 );
@@ -439,7 +439,7 @@ void calcul_enhanced_local_error_bounds( TM &m, TM &m_adjoint, const TF &f, cons
             
             t_eig_gen.stop();
             if ( disp )
-                cout << "temps de calcul de la resolution du pb aux valeurs propres generalisees = " << t_eig_gen.res << endl << endl;
+                cout << "temps de calcul de la resolution du pb aux valeurs propres generalisees = " << t_eig_gen.res << " s" << endl << endl;
             
             T generalized_eig_val_eq = generalized_eig_val[ 0 ];
             Vec<T> residual_vec = C * generalized_eig_vec.row( 0 );

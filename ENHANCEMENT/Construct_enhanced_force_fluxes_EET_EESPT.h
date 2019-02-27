@@ -580,7 +580,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     
 //    t_orth_schmidt.stop();
 //    if ( disp )
-//        cout << "temps de calcul de l'orthonormalisation de schmidt de la matrice C_tot_enh associee au pb global de minimisation = " << t_orth_schmidt.res << endl << endl;
+//        cout << "temps de calcul de l'orthonormalisation de schmidt de la matrice C_tot_enh associee au pb global de minimisation = " << t_orth_schmidt.res << " s" << endl << endl;
     
 //    C_tot_orth_enh.clear();
     
@@ -600,7 +600,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     
     t_detect_pivots.stop();
     if ( disp )
-        cout << "temps de calcul de la detection des pivots nuls de la matrice C_tot_enh associee au pb global de minimisation = " << t_detect_pivots.res << endl << endl;
+        cout << "temps de calcul de la detection des pivots nuls de la matrice C_tot_enh associee au pb global de minimisation = " << t_detect_pivots.res << " s" << endl << endl;
     
     if ( Pivots_enh.size() ) { // si le nombre de pivots nuls est non nul
         for (unsigned n=0;n<Pivots_enh.size();++n) {
@@ -681,7 +681,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     
     t_construct_K_F_enh.stop();
     if ( disp )
-        cout << "temps de calcul du remplissage de la matrice K_enh et du vecteur F_enh associes au pb global de minimisation = " << t_construct_K_F_enh.res << endl << endl;
+        cout << "temps de calcul du remplissage de la matrice K_enh et du vecteur F_enh associes au pb global de minimisation = " << t_construct_K_F_enh.res << " s" << endl << endl;
     
     if ( disp ) {
         cout << "dimension de la matrice K_enh = ( " << K_enh.nb_rows() << ", " << K_enh.nb_cols() << " ) "<< endl;
@@ -747,7 +747,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     
     t_solve_minimization_enh.stop();
     if ( disp )
-        cout << "temps de calcul de la resolution du pb global de minimisation = " << t_solve_minimization_enh.res << endl << endl;
+        cout << "temps de calcul de la resolution du pb global de minimisation = " << t_solve_minimization_enh.res << " s" << endl << endl;
     
     if ( disp ) {
         cout << "dimension du vecteur U_enh = " << U_enh.size() << endl;
@@ -850,7 +850,7 @@ void construct_enhanced_force_fluxes_EET_EESPT( TM &m, const TF &f, const string
     }
     
     t_force_fluxes_enh.stop();
-    cout << "temps de calcul de la construction amelioree des densites d'effort = " << t_force_fluxes_enh.res << endl << endl;
+    cout << "temps de calcul de la construction amelioree des densites d'effort = " << t_force_fluxes_enh.res << " s" << endl << endl;
 }
 
 #endif // Construct_enhanced_force_fluxes_EET_EESPT_h
