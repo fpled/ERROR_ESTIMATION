@@ -257,9 +257,9 @@ formList := [ FormulationElasticity ]
 #-----------------
 #elemList := [ Triangle ]
 #elemList := [ Quad ]
-#elemList := [ Triangle, Quad ]
+elemList := [ Triangle, Quad ]
 #elemList := [ Tetra ]
-elemList := [ Hexa ]
+#elemList := [ Hexa ]
 #elemList := [ Tetra, Hexa ]
 
 # List of functions

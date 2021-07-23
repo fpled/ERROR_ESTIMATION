@@ -38,13 +38,13 @@ using namespace std;
 int main( int argc, char **argv ) {
     TicToc t_total;
     t_total.start();
-    static const unsigned dim = 3;
+    static const unsigned dim = 2;
     static const bool wont_add_nz = true;
     typedef Mesh<Mesh_carac_error_estimation_homog<double,dim> > TM;
     typedef Formulation<TM,FormulationElasticity,DefaultBehavior,double,wont_add_nz> TF;
     typedef TM::Pvec Pvec;
     typedef TM::TNode::T T;
-    static const string structure = "hashin_homog_filtered_32"; // structure
+    static const string structure = "square_homog_32"; // structure
     // 2D : plate_traction, plate_flexion, plate_hole, plate_crack, structure_crack, test_specimen, weight_sensor, circular_inclusions, circular_holes,
     //      square_n (n=32,64,128,256,512,1024,2048,4096), square_init_n (n=32,64,128,256,512,1024,2048,4096)
     // 3D : beam_traction, beam_flexion, beam_hole, plate_hole, plate_hole_full, hub_rotor_helico, reactor_head, door_seal, spot_weld, blade, pipe, SAP, spherical_inclusions, spherical_holes,
@@ -146,7 +146,7 @@ int main( int argc, char **argv ) {
     
     /// Verification equilibrium / solver
     /// ---------------------------------
-    static const bool verif_eq = 0; // verification de l'equilibre global elements finis
+    static const bool verif_eq = 1; // verification de l'equilibre global elements finis
     static const bool verif_compatibility_conditions = 1; // verification des conditions de compatibilite (equilibre elements finis) (methode EET)
     static const bool verif_eq_force_fluxes = 1; // verification de l'equilibre des densites d'effort (methodes EET, EESPT)
     static const T tol_compatibility_conditions = 1e-6; // tolerance pour la verification des conditions de compatibilite (equilibre elements finis) (methode EET)
@@ -238,14 +238,6 @@ int main( int argc, char **argv ) {
     
     /// Resolution du pb direct
     /// -----------------------
-//    cout << "Resolution du pb direct" << endl;
-//    cout << "-----------------------" << endl << endl;
-//    TicToc t;
-//    t.start();
-//    f.solve();
-//    t.stop();
-//    cout << "temps de calcul de la resolution du pb direct = " << t.res << " s" << endl << endl;
-    
     f.allocate_matrices();
     f.shift();
     f.assemble();
@@ -253,6 +245,96 @@ int main( int argc, char **argv ) {
 //    f.update_variables();
     f.get_initial_conditions();
     f.call_after_solve();
+    
+    #ifdef WITH_CHOLMOD
+    Mat<T,Sym<>,SparseCholMod > *ptr_mat;
+    f.get_mat( ptr_mat );
+    //    PRINTN( *ptr_mat );
+    //    display_structure( *ptr_mat, "stiffness_matrix" );
+    Mat<T,Sym<>,SparseLine<> > K = *ptr_mat; // f.matrices(Number<0>())
+    #else
+    Mat<T,Sym<>,SparseLine<> > K = f.matrices(Number<0>());
+    #endif
+    Vec<T> F = f.get_sollicitation();
+    Vec<T> U = f.get_result( 0 );
+    T res = norm_2( K*U - F );
+    T res_rel = norm_2( K*U - F ) / norm_2( F );
+    
+    cout << setprecision(15);
+    cout << "U =" << endl;
+    cout << U << endl << endl;
+    cout << "size( U ) =" << endl;
+    cout << U.size() << endl << endl;
+    cout << "norm( U ) =" << endl;
+    cout << norm_2( U ) << endl << endl;
+    cout << "F =" << endl;
+    cout << F << endl << endl;
+    cout << "size( F ) =" << endl;
+    cout << F.size() << endl << endl;
+    cout << "norm( F ) =" << endl;
+    cout << norm_2( F ) << endl << endl;
+    cout << "norm( K*U ) =" << endl;
+    cout << norm_2( K*U ) << endl << endl;
+    cout << "K*U - F =" << endl;
+    cout << K*U - F << endl << endl;
+    cout << "norm( K*U - F ) = " << res << endl;
+    cout << "norm( K*U - F ) / norm( F ) = " << res_rel << endl;
+    cout << endl;
+    
+    f.free_matrices();
+    cout << "Resolution du pb direct" << endl;
+    cout << "-----------------------" << endl << endl;
+    TicToc t;
+    t.start();
+    f.solve();
+    t.stop();
+    cout << "temps de calcul de la resolution du pb direct = " << t.res << " s" << endl << endl;
+    
+//    #ifdef WITH_CHOLMOD
+//    Mat<T,Sym<>,SparseCholMod > *ptr_mat;
+//    f.get_mat( ptr_mat );
+//    //    PRINTN( *ptr_mat );
+//    //    display_structure( *ptr_mat, "stiffness_matrix" );
+//    Mat<T,Sym<>,SparseLine<> > K = *ptr_mat; // f.matrices(Number<0>())
+//    #else
+//    Mat<T,Sym<>,SparseLine<> > K = f.matrices(Number<0>());
+//    #endif
+//    Vec<T> F = f.get_sollicitation();
+    Vec<T> U_solve = f.get_result( 0 );
+    T res_solve = norm_2( K*U_solve - F );
+    T res_rel_solve = norm_2( K*U_solve - F ) / norm_2( F );
+    
+    cout << setprecision(15);
+    cout << "U_solve =" << endl;
+    cout << U_solve << endl << endl;
+    cout << "size( U_solve ) =" << endl;
+    cout << U_solve.size() << endl << endl;
+    cout << "norm( U_solve ) =" << endl;
+    cout << norm_2( U_solve ) << endl << endl;
+//    cout << "F =" << endl;
+//    cout << F << endl << endl;
+    cout << "norm( F ) =" << endl;
+    cout << norm_2( F ) << endl << endl;
+    cout << "norm( K*U_solve ) =" << endl;
+    cout << norm_2( K*U_solve ) << endl << endl;
+    cout << "K*U_solve - F =" << endl;
+    cout << K*U_solve - F << endl << endl;
+    cout << "norm( K*U_solve - F ) = " << res_solve << endl;
+    cout << "norm( K*U_solve - F ) / norm( F ) = " << res_rel_solve << endl;
+    cout << endl;
+    
+    T diff = norm_2( U - U_solve );
+    T diff_rel = norm_2( U - U_solve ) / norm_2( U_solve );
+    cout << "U - U_solve =" << endl;
+    cout << U - U_solve << endl << endl;
+    cout << "norm( U - U_solve ) = " << diff << endl;
+    cout << "norm( U - U_solve ) / norm( U_solve ) = " << diff_rel << endl;
+    cout << endl;
+    
+    cout << "size( K ) =" << endl;
+    cout << K.nb_rows() << ", " << K.nb_cols() << endl << endl;
+    cout << "K =" << endl;
+    cout << K << endl << endl;
     
     /// Verification de l'equilibre du pb direct
     /// ----------------------------------------

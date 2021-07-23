@@ -40,8 +40,8 @@ if not want_local_estimation
 
 # Assumption for 2D plane problems: plane stress, plane strain
 #-------------------------------------------------------------
-hyp_plane_2D := "plane stress"
-#hyp_plane_2D := "plane strain"
+#hyp_plane_2D := "plane stress"
+hyp_plane_2D := "plane strain"
 
 # Method for the Dirichlet (displacement) boundary conditions imposed in the direct problem: lagrange, penalty
 #-------------------------------------------------------------------------------------------------------------
@@ -242,9 +242,9 @@ formList := [ FormulationElasticity ]
 #-----------------
 #elemList := [ Triangle ]
 #elemList := [ Quad ]
-#elemList := [ Triangle, Quad ]
+elemList := [ Triangle, Quad ]
 #elemList := [ Tetra ]
-elemList := [ Hexa ]
+#elemList := [ Hexa ]
 #elemList := [ Tetra, Hexa ]
 
 # List of functions
